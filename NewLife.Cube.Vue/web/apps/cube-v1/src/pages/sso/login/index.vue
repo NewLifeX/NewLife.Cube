@@ -3,24 +3,24 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>SSO 登录</h3>
-          <el-button type="primary" @click="handleLogin">执行登录</el-button>
+          <h3>{{ t('ssoLogin.title') }}</h3>
+          <el-button type="primary" @click="handleLogin">{{ t('ssoLogin.doLogin') }}</el-button>
         </div>
       </template>
 
       <el-form :inline="true" :model="loginForm" class="search-form">
-        <el-form-item label="登录名">
-          <el-input v-model="loginForm.name" placeholder="请输入登录名" clearable />
+        <el-form-item :label="t('ssoLogin.loginName')">
+          <el-input v-model="loginForm.name" :placeholder="t('ssoLogin.loginNameHint')" clearable />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleLogin">登录</el-button>
-          <el-button @click="resetForm">重置</el-button>
+          <el-button type="primary" @click="handleLogin">{{ t('ssoLogin.signIn') }}</el-button>
+          <el-button @click="resetForm">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
       <div v-if="loginResult" class="login-result">
         <el-alert
-          :title="loginResult.success ? '登录成功' : '登录失败'"
+          :title="loginResult.success ? t('ssoLogin.loginSuccess') : t('ssoLogin.loginFailed')"
           :type="loginResult.success ? 'success' : 'error'"
           :description="loginResult.message"
           show-icon
@@ -28,8 +28,8 @@
         />
 
         <el-table v-if="loginResult.data" :data="[loginResult.data]" border style="width: 100%; margin-top: 20px;">
-          <el-table-column prop="key" label="字段" width="150" />
-          <el-table-column prop="value" label="值" />
+          <el-table-column prop="key" :label="t('ssoLogin.field')" width="150" />
+          <el-table-column prop="value" :label="t('ssoLogin.value')" />
         </el-table>
       </div>
 
@@ -42,6 +42,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义登录参数类型
@@ -64,13 +65,14 @@ const loginForm = reactive<SsoLoginParams>({
 // 状态
 const loading = ref(false);
 const loginResult = ref<LoginResult | null>(null);
+const { t } = useI18n();
 
 // 执行登录
 const handleLogin = async () => {
   if (!loginForm.name) {
     loginResult.value = {
       success: false,
-      message: '请输入登录名',
+      message: t('ssoLogin.loginNameRequired'),
     };
     return;
   }
@@ -89,19 +91,19 @@ const handleLogin = async () => {
     if (response) {
       loginResult.value = {
         success: true,
-        message: '登录请求成功',
+        message: t('ssoLogin.requestSuccess'),
         data: flattenObject(response),
       };
     } else {
       loginResult.value = {
         success: false,
-        message: '登录响应为空',
+        message: t('ssoLogin.emptyResponse'),
       };
     }
   } catch (error) {
     loginResult.value = {
       success: false,
-      message: `登录失败: ${error}`,
+      message: `${t('ssoLogin.loginFailed')}: ${error}`,
     };
   } finally {
     loading.value = false;

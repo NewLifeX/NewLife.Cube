@@ -3,58 +3,81 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>获取 Access Token</h3>
-          <el-button type="primary" @click="handleGetAccessToken">获取 Token</el-button>
+          <h3>{{ t('ssoAccessToken.title') }}</h3>
+          <el-button type="primary" @click="handleGetAccessToken">
+            {{ t('ssoAccessToken.getToken') }}
+          </el-button>
         </div>
       </template>
 
       <el-tabs v-model="activeTab" class="token-tabs">
         <!-- GET 请求 Tab -->
-        <el-tab-pane label="GET 请求" name="get">
+        <el-tab-pane :label="t('ssoAccessToken.tabGet')" name="get">
           <el-form :inline="true" :model="getForm" class="search-form">
             <el-form-item label="Client ID">
-              <el-input v-model="getForm.client_id" placeholder="请输入Client ID" clearable />
+              <el-input
+                v-model="getForm.client_id"
+                :placeholder="t('ssoAccessToken.clientIdHint')"
+                clearable
+              />
             </el-form-item>
             <el-form-item label="Client Secret">
-              <el-input v-model="getForm.client_secret" placeholder="请输入Client Secret" clearable />
+              <el-input
+                v-model="getForm.client_secret"
+                :placeholder="t('ssoAccessToken.clientSecretHint')"
+                clearable
+              />
             </el-form-item>
             <el-form-item label="Code">
-              <el-input v-model="getForm.code" placeholder="请输入授权码" clearable />
+              <el-input v-model="getForm.code" :placeholder="t('ssoAccessToken.codeHint')" clearable />
             </el-form-item>
             <el-form-item label="Grant Type">
-              <el-select v-model="getForm.grant_type" placeholder="请选择Grant Type">
+              <el-select v-model="getForm.grant_type" :placeholder="t('ssoAccessToken.grantTypeHint')">
                 <el-option label="authorization_code" value="authorization_code" />
                 <el-option label="refresh_token" value="refresh_token" />
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="handleGetRequest">GET 请求</el-button>
-              <el-button @click="resetGetForm">重置</el-button>
+              <el-button type="primary" @click="handleGetRequest">
+                {{ t('ssoAccessToken.getRequest') }}
+              </el-button>
+              <el-button @click="resetGetForm">{{ t('button.reset') }}</el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
 
         <!-- POST 请求 Tab -->
-        <el-tab-pane label="POST 请求" name="post">
+        <el-tab-pane :label="t('ssoAccessToken.tabPost')" name="post">
           <el-form :model="postForm" label-width="120px" class="post-form">
             <el-form-item label="Client ID">
-              <el-input v-model="postForm.client_id" placeholder="请输入Client ID" />
+              <el-input
+                v-model="postForm.client_id"
+                :placeholder="t('ssoAccessToken.clientIdHint')"
+              />
             </el-form-item>
             <el-form-item label="Client Secret">
-              <el-input v-model="postForm.client_secret" placeholder="请输入Client Secret" />
+              <el-input
+                v-model="postForm.client_secret"
+                :placeholder="t('ssoAccessToken.clientSecretHint')"
+              />
             </el-form-item>
             <el-form-item label="Code">
-              <el-input v-model="postForm.code" placeholder="请输入授权码" />
+              <el-input v-model="postForm.code" :placeholder="t('ssoAccessToken.codeHint')" />
             </el-form-item>
             <el-form-item label="Grant Type">
-              <el-select v-model="postForm.grant_type" placeholder="请选择Grant Type">
+              <el-select
+                v-model="postForm.grant_type"
+                :placeholder="t('ssoAccessToken.grantTypeHint')"
+              >
                 <el-option label="authorization_code" value="authorization_code" />
                 <el-option label="refresh_token" value="refresh_token" />
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="handlePostRequest">POST 请求</el-button>
-              <el-button @click="resetPostForm">重置</el-button>
+              <el-button type="primary" @click="handlePostRequest">
+                {{ t('ssoAccessToken.postRequest') }}
+              </el-button>
+              <el-button @click="resetPostForm">{{ t('button.reset') }}</el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -63,7 +86,7 @@
       <!-- Token 结果展示 -->
       <el-card v-if="tokenResult" class="result-card">
         <template #header>
-          <h4>Token 结果</h4>
+          <h4>{{ t('ssoAccessToken.resultTitle') }}</h4>
         </template>
         <el-descriptions :column="1" border>
           <el-descriptions-item label="Access Token">
@@ -75,7 +98,7 @@
                 @click="copyToken(tokenResult.access_token)"
                 class="copy-btn"
               >
-                复制
+                {{ t('common.copy') }}
               </el-button>
             </div>
           </el-descriptions-item>
@@ -83,7 +106,7 @@
             {{ tokenResult.token_type || 'Bearer' }}
           </el-descriptions-item>
           <el-descriptions-item label="Expires In">
-            {{ tokenResult.expires_in ? `${tokenResult.expires_in} 秒` : '未知' }}
+            {{ tokenResult.expires_in ? t('ssoAccessToken.seconds', { n: tokenResult.expires_in }) : t('ssoAccessToken.unknown') }}
           </el-descriptions-item>
           <el-descriptions-item label="Refresh Token" v-if="tokenResult.refresh_token">
             <div class="token-display">
@@ -94,14 +117,14 @@
                 @click="copyToken(tokenResult.refresh_token)"
                 class="copy-btn"
               >
-                复制
+                {{ t('common.copy') }}
               </el-button>
             </div>
           </el-descriptions-item>
           <el-descriptions-item label="Scope">
-            {{ tokenResult.scope || '未指定' }}
+            {{ tokenResult.scope || t('ssoAccessToken.unspecified') }}
           </el-descriptions-item>
-          <el-descriptions-item label="获取时间">
+          <el-descriptions-item :label="t('ssoAccessToken.obtainedAt')">
             {{ tokenResult.timestamp }}
           </el-descriptions-item>
         </el-descriptions>
@@ -110,17 +133,19 @@
       <!-- Token 历史记录 -->
       <el-card v-if="tokenHistory.length > 0" class="history-card">
         <template #header>
-          <h4>Token 历史</h4>
+          <h4>{{ t('ssoAccessToken.historyTitle') }}</h4>
         </template>
         <el-table :data="tokenHistory" border style="width: 100%">
           <el-table-column prop="client_id" label="Client ID" width="150" show-overflow-tooltip />
           <el-table-column prop="grant_type" label="Grant Type" width="150" />
           <el-table-column prop="access_token" label="Access Token" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="expires_in" label="过期时间" width="100" />
-          <el-table-column prop="timestamp" label="获取时间" width="160" />
-          <el-table-column label="操作" width="120">
+          <el-table-column prop="expires_in" :label="t('ssoAccessToken.expiresIn')" width="100" />
+          <el-table-column prop="timestamp" :label="t('ssoAccessToken.obtainedAt')" width="160" />
+          <el-table-column :label="t('common.actions')" width="120">
             <template #default="scope">
-              <el-button type="primary" size="small" @click="useToken(scope.row)">使用</el-button>
+              <el-button type="primary" size="small" @click="useToken(scope.row)">
+                {{ t('ssoAccessToken.use') }}
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -131,6 +156,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { ElMessage } from 'element-plus';
 
@@ -155,6 +181,7 @@ interface TokenHistoryItem extends TokenResult, AccessTokenParams {}
 
 // 当前激活的 Tab
 const activeTab = ref('get');
+const { t } = useI18n();
 
 // GET 请求表单
 const getForm = reactive<AccessTokenParams>({
@@ -179,7 +206,7 @@ const tokenHistory = ref<TokenHistoryItem[]>([]);
 // 处理 GET 请求
 const handleGetRequest = async () => {
   if (!getForm.client_id || !getForm.client_secret) {
-    ElMessage.warning('请输入 Client ID 和 Client Secret');
+    ElMessage.warning(t('ssoAccessToken.clientRequired'));
     return;
   }
 
@@ -210,16 +237,16 @@ const handleGetRequest = async () => {
       tokenHistory.value = tokenHistory.value.slice(0, 10);
     }
 
-    ElMessage.success('Access Token 获取成功');
+    ElMessage.success(t('ssoAccessToken.getSuccess'));
   } catch {
-    ElMessage.error('Access Token 获取失败');
+    ElMessage.error(t('ssoAccessToken.getFailed'));
   }
 };
 
 // 处理 POST 请求
 const handlePostRequest = async () => {
   if (!postForm.client_id || !postForm.client_secret) {
-    ElMessage.warning('请输入 Client ID 和 Client Secret');
+    ElMessage.warning(t('ssoAccessToken.clientRequired'));
     return;
   }
 
@@ -250,9 +277,9 @@ const handlePostRequest = async () => {
       tokenHistory.value = tokenHistory.value.slice(0, 10);
     }
 
-    ElMessage.success('Access Token 获取成功');
+    ElMessage.success(t('ssoAccessToken.getSuccess'));
   } catch {
-    ElMessage.error('Access Token 获取失败');
+    ElMessage.error(t('ssoAccessToken.getFailed'));
   }
 };
 
@@ -268,15 +295,15 @@ const handleGetAccessToken = () => {
 // 复制 Token
 const copyToken = async (token?: string) => {
   if (!token) {
-    ElMessage.warning('Token 为空');
+    ElMessage.warning(t('ssoAccessToken.tokenEmpty'));
     return;
   }
 
   try {
     await navigator.clipboard.writeText(token);
-    ElMessage.success('Token 已复制到剪贴板');
+    ElMessage.success(t('ssoAccessToken.copied'));
   } catch {
-    ElMessage.error('复制失败，请手动复制');
+    ElMessage.error(t('ssoAccessToken.copyFailed'));
   }
 };
 
@@ -308,7 +335,7 @@ const useToken = (item: TokenHistoryItem) => {
     });
   }
 
-  ElMessage.success('Token 信息已恢复');
+  ElMessage.success(t('ssoAccessToken.restored'));
 };
 
 // 重置 GET 表单

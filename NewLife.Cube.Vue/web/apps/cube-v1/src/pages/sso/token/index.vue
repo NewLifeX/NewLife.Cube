@@ -3,29 +3,37 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>SSO Token</h3>
-          <el-button type="primary" @click="handleGetToken">获取Token</el-button>
+          <h3>{{ t('ssoToken.title') }}</h3>
+          <el-button type="primary" @click="handleGetToken">{{ t('ssoToken.getToken') }}</el-button>
         </div>
       </template>
 
       <el-form :model="tokenForm" :rules="tokenRules" ref="tokenFormRef" label-width="120px">
-        <el-form-item label="客户端ID" prop="client_id">
-          <el-input v-model="tokenForm.client_id" placeholder="请输入客户端ID" />
+        <el-form-item :label="t('ssoToken.clientId')" prop="client_id">
+          <el-input v-model="tokenForm.client_id" :placeholder="t('ssoToken.clientIdHint')" />
         </el-form-item>
-        <el-form-item label="客户端密钥" prop="client_secret">
-          <el-input v-model="tokenForm.client_secret" type="password" placeholder="请输入客户端密钥" />
+        <el-form-item :label="t('ssoToken.clientSecret')" prop="client_secret">
+          <el-input
+            v-model="tokenForm.client_secret"
+            type="password"
+            :placeholder="t('ssoToken.clientSecretHint')"
+          />
         </el-form-item>
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="tokenForm.username" placeholder="请输入用户名" />
+        <el-form-item :label="t('ssoToken.username')" prop="username">
+          <el-input v-model="tokenForm.username" :placeholder="t('ssoToken.usernameHint')" />
         </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="tokenForm.password" type="password" placeholder="请输入密码" />
+        <el-form-item :label="t('ssoToken.password')" prop="password">
+          <el-input
+            v-model="tokenForm.password"
+            type="password"
+            :placeholder="t('ssoToken.passwordHint')"
+          />
         </el-form-item>
-        <el-form-item label="刷新令牌" prop="refresh_token">
-          <el-input v-model="tokenForm.refresh_token" placeholder="请输入刷新令牌" />
+        <el-form-item :label="t('ssoToken.refreshToken')" prop="refresh_token">
+          <el-input v-model="tokenForm.refresh_token" :placeholder="t('ssoToken.refreshTokenHint')" />
         </el-form-item>
-        <el-form-item label="授权类型" prop="grant_type">
-          <el-select v-model="tokenForm.grant_type" placeholder="请选择授权类型">
+        <el-form-item :label="t('ssoToken.grantType')" prop="grant_type">
+          <el-select v-model="tokenForm.grant_type" :placeholder="t('ssoToken.grantTypeHint')">
             <el-option label="password" value="password" />
             <el-option label="client_credentials" value="client_credentials" />
             <el-option label="authorization_code" value="authorization_code" />
@@ -33,15 +41,19 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleGetToken" :loading="loading">获取Token</el-button>
-          <el-button @click="handlePostToken" :loading="loading">POST获取Token</el-button>
-          <el-button @click="resetForm">重置</el-button>
+          <el-button type="primary" @click="handleGetToken" :loading="loading">
+            {{ t('ssoToken.getToken') }}
+          </el-button>
+          <el-button @click="handlePostToken" :loading="loading">
+            {{ t('ssoToken.postGetToken') }}
+          </el-button>
+          <el-button @click="resetForm">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
       <div v-if="tokenResult" class="token-result">
         <el-alert
-          :title="tokenResult.success ? '获取Token成功' : '获取Token失败'"
+          :title="tokenResult.success ? t('ssoToken.getSuccess') : t('ssoToken.getFailed')"
           :type="tokenResult.success ? 'success' : 'error'"
           :description="tokenResult.message"
           show-icon
@@ -49,8 +61,8 @@
         />
 
         <el-table v-if="tokenResult.data" :data="tokenResult.data" border style="width: 100%; margin-top: 20px;">
-          <el-table-column prop="key" label="字段" width="200" />
-          <el-table-column prop="value" label="值" />
+          <el-table-column prop="key" :label="t('ssoToken.field')" width="200" />
+          <el-table-column prop="value" :label="t('ssoToken.value')" />
         </el-table>
       </div>
     </el-card>
@@ -59,6 +71,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import type { FormInstance, FormRules } from 'element-plus';
 
@@ -81,6 +94,7 @@ interface TokenResult {
 
 // 表单引用
 const tokenFormRef = ref<FormInstance | null>(null);
+const { t } = useI18n();
 
 // Token表单
 const tokenForm = reactive<SsoTokenParams>({
@@ -95,13 +109,13 @@ const tokenForm = reactive<SsoTokenParams>({
 // 表单验证规则
 const tokenRules = reactive<FormRules>({
   client_id: [
-    { required: true, message: '请输入客户端ID', trigger: 'blur' }
+    { required: true, message: t('ssoToken.clientIdRequired'), trigger: 'blur' }
   ],
   client_secret: [
-    { required: true, message: '请输入客户端密钥', trigger: 'blur' }
+    { required: true, message: t('ssoToken.clientSecretRequired'), trigger: 'blur' }
   ],
   grant_type: [
-    { required: true, message: '请选择授权类型', trigger: 'change' }
+    { required: true, message: t('ssoToken.grantTypeRequired'), trigger: 'change' }
   ]
 });
 
@@ -133,13 +147,13 @@ const handleGetToken = async () => {
 
       tokenResult.value = {
         success: true,
-        message: '获取Token成功',
+        message: t('ssoToken.getSuccess'),
         data: flattenObject(response),
       };
     } catch (error) {
       tokenResult.value = {
         success: false,
-        message: `获取Token失败: ${error}`,
+        message: `${t('ssoToken.getFailed')}: ${error}`,
       };
     } finally {
       loading.value = false;
@@ -171,13 +185,13 @@ const handlePostToken = async () => {
 
       tokenResult.value = {
         success: true,
-        message: '获取Token成功',
+        message: t('ssoToken.getSuccess'),
         data: flattenObject(response),
       };
     } catch (error) {
       tokenResult.value = {
         success: false,
-        message: `获取Token失败: ${error}`,
+        message: `${t('ssoToken.getFailed')}: ${error}`,
       };
     } finally {
       loading.value = false;
