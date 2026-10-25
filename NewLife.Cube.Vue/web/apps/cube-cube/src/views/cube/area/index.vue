@@ -240,15 +240,15 @@ const loadAreaOptions = async () => {
       params: { pageSize: 1000, pageIndex: 1 }
     });
 
-    console.log('地区选项响应:', response);
+    console.log('area options response:', response);
 
     if (response && response.data) {
       const { list } = apiDataToList<Area>(response);
       areaOptions.value = list;
-      console.log('地区选项数据:', areaOptions.value);
+      console.log('area options data:', areaOptions.value);
     }
   } catch (error) {
-    console.error('加载地区选项失败:', error);
+    console.error('Failed to load area options:', error);
   }
 };
 
@@ -269,7 +269,7 @@ const loadData = async () => {
     queryParams.total = page?.totalCount || list.length;
   } catch (error) {
     ElMessage.error(t('common.loadFailed'));
-    console.error('加载数据失败:', error);
+    console.error('Failed to load data:', error);
     tableData.value = [];
     queryParams.total = 0;
   } finally {
@@ -337,7 +337,7 @@ const handleDelete = (row: Area) => {
       loadData();
     } catch (error) {
       ElMessage.error(t('common.deleteFailed'));
-      console.error('删除失败:', error);
+      console.error('Failed to delete:', error);
     }
   });
 };
@@ -380,7 +380,7 @@ const submitForm = () => {
         ElMessage.error(
           formType.value === 'add' ? t('common.addFailed') : t('common.updateFailed')
         );
-        console.error('操作失败:', error);
+        console.error('Operation failed:', error);
       }
     }
   });

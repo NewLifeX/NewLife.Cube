@@ -234,7 +234,7 @@ const fetchData = async () => {
     queryParams.total = page?.totalCount || list.length;
   } catch (error) {
     ElMessage.error(t('common.loadFailed'));
-    console.error('加载数据失败:', error);
+    console.error('Failed to load data:', error);
     tableData.value = [];
     queryParams.total = 0;
   } finally {
@@ -270,7 +270,7 @@ const handleExecute = async (row: CronJob) => {
     fetchData();
   } catch (error) {
     ElMessage.error(t('cronJob.executeFailed'));
-    console.error('执行失败:', error);
+    console.error('Execution failed:', error);
   }
 };
 
@@ -305,7 +305,7 @@ const handleDelete = (row: CronJob) => {
       fetchData();
     } catch (error) {
       ElMessage.error(t('common.deleteFailed'));
-      console.error('删除失败:', error);
+      console.error('Failed to delete:', error);
     }
   });
 };
@@ -348,7 +348,7 @@ const submitForm = () => {
         ElMessage.error(
           formType.value === 'add' ? t('common.addFailed') : t('common.updateFailed')
         );
-        console.error('操作失败:', error);
+        console.error('Operation failed:', error);
       }
     }
   });

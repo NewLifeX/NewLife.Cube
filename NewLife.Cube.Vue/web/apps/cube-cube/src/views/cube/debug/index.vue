@@ -75,17 +75,17 @@ const refreshStatus = () => {
 
     // 查找Cube相关路由
     const cubeRoutes = routes.filter(route => route.path.startsWith('/Cube'));
-    console.log('Cube相关路由:', cubeRoutes);
+    console.log('Cube routes:', cubeRoutes);
 
   } catch (error) {
-    console.error('获取路由状态失败:', error);
+    console.error('Failed to get route status:', error);
   }
 };
 
 // 测试路由导航
 const testRoute = () => {
   router.push('/Cube/Test').catch(error => {
-    console.error('路由导航失败:', error);
+    console.error('Route navigation failed:', error);
   });
 };
 
