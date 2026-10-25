@@ -3,7 +3,7 @@
     <el-card class="box-card" style="height: 100%; display: flex; flex-direction: column;">
       <template #header>
         <div class="card-header">
-          <h3>菜单管理</h3>
+          <h3>{{ t('menuAdmin.title') }}</h3>
           <div>
             <!-- <el-button type="success" @click="handleMoveUp" :disabled="selectedRows.length !== 1">
               上移
@@ -27,7 +27,7 @@
               @command="handleBatchCommand"
             >
               <el-button type="primary" plain :disabled="selectedRows.length === 0">
-                批量操作{{ selectedRows.length > 0 ? `（已选 ${selectedRows.length}）` : '' }}
+                {{ t('menuAdmin.batchTitle') }}{{ selectedRows.length > 0 ? t('menuAdmin.selectedCount', { count: selectedRows.length }) : '' }}
                 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
               </el-button>
               <template #dropdown>
@@ -43,7 +43,7 @@
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
-            <el-button type="primary" @click="handleAdd">新增菜单</el-button>
+            <el-button type="primary" @click="handleAdd">{{ t('menuAdmin.add') }}</el-button>
           </div>
         </div>
       </template>
@@ -69,56 +69,56 @@
           :highlight-current-row="true"
         >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="id" label="编号" width="85" />
-        <el-table-column label="名称" min-width="150">
+        <el-table-column prop="id" :label="t('common.id')" width="85" />
+        <el-table-column :label="t('menuAdmin.name')" min-width="150">
           <template #default="scope">
             <span>{{ getDepthPrefix((scope.row as any)._depth ?? 0) }}{{ scope.row.name }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="显示名" min-width="150">
+        <el-table-column :label="t('menuAdmin.displayName')" min-width="150">
           <template #default="scope">
             <span>{{ getDepthPrefix((scope.row as any)._depth ?? 0) }}{{ scope.row.displayName }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="url" label="链接" min-width="150" />
-        <el-table-column prop="sort" label="排序" width="80" />
-        <el-table-column prop="icon" label="图标" width="100">
+        <el-table-column prop="url" :label="t('menuAdmin.url')" min-width="150" />
+        <el-table-column prop="sort" :label="t('common.sort')" width="80" />
+        <el-table-column prop="icon" :label="t('menuAdmin.icon')" width="100">
           <template #default="scope">
             <i v-if="scope.row.icon" :class="scope.row.icon"></i>
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="updateTime" label="更新时间" min-width="150" />
-        <el-table-column label="可见" width="80">
+        <el-table-column prop="updateTime" :label="t('common.updateTime')" min-width="150" />
+        <el-table-column :label="t('menuAdmin.visible')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.visible ? 'success' : 'danger'">
-              {{ scope.row.visible ? '是' : '否' }}
+              {{ scope.row.visible ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="必要" width="80">
+        <el-table-column :label="t('menuAdmin.necessary')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.necessary ? 'warning' : undefined">
-              {{ scope.row.necessary ? '是' : '否' }}
+              {{ scope.row.necessary ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="新窗口" width="80">
+        <el-table-column :label="t('menuAdmin.newWindow')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.newWindow ? 'info' : undefined">
-              {{ scope.row.newWindow ? '是' : '否' }}
+              {{ scope.row.newWindow ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+        <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.remark || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column :label="t('common.actions')" width="180" fixed="right">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">{{ t('button.edit') }}</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">{{ t('button.delete') }}</el-button>
           </template>
         </el-table-column>
         </el-table>
@@ -128,22 +128,22 @@
     <!-- 菜单表单对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="formType === 'add' ? '新增菜单' : '编辑菜单'"
+      :title="formType === 'add' ? t('menuAdmin.add') : t('menuAdmin.edit')"
       width="600px"
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="菜单名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入菜单名称" />
+        <el-form-item :label="t('menuAdmin.name')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('menuAdmin.nameHint')" />
         </el-form-item>
-        <el-form-item label="显示名称" prop="displayName">
-          <el-input v-model="form.displayName" placeholder="请输入显示名称" />
+        <el-form-item :label="t('menuAdmin.displayName')" prop="displayName">
+          <el-input v-model="form.displayName" :placeholder="t('menuAdmin.displayNameHint')" />
         </el-form-item>
-        <el-form-item label="菜单全名" prop="fullName">
-          <el-input v-model="form.fullName" placeholder="请输入菜单全名" />
+        <el-form-item :label="t('menuAdmin.fullName')" prop="fullName">
+          <el-input v-model="form.fullName" :placeholder="t('menuAdmin.fullNameHint')" />
         </el-form-item>
-        <el-form-item label="上级菜单" prop="parentID">
-          <el-select v-model="form.parentID" placeholder="请选择上级菜单" clearable filterable>
-            <el-option label="无上级" :value="0" />
+        <el-form-item :label="t('menuAdmin.parent')" prop="parentID">
+          <el-select v-model="form.parentID" :placeholder="t('menuAdmin.parentHint')" clearable filterable>
+            <el-option :label="t('menuAdmin.noParent')" :value="0" />
             <el-option
               v-for="menu in menuOptions"
               :key="menu.id"
@@ -152,46 +152,47 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="链接地址" prop="url">
-          <el-input v-model="form.url" placeholder="请输入链接地址" />
+        <el-form-item :label="t('menuAdmin.urlAddress')" prop="url">
+          <el-input v-model="form.url" :placeholder="t('menuAdmin.urlAddressHint')" />
         </el-form-item>
-        <el-form-item label="排序" prop="sort">
-          <el-input-number v-model="form.sort" :min="0" placeholder="同级内排序" />
+        <el-form-item :label="t('common.sort')" prop="sort">
+          <el-input-number v-model="form.sort" :min="0" :placeholder="t('menuAdmin.sortHint')" />
         </el-form-item>
-        <el-form-item label="图标" prop="icon">
-          <el-input v-model="form.icon" placeholder="请输入图标类名" />
+        <el-form-item :label="t('menuAdmin.icon')" prop="icon">
+          <el-input v-model="form.icon" :placeholder="t('menuAdmin.iconHint')" />
         </el-form-item>
-        <el-form-item label="可见状态" prop="visible">
+        <el-form-item :label="t('menuAdmin.visibleStatus')" prop="visible">
           <el-switch v-model="form.visible" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="必要菜单" prop="necessary">
+        <el-form-item :label="t('menuAdmin.necessaryMenu')" prop="necessary">
           <el-switch v-model="form.necessary" :active-value="true" :inactive-value="false" />
-          <span class="form-tip">必要的菜单，必须至少有角色拥有这些权限</span>
+          <span class="form-tip">{{ t('menuAdmin.necessaryTip') }}</span>
         </el-form-item>
-        <el-form-item label="新窗口打开" prop="newWindow">
+        <el-form-item :label="t('menuAdmin.openNewWindow')" prop="newWindow">
           <el-switch v-model="form.newWindow" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="权限子项" prop="permission">
+        <el-form-item :label="t('menuAdmin.permissions')" prop="permission">
           <el-input
             v-model="form.permission"
             type="textarea"
-            placeholder="逗号分隔，每个权限子项名值竖线分隔"
+            :placeholder="t('menuAdmin.permissionsHint')"
           />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" />
+        <el-form-item :label="t('common.remark')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="t('tenant.remarkHint')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules, TableInstance } from 'element-plus';
 import { ArrowDown } from '@element-plus/icons-vue';
@@ -233,6 +234,7 @@ const loading = ref(false);
 const menuOptions = ref<Menu[]>([]);
 const selectedRows = ref<Menu[]>([]);
 const menuTableRef = ref<TableInstance>();
+const { t } = useI18n();
 
 // 页面请求参数
 const queryParams = reactive({
@@ -277,8 +279,8 @@ const form = reactive<Menu>({
 
 // 表单验证规则
 const formRules = reactive<FormRules>({
-  name: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }],
-  displayName: [{ required: true, message: '请输入显示名称', trigger: 'blur' }],
+  name: [{ required: true, message: t('menuAdmin.nameRequired'), trigger: 'blur' }],
+  displayName: [{ required: true, message: t('menuAdmin.displayNameRequired'), trigger: 'blur' }],
 });
 
 // 构建树结构并排序（使用队列，非递归方式）
@@ -341,10 +343,10 @@ const buildTreeData = (data: Menu[]): Menu[] => {
   // 处理所有节点（根节点深度为0）
   roots.forEach((root) => processNode(root, 0));
 
-  console.log('构建树状结构完成:', {
-    原始数据数量: data.length,
-    根节点数量: roots.length,
-    树结构: roots,
+  console.log('Tree built:', {
+    rawCount: data.length,
+    rootCount: roots.length,
+    tree: roots,
   });
 
   return roots;
@@ -382,29 +384,33 @@ const handleSelectionChange = (selection: Menu[]) => {
 };
 
 // 批量操作项。command 形如「字段:目标值」，避免为每个开关各写一个处理函数
-const batchItems = [
-  { command: 'visible:true', label: '设为可见', divided: false },
-  { command: 'visible:false', label: '设为不可见', divided: false },
-  { command: 'necessary:true', label: '设为必要', divided: true },
-  { command: 'necessary:false', label: '设为不必要', divided: false },
-  { command: 'newWindow:true', label: '设为新窗口打开', divided: true },
-  { command: 'newWindow:false', label: '取消新窗口打开', divided: false },
-];
+const batchItems = computed(() => [
+  { command: 'visible:true', label: t('menuAdmin.setVisible'), divided: false },
+  { command: 'visible:false', label: t('menuAdmin.setInvisible'), divided: false },
+  { command: 'necessary:true', label: t('menuAdmin.setNecessary'), divided: true },
+  { command: 'necessary:false', label: t('menuAdmin.setUnnecessary'), divided: false },
+  { command: 'newWindow:true', label: t('menuAdmin.setOpenNewWindow'), divided: true },
+  { command: 'newWindow:false', label: t('menuAdmin.cancelNewWindow'), divided: false },
+]);
 
 // 批量修改选中菜单的开关字段（可见/必要/新窗口）
 const handleBatchCommand = async (command: string) => {
   const rows = selectedRows.value;
-  const item = batchItems.find((e) => e.command === command);
+  const item = batchItems.value.find((e) => e.command === command);
   if (rows.length === 0 || !item) return;
 
   const [field, value] = command.split(':');
 
   try {
-    await ElMessageBox.confirm(`确定将选中的 ${rows.length} 个菜单${item.label}吗？`, '批量操作', {
-      type: 'warning',
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-    });
+    await ElMessageBox.confirm(
+      t('menuAdmin.batchConfirm', { count: rows.length, action: item.label }),
+      t('menuAdmin.batchTitle'),
+      {
+        type: 'warning',
+        confirmButtonText: t('button.confirm'),
+        cancelButtonText: t('button.cancel'),
+      },
+    );
   } catch {
     return; // 用户取消
   }
@@ -430,7 +436,7 @@ const handleBatchCommand = async (command: string) => {
         await request.put(`/Admin/Menu/${payload.id}`, payload);
         ok++;
       } catch (err) {
-        fails.push(`${row.displayName || row.name}: ${(err as Error)?.message || '更新失败'}`);
+        fails.push(`${row.displayName || row.name}: ${(err as Error)?.message || t('menuAdmin.updateFailed')}`);
       }
     }
   } finally {
@@ -438,9 +444,11 @@ const handleBatchCommand = async (command: string) => {
   }
 
   if (fails.length > 0) {
-    ElMessage.error(`成功 ${ok} 条，失败 ${fails.length} 条：${fails.slice(0, 3).join('；')}`);
+    ElMessage.error(
+      t('menuAdmin.batchFailed', { ok, fail: fails.length, detail: fails.slice(0, 3).join('; ') }),
+    );
   } else {
-    ElMessage.success(`批量操作成功！共 ${ok} 条`);
+    ElMessage.success(t('menuAdmin.batchSuccess', { ok }));
   }
 
   // 开关影响列表标签与权限语义，重新加载；清空勾选避免对旧选择重复操作
@@ -470,12 +478,12 @@ const loadData = async () => {
       dataList = [];
     }
 
-    console.log('菜单原始数据:', dataList);
+    console.log('Raw menu data:', dataList);
 
     // 构建树结构并排序
     tableData.value = buildTreeData(dataList);
 
-    console.log('构建后的树状数据:', tableData.value);
+    console.log('Tree data:', tableData.value);
 
     // 同时保存平铺的数据用于菜单选项（排除当前编辑的菜单）
     menuOptions.value = dataList.filter((item) => item.id !== form.id);
@@ -532,7 +540,7 @@ const handleDelete = (row: Menu) => {
   handleDeleteOperation(
     () => request.delete(`/Admin/Menu/${row.id}`),
     loadData,
-    '确认删除该菜单吗？'
+    t('menuAdmin.deleteConfirm')
   );
 };
 
