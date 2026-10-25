@@ -41,6 +41,19 @@ test.describe('动态页（/meta 驱动）', () => {
     expect(await dialog.locator('.el-checkbox').count()).toBeGreaterThan(0);
   });
 
+  test('参数页与用户统计页同样由元数据渲染', async ({ page }) => {
+    // 参数页：标准增删改查列表（枚举列按后端字典显示）
+    await page.goto('/Admin/Parameter');
+    await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.el-table__header th').nth(4)).toBeVisible();
+
+    // 用户统计页：只读列表，写入口由后端 setting.isReadOnly 收掉，图表走 charts 端点
+    await page.goto('/Admin/UserStat');
+    await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 15000 });
+    const toolbarTexts = await page.locator('.cube-table button').allInnerTexts();
+    expect(toolbarTexts.some((text) => text.trim().length > 0)).toBe(true);
+  });
+
   test('设置中心以二级 Tab 串联多个设置页', async ({ page }) => {
     await page.goto('/Admin/Cube');
     await expect(page.locator('.el-tabs__item').first()).toBeVisible({ timeout: 15000 });

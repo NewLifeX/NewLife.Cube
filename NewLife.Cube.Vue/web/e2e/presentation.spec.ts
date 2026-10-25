@@ -1,14 +1,15 @@
 /**
  * 页面呈现架构全链路 E2E
  *
- * 覆盖 M1 动态页的工具栏/图标、地区级联、链接与 dataAction，M2 混合页的 preset + 单元格插槽，
+ * 覆盖 M1 动态页的工具栏/图标、地区级联、链接与 dataAction、枚举字典文案，
+ * M2 混合页的自定义行操作（角色页，见 dynamic-pages.spec.ts），
  * 以及 M3 自定义页不经过 CubeTable 的整页接管。
  *
  * 运行前需启动 CubeDemo（https://localhost:7116）与 Vue 开发服务器（默认 5187）：
  *   pnpm test:e2e --grep "页面呈现"
  */
 import { test, expect } from '@playwright/test';
-import { readListFields } from './metaHelper';
+import { readMeta } from './metaHelper';
 
 const testFieldPath = '/Test/TestField';
 
@@ -81,13 +82,12 @@ test.describe('页面呈现架构全链路', () => {
     }
   });
 
-  test('M2 混合页：preset 调整列序且单元格插槽生效', async ({ page }) => {
+  test('M1 动态页：枚举列按后端下发的字典显示文案', async ({ page }) => {
     const apiBase = process.env.PLAYWRIGHT_API_URL || 'https://localhost:7116';
-    const paramName = `E2E-PARAM-${Date.now()}`;
-
-    // 参数页对当前角色未开放新增按钮，用真实接口播种一条参数，保证列表有行可断言插槽
+    const paramName = `E2E-ENUM-${Date.now()}`;
+    // Kind=21（列表）是枚举值，页面应显示后端字典里的文案而不是数字
     const created = await page.request.post(`${apiBase}/api/Admin/Parameter`, {
-      data: { Name: paramName, Value: '1', Category: 'E2E', Kind: 0, Enable: true },
+      data: { Name: paramName, Value: '1', Category: 'E2E', Kind: 21, Enable: true },
       ignoreHTTPSErrors: true,
     });
     expect(created.ok()).toBeTruthy();
@@ -100,24 +100,28 @@ test.describe('页面呈现架构全链路', () => {
       await expect(page.locator('.cube-table')).toBeVisible({ timeout: 15000 });
       await expect(page.locator('.el-table')).toBeVisible({ timeout: 15000 });
 
-      const fields = await readListFields(page, '/api/Admin/Parameter/meta');
-      const headerOf = (name: string) =>
-        fields.find((field) => field.name.toLowerCase() === name.toLowerCase())?.header ?? name;
+      // 字典文案由后端下发（已按界面语言本地化），从 /meta 取，避免绑死中文/英文
+      const meta = await readMeta(page, '/api/Admin/Parameter/meta');
+      const kindLabel = (meta.list ?? []).find((field) => field.name === 'Kind')?.dataSource?.['21'];
+      expect(kindLabel).toBeTruthy();
 
-      const headers = await page.locator('.el-table__header th').allTextContents();
-      const kindIndex = headers.findIndex((text) => text.trim() === headerOf('Kind'));
-      const idIndex = headers.findIndex((text) => text.trim() === headerOf('Id'));
-      expect(kindIndex).toBeGreaterThanOrEqual(0);
-      expect(idIndex).toBeGreaterThanOrEqual(0);
-      // preset list.order 把 Kind 前置，验证真实页面消费了页面呈现配置
-      expect(kindIndex).toBeLessThan(idIndex);
-
-      // 单元格插槽把枚举渲染成标签
-      await expect(page.locator('.el-table__row .el-tag').first()).toBeVisible({ timeout: 15000 });
-      await expect(page.getByText(paramName)).toBeVisible();
+      const row = page.locator('tr', { hasText: paramName }).first();
+      await expect(row).toBeVisible({ timeout: 15000 });
+      await expect(row).toContainText(kindLabel!);
     } finally {
       if (paramId) await page.request.delete(`${apiBase}/api/Admin/Parameter?ids=${paramId}`, { ignoreHTTPSErrors: true });
     }
+  });
+
+  test('M3 自定义页：工作台部件管理走 Widget 接口', async ({ page }) => {
+    // 部件管理没有实体元数据（后端是自定义 JSON 接口），仍为手写页，但必须能正常渲染
+    await page.goto('/Cube/Widget');
+    await expect(page.locator('.wa-table .el-table__body tr').first()).toBeVisible({ timeout: 15000 });
+
+    // 部件行数、启用开关、分组顺序入口都来自真实接口
+    expect(await page.locator('.wa-table .el-table__body tr').count()).toBeGreaterThan(3);
+    expect(await page.locator('.wa-table .el-switch').count()).toBeGreaterThan(3);
+    expect(await page.locator('.wa-group').count()).toBeGreaterThan(0);
   });
 
   test('M3 自定义页：整页接管且不渲染 CubeTable', async ({ page }) => {
