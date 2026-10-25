@@ -48,4 +48,15 @@ test.describe('动态页（/meta 驱动）', () => {
     // 至少一个 Tab 能加载出元数据字段
     await expect(page.locator('.el-form-item, .fmc-field').first()).toBeVisible({ timeout: 15000 });
   });
+
+  test('/Cube 区域列表同样按元数据渲染', async ({ page }) => {
+    await page.goto('/Cube/CronJob');
+    const headers = page.locator('.el-table__header th');
+    await expect(headers.filter({ hasText: 'Cron expression' }).first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.el-table__body tr').first()).toBeVisible();
+
+    await page.goto('/Cube/Area');
+    await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 15000 });
+    expect(await page.locator('.el-table__body tr').count()).toBeGreaterThan(5);
+  });
 });
