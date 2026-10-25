@@ -212,8 +212,8 @@ export default function vitePluginCubeFront() {
                   if (!match) {
                     // 只有 @scope，没有 name，如 @newlifex（无效的包名）
                     throw new Error(
-                      `[CubeFront] 微应用 ${app.name} 的包名 "${pkgName}" 无效。\n` +
-                      `请使用完整的包名，如 "@newlifex/cube-vue"。`,
+                      `[CubeFront] The package name "${pkgName}" of micro-app ${app.name} is invalid.\n` +
+                      `Please use a full package name, e.g. "@newlifex/cube-vue".`,
                     );
                   }
                   packageName = match[0];
@@ -239,9 +239,9 @@ export default function vitePluginCubeFront() {
                 );
                 if (!fs.existsSync(packageMainPath)) {
                   throw new Error(
-                    `[CubeFront] 微应用 ${app.name} 的包 "${packageName}" 未找到。\n` +
-                    `请确保已安装：pnpm add ${packageName}\n` +
-                    `或检查 node_modules 中是否存在该包。`,
+                    `[CubeFront] The package "${packageName}" of micro-app ${app.name} was not found.\n` +
+                    `Please make sure it is installed: pnpm add ${packageName}\n` +
+                    `or check whether the package exists in node_modules.`,
                   );
                 }
 

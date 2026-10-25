@@ -1801,6 +1801,7 @@ export default {
   'topBar.switchToDark': 'Switch to dark mode',
   'topBar.notifications': 'Notifications',
   'topBar.brandFallback': 'Cube system',
+  'topBar.footerFallback': 'All rights reserved',
 
   'ai.mermaidRendering': '⏳ Rendering chart...',
   'ai.mermaidViewSource': 'View source',

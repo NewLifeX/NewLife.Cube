@@ -1759,6 +1759,7 @@ export default {
   'topBar.switchToDark': '切換至深色模式',
   'topBar.notifications': '通知',
   'topBar.brandFallback': '魔方系統',
+  'topBar.footerFallback': '版權所有',
 
   'ai.mermaidRendering': '⏳ 圖表渲染中...',
   'ai.mermaidViewSource': '檢視原始碼',
