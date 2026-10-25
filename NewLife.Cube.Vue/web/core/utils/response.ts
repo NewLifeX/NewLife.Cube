@@ -317,5 +317,28 @@ export function isApiSuccess(response: ApiResponse): boolean {
   return response.code === 0 || response.code === 200;
 }
 
+/**
+ * 解包请求层返回的业务体
+ *
+ * `request` 已把 axios 响应解包为业务体 `ApiResponse`（`{code,data,...}`），
+ * 因此页面取数应优先用 `data`；同时兼容少数直接返回裸数组/裸对象的接口。
+ * @param payload 请求层返回值
+ * @returns 业务数据；无法识别时返回 undefined
+ */
+export function unwrapApiData<T = unknown>(payload: unknown): T | undefined {
+  if (payload === null || payload === undefined) return undefined;
+  if (Array.isArray(payload)) return payload as T;
+
+  if (typeof payload === 'object') {
+    const obj = payload as Record<string, unknown>;
+    if ('code' in obj && 'data' in obj) {
+      const data = obj.data;
+      return data === null || data === undefined ? undefined : (data as T);
+    }
+  }
+
+  return payload as T;
+}
+
 // 导出所有工具函数和类型，方便其他模块使用
 export * from './response';

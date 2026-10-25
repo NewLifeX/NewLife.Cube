@@ -231,6 +231,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
 import { Refresh, Delete, Switch } from '@element-plus/icons-vue'
 import { request } from '@newlifex/cube-vue/core/utils/request'
+import { unwrapApiData } from '@newlifex/cube-vue/core/utils/response'
 
 // 系统信息接口
 interface SystemInfo {
@@ -429,7 +430,7 @@ const refreshSystemInfo = async () => {
 // 获取主要信息（系统信息）
 const getMainInfo = async () => {
   try {
-    const data = (await request.get('/Admin/Index/Main')) as unknown as Record<string, unknown>
+    const data = unwrapApiData<Record<string, unknown>>(await request.get('/Admin/Index/Main'))
 
     // 直接使用 API 返回的所有字段，不进行固定字段映射
     // 清空之前的数据
@@ -456,10 +457,10 @@ const getServerVarList = async () => {
   try {
     loading.serverVars = true
 
-    const data = (await request.get('/Admin/Index/ServerVarList')) as unknown as {
+    const data = unwrapApiData<{
       server?: Array<{ name?: string; value?: string }>;
       request?: Array<{ name?: string; value?: string | number | boolean | object | null }>;
-    }
+    }>(await request.get('/Admin/Index/ServerVarList'))
 
     if (data && typeof data === 'object') {
       // 处理服务器Headers数据
@@ -510,14 +511,13 @@ const getProcessList = async () => {
   try {
     loading.processes = true
 
-    const data = await request.get('/Admin/Index/ProcessList', {
-      params: processModel.value ? { model: processModel.value } : {}
-    })
+    // model 为空也要显式传参：后端 [ApiController] 对非可空参数做隐式必填校验
+    const data = unwrapApiData<ProcessInfo[]>(await request.get('/Admin/Index/ProcessList', {
+      params: { model: processModel.value }
+    }))
 
     if (Array.isArray(data)) {
       processes.value = data
-    } else if (data && typeof data === 'object' && Array.isArray(data.data)) {
-      processes.value = data.data
     } else {
       processes.value = []
     }
@@ -533,14 +533,12 @@ const getAssemblyList = async () => {
   try {
     loading.assemblies = true
 
-    const data = await request.get('/Admin/Index/AssemblyList', {
-      params: assemblyModel.value ? { model: assemblyModel.value } : {}
-    })
+    const data = unwrapApiData<AssemblyInfo[]>(await request.get('/Admin/Index/AssemblyList', {
+      params: { model: assemblyModel.value }
+    }))
 
     if (Array.isArray(data)) {
       assemblies.value = data
-    } else if (data && typeof data === 'object' && Array.isArray(data.data)) {
-      assemblies.value = data.data
     } else {
       assemblies.value = []
     }
@@ -556,14 +554,12 @@ const getMenuTree = async () => {
   try {
     loading.menu = true
 
-    const data = await request.get('/Admin/Index/GetMenuTree', {
-      params: menuModule.value ? { module: menuModule.value } : {}
-    })
+    const data = unwrapApiData<MenuNode[]>(await request.get('/Admin/Index/GetMenuTree', {
+      params: { module: menuModule.value }
+    }))
 
     if (Array.isArray(data)) {
       menuTree.value = data
-    } else if (data && typeof data === 'object' && Array.isArray(data.data)) {
-      menuTree.value = data.data
     } else {
       menuTree.value = []
     }

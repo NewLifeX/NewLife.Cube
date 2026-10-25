@@ -387,17 +387,6 @@ const emptyListConfig = (): ListConfig => ({
   proxyRequest: false,
 });
 
-// 请求地址以 / 开头（同源同应用）→ 强制前端直连，禁止代理
-const isSameAppUrl = ref(false);
-watch(
-  () => form.value.listConfig?.requestUrl,
-  (url) => {
-    isSameAppUrl.value = !!url && url.startsWith('/');
-    if (isSameAppUrl.value) form.value.listConfig.proxyRequest = false;
-  },
-  { immediate: true },
-);
-
 const form = ref<LovConfigForm>({
   id: 0,
   lovCode: '',
@@ -412,6 +401,18 @@ const form = ref<LovConfigForm>({
   searchFields: [],
   tableColumns: [],
 });
+
+// 请求地址以 / 开头（同源同应用）→ 强制前端直连，禁止代理
+// 必须声明在 form 之后：immediate 立即求值会读到尚未初始化的 form（TDZ）
+const isSameAppUrl = ref(false);
+watch(
+  () => form.value.listConfig?.requestUrl,
+  (url) => {
+    isSameAppUrl.value = !!url && url.startsWith('/');
+    if (isSameAppUrl.value) form.value.listConfig.proxyRequest = false;
+  },
+  { immediate: true },
+);
 
 // 搜索字段编辑
 const sfVisible = ref(false);

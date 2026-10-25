@@ -37,7 +37,9 @@ interface TabState {
 }
 
 /** 设置分组：菜单里只保留一个「设置中心」入口，其余设置页在这里以 Tab 呈现 */
-const settingsGroups = ['Core', 'Cube', 'Sys', 'XCode', 'MailConfig', 'SmsConfig', 'OAuthConfig', 'Star'];
+// 只放单对象配置页（ConfigController）。邮件/短信/OAuth 配置是列表实体（EntityController），
+// 各自以 /meta 动态列表页承接，不能塞进「单对象表单」的 Tab。
+const settingsGroups = ['Core', 'Cube', 'Sys', 'XCode', 'Star'];
 
 const area = 'Admin';
 const route = useRoute();

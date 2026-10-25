@@ -122,7 +122,8 @@ test.describe('动态页（/meta 驱动）', () => {
     await page.goto('/Admin/Cube');
     await expect(page.locator('.el-tabs__item').first()).toBeVisible({ timeout: 15000 });
 
-    expect(await page.locator('.el-tabs__item').count()).toBeGreaterThanOrEqual(6);
+    // 只串单对象配置页（Core/Cube/Sys/XCode/Star）；邮件/短信/OAuth 是列表实体，走各自的动态列表页
+    expect(await page.locator('.el-tabs__item').count()).toBeGreaterThanOrEqual(5);
     // 至少一个 Tab 能加载出元数据字段
     await expect(page.locator('.el-form-item, .fmc-field').first()).toBeVisible({ timeout: 15000 });
   });
@@ -135,5 +136,62 @@ test.describe('动态页（/meta 驱动）', () => {
     await page.goto('/Cube/Area');
     await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 15000 });
     expect(await page.locator('.el-table__body tr').count()).toBeGreaterThan(5);
+  });
+
+  test('无菜单行的控制器页面回退动态页而不是 404', async ({ page }) => {
+    // 未开启多租户时，租户/租户成员菜单会被服务端过滤掉，但 MVC 侧控制器路由仍可直接访问。
+    // 前端 catch-all 探测 /meta 后按动态页渲染，页头标题取实体显示名。
+    for (const path of ['/Admin/Tenant', '/Admin/TenantUser']) {
+      await page.goto(path);
+      const header = page.locator('.list-page-header h1');
+      await expect(header).toBeVisible({ timeout: 20000 });
+      await expect(header).not.toContainText(/404/);
+      await expect(page.locator('.cube-table')).toBeVisible({ timeout: 20000 });
+      expect(await page.locator('.el-table').count()).toBeGreaterThan(0);
+    }
+
+    // 真正不存在的路径仍走 404 页
+    await page.goto('/Admin/NotExists');
+    await expect(page.getByText(/404/).first()).toBeVisible({ timeout: 20000 });
+    expect(await page.locator('.cube-table').count()).toBe(0);
+  });
+
+  test('值集管理页可渲染（配置弹窗不再抛 TDZ 异常）', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (e) => pageErrors.push(String(e)));
+
+    await page.goto('/Admin/Lov');
+    await expect(page.locator('.lov-page')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.lov-page .el-table')).toBeVisible({ timeout: 15000 });
+
+    // 新增弹窗挂载了值集配置组件（含配置弹窗），能打开即说明 setup 阶段无异常
+    await page.locator('.lov-page .page-header button').first().click();
+    await expect(page.locator('.el-dialog').first()).toBeVisible({ timeout: 15000 });
+
+    expect(pageErrors.join('\n')).not.toContain('before initialization');
+  });
+
+  test('系统首页解析接口业务体而不是原样渲染响应信封', async ({ page }) => {
+    await page.goto('/Admin/Index');
+    await expect(page.locator('h1')).toBeVisible({ timeout: 20000 });
+
+    // 系统信息卡片应展开为字段行，而不是把 {code,data,traceId} 当字段打印
+    await expect(page.locator('.el-descriptions').first()).toBeVisible({ timeout: 20000 });
+    const descriptions = await page.locator('.el-descriptions').first().innerText();
+    expect(descriptions).toContain('System');
+    expect(descriptions.toLowerCase()).not.toContain('traceid');
+    expect(descriptions.length).toBeGreaterThan(10);
+
+    // 进程/程序集/菜单树等接口全部带必填查询参数，页面加载后不应出现错误提示
+    await expect(page.locator('.el-message--error')).toHaveCount(0);
+  });
+
+  test('菜单页渲染后端声明的批量刷新工具栏按钮', async ({ page }) => {
+    await page.goto('/Admin/Menu');
+    await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 20000 });
+
+    // 按钮文案由后端按 Accept-Language 本地化，这里只断言按钮存在（按位置取首个）
+    const actions = page.locator('.cube-table button');
+    expect(await actions.count()).toBeGreaterThan(3);
   });
 });
