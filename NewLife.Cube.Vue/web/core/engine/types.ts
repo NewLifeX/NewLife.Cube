@@ -339,6 +339,11 @@ export interface CubeEngineContext {
   list: ComputedRef<Record<string, unknown>[]>;
   /** 总条数 */
   total: ComputedRef<number>;
+  /**
+   * 列表汇总行（后端 `Pager.RetrieveState` 产出的 state 实体，如访问统计的合计）。
+   * 有值时表格底部渲染统计行，口径对齐 MVC `_List_Data_Stat`。
+   */
+  stat: ComputedRef<Record<string, unknown> | null>;
   /** 当前页码（1-based，与后端 `pageIndex` 口径一致） */
   page: ComputedRef<number>;
   /** 每页条数 */

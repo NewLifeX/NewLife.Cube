@@ -268,6 +268,7 @@ export default {
   'grid.batchEnable': '批量启用',
   'grid.batchDisable': '批量禁用',
   'grid.batchEnableConfirm': '确定要对选中的 {count} 项执行「{action}」吗？',
+  'grid.totalLabel': '合计',
   'autoPage.noEntityPage': '该页面是接口型控制器，没有列表页与表单页。请在接口文档或自定义页面中使用。',
   'grid.columnSetting': '设置列',
   'grid.visibleColumns': '展示列（上下移动调整列序）',

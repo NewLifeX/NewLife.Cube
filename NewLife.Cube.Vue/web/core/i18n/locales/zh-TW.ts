@@ -253,6 +253,7 @@ export default {
   'grid.batchEnable': '批次啟用',
   'grid.batchDisable': '批次停用',
   'grid.batchEnableConfirm': '確定要對選取的 {count} 項執行「{action}」嗎？',
+  'grid.totalLabel': '合計',
   'autoPage.noEntityPage': '此頁面是介面型控制器，沒有列表頁與表單頁。請在介面文件或自訂頁面中使用。',
   'grid.columnSetting': '設定欄位',
   'grid.visibleColumns': '顯示欄位（上下移動調整欄序）',

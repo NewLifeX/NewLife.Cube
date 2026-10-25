@@ -255,6 +255,7 @@ export default {
   'grid.batchEnable': '일괄 활성화',
   'grid.batchDisable': '일괄 비활성화',
   'grid.batchEnableConfirm': '선택한 {count}개 항목에 "{action}"을(를) 적용할까요?',
+  'grid.totalLabel': '합계',
   'autoPage.noEntityPage': '이 컨트롤러는 API 전용이며 목록/폼 페이지가 없습니다. API 문서나 사용자 지정 페이지를 사용하세요.',
   'grid.columnSetting': '열 설정',
   'grid.visibleColumns': '표시할 열 (화살표로 순서 변경)',

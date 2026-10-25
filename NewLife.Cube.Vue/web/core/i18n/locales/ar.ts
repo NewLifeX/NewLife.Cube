@@ -247,6 +247,7 @@ export default {
   'grid.batchEnable': 'تمكين جماعي',
   'grid.batchDisable': 'تعطيل جماعي',
   'grid.batchEnableConfirm': 'هل تريد تطبيق "{action}" على {count} عنصر محدد؟',
+  'grid.totalLabel': 'الإجمالي',
   'autoPage.noEntityPage': 'وحدة التحكم هذه مخصصة لواجهة API فقط، ولا تحتوي على صفحة قائمة أو نموذج. استخدم وثائق API أو صفحة مخصصة.',
   'grid.columnSetting': 'إعدادات الأعمدة',
   'grid.visibleColumns': 'الأعمدة المرئية (اسحب بالأسهم لترتيبها)',

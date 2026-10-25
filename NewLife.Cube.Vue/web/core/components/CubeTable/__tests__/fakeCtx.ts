@@ -30,6 +30,8 @@ export const FIELDS: Record<string, FieldMeta> = {
 export interface FakeCtxOptions {
   list?: Record<string, unknown>[];
   total?: number;
+  /** 列表汇总行（后端 stat） */
+  stat?: Record<string, unknown> | null;
   page?: number;
   pageSize?: number;
   setting?: PageSetting;
@@ -51,6 +53,7 @@ export interface FakeCtxOptions {
 export function makeFakeCtx(options: FakeCtxOptions = {}): CubeEngineContext {
   const list = ref(options.list ?? []);
   const total = ref(options.total ?? 0);
+  const stat = ref(options.stat ?? null);
   const page = ref(options.page ?? 1);
   const pageSize = ref(options.pageSize ?? 20);
   const listFields = computed(() => options.listFields ?? [FIELDS.id, FIELDS.name]);
@@ -65,6 +68,7 @@ export function makeFakeCtx(options: FakeCtxOptions = {}): CubeEngineContext {
     error: ref(options.error ?? null),
     list: computed(() => list.value),
     total: computed(() => total.value),
+    stat: computed(() => stat.value),
     page: computed(() => page.value),
     pageSize: computed(() => pageSize.value),
     keyword: ref(options.keyword ?? ''),

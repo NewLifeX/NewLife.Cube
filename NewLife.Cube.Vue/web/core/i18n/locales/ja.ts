@@ -241,6 +241,7 @@ export default {
   'grid.batchEnable': '一括有効化',
   'grid.batchDisable': '一括無効化',
   'grid.batchEnableConfirm': '選択した {count} 件に「{action}」を実行しますか？',
+  'grid.totalLabel': '合計',
   'autoPage.noEntityPage': 'このコントローラーは API 専用で、一覧ページとフォームページがありません。API ドキュメントまたはカスタムページをご利用ください。',
   'grid.columnSetting': '列設定',
   'grid.visibleColumns': '表示する列（矢印で順序を変更）',

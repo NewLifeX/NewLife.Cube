@@ -435,6 +435,37 @@ export function normalizeMulti(raw: unknown): string[] {
   return [String(raw)];
 }
 
+/**
+ * 统计行单元格文案（对齐 MVC `_List_Data_Stat` 口径）。
+ *
+ * - 主键列显示「合计」标签；
+ * - 布尔、日期时间、外键（`*ID`/`*Id`）列留空 —— 汇总这些值没有意义；
+ * - 其余列用同一套 `cellText` 格式化（金额/百分号/时间跨度/字典都跟着走）。
+ *
+ * @param column 列视图
+ * @param stat 后端 `stat` 汇总实体
+ * @param totalLabel 主键列显示的合计标签（已本地化）
+ */
+export function statCellText(
+  column: CubeColumnView,
+  stat: Record<string, unknown> | null | undefined,
+  totalLabel: string,
+): string {
+  if (!stat) return '';
+  if (column.field.primaryKey) return totalLabel;
+
+  const name = column.field.name ?? '';
+  if (/id$/i.test(name)) return '';
+
+  const type = (column.field.typeName ?? '').trim().toLowerCase();
+  if (type === 'boolean' || type === 'datetime' || type === 'guid') return '';
+
+  const raw = readRowValue(stat, name);
+  if (raw === null || raw === undefined || raw === '') return '';
+
+  return cellText(column, raw);
+}
+
 /** 富文本 / Json 摘要截断（超长折叠到 popover 里看全文） */
 export function truncate(text: string, len = 40): string {
   if (!text) return '';

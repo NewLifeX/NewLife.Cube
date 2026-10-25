@@ -241,6 +241,7 @@ export default {
   'grid.batchEnable': 'Massenaktivierung',
   'grid.batchDisable': 'Massendeaktivierung',
   'grid.batchEnableConfirm': '"{action}" auf die {count} ausgewählten Einträge anwenden?',
+  'grid.totalLabel': 'Summe',
   'autoPage.noEntityPage': 'Dieser Controller ist reine API: keine Listen- oder Formularseite. Bitte API-Doku oder eigene Seite nutzen.',
   'grid.columnSetting': 'Spalteneinstellungen',
   'grid.visibleColumns': 'Sichtbare Spalten (Reihenfolge mit den Pfeilen ändern)',

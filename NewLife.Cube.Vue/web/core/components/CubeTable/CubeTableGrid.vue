@@ -49,6 +49,7 @@ import {
   MAX_VISIBLE_ACTIONS,
   resolveGridFlags,
   splitRowActions,
+  statCellText,
 } from './cubeTable.logic';
 import { useCubeTableLov } from './useCubeTableLov';
 import { usePagePermissions } from '../../composables/usePagePermissions';
@@ -225,6 +226,22 @@ const resolvedActionWidth = computed(() => props.actionWidth ?? actionLayout.val
 /** 单行拆成「直接按钮」与「收进更多」两段（按行判定，不足 4 个不硬塞空的「更多」） */
 const splitOf = (row: Record<string, unknown>) => splitRowActions(rowActionsOf(row));
 const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void action.onClick(row);
+
+/** 统计行：后端在列表回包里给了 `stat`（`Pager.RetrieveState` 的汇总实体）才渲染 */
+const statRow = computed(() => props.ctx.stat?.value ?? null);
+
+/**
+ * 统计行取值：按列的 `prop` 找回字段视图，再按 MVC `_List_Data_Stat` 的口径给文案。
+ * Element Plus 的 summary-method 按「表格列」回调，勾选/序号/操作列没有 prop，直接留空。
+ */
+function summaryMethod({ columns: tableColumns }: { columns: Array<{ property?: string }> }): string[] {
+  const byKey = new Map(columns.value.map((column) => [column.key, column]));
+
+  return tableColumns.map((tableColumn) => {
+    const column = tableColumn.property ? byKey.get(tableColumn.property) : undefined;
+    return column ? statCellText(column, statRow.value, t('grid.totalLabel')) : '';
+  });
+}
 </script>
 
 <template>
@@ -236,6 +253,8 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
     :row-key="tableRowKey"
     :tree-props="treeMode ? { children: 'children' } : undefined"
     :default-expand-all="treeMode"
+    :show-summary="!!statRow"
+    :summary-method="summaryMethod"
     border
     class="ctg"
     @selection-change="(sel: Record<string, unknown>[]) => ctx.setSelected(sel)"

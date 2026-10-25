@@ -102,16 +102,24 @@ function clearModel(model: Record<string, unknown>): void {
 }
 
 /**
- * Cube 分页回包 → `{ rows, total }`。
+ * Cube 分页回包 → `{ rows, total, stat }`。
  *
  * 宽容三种既有形状（口径与 `core/views/index.vue:307-316` 一致，避免换引擎就换个解析）：
  * `{ data: [...], page: { totalCount } }`、裸数组、`data` 为单对象。
+ * `stat` 是后端 `RetrieveState` 产出的汇总实体（如访问统计的合计行），没有则为 null。
  */
-function readListResponse(res: unknown): { rows: Record<string, unknown>[]; total: number } {
-  if (Array.isArray(res)) return { rows: res as Record<string, unknown>[], total: res.length };
+function readListResponse(res: unknown): {
+  rows: Record<string, unknown>[];
+  total: number;
+  stat: Record<string, unknown> | null;
+} {
+  if (Array.isArray(res)) {
+    return { rows: res as Record<string, unknown>[], total: res.length, stat: null };
+  }
   const body = (res ?? {}) as {
     data?: unknown;
     page?: { totalCount?: number; total?: number };
+    stat?: unknown;
   };
   const rows = Array.isArray(body.data)
     ? (body.data as Record<string, unknown>[])
@@ -119,7 +127,8 @@ function readListResponse(res: unknown): { rows: Record<string, unknown>[]; tota
       ? [body.data as Record<string, unknown>]
       : [];
   const total = body.page?.totalCount ?? body.page?.total ?? rows.length;
-  return { rows, total };
+  const stat = body.stat && typeof body.stat === 'object' ? (body.stat as Record<string, unknown>) : null;
+  return { rows, total, stat };
 }
 
 /** 详情里的 `'true'/'false'` 字符串需还原为布尔，否则开关控件回显成假 */
@@ -187,6 +196,8 @@ export function createCubeEngine(
    */
   const listRows = ref<Record<string, unknown>[]>([]);
   const totalRef = ref(0);
+  /** 后端 `stat` 汇总行（`Pager.RetrieveState` 产出，如访问统计的合计），无则 null */
+  const statRow = ref<Record<string, unknown> | null>(null);
   const pageIndex = ref(1);
   const sizePerPage = ref(options.pageSize ?? 20);
 
@@ -253,6 +264,7 @@ export function createCubeEngine(
       const next = readListResponse(res);
       listRows.value = next.rows;
       totalRef.value = next.total;
+      statRow.value = next.stat;
     });
 
   /** 解析当前页面生效的 preset：显式 options.preset 优先，其次按路由路径注册表 */
@@ -619,6 +631,7 @@ export function createCubeEngine(
     error,
     list,
     total,
+    stat: computed(() => statRow.value),
     page,
     pageSize,
     keyword,

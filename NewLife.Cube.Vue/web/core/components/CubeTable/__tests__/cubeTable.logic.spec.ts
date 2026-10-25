@@ -47,6 +47,7 @@ import {
   resolveGridFlags,
   resolveToolbarFlags,
   splitRowActions,
+  statCellText,
   toolbarKeyField,
   toolbarQueryString,
   truncate,
@@ -399,8 +400,19 @@ describe('CubeTable/logic 单元格渲染', () => {
     expect(cellParts(view(FIELDS.count), 0)).toEqual(['0']);
   });
 
-  it('应该按后端字典显示文案 当列是枚举字段时', () => {
-    // 后端对枚举字段下发 dataSource（键为字符串形式的值），前端不再维护枚举映射表
+  it('应该按后端 stat 生成统计行文案 当列表带汇总实体时', () => {
+    const stat = { Id: 0, Name: '合计名称', Count: 12, Time: '2026-10-19 08:30:00', Enable: true };
+    // 主键列显示「合计」，日期/布尔/外键列留空，其余列照常格式化
+    expect(statCellText(view(FIELDS.id), stat, '合计')).toBe('合计');
+    expect(statCellText(view(FIELDS.count), stat, '合计')).toBe('12');
+    expect(statCellText(view(FIELDS.time), stat, '合计')).toBe('');
+    expect(statCellText(view(FIELDS.enable), stat, '合计')).toBe('');
+    expect(statCellText(view({ name: 'UserId', displayName: '用户', typeName: 'Int32' }), stat, '合计')).toBe('');
+    // 没有汇总实体时整行不渲染文案
+    expect(statCellText(view(FIELDS.count), null, '合计')).toBe('');
+  });
+
+  it('应该按后端字典显示文案 当列是枚举字段时', () => {    // 后端对枚举字段下发 dataSource（键为字符串形式的值），前端不再维护枚举映射表
     const kindEnum: FieldMeta = {
       name: 'Kind',
       displayName: '种类',

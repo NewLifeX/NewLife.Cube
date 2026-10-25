@@ -269,6 +269,7 @@ export default {
   'grid.batchEnable': 'Batch enable',
   'grid.batchDisable': 'Batch disable',
   'grid.batchEnableConfirm': 'Apply "{action}" to the {count} selected items?',
+  'grid.totalLabel': 'Total',
   'autoPage.noEntityPage': 'This controller is API-only: it has no list or form page. Use the API docs or a custom page instead.',
   'grid.columnSetting': 'Column settings',
   'grid.visibleColumns': 'Visible columns (drag order with the arrows)',

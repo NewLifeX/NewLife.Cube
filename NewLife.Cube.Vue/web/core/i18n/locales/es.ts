@@ -256,6 +256,7 @@ export default {
   'grid.batchEnable': 'Activación por lotes',
   'grid.batchDisable': 'Desactivación por lotes',
   'grid.batchEnableConfirm': '¿Aplicar "{action}" a los {count} elementos seleccionados?',
+  'grid.totalLabel': 'Total',
   'autoPage.noEntityPage': 'Este controlador es solo API: no tiene página de lista ni de formulario. Use la documentación de la API o una página personalizada.',
   'grid.columnSetting': 'Configuración de columnas',
   'grid.visibleColumns': 'Columnas visibles (use las flechas para ordenar)',

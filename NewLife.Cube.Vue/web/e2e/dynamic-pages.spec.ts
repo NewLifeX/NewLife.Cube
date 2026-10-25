@@ -47,11 +47,13 @@ test.describe('动态页（/meta 驱动）', () => {
     await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator('.el-table__header th').nth(4)).toBeVisible();
 
-    // 用户统计页：只读列表，写入口由后端 setting.isReadOnly 收掉，图表走 charts 端点
+    // 用户统计页：只读列表，写入口由后端 setting.isReadOnly 收掉，图表走 charts 端点，
+    // 后端 `stat` 汇总实体让表格底部出现「合计」行（对齐 MVC `_List_Data_Stat`）
     await page.goto('/Admin/UserStat');
     await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 15000 });
     const toolbarTexts = await page.locator('.cube-table button').allInnerTexts();
     expect(toolbarTexts.some((text) => text.trim().length > 0)).toBe(true);
+    await expect(page.locator('.el-table__footer')).toBeVisible({ timeout: 15000 });
   });
 
   test('列表支持批量禁用/启用（后端 enableSelect/disableSelect）', async ({ page }) => {

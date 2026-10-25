@@ -241,6 +241,7 @@ export default {
   'grid.batchEnable': 'Пакетное включение',
   'grid.batchDisable': 'Пакетное отключение',
   'grid.batchEnableConfirm': 'Применить «{action}» к выбранным записям ({count})?',
+  'grid.totalLabel': 'Итого',
   'autoPage.noEntityPage': 'Это API-контроллер: у него нет страницы списка или формы. Используйте документацию API или собственную страницу.',
   'grid.columnSetting': 'Настройки столбцов',
   'grid.visibleColumns': 'Видимые столбцы (порядок — стрелками)',
