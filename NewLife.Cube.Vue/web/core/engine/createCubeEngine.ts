@@ -198,6 +198,8 @@ export function createCubeEngine(
   const totalRef = ref(0);
   /** 后端 `stat` 汇总行（`Pager.RetrieveState` 产出，如访问统计的合计），无则 null */
   const statRow = ref<Record<string, unknown> | null>(null);
+  /** 控制器没有实体元数据（接口型控制器，`GET /meta` 404） */
+  const metaMissing = ref(false);
   const pageIndex = ref(1);
   const sizePerPage = ref(options.pageSize ?? 20);
 
@@ -300,7 +302,14 @@ export function createCubeEngine(
     }
     if (!type.value) return;
     const meta = (await deps.getPage(type.value)) as CubePageMeta | null | undefined;
-    const normalized = applyPagePreset(normalizePageMeta(meta ?? undefined), preset);
+
+    // 接口型控制器没有元数据：标记出来，由列表页渲染说明，不走后面的取数
+    if (!meta) {
+      metaMissing.value = true;
+      return;
+    }
+
+    const normalized = applyPagePreset(normalizePageMeta(meta), preset);
     fields.value = normalized;
     pageSetting.value = normalized.setting;
     ui.value = normalized.ui;
@@ -330,11 +339,14 @@ export function createCubeEngine(
 
   async function init(): Promise<void> {
     error.value = null;
+    metaMissing.value = false;
     try {
       await applyFields();
       resetSearchModel();
       resetFormModel();
       schemaReady.value = true;
+      // 没有实体元数据的控制器没有列表可查，直接停在说明状态
+      if (metaMissing.value) return;
       if (options.autoQuery !== false) await load();
     } catch (err) {
       schemaReady.value = false;
@@ -632,6 +644,7 @@ export function createCubeEngine(
     list,
     total,
     stat: computed(() => statRow.value),
+    metaMissing: computed(() => metaMissing.value),
     page,
     pageSize,
     keyword,

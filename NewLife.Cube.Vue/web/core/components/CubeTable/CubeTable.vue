@@ -99,10 +99,23 @@ const mergedRowActions = computed(() => [
   ...(ctx.preset?.value?.list?.actions ?? []),
   ...(props.extraRowActions ?? []),
 ]);
+
+/**
+ * 控制器没有实体元数据（接口型控制器，`GET /meta` 404）。
+ * 此时不渲染工具栏/表格/分页——否则是一张空表加一排点了就报错的按钮，与 MVC 侧「没有这个页面」等价。
+ */
+const metaMissing = computed(() => ctx.metaMissing?.value === true);
 </script>
 
 <template>
-  <div class="cube-table">
+  <div v-if="metaMissing" class="cube-table">
+    <slot name="header" :ctx="ctx" />
+    <div class="ct-unsupported">
+      <el-empty :description="t('autoPage.noEntityPage')" />
+    </div>
+  </div>
+
+  <div v-else class="cube-table">
     <!-- ⓪ 页头：框架默认页传标题，业务自绘页面一般不用 -->
     <slot name="header" :ctx="ctx" />
 

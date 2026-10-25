@@ -95,10 +95,19 @@ export function createDefaultCubeEngineDeps(): CubeEngineDeps {
 
   return {
     http,
+    /**
+     * 页面元数据。
+     *
+     * 用 `validateStatus` 放行 4xx：接口型控制器（只有自定义 Action）根本没有 `/meta`，
+     * 这里的 404 属于「这个控制器没有页面」的正常结果，不能弹全局错误提示。
+     * 返回 null 表示没有元数据，由引擎标记 `metaMissing` 并渲染说明页。
+     */
     getPage: async (type: string) => {
-      const { cubeApi } = await loadRequestLayer();
-      const res = await cubeApi.page.getPage(type);
-      return (res?.data ?? null) as CubePageMeta | null;
+      const { request } = await loadRequestLayer();
+      const res: any = await request({ url: `${type}/meta`, method: 'get', validateStatus: () => true });
+      if (res === null || res === undefined || typeof res !== 'object') return null;
+
+      return (res.data ?? null) as CubePageMeta | null;
     },
     getDetail: async (type: string, id: number | string) => {
       const { cubeApi } = await loadRequestLayer();

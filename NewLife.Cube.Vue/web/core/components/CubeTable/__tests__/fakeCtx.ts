@@ -32,6 +32,8 @@ export interface FakeCtxOptions {
   total?: number;
   /** 列表汇总行（后端 stat） */
   stat?: Record<string, unknown> | null;
+  /** 控制器是否缺少实体元数据（接口型控制器） */
+  metaMissing?: boolean;
   page?: number;
   pageSize?: number;
   setting?: PageSetting;
@@ -54,6 +56,7 @@ export function makeFakeCtx(options: FakeCtxOptions = {}): CubeEngineContext {
   const list = ref(options.list ?? []);
   const total = ref(options.total ?? 0);
   const stat = ref(options.stat ?? null);
+  const metaMissing = ref(options.metaMissing ?? false);
   const page = ref(options.page ?? 1);
   const pageSize = ref(options.pageSize ?? 20);
   const listFields = computed(() => options.listFields ?? [FIELDS.id, FIELDS.name]);
@@ -69,6 +72,7 @@ export function makeFakeCtx(options: FakeCtxOptions = {}): CubeEngineContext {
     list: computed(() => list.value),
     total: computed(() => total.value),
     stat: computed(() => stat.value),
+    metaMissing: computed(() => metaMissing.value),
     page: computed(() => page.value),
     pageSize: computed(() => pageSize.value),
     keyword: ref(options.keyword ?? ''),

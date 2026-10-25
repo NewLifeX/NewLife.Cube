@@ -34,10 +34,12 @@ const stubs = vi.hoisted(() => {
   };
   const httpCalls: Array<{ url: string; method?: string }> = [];
   const listResponse = () => ({ code: 0, data: [], page: { totalCount: 0 } });
+  const metaResponse = () => ({ code: 0, data: META });
   const fakeHttp = Object.assign(
     vi.fn((config: { url: string; method?: string }) => {
       httpCalls.push(config);
-      return Promise.resolve(listResponse());
+      // /meta 走元数据回包，其余按分页列表回包
+      return Promise.resolve(String(config.url).endsWith('/meta') ? metaResponse() : listResponse());
     }),
     {
       get: vi.fn((url: string) => {
@@ -115,8 +117,8 @@ describe('useCubeEngine', () => {
     // 首查要穿过多层 await（init → getPage → 归一 → read），必须等真实发生而不是等一拍
     await vi.waitFor(() => expect(listRequested()).toBe(true));
 
-    // routeToApiPrefix 会把路由派生的实体请求补上 /api
-    expect(stubs.getPage).toHaveBeenCalledWith('/api/Device/DeviceProfile');
+    // routeToApiPrefix 会把路由派生的实体请求补上 /api；元数据请求打的就是 {type}/meta
+    expect(stubs.httpCalls.some((c) => c.url === '/api/Device/DeviceProfile/meta')).toBe(true);
     expect(holder.ctx?.error.value).toBeNull();
     expect(listRequested()).toBe(true);
     expect(wrapper.text()).toBe('0');
@@ -159,6 +161,13 @@ describe('createDefaultCubeEngineDeps', () => {
   it('应该解包 ApiResponse 只交元数据本体 当调用默认 getPage 时', async () => {
     const deps = createDefaultCubeEngineDeps();
     await expect(deps.getPage('/api/Molds/Mold')).resolves.toEqual(stubs.META);
+  });
+
+  it('应该返回 null 当控制器没有 /meta（接口型控制器）', async () => {
+    const deps = createDefaultCubeEngineDeps();
+    // 404 时空响应体：不能抛，交给引擎标记 metaMissing 渲染说明页
+    stubs.fakeHttp.mockResolvedValueOnce('' as never);
+    await expect(deps.getPage('/api/VTest1/Mfa')).resolves.toBeNull();
   });
 
   it('应该把导入响应原样交回由引擎解析 当调用默认 importFile 时', async () => {

@@ -289,6 +289,11 @@ export type CubeHttpLike = ((config: {
   method?: string;
   params?: Record<string, unknown>;
   data?: unknown;
+  /**
+   * 自定义状态码判定（axios 透传）。用于「404 属正常结果」的探测请求：
+   * 传 `() => true` 时 4xx 不抛异常、也不触发全局错误提示。
+   */
+  validateStatus?: (status: number) => boolean;
 }) => Promise<unknown>) & {
   get: (url: string, config?: Record<string, unknown>) => Promise<unknown>;
   post: (url: string, data?: unknown, config?: Record<string, unknown>) => Promise<unknown>;
@@ -344,6 +349,11 @@ export interface CubeEngineContext {
    * 有值时表格底部渲染统计行，口径对齐 MVC `_List_Data_Stat`。
    */
   stat: ComputedRef<Record<string, unknown> | null>;
+  /**
+   * 控制器没有实体元数据（接口型控制器，`GET /meta` 返回 404）。
+   * 为真时列表页只渲染说明，不渲染工具栏/表格/分页。
+   */
+  metaMissing: ComputedRef<boolean>;
   /** 当前页码（1-based，与后端 `pageIndex` 口径一致） */
   page: ComputedRef<number>;
   /** 每页条数 */
