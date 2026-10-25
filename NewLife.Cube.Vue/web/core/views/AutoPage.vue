@@ -13,6 +13,13 @@ import { useRoute } from 'vue-router';
 import request from '@newlifex/cube-vue/core/utils/request';
 import { routeToApiPrefix } from '@newlifex/cube-vue/core/utils/url';
 
+interface Props {
+  /** 页头标题（无菜单匹配时由后端实体显示名给出） */
+  title?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), { title: undefined });
+
 const route = useRoute();
 const { t } = useI18n();
 const apiPrefix = computed(() => routeToApiPrefix(String(route.path)));
@@ -44,8 +51,8 @@ onMounted(async () => {
 
 <template>
     <div v-if="mode === 'pending'" class="autopage-loading">{{ t('common.loading') }}</div>
-  <IndexView v-else-if="mode === 'list'" />
-  <ObjectView v-else />
+  <IndexView v-else-if="mode === 'list'" :title="props.title" />
+  <ObjectView v-else :title="props.title" />
 </template>
 
 <style lang="scss" scoped>

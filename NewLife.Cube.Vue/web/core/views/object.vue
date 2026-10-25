@@ -20,7 +20,7 @@ import FormPageHeader from './components/FormPageHeader.vue';
 import { backendFieldsToFormFields } from '../utils/fieldMeta';
 import type { BackendField } from '../engine/types';
 
-const props = withDefaults(defineProps<{ data?: any; apiPrefix?: string }>(), {});
+const props = withDefaults(defineProps<{ data?: any; apiPrefix?: string; title?: string }>(), {});
 const route = useRoute();
 const { t } = useI18n();
 const apiPrefix = computed(() => props.apiPrefix || routeToApiPrefix(String(route.path)));
@@ -70,7 +70,7 @@ onMounted(load);
 
 <template>
   <div class="object-page" v-loading="loading">
-    <FormPageHeader :title="(route.meta?.title as string) || t('objectPage.settings')" />
+    <FormPageHeader :title="props.title || (route.meta?.title as string) || t('objectPage.settings')" />
     <FormContent
       :fields="fields"
       :model-value="model"
