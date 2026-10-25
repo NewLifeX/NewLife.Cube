@@ -1,14 +1,14 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>用户统计</h1>
-      <p>查看用户访问统计数据</p>
+      <h1>{{ t('userStat.title') }}</h1>
+      <p>{{ t('userStat.subtitle') }}</p>
     </div>
 
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>用户统计列表</span>
+          <span>{{ t('userStat.listTitle') }}</span>
         </div>
       </template>
 
@@ -34,32 +34,32 @@
         style="width: 100%"
       >
           <el-table-column type="selection" width="55" />
-          <el-table-column prop="id" label="编号" width="80" />
-          <el-table-column prop="date" label="统计日期" width="120" />
-          <el-table-column prop="total" label="总数" width="80" />
-          <el-table-column prop="logins" label="登录数" width="80" />
-          <el-table-column prop="oAuths" label="OAuth登录" width="100" />
-          <el-table-column prop="maxOnline" label="最大在线" width="100" />
-          <el-table-column prop="actives" label="活跃" width="80" />
-          <el-table-column prop="activesT7" label="7天活跃" width="80" />
-          <el-table-column prop="activesT30" label="30天活跃" width="80" />
-          <el-table-column prop="news" label="新用户" width="80" />
-          <el-table-column prop="newsT7" label="7天注册" width="80" />
-          <el-table-column prop="newsT30" label="30天注册" width="80" />
-          <el-table-column prop="onlineTime" label="在线时间" width="120">
+          <el-table-column prop="id" :label="t('common.id')" width="80" />
+          <el-table-column prop="date" :label="t('userStat.date')" width="120" />
+          <el-table-column prop="total" :label="t('userStat.total')" width="80" />
+          <el-table-column prop="logins" :label="t('userStat.logins')" width="80" />
+          <el-table-column prop="oAuths" :label="t('userStat.oAuths')" width="100" />
+          <el-table-column prop="maxOnline" :label="t('userStat.maxOnline')" width="100" />
+          <el-table-column prop="actives" :label="t('userStat.actives')" width="80" />
+          <el-table-column prop="activesT7" :label="t('userStat.activesT7')" width="80" />
+          <el-table-column prop="activesT30" :label="t('userStat.activesT30')" width="80" />
+          <el-table-column prop="news" :label="t('userStat.news')" width="80" />
+          <el-table-column prop="newsT7" :label="t('userStat.newsT7')" width="80" />
+          <el-table-column prop="newsT30" :label="t('userStat.newsT30')" width="80" />
+          <el-table-column prop="onlineTime" :label="t('userStat.onlineTime')" width="120">
             <template #default="{ row }">
               {{ formatOnlineTime(row.onlineTime) }}
             </template>
           </el-table-column>
-          <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+          <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
             <template #default="scope">
               {{ scope.row.remark || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120" fixed="right">
+          <el-table-column :label="t('common.actions')" width="120" fixed="right">
             <template #default="{ row }">
               <el-button size="small" @click="handleDetail(row)">
-                详情
+                {{ t('desc.detail') }}
               </el-button>
             </template>
           </el-table-column>
@@ -78,30 +78,30 @@
     </el-card>
 
     <!-- 详情对话框 -->
-    <el-dialog v-model="showDetailDialog" title="用户统计详情" width="600px">
+    <el-dialog v-model="showDetailDialog" :title="t('userStat.detailTitle')" width="600px">
       <div v-loading="loading">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="编号">{{ detailData.id }}</el-descriptions-item>
-          <el-descriptions-item label="统计日期">{{ detailData.date }}</el-descriptions-item>
-          <el-descriptions-item label="总数">{{ detailData.total }}</el-descriptions-item>
-          <el-descriptions-item label="登录数">{{ detailData.logins }}</el-descriptions-item>
-          <el-descriptions-item label="OAuth登录">{{ detailData.oAuths }}</el-descriptions-item>
-          <el-descriptions-item label="最大在线">{{ detailData.maxOnline }}</el-descriptions-item>
-          <el-descriptions-item label="活跃">{{ detailData.actives }}</el-descriptions-item>
-          <el-descriptions-item label="7天活跃">{{ detailData.activesT7 }}</el-descriptions-item>
-          <el-descriptions-item label="30天活跃">{{ detailData.activesT30 }}</el-descriptions-item>
-          <el-descriptions-item label="新用户">{{ detailData.news }}</el-descriptions-item>
-          <el-descriptions-item label="7天注册">{{ detailData.newsT7 }}</el-descriptions-item>
-          <el-descriptions-item label="30天注册">{{ detailData.newsT30 }}</el-descriptions-item>
-          <el-descriptions-item label="在线时间">{{ formatOnlineTime(detailData.onlineTime) }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ detailData.createTime ? formatDate(detailData.createTime) : '-' }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ detailData.updateTime ? formatDate(detailData.updateTime) : '-' }}</el-descriptions-item>
-          <el-descriptions-item label="备注">{{ detailData.remark || '-' }}</el-descriptions-item>
+          <el-descriptions-item :label="t('common.id')">{{ detailData.id }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.date')">{{ detailData.date }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.total')">{{ detailData.total }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.logins')">{{ detailData.logins }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.oAuths')">{{ detailData.oAuths }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.maxOnline')">{{ detailData.maxOnline }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.actives')">{{ detailData.actives }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.activesT7')">{{ detailData.activesT7 }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.activesT30')">{{ detailData.activesT30 }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.news')">{{ detailData.news }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.newsT7')">{{ detailData.newsT7 }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.newsT30')">{{ detailData.newsT30 }}</el-descriptions-item>
+          <el-descriptions-item :label="t('userStat.onlineTime')">{{ formatOnlineTime(detailData.onlineTime) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.createTime')">{{ detailData.createTime ? formatDate(detailData.createTime) : '-' }}</el-descriptions-item>
+          <el-descriptions-item :label="t('common.updateTime')">{{ detailData.updateTime ? formatDate(detailData.updateTime) : '-' }}</el-descriptions-item>
+          <el-descriptions-item :label="t('common.remark')">{{ detailData.remark || '-' }}</el-descriptions-item>
         </el-descriptions>
       </div>
 
       <template #footer>
-        <el-button @click="showDetailDialog = false">关闭</el-button>
+        <el-button @click="showDetailDialog = false">{{ t('button.close') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -110,6 +110,7 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { request } from '@newlifex/cube-vue/core/utils/request'
 import { apiDataToList } from '@newlifex/cube-vue/core/utils/api-helpers'
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue'
@@ -162,6 +163,7 @@ interface UserStat extends BaseEntity {
 // 表格数据
 const tableData = ref<UserStat[]>([])
 const loading = ref(false)
+const { t } = useI18n()
 
 // 分页与搜索参数
 const queryParams = reactive({
@@ -184,7 +186,7 @@ const transformDataForChart = (data: UserStat[]) => {
 
   const series = [
     {
-      name: '总数',
+      name: t('userStat.total'),
       data: sortedData.map(item => item.total || 0),
       type: 'line',
       smooth: true,
@@ -193,7 +195,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: '登录数',
+      name: t('userStat.logins'),
       data: sortedData.map(item => item.logins || 0),
       type: 'line',
       smooth: true,
@@ -202,7 +204,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: 'OAuth登录',
+      name: t('userStat.oAuths'),
       data: sortedData.map(item => item.oAuths || 0),
       type: 'line',
       smooth: true,
@@ -211,7 +213,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: '最大在线',
+      name: t('userStat.maxOnline'),
       data: sortedData.map(item => item.maxOnline || 0),
       type: 'line',
       smooth: true,
@@ -220,7 +222,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: '活跃',
+      name: t('userStat.actives'),
       data: sortedData.map(item => item.actives || 0),
       type: 'line',
       smooth: true,
@@ -229,7 +231,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: '7天活跃',
+      name: t('userStat.activesT7'),
       data: sortedData.map(item => item.activesT7 || 0),
       type: 'line',
       smooth: true,
@@ -238,7 +240,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: '30天活跃',
+      name: t('userStat.activesT30'),
       data: sortedData.map(item => item.activesT30 || 0),
       type: 'line',
       smooth: true,
@@ -247,7 +249,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: '新用户',
+      name: t('userStat.news'),
       data: sortedData.map(item => item.news || 0),
       type: 'line',
       smooth: true,
@@ -256,7 +258,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: '7天注册',
+      name: t('userStat.newsT7'),
       data: sortedData.map(item => item.newsT7 || 0),
       type: 'line',
       smooth: true,
@@ -265,7 +267,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: '30天注册',
+      name: t('userStat.newsT30'),
       data: sortedData.map(item => item.newsT30 || 0),
       type: 'line',
       smooth: true,
@@ -274,7 +276,7 @@ const transformDataForChart = (data: UserStat[]) => {
       lineStyle: { width: 2 }
     },
     {
-      name: '在线时间',
+      name: t('userStat.onlineTime'),
       data: sortedData.map(item => item.onlineTime || 0), // 保持秒单位
       type: 'line',
       smooth: true,
@@ -294,7 +296,7 @@ const chartOptions = computed(() => {
 
   return {
     title: {
-      text: '用户统计趋势图',
+      text: t('userStat.chartTitle'),
       left: 'center',
       textStyle: {
         fontSize: 16,
@@ -315,8 +317,8 @@ const chartOptions = computed(() => {
         const firstParam = params[0] as Record<string, unknown>
         let result = `<div style="font-weight: bold;">${firstParam.axisValue}</div>`
         params.forEach((item: Record<string, unknown>) => {
-          if (item.seriesName === '在线时间') {
-            result += `<div style="margin: 2px 0;">${item.marker}${item.seriesName}: ${item.value}秒</div>`
+          if (item.seriesName === t('userStat.onlineTime')) {
+            result += `<div style="margin: 2px 0;">${item.marker}${item.seriesName}: ${item.value}${t('userStat.seconds')}</div>`
           } else {
             result += `<div style="margin: 2px 0;">${item.marker}${item.seriesName}: ${item.value}</div>`
           }
@@ -325,7 +327,19 @@ const chartOptions = computed(() => {
       }
     },
     legend: {
-      data: ['总数', '登录数', 'OAuth登录', '最大在线', '活跃', '7天活跃', '30天活跃', '新用户', '7天注册', '30天注册', '在线时间'],
+      data: [
+        t('userStat.total'),
+        t('userStat.logins'),
+        t('userStat.oAuths'),
+        t('userStat.maxOnline'),
+        t('userStat.actives'),
+        t('userStat.activesT7'),
+        t('userStat.activesT30'),
+        t('userStat.news'),
+        t('userStat.newsT7'),
+        t('userStat.newsT30'),
+        t('userStat.onlineTime'),
+      ],
       top: 35,
       type: 'scroll',
       orient: 'horizontal'
@@ -340,15 +354,15 @@ const chartOptions = computed(() => {
     toolbox: {
       feature: {
         saveAsImage: {
-          title: '保存为图片'
+          title: t('userStat.saveAsImage')
         },
         restore: {
-          title: '重置'
+          title: t('userStat.reset')
         },
         dataZoom: {
           title: {
-            zoom: '区域缩放',
-            back: '区域缩放还原'
+            zoom: t('userStat.zoom'),
+            back: t('userStat.zoomBack')
           }
         }
       }
@@ -364,7 +378,7 @@ const chartOptions = computed(() => {
     yAxis: [
       {
         type: 'value' as const,
-        name: '用户数',
+        name: t('userStat.userCount'),
         position: 'left',
         axisLabel: {
           formatter: '{value}'
@@ -372,7 +386,7 @@ const chartOptions = computed(() => {
       },
       {
         type: 'value' as const,
-        name: '在线时长(秒)',
+        name: t('userStat.onlineDuration'),
         position: 'right',
         axisLabel: {
           formatter: '{value}'
@@ -402,7 +416,7 @@ const chartOptions = computed(() => {
     series: chartData.series.map(item => ({
       ...item,
       type: 'line' as const,
-      yAxisIndex: item.name === '在线时间' ? 1 : 0 // 在线时间使用右Y轴，其他使用左Y轴
+      yAxisIndex: item.name === t('userStat.onlineTime') ? 1 : 0 // 在线时间使用右Y轴，其他使用左Y轴
     }))
   }
 })
@@ -467,7 +481,7 @@ const getUserStatDetail = async (id: number) => {
       }
     }
   } catch (error) {
-    console.error('获取用户统计详情失败:', error)
+    console.error('Failed to load user statistics details:', error)
     detailData.value = {}
   } finally {
     loading.value = false
