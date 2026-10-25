@@ -50,3 +50,23 @@ export function getTopLevelMenu(menu: TreeMenuItem): TreeMenuItem {
   }
   return menu;
 }
+
+/**
+ * 过滤掉隐藏菜单（visible=false），用于导航与全局搜索渲染。
+ *
+ * 隐藏菜单仍保留在 menuStore 中并参与路由注册（隐藏页可通过链接或其它页面跳转打开），
+ * 只是不出现在菜单列表里。
+ * @param menus 菜单树
+ * @returns 过滤后的菜单树（不修改入参）
+ */
+export function filterVisibleMenuTree(menus: TreeMenuItem[]): TreeMenuItem[] {
+  const list: TreeMenuItem[] = [];
+  for (const menu of menus) {
+    if (menu.visible === false) continue;
+    list.push(menu.children?.length
+      ? { ...menu, children: filterVisibleMenuTree(menu.children) }
+      : menu);
+  }
+
+  return list;
+}

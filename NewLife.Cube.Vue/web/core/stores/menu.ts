@@ -86,12 +86,10 @@ export function convertTreeMenuToFlatMenu(
 /** 将菜单数据按照配置的字段名称进行转换，支持平铺数据和树形数据 */
 const covertMenu = (list: Record<string, unknown>[]): TreeMenuItem[] => {
   const menuConfig = getConfig().menu;
-  const visibleField = menuConfig.visibleField;
 
   const convertItem = (item: Record<string, unknown>): TreeMenuItem | null => {
-    // 可见性过滤：visible === false 时跳过该节点及其子树
-    if (visibleField && item[visibleField] === false) return null;
-
+    // 隐藏菜单（visible=false）照常保留：它仍需要注册路由（隐藏页可被链接/其它页面跳转打开），
+    // 只是在导航、全局搜索等渲染处按 visible 过滤。后端 BuildMenuTree 同样保留隐藏菜单下发。
     const children = item[menuConfig.childrenField] as Record<string, unknown>[] | undefined;
     return {
       id: item[menuConfig.idField] as string,

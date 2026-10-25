@@ -2,9 +2,14 @@
 import { storeToRefs } from 'pinia';
 import { useMenuStore, type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
+import { filterVisibleMenuTree } from '@newlifex/cube-vue/core/utils/menuHelpers';
+import { computed } from 'vue';
 
 const menuStore = useMenuStore();
 const { treeMenus, topLevelActiveMenu } = storeToRefs(menuStore);
+
+/** 隐藏菜单只参与路由注册，不出现在导航 */
+const visibleMenus = computed(() => filterVisibleMenuTree(treeMenus.value ?? []));
 
 const isActive = (menu: TreeMenuItem) => topLevelActiveMenu.value?.id === menu.id;
 
@@ -22,7 +27,7 @@ const handleClick = (menu: TreeMenuItem) => {
 
 <template>
   <aside class="icon-rail">
-    <template v-for="menu in treeMenus" :key="menu.id">
+    <template v-for="menu in visibleMenus" :key="menu.id">
       <button
         class="ir-btn"
         :class="{ on: isActive(menu) }"

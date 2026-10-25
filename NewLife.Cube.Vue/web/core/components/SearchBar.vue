@@ -36,6 +36,7 @@ const searchResults = computed(() => {
   const kw = searchText.value.trim().toLowerCase();
   if (!kw || !flatMenus.value?.length) return [];
   return flatMenus.value
+    .filter((m) => m.visible !== false)
     .filter((m) => {
       const name = (m.name || '').toLowerCase();
       const title = (m.title || '').toLowerCase();

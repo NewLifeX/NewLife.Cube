@@ -12,9 +12,13 @@ import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
 import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
 import SearchBar from '@newlifex/cube-vue/core/components/SearchBar.vue';
 import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
+import { filterVisibleMenuTree } from '@newlifex/cube-vue/core/utils/menuHelpers';
 
 const menuStore = useMenuStore();
 const { treeMenus, topLevelActiveMenu } = storeToRefs(menuStore);
+
+/** 隐藏菜单只参与路由注册，不出现在导航 */
+const visibleMenus = computed(() => filterVisibleMenuTree(treeMenus.value ?? []));
 
 const config = getConfig();
 const siteStore = useSiteStore();
@@ -84,7 +88,7 @@ const handleMegaMouseLeave = () => {
     <!-- 导航菜单 -->
     <nav class="tn-nav">
       <div
-        v-for="menu in treeMenus"
+        v-for="menu in visibleMenus"
         :key="menu.id"
         class="tn-item"
         :class="{ open: openMenuId === menu.id }"

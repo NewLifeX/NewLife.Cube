@@ -12,7 +12,7 @@ import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vu
 import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
 import SearchBar from '@newlifex/cube-vue/core/components/SearchBar.vue';
 import LogoBrand from '@newlifex/cube-vue/core/components/LogoBrand.vue';
-import { renderMenuTitle } from '@newlifex/cube-vue/core/utils/menuHelpers';
+import { renderMenuTitle, filterVisibleMenuTree } from '@newlifex/cube-vue/core/utils/menuHelpers';
 import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
 
 const config = getConfig();
@@ -24,7 +24,8 @@ const { treeMenus, activeMenu } = storeToRefs(menuStore);
 type MenuGroup = { source: TreeMenuItem; title: string; menus: TreeMenuItem[] };
 const menuGroups = computed((): MenuGroup[] => {
   if (!treeMenus.value?.length) return [];
-  return treeMenus.value.map((menu) => ({
+  // 隐藏菜单保留在 store 里用于注册路由，导航渲染时按 visible 过滤
+  return filterVisibleMenuTree(treeMenus.value).map((menu) => ({
     source: menu,
     title: menu.title || menu.name,
     menus: menu.children || [],
