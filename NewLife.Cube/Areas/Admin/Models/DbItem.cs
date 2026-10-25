@@ -17,6 +17,18 @@ public class DbItem : ICubeModel
     /// <summary>数据驱动版本</summary>
     public String Version { get; set; }
 
+    /// <summary>数据驱动</summary>
+    public String Driver { get; set; }
+
+    /// <summary>驱动版本</summary>
+    public String DriverVersion { get; set; }
+
+    /// <summary>实体数</summary>
+    public Int32 Entities { get; set; }
+
+    /// <summary>数据表数</summary>
+    public Int32 Tables { get; set; }
+
     /// <summary>是否动态</summary>
     public Boolean Dynamic { get; set; }
 

@@ -359,6 +359,35 @@ export default {
   'db.fileNameRequired': '請輸入要下載的檔案名稱',
   'db.downloadSuccess': '檔案下載成功',
   'db.downloadFailed': '檔案下載失敗',
+  'db.listTitle': '資料庫列表',
+  'db.type': '類型',
+  'db.version': '版本',
+  'db.driver': '驅動',
+  'db.driverVersion': '驅動版本',
+  'db.entities': '實體數',
+  'db.tables': '表數',
+  'db.backups': '備份數',
+  'db.compact': '壓縮',
+  'db.compactSuccess': '資料庫壓縮完成',
+  'db.compactFailed': '資料庫壓縮失敗',
+  'db.viewTables': '查看表',
+  'db.viewEntities': '查看實體',
+  'db.viewDiff': '模型差異',
+  'db.downloadSchema': '下載表結構',
+  'db.tableStructureTitle': '表結構',
+  'db.entityStructureTitle': '實體結構',
+  'db.diffTitle': '模型差異',
+  'db.diffEmpty': '資料庫與實體模型無差異',
+  'db.extraColumns': '多出的欄位',
+  'db.noEntityModel': '無實體模型',
+  'db.columnName': '欄名',
+  'db.displayName': '顯示名',
+  'db.dataType': '資料型別',
+  'db.length': '長度',
+  'db.precision': '精度',
+  'db.keyFlag': '鍵',
+  'db.nullable': '允許空',
+  'db.description': '說明',
 
   // 檔案管理
   'fileManager.title': '檔案管理',
@@ -623,6 +652,7 @@ export default {
 
   // 通用提示
   'common.loadFailed': '載入失敗',
+  'common.noData': '暫無資料',
 
   // XCode 設定
 

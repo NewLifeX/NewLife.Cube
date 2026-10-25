@@ -48,17 +48,27 @@ test.describe('系统管理静态页', () => {
     expect(await page.locator('.el-table__body tr').count()).toBe(0);
   });
 
-  test('数据库管理：渲染备份表单且数据库清单接口可用', async ({ page }) => {
+  test('数据库管理：清单、表结构与模型差异可查看', async ({ page }) => {
     await page.goto('/Admin/Db');
     await expect(page.locator('h1')).toBeVisible({ timeout: 20000 });
-    await expect(page.locator('.db-operations input').first()).toBeVisible({ timeout: 15000 });
 
-    // 三个动作按钮齐备（文案随界面语言变化，按数量断言）
-    expect(await page.locator('.db-operations button').count()).toBeGreaterThanOrEqual(3);
+    // 数据库清单：名称/类型/版本/驱动/驱动版本/实体数/表数/备份数/操作
+    const row = page.locator('.el-table__body tr').first();
+    await expect(row).toBeVisible({ timeout: 20000 });
+    expect(await page.locator('.el-table__header th').count()).toBeGreaterThanOrEqual(9);
+    expect(await row.locator('button').count()).toBeGreaterThanOrEqual(7);
 
-    // 数据库清单接口可用（存在且需登录态），页面据此展示可备份的数据库
-    const res = await page.request.get(`${apiBase}/api/Admin/Db`, { ignoreHTTPSErrors: true });
-    expect(res.ok()).toBeTruthy();
-    expect((await res.json()).code).toBe(0);
+    // 表结构弹窗（行内第一个动作「查看表」）
+    await row.locator('button').nth(0).click();
+    await expect(page.locator('.schema-table').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.schema-table .el-table').first()).toBeVisible();
+    // 关闭后内容仍留在 DOM（v-show），只能断言不可见
+    await page.locator('.el-dialog__footer button').first().click();
+    await expect(page.locator('.schema-table').first()).toBeHidden({ timeout: 10000 });
+
+    // 模型差异弹窗（行内第三个动作）：差异条目带 XML 片段
+    await row.locator('button').nth(2).click();
+    await expect(page.locator('.diff-item').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.diff-xml').first()).toBeVisible();
   });
 });

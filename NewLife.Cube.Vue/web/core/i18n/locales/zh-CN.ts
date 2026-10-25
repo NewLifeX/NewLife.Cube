@@ -372,6 +372,35 @@ export default {
   'db.fileNameRequired': '请输入要下载的文件名',
   'db.downloadSuccess': '文件下载成功',
   'db.downloadFailed': '文件下载失败',
+  'db.listTitle': '数据库列表',
+  'db.type': '类型',
+  'db.version': '版本',
+  'db.driver': '驱动',
+  'db.driverVersion': '驱动版本',
+  'db.entities': '实体数',
+  'db.tables': '表数',
+  'db.backups': '备份数',
+  'db.compact': '压缩',
+  'db.compactSuccess': '数据库压缩完成',
+  'db.compactFailed': '数据库压缩失败',
+  'db.viewTables': '查看表',
+  'db.viewEntities': '查看实体',
+  'db.viewDiff': '模型差异',
+  'db.downloadSchema': '下载表结构',
+  'db.tableStructureTitle': '表结构',
+  'db.entityStructureTitle': '实体结构',
+  'db.diffTitle': '模型差异',
+  'db.diffEmpty': '数据库与实体模型无差异',
+  'db.extraColumns': '多出的字段',
+  'db.noEntityModel': '无实体模型',
+  'db.columnName': '列名',
+  'db.displayName': '显示名',
+  'db.dataType': '数据类型',
+  'db.length': '长度',
+  'db.precision': '精度',
+  'db.keyFlag': '键',
+  'db.nullable': '允许空',
+  'db.description': '说明',
 
   // 文件管理
   'fileManager.title': '文件管理',
@@ -635,6 +664,7 @@ export default {
 
   // 通用提示
   'common.loadFailed': '加载失败',
+  'common.noData': '暂无数据',
 
   // XCode 设置
 

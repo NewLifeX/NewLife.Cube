@@ -375,6 +375,35 @@ export default {
   'db.fileNameRequired': 'Please enter the file name to download',
   'db.downloadSuccess': 'File downloaded',
   'db.downloadFailed': 'File download failed',
+  'db.listTitle': 'Databases',
+  'db.type': 'Type',
+  'db.version': 'Version',
+  'db.driver': 'Driver',
+  'db.driverVersion': 'Driver version',
+  'db.entities': 'Entities',
+  'db.tables': 'Tables',
+  'db.backups': 'Backups',
+  'db.compact': 'Compact',
+  'db.compactSuccess': 'Database compacted',
+  'db.compactFailed': 'Failed to compact database',
+  'db.viewTables': 'View tables',
+  'db.viewEntities': 'View entities',
+  'db.viewDiff': 'Model differences',
+  'db.downloadSchema': 'Download schema',
+  'db.tableStructureTitle': 'Table structure',
+  'db.entityStructureTitle': 'Entity structure',
+  'db.diffTitle': 'Model differences',
+  'db.diffEmpty': 'No differences between database and entity model',
+  'db.extraColumns': 'Extra columns',
+  'db.noEntityModel': 'No entity model',
+  'db.columnName': 'Column',
+  'db.displayName': 'Display name',
+  'db.dataType': 'Data type',
+  'db.length': 'Length',
+  'db.precision': 'Precision',
+  'db.keyFlag': 'Key',
+  'db.nullable': 'Nullable',
+  'db.description': 'Description',
 
   // File manager
   'fileManager.title': 'Files',
@@ -639,6 +668,7 @@ export default {
 
   // Common messages
   'common.loadFailed': 'Failed to load',
+  'common.noData': 'No data',
 
   // XCode settings
 

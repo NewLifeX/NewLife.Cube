@@ -1,9 +1,12 @@
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Jobs;
+using NewLife.Reflection;
 using NewLife.Serialization;
 using XCode;
 using XCode.DataAccessLayer;
@@ -47,6 +50,22 @@ public class DbController : ControllerBaseX, IPageDataContext
             var dal = DAL.Create(item.Key);
             di.Type = dal.DbType;
 
+            // 连接串可能含密码：返回前按受保护密钥脱敏，页面无需完整连接串
+            try
+            {
+                di.ConnStr = dal.ProtectedKey.Hide(item.Value);
+            }
+            catch { }
+
+            // 驱动信息：程序集名与文件版本
+            var driver = dal.Db.Factory;
+            if (driver != null)
+            {
+                var ax = AssemblyX.Create(driver.GetType().Assembly);
+                di.Driver = ax.Name;
+                di.DriverVersion = ax.FileVersion;
+            }
+
             var t = Task.Run(() =>
             {
                 try
@@ -56,6 +75,14 @@ public class DbController : ControllerBaseX, IPageDataContext
                 catch { return null; }
             });
             if (t.Wait(300)) di.Version = t.Result;
+
+            // 实体数与表数：连接异常时保持 0，避免整页失败
+            try
+            {
+                di.Tables = dal.Tables.Count;
+                di.Entities = EntityFactory.LoadEntities(item.Key).Count();
+            }
+            catch { }
 
             if (dir.Exists) di.Backups = dir.GetFiles($"{dal.ConnName}_*", SearchOption.TopDirectoryOnly).Length;
 
@@ -71,8 +98,256 @@ public class DbController : ControllerBaseX, IPageDataContext
     public Task<String> GetPageDataContextAsync()
     {
         var list = BuildDatabaseList();
-        var data = list.Select(e => new { name = e.Name, type = e.Type + "", version = e.Version, backups = e.Backups }).ToList();
+        var data = list.Select(e => new { name = e.Name, type = e.Type + "", version = e.Version, driver = e.Driver, driverVersion = e.DriverVersion, entities = e.Entities, tables = e.Tables, backups = e.Backups }).ToList();
         return Task.FromResult(new { page = L.T("Database information"), databases = data }.ToJson());
+    }
+
+    /// <summary>压缩数据库（回收空闲空间）。对SQLite执行VACUUM</summary>
+    /// <param name="name">连接名</param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost("/api/[area]/[controller]/compact")]
+    public ActionResult Compact(String? name)
+    {
+        var sw = Stopwatch.StartNew();
+        try
+        {
+            var dal = DAL.Create(name);
+            var meta = dal.Db.CreateMetaData();
+            meta.Invoke("CompactDatabase");
+            sw.Stop();
+            WriteLog(L.T("Compact"), true, L.T("Compressed database {0} in {1}", name, sw.Elapsed));
+        }
+        catch (Exception ex)
+        {
+            sw.Stop();
+            WriteLog(L.T("Compact"), false, L.T("Failed to compact database {0}: {1}", name, ex.Message));
+        }
+
+        return Index();
+    }
+
+    /// <summary>数据表结构。数据库实际表与列快照</summary>
+    /// <param name="name">连接名</param>
+    /// <returns>表结构列表</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet("/api/[area]/[controller]/tables")]
+    public ActionResult ShowTables(String name)
+    {
+        ValidateConnName(name);
+
+        var dal = DAL.Create(name);
+        var list = new List<DbSchemaTable>();
+        foreach (var item in dal.Tables)
+        {
+            var columns = new List<DbSchemaColumn>();
+            foreach (var column in item.Columns)
+            {
+                columns.Add(new DbSchemaColumn
+                {
+                    Name = column.ColumnName,
+                    ColumnName = column.ColumnName,
+                    DisplayName = column.DisplayName,
+                    Type = column.RawType ?? column.DataType?.FullName.TrimPrefix("System."),
+                    Length = column.Length,
+                    Precision = column.Precision,
+                    Scale = column.Scale,
+                    PrimaryKey = column.PrimaryKey,
+                    Identity = column.Identity,
+                    Nullable = column.Nullable,
+                    Unique = item.Indexes.Any(e => e.Unique && e.Columns.Length == 1 && e.Columns[0].EqualIgnoreCase(column.Name, column.ColumnName)),
+                    Description = column.Description?.TrimPrefix(column.DisplayName).TrimPrefix("。", "，"),
+                });
+            }
+
+            list.Add(new DbSchemaTable
+            {
+                Name = item.DisplayName,
+                TableName = item.TableName,
+                DisplayName = item.DisplayName,
+                Count = dal.SelectCount(item.TableName, CommandType.Text),
+                Columns = columns,
+            });
+        }
+
+        return Json(0, null, list.OrderBy(e => e.Name).ToList());
+    }
+
+    /// <summary>实体结构。实体类模型与列快照</summary>
+    /// <param name="name">连接名</param>
+    /// <returns>实体结构列表</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet("/api/[area]/[controller]/entities")]
+    public ActionResult ShowEntities(String name)
+    {
+        ValidateConnName(name);
+
+        var dal = DAL.Create(name);
+        var list = new List<DbSchemaTable>();
+        foreach (var item in EntityFactory.LoadEntities(name))
+        {
+            var factory = item.AsFactory();
+            if (factory == null) continue;
+
+            var table = factory.Table.DataTable;
+            var columns = new List<DbSchemaColumn>();
+            foreach (var field in factory.Fields)
+            {
+                var column = field.Field;
+                columns.Add(new DbSchemaColumn
+                {
+                    Name = field.Name,
+                    ColumnName = field.ColumnName,
+                    DisplayName = field.DisplayName,
+                    Type = field.Type?.FullName.TrimPrefix("System."),
+                    Length = field.Length,
+                    Precision = column?.Precision ?? 0,
+                    Scale = column?.Scale ?? 0,
+                    PrimaryKey = field.PrimaryKey,
+                    Identity = column?.Identity ?? false,
+                    Nullable = column?.Nullable ?? false,
+                    Unique = table.Indexes.Any(e => e.Unique && e.Columns.Length == 1 && e.Columns[0].EqualIgnoreCase(field.Name, field.ColumnName)),
+                    Description = column?.Description?.TrimPrefix(field.DisplayName).TrimPrefix("。", "，"),
+                });
+            }
+
+            var count = 0L;
+            if (factory.Session.Dal.TableNames.Contains(table.TableName)) count = factory.Session.LongCount;
+
+            list.Add(new DbSchemaTable
+            {
+                Name = item.Name,
+                TableName = table.TableName,
+                DisplayName = table.DisplayName,
+                Count = count,
+                Columns = columns,
+            });
+        }
+
+        return Json(0, null, list.OrderBy(e => e.Name).ToList());
+    }
+
+    /// <summary>模型差异。对比数据库与实体类的表架构，返回数据库多出来的字段</summary>
+    /// <param name="name">连接名</param>
+    /// <returns>差异列表</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet("/api/[area]/[controller]/diff")]
+    public ActionResult ModelDiff(String name)
+    {
+        ValidateConnName(name);
+
+        var dal = DAL.Create(name);
+        var dbTables = dal.Tables;
+
+        // 构建实体表字典：DB表名 -> (实体类名, 实体DataTable)
+        var entityTables = new Dictionary<String, (String EntityName, IDataTable DataTable)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entityType in EntityFactory.LoadEntities(name))
+        {
+            var factory = entityType.AsFactory();
+            if (factory == null) continue;
+
+            var dt = factory.Table.DataTable;
+            if (dt != null && !dt.TableName.IsNullOrEmpty()) entityTables[dt.TableName] = (entityType.Name, dt);
+        }
+
+        var list = new List<DbDiffTable>();
+        foreach (var dbTable in dbTables.OrderBy(t => t.Name))
+        {
+            List<IDataColumn> extraColumns;
+            var hasEntityModel = entityTables.TryGetValue(dbTable.TableName, out var entityInfo);
+
+            if (!hasEntityModel)
+            {
+                // 数据库有该表但无对应实体类，所有字段均视为多出字段
+                extraColumns = dbTable.Columns.ToList();
+            }
+            else
+            {
+                // 找出数据库有但实体模型没有的字段（按数据库列名匹配）
+                static String GetColName(IDataColumn c) => c.ColumnName.IsNullOrEmpty() ? c.Name : c.ColumnName;
+
+                var entityColumnNames = new HashSet<String>(
+                    entityInfo.DataTable.Columns.Select(c => GetColName(c)),
+                    StringComparer.OrdinalIgnoreCase);
+
+                extraColumns = dbTable.Columns
+                    .Where(c => !entityColumnNames.Contains(GetColName(c)))
+                    .ToList();
+            }
+
+            if (extraColumns.Count == 0) continue;
+
+            list.Add(new DbDiffTable
+            {
+                Name = hasEntityModel ? entityInfo.EntityName : dbTable.Name,
+                TableName = dbTable.TableName,
+                DisplayName = dbTable.DisplayName,
+                HasEntityModel = hasEntityModel,
+                ExtraColumns = extraColumns.Select(e => e.Name).ToArray(),
+                XmlFragment = BuildColumnsXml(extraColumns),
+            });
+        }
+
+        WriteLog(L.T("Model diff"), true, L.T("Checked model diff of database {0}: {1} tables differ", name, list.Count));
+
+        return Json(0, null, list);
+    }
+
+    /// <summary>校验连接名必须来自配置，避免任意连接字符串注入</summary>
+    /// <param name="name">连接名</param>
+    private static void ValidateConnName(String name)
+    {
+        if (!DAL.ConnStrs.ContainsKey(name)) throw new XException("Illegal operation!");
+    }
+
+    /// <summary>将数据列集合序列化为 XCode Model.xml 格式的 Column XML 片段</summary>
+    /// <param name="columns">数据列集合</param>
+    /// <returns>XML 字符串片段</returns>
+    private static String BuildColumnsXml(IList<IDataColumn> columns)
+    {
+        var sb = new StringBuilder();
+        foreach (var col in columns)
+        {
+            sb.Append("        <Column");
+            sb.Append($" Name=\"{col.Name}\"");
+
+            if (!col.ColumnName.IsNullOrEmpty() && !col.ColumnName.EqualIgnoreCase(col.Name))
+                sb.Append($" ColumnName=\"{col.ColumnName}\"");
+
+            if (col.DataType != null)
+                sb.Append($" DataType=\"{col.DataType.Name}\"");
+
+            if (col.Length > 0)
+                sb.Append($" Length=\"{col.Length}\"");
+
+            if (col.Precision > 0)
+                sb.Append($" Precision=\"{col.Precision}\"");
+
+            if (col.Scale > 0)
+                sb.Append($" Scale=\"{col.Scale}\"");
+
+            if (col.Identity)
+                sb.Append(" Identity=\"True\"");
+
+            if (col.PrimaryKey)
+                sb.Append(" PrimaryKey=\"True\"");
+
+            if (!col.Nullable)
+                sb.Append(" Nullable=\"False\"");
+
+            if (!col.Description.IsNullOrEmpty())
+            {
+                var desc = col.Description
+                    .Replace("&", "&amp;")
+                    .Replace("\"", "&quot;")
+                    .Replace("<", "&lt;")
+                    .Replace(">", "&gt;");
+                sb.Append($" Description=\"{desc}\"");
+            }
+
+            sb.AppendLine(" />");
+        }
+        return sb.ToString();
     }
 
     /// <summary>备份数据库</summary>
