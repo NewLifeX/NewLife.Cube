@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using NewLife.Cube.Membership;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
@@ -19,9 +20,16 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
         ListFields.RemoveField("Remark");
 
-        // 扩展字段是内部命名标记（Ex6 记录自动菜单源文或自定义标记），不暴露到表单以免误改
+        // 扩展字段是内部命名标记（Ex6 记录自动菜单规范键或自定义标记），不暴露到表单以免误改
         AddFormFields.RemoveField("Ex5", "Ex6");
         EditFormFields.RemoveField("Ex5", "Ex6");
+
+        // 当前语言预览列：库内保存类型全名，这里展示翻译后的名字
+        {
+            var df = ListFields.AddListField("LocalizedDisplayName", null, "DisplayName");
+            df.DisplayName = "Localized name";
+            df.GetValue = e => MenuHelper.GetDisplayName(e as IMenu) ?? "";
+        }
 
         {
             var ff = AddFormFields.GetField("Ex4") as FormField;

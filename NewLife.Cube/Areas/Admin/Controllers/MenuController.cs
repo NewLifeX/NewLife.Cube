@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using NewLife.Cube.Membership;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
@@ -16,9 +17,16 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
         ListFields.RemoveField("Remark");
 
-        // 扩展字段是内部命名标记（Ex6 记录自动菜单源文或自定义标记），不暴露到表单以免误改
+        // 扩展字段是内部命名标记（Ex6 记录自动菜单规范键或自定义标记），不暴露到表单以免误改
         AddFormFields.RemoveField("Ex5", "Ex6");
         EditFormFields.RemoveField("Ex5", "Ex6");
+
+        // 当前语言预览列：库内保存类型全名，这里展示翻译后的名字
+        {
+            var df = ListFields.AddListField("LocalizedDisplayName", null, "DisplayName");
+            df.DisplayName = "Localized name";
+            df.GetValue = e => MenuHelper.GetDisplayName(e as IMenu) ?? "";
+        }
 
         // 父级：下拉选择。菜单缓存作为数据源，label 用层级路径（如 系统管理/用户），
         // 避免同名菜单混淆；不依赖 FullName 字段数据质量。新增/编辑表单均生效
@@ -38,12 +46,12 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         var dict = new Dictionary<Int32, String>();
         foreach (var e in menus)
         {
-            var parts = new List<String> { e.DisplayName.IsNullOrEmpty() ? e.Name : e.DisplayName };
+            var parts = new List<String> { MenuHelper.GetDisplayName(e) ?? e.Name };
             var p = e;
             var guard = 0;
             while (p.ParentID > 0 && map.TryGetValue(p.ParentID, out var pp) && pp.ID != p.ID && guard++ < 8)
             {
-                parts.Insert(0, pp.DisplayName.IsNullOrEmpty() ? pp.Name : pp.DisplayName);
+                parts.Insert(0, MenuHelper.GetDisplayName(pp) ?? pp.Name);
                 p = pp;
             }
             dict[e.ID] = String.Join("/", parts);

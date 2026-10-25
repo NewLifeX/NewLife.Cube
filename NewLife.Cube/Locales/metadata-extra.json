@@ -494,5 +494,6 @@
   "When the password in the database is empty, any password can sign in",
   "Widget failed to load:",
   "Width",
-  "Xml data"
+  "Xml data",
+  "Localized name"
 ]
