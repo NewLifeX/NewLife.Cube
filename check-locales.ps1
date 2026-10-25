@@ -141,7 +141,7 @@ foreach ($dir in @($MetadataSourceDir | Where-Object { $_ })) {
 # 运行期组合键：菜单规范键 menu:<类型全名>、字段键 field:<...> 由类型全名拼出，源码中没有字面量，
 # 按元数据键口径处理——免于孤儿检查，非强制覆盖语言允许缺失（运行期回退源文/英文）
 $runtimeKeySet = [System.Collections.Generic.HashSet[String]]::new([StringComparer]::Ordinal)
-$runtimeKeyPrefixes = @("menu:", "field:")
+$runtimeKeyPrefixes = @("menu:", "entity:", "field:")
 foreach ($key in @($reference.Entries.Keys)) {
     foreach ($prefix in $runtimeKeyPrefixes) {
         if ($key.StartsWith($prefix, [StringComparison]::Ordinal)) {
