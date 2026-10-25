@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>系统首页</h1>
-      <p>系统信息监控与管理</p>
+      <h1>{{ t('adminHome.title') }}</h1>
+      <p>{{ t('adminHome.subtitle') }}</p>
     </div>
 
     <el-row :gutter="20">
@@ -11,10 +11,10 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <span>系统信息</span>
+              <span>{{ t('adminHome.systemInfo') }}</span>
               <el-button @click="refreshSystemInfo">
                 <el-icon><Refresh /></el-icon>
-                刷新
+                {{ t('grid.refresh') }}
               </el-button>
             </div>
           </template>
@@ -31,7 +31,7 @@
             </el-descriptions>
 
             <!-- 如果没有系统信息数据，显示提示 -->
-            <el-empty v-if="Object.keys(systemInfo).length === 0" description="暂无系统信息数据" />
+            <el-empty v-if="Object.keys(systemInfo).length === 0" :description="t('adminHome.noSystemInfo')" />
           </div>
         </el-card>
       </el-col>
@@ -43,10 +43,10 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <span>服务器变量</span>
+              <span>{{ t('adminHome.serverVars') }}</span>
               <el-button @click="getServerVarList" size="small">
                 <el-icon><Refresh /></el-icon>
-                刷新
+                {{ t('grid.refresh') }}
               </el-button>
             </div>
           </template>
@@ -54,10 +54,10 @@
           <div v-loading="loading.serverVars" style="max-height: 400px; overflow-y: auto;">
             <el-collapse v-model="activeServerVarTabs" accordion>
               <!-- 服务器Headers -->
-              <el-collapse-item title="服务器Headers" name="server">
+              <el-collapse-item :title="t('adminHome.serverHeaders')" name="server">
                 <el-table :data="serverHeaders" size="small" stripe>
-                  <el-table-column prop="name" label="Header名称" width="180" />
-                  <el-table-column prop="value" label="值" show-overflow-tooltip>
+                  <el-table-column prop="name" :label="t('adminHome.headerName')" width="180" />
+                  <el-table-column prop="value" :label="t('adminHome.value')" show-overflow-tooltip>
                     <template #default="{ row }">
                       <span :title="row.value">{{ row.value }}</span>
                     </template>
@@ -66,10 +66,10 @@
               </el-collapse-item>
 
               <!-- 请求信息 -->
-              <el-collapse-item title="请求信息" name="request">
+              <el-collapse-item :title="t('adminHome.requestInfo')" name="request">
                 <el-table :data="requestInfo" size="small" stripe>
-                  <el-table-column prop="name" label="属性名" width="180" />
-                  <el-table-column prop="value" label="值" show-overflow-tooltip>
+                  <el-table-column prop="name" :label="t('adminHome.attrName')" width="180" />
+                  <el-table-column prop="value" :label="t('adminHome.value')" show-overflow-tooltip>
                     <template #default="{ row }">
                       <span :title="row.value">{{ formatRequestValue(row.value) }}</span>
                     </template>
@@ -79,8 +79,8 @@
             </el-collapse>
 
             <!-- 如果没有数据 -->
-            <el-empty v-if="serverHeaders.length === 0 && requestInfo.length === 0" description="暂无服务器变量数据" :image-size="80">
-              <el-button @click="getServerVarList" size="small">重试加载</el-button>
+            <el-empty v-if="serverHeaders.length === 0 && requestInfo.length === 0" :description="t('adminHome.noServerVars')" :image-size="80">
+              <el-button @click="getServerVarList" size="small">{{ t('adminHome.retry') }}</el-button>
             </el-empty>
           </div>
         </el-card>
@@ -91,10 +91,10 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <span>加载模块</span>
+              <span>{{ t('adminHome.loadedModules') }}</span>
               <el-input
                 v-model="processModel"
-                placeholder="筛选模块"
+                :placeholder="t('adminHome.filterModules')"
                 style="width: 150px"
                 @change="getProcessList"
               />
@@ -103,19 +103,19 @@
 
           <div v-loading="loading.processes" style="max-height: 400px; overflow-y: auto;">
             <el-table :data="processes" size="small" stripe>
-              <el-table-column prop="name" label="文件名" width="200" show-overflow-tooltip />
-              <el-table-column prop="productName" label="产品名称" width="150" show-overflow-tooltip />
-              <el-table-column prop="companyName" label="公司" width="120" show-overflow-tooltip />
-              <el-table-column prop="version" label="版本" width="100" />
-              <el-table-column prop="size" label="大小" width="100" align="right">
+              <el-table-column prop="name" :label="t('adminHome.fileName')" width="200" show-overflow-tooltip />
+              <el-table-column prop="productName" :label="t('adminHome.productName')" width="150" show-overflow-tooltip />
+              <el-table-column prop="companyName" :label="t('adminHome.companyName')" width="120" show-overflow-tooltip />
+              <el-table-column prop="version" :label="t('adminHome.version')" width="100" />
+              <el-table-column prop="size" :label="t('fileManager.size')" width="100" align="right">
                 <template #default="{ row }">
                   {{ formatFileSize(row.size) }}
                 </template>
               </el-table-column>
-              <el-table-column prop="fileName" label="完整路径" min-width="300" show-overflow-tooltip />
+              <el-table-column prop="fileName" :label="t('adminHome.fullPath')" min-width="300" show-overflow-tooltip />
               <template #empty>
-                <el-empty description="暂无加载模块数据" :image-size="80">
-                  <el-button @click="getProcessList" size="small">重试加载</el-button>
+                <el-empty :description="t('adminHome.noModules')" :image-size="80">
+                  <el-button @click="getProcessList" size="small">{{ t('adminHome.retry') }}</el-button>
                 </el-empty>
               </template>
             </el-table>
@@ -130,21 +130,21 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <span>程序集列表</span>
+              <span>{{ t('adminHome.assemblies') }}</span>
               <div>
                 <el-input
                   v-model="assemblyModel"
-                  placeholder="筛选程序集"
+                  :placeholder="t('adminHome.filterAssemblies')"
                   style="width: 200px; margin-right: 10px"
                   @change="getAssemblyList"
                 />
                 <el-button type="warning" @click="handleMemoryFree">
                   <el-icon><Delete /></el-icon>
-                  内存回收
+                  {{ t('adminHome.memoryFree') }}
                 </el-button>
                 <el-button type="danger" @click="handleRestart">
                   <el-icon><Switch /></el-icon>
-                  重启系统
+                  {{ t('adminHome.restart') }}
                 </el-button>
               </div>
             </div>
@@ -152,16 +152,16 @@
 
           <div v-loading="loading.assemblies">
             <el-table :data="assemblies" size="small">
-              <el-table-column prop="name" label="程序集名" width="200" show-overflow-tooltip />
-              <el-table-column prop="title" label="标题" width="180" show-overflow-tooltip />
-              <el-table-column prop="fileVersion" label="文件版本" width="120" />
-              <el-table-column prop="version" label="程序版本" width="120" />
-              <el-table-column prop="compileTime" label="编译时间" width="150">
+              <el-table-column prop="name" :label="t('adminHome.assemblyName')" width="200" show-overflow-tooltip />
+              <el-table-column prop="title" :label="t('adminHome.assemblyTitle')" width="180" show-overflow-tooltip />
+              <el-table-column prop="fileVersion" :label="t('adminHome.fileVersion')" width="120" />
+              <el-table-column prop="version" :label="t('adminHome.assemblyVersion')" width="120" />
+              <el-table-column prop="compileTime" :label="t('adminHome.compileTime')" width="150">
                 <template #default="{ row }">
                   {{ formatDateTime(row.compileTime) }}
                 </template>
               </el-table-column>
-              <el-table-column prop="location" label="位置" min-width="300" show-overflow-tooltip />
+              <el-table-column prop="location" :label="t('adminHome.location')" min-width="300" show-overflow-tooltip />
             </el-table>
           </div>
         </el-card>
@@ -174,9 +174,9 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <span>菜单树</span>
-              <el-select v-model="menuModule" placeholder="选择模块" style="width: 150px" @change="getMenuTree">
-                <el-option label="全部" value="" />
+              <span>{{ t('adminHome.menuTree') }}</span>
+              <el-select v-model="menuModule" :placeholder="t('adminHome.selectModule')" style="width: 150px" @change="getMenuTree">
+                <el-option :label="t('lovAdmin.all')" value="" />
                 <el-option label="Admin" value="Admin" />
                 <el-option label="Cube" value="Cube" />
               </el-select>
@@ -197,8 +197,8 @@
                   </span>
                   <span class="menu-name">{{ data.displayName }}</span>
                   <span class="menu-url" v-if="data.url">({{ data.url }})</span>
-                  <el-tag v-if="!data.visible" type="info" size="small">隐藏</el-tag>
-                  <el-tag v-if="data.newWindow" type="warning" size="small">新窗口</el-tag>
+                  <el-tag v-if="!data.visible" type="info" size="small">{{ t('adminHome.hidden') }}</el-tag>
+                  <el-tag v-if="data.newWindow" type="warning" size="small">{{ t('menuAdmin.newWindow') }}</el-tag>
                   <span class="menu-permissions" v-if="Object.keys(data.permissions).length > 0">
                     <el-tag
                       v-for="(permission, key) in data.permissions"
@@ -215,8 +215,8 @@
             </el-tree>
 
             <!-- 如果没有菜单数据 -->
-            <el-empty v-if="menuTree.length === 0" description="暂无菜单数据" :image-size="80">
-              <el-button @click="getMenuTree" size="small">重试加载</el-button>
+            <el-empty v-if="menuTree.length === 0" :description="t('adminHome.noMenu')" :image-size="80">
+              <el-button @click="getMenuTree" size="small">{{ t('adminHome.retry') }}</el-button>
             </el-empty>
           </div>
         </el-card>
@@ -227,6 +227,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
 import { Refresh, Delete, Switch } from '@element-plus/icons-vue'
 import { request } from '@newlifex/cube-vue/core/utils/request'
@@ -281,6 +282,7 @@ interface MenuNode {
 
 // 数据
 const systemInfo = reactive<SystemInfo>({})
+const { t } = useI18n()
 
 const serverVars = ref<ServerVar[]>([]) // 保留兼容性
 const serverHeaders = ref<ServerVar[]>([])
@@ -308,27 +310,27 @@ const loading = reactive({
 // 系统信息字段标签映射
 const getSystemInfoLabel = (key: string): string => {
   const labelMap: Record<string, string> = {
-    processTime: '进程运行时间',
-    cpu: 'CPU信息',
-    memory: '内存使用情况',
-    local: '本地地址',
-    host: '主机信息',
-    version: '版本信息',
-    os: '操作系统',
-    osVersion: '系统版本',
-    machineName: '机器名称',
-    userName: '用户名',
-    workingSet: '工作集',
-    totalMemory: '总内存',
-    availableMemory: '可用内存',
-    gcMemory: 'GC内存',
-    processor: '处理器',
-    processorCount: '处理器数量',
-    disk: '磁盘信息',
-    network: '网络信息',
-    runtime: '运行时',
-    startTime: '启动时间',
-    upTime: '运行时长'
+    processTime: t('adminHome.labelProcessTime'),
+    cpu: t('adminHome.labelCpu'),
+    memory: t('adminHome.labelMemory'),
+    local: t('adminHome.labelLocal'),
+    host: t('adminHome.labelHost'),
+    version: t('adminHome.labelVersion'),
+    os: t('adminHome.labelOs'),
+    osVersion: t('adminHome.labelOsVersion'),
+    machineName: t('adminHome.labelMachineName'),
+    userName: t('adminHome.labelUserName'),
+    workingSet: t('adminHome.labelWorkingSet'),
+    totalMemory: t('adminHome.labelTotalMemory'),
+    availableMemory: t('adminHome.labelAvailableMemory'),
+    gcMemory: t('adminHome.labelGcMemory'),
+    processor: t('adminHome.labelProcessor'),
+    processorCount: t('adminHome.labelProcessorCount'),
+    disk: t('adminHome.labelDisk'),
+    network: t('adminHome.labelNetwork'),
+    runtime: t('adminHome.labelRuntime'),
+    startTime: t('adminHome.labelStartTime'),
+    upTime: t('adminHome.labelUpTime')
   }
 
   return labelMap[key] || key.charAt(0).toUpperCase() + key.slice(1) // 如果没有映射，首字母大写
@@ -337,11 +339,11 @@ const getSystemInfoLabel = (key: string): string => {
 // 格式化系统信息值
 const formatSystemInfoValue = (value: string | number | boolean | object | null | undefined): string => {
   if (value === null || value === undefined) {
-    return '暂无数据'
+    return t('adminHome.noData')
   }
 
   if (typeof value === 'boolean') {
-    return value ? '是' : '否'
+    return value ? t('common.yes') : t('common.no')
   }
 
   if (typeof value === 'number') {
@@ -361,21 +363,21 @@ const formatSystemInfoValue = (value: string | number | boolean | object | null 
           ('machineName' in value || 'ip' in value)) {
         const parts = []
         const hostObj = value as Record<string, string | number>
-        if (hostObj.machineName) parts.push(`机器名: ${hostObj.machineName}`)
+        if (hostObj.machineName) parts.push(`${t('adminHome.hostMachine')}: ${hostObj.machineName}`)
         if (hostObj.ip) parts.push(`IP: ${hostObj.ip}`)
-        if (hostObj.port) parts.push(`端口: ${hostObj.port}`)
-        if (hostObj.domain) parts.push(`域名: ${hostObj.domain}`)
+        if (hostObj.port) parts.push(`${t('adminHome.hostPort')}: ${hostObj.port}`)
+        if (hostObj.domain) parts.push(`${t('adminHome.hostDomain')}: ${hostObj.domain}`)
         return parts.length > 0 ? parts.join(', ') : JSON.stringify(value)
       }
 
       // 其他对象类型，尝试显示为 JSON 字符串
       return JSON.stringify(value, null, 0)
     } catch {
-      return String(value) || '暂无数据'
+      return String(value) || t('adminHome.noData')
     }
   }
 
-  return String(value) || '暂无数据'
+  return String(value) || t('adminHome.noData')
 }
 
 // 格式化文件大小
@@ -391,19 +393,19 @@ const formatFileSize = (bytes: number): string => {
 
 // 格式化日期时间
 const formatDateTime = (dateTime: string): string => {
-  if (!dateTime) return '未知'
+  if (!dateTime) return t('adminHome.unknown')
 
   try {
     const date = new Date(dateTime)
     // 检查是否为有效日期
     if (isNaN(date.getTime())) return dateTime
 
-    // 如果是默认的 2000-01-01 这种日期，显示为 "未知"
+    // 如果是默认的 2000-01-01 这种日期，显示为“未知”
     if (date.getFullYear() === 2000 && date.getMonth() === 0 && date.getDate() === 1) {
-      return '未知'
+      return t('adminHome.unknown')
     }
 
-    return date.toLocaleString('zh-CN', {
+    return date.toLocaleString(undefined, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -444,7 +446,7 @@ const getMainInfo = async () => {
       })
     }
   } catch (error) {
-    console.error('获取主要信息错误:', error)
+    console.error('Failed to load the main info:', error)
     // 错误提示已在 request 拦截器中处理
   }
 }
@@ -587,11 +589,11 @@ const handleMemoryFree = async () => {
 const handleRestart = async () => {
   try {
     await ElMessageBox.confirm(
-      '确定要重启系统吗？这将导致服务暂时不可用。',
-      '确认重启',
+      t('adminHome.restartConfirm'),
+      t('adminHome.restartTitle'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('button.confirm'),
+        cancelButtonText: t('button.cancel'),
         type: 'warning',
       }
     )
@@ -607,11 +609,11 @@ const handleRestart = async () => {
 // 格式化请求值
 const formatRequestValue = (value: string | number | boolean | object | null): string => {
   if (value === null || value === undefined) {
-    return '空'
+    return t('adminHome.empty')
   }
 
   if (typeof value === 'boolean') {
-    return value ? '是' : '否'
+    return value ? t('common.yes') : t('common.no')
   }
 
   if (typeof value === 'number') {
@@ -628,9 +630,9 @@ const formatRequestValue = (value: string | number | boolean | object | null): s
         if ('value' in obj && 'hasValue' in obj) {
           const hasValue = obj.hasValue as boolean
           if (hasValue) {
-            return String(obj.value) || '空'
+            return String(obj.value) || t('adminHome.empty')
           } else {
-            return '空'
+            return t('adminHome.empty')
           }
         }
 
@@ -645,11 +647,11 @@ const formatRequestValue = (value: string | number | boolean | object | null): s
 
       return JSON.stringify(value, null, 0)
     } catch {
-      return String(value) || '空'
+      return String(value) || t('adminHome.empty')
     }
   }
 
-  return String(value) || '空'
+  return String(value) || t('adminHome.empty')
 }
 
 // 组件挂载时加载数据
