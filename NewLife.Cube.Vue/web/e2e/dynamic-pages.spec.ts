@@ -58,7 +58,22 @@ test.describe('动态页（/meta 驱动）', () => {
 
   test('列表支持批量禁用/启用（后端 enableSelect/disableSelect）', async ({ page }) => {
     const apiBase = process.env.PLAYWRIGHT_API_URL || 'https://localhost:7116';
-    const name = `E2E-BATCH-${Date.now()}`;
+    // 名称必须全局唯一：用例可被 --repeat-each 并行执行，仅用时间戳会在同一毫秒内撞名（唯一索引冲突）
+    const name = `E2E-BATCH-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    /** 轮询后端直到 Enable 变为期望值：批量动作后的列表刷新与实体缓存都可能滞后，单次 GET 会偶发读到旧值 */
+    const waitForEnable = async (expected: boolean) => {
+      for (let i = 0; i < 24; i++) {
+        const res = await page.request.get(
+          `${apiBase}/api/Admin/Parameter?q=${encodeURIComponent(name)}`,
+          { ignoreHTTPSErrors: true },
+        );
+        const rows = (await res.json())?.data ?? [];
+        if (rows[0]?.enable === expected) return;
+        await page.waitForTimeout(300);
+      }
+      throw new Error(`参数[${name}]的 Enable 未在预期时间内变为 ${expected}`);
+    };
 
     // 播种一条带 Enable 字段的参数，避免动到库里既有数据
     const created = await page.request.post(`${apiBase}/api/Admin/Parameter`, {
@@ -67,6 +82,7 @@ test.describe('动态页（/meta 驱动）', () => {
     });
     const createdBody = await created.json();
     const paramId = createdBody?.data?.id ?? createdBody?.data?.ID;
+    expect(createdBody?.code, JSON.stringify(createdBody).slice(0, 300)).toBe(0);
     expect(paramId).toBeTruthy();
 
     try {
@@ -81,28 +97,22 @@ test.describe('动态页（/meta 驱动）', () => {
       // 勾选后批量禁用，确认走的是后端 enableSelect/disableSelect 端点
       await row.locator('.el-checkbox').first().click();
       await page.locator('[data-role="batch-disable"]').click();
-      await page.locator('.el-message-box__btns .el-button--primary').click();
-      await expect(page.locator('.el-message--success')).toBeVisible({ timeout: 20000 });
-
-      const afterDisable = await page.request.get(
-        `${apiBase}/api/Admin/Parameter?q=${encodeURIComponent(name)}`,
-        { ignoreHTTPSErrors: true },
-      );
-      const disabledRows = (await afterDisable.json())?.data ?? [];
-      expect(disabledRows[0]?.enable).toBe(false);
+      const [disableResp] = await Promise.all([
+        page.waitForResponse((r) => r.url().includes('/disableSelect') && r.request().method() === 'POST'),
+        page.locator('.el-message-box__btns .el-button--primary').click(),
+      ]);
+      expect(disableResp.ok()).toBeTruthy();
+      await waitForEnable(false);
 
       // 再批量启用，恢复原状
       await page.locator('.el-table__body tr', { hasText: name }).first().locator('.el-checkbox').first().click();
       await page.locator('[data-role="batch-enable"]').click();
-      await page.locator('.el-message-box__btns .el-button--primary').click();
-      await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 20000 });
-
-      const afterEnable = await page.request.get(
-        `${apiBase}/api/Admin/Parameter?q=${encodeURIComponent(name)}`,
-        { ignoreHTTPSErrors: true },
-      );
-      const enabledRows = (await afterEnable.json())?.data ?? [];
-      expect(enabledRows[0]?.enable).toBe(true);
+      const [enableResp] = await Promise.all([
+        page.waitForResponse((r) => r.url().includes('/enableSelect') && r.request().method() === 'POST'),
+        page.locator('.el-message-box__btns .el-button--primary').click(),
+      ]);
+      expect(enableResp.ok()).toBeTruthy();
+      await waitForEnable(true);
     } finally {
       if (paramId) await page.request.delete(`${apiBase}/api/Admin/Parameter?ids=${paramId}`, { ignoreHTTPSErrors: true });
     }
