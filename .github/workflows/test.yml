@@ -39,6 +39,36 @@ jobs:
     - name: Build
       run: dotnet build 魔方.slnx -c Release --nologo
 
+  # 前端跨语言门禁：硬编码中文文案与主题 token 校验（不依赖 dotnet，单独跑一遍）。
+  # 新增页面/组件若直接写中文字面量，这里会阻断，强制走 i18n。
+  frontend-i18n:
+    name: frontend i18n (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux
+            os: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+    - name: Install dependencies
+      working-directory: NewLife.Cube.Vue/web
+      run: pnpm install --frozen-lockfile
+    - name: Hardcoded Chinese scan (must be 0)
+      run: node scripts/vue-i18n-scan.mjs --max=0
+    - name: Theme token check
+      working-directory: NewLife.Cube.Vue/web
+      run: node scripts/check-theme-tokens.mjs
+
   # 单元/集成测试矩阵。win-x64 与 linux-x64 为阻断门禁，其余平台观察期。
   unit:
     name: unit (${{ matrix.name }})

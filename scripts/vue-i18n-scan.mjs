@@ -8,11 +8,24 @@
  * 用法：
  *   node scripts/vue-i18n-scan.mjs            # 汇总
  *   node scripts/vue-i18n-scan.mjs --detail   # 额外列出每个文件条数
+ *   node scripts/vue-i18n-scan.mjs --max=0    # 门禁：超过阈值即以非零码退出（CI 用）
  *
- * 只做报告、不失败：分批收敛期间不设硬阈值，避免阻塞提交；需要门禁时再加 --max。
+ * 允许清单（`baseline`）：中文正则/后端数据匹配等「必须保留中文」的字面量，
+ * 按「文件 + 内容」精确登记；命中清单的条目不计入总数，避免门禁被噪声卡住。
  */
 import fs from 'node:fs';
 import path from 'node:path';
+
+/** 必须保留中文的条目（正则/后端文案匹配、语言自称名）：文件后缀 + 字面量内容 */
+const baseline = [
+  { file: 'core/components/CubeTable/cubeTable.logic.ts', text: /毫秒|小时|分|十分之一|百分之一|千分之一|万分之一/ },
+  { file: 'core/engine/logic.ts', text: /共|成功/ },
+  { file: 'core/components/SideMenu.vue', text: '工作台' },
+  { file: 'core/i18n/index.ts', text: /中文|日本語/ },
+];
+
+const isAllowed = (file, text) =>
+  baseline.some((rule) => file.endsWith(rule.file) && (rule.text instanceof RegExp ? rule.text.test(text) : rule.text === text));
 
 const roots = ['NewLife.Cube.Vue/web/core', 'NewLife.Cube.Vue/web/apps', 'NewLife.Cube.Vue/web/ct'];
 const skip = /node_modules|__tests__|__mocks__|\.spec\.|\.test\.|\.story\.|locales|\/i18n\/|\.d\.ts$/;
@@ -58,9 +71,10 @@ function collect(file) {
 const rows = [];
 for (const root of roots) {
   for (const file of walk(root)) {
-    const hits = collect(file);
+    const rel = file.replace(/\\/g, '/').replace('NewLife.Cube.Vue/web/', '');
+    const hits = collect(file).filter((text) => !isAllowed(rel, text));
     if (hits.length > 0) {
-      rows.push({ file: file.replace(/\\/g, '/').replace('NewLife.Cube.Vue/web/', ''), count: hits.length });
+      rows.push({ file: rel, count: hits.length });
     }
   }
 }
@@ -101,4 +115,17 @@ if (process.argv.includes('--detail')) {
   for (const row of rows.sort((a, b) => b.count - a.count).slice(0, 40)) {
     console.log(`  ${String(row.count).padStart(5)}  ${row.file}`);
   }
+}
+
+// ── 门禁：--max=N 时超过阈值以非零码退出（CI 防回退） ──
+const maxArg = process.argv.find((arg) => arg.startsWith('--max='));
+if (maxArg) {
+  const max = Number(maxArg.split('=')[1]);
+  if (Number.isFinite(max) && totalLiterals > max) {
+    console.error('');
+    console.error(`✗ 硬编码中文文案 ${totalLiterals} 条，超出阀值 ${max} 条`);
+    process.exit(1);
+  }
+  console.log('');
+  console.log(`✓ 硬编码中文文案 ${totalLiterals} 条，未超阀值 ${max} 条`);
 }
