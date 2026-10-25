@@ -4,6 +4,15 @@
 
 `core/routes/index.ts` 提供 `/`、`/login`、`/unauthorized`、`/loading` 和 catch-all 路由。catch-all 指向 `core/pages/DefaultEntity.vue`，用于在未命中显式业务路由时按菜单解析默认页面。
 
+catch-all 的解析顺序：
+
+1. 命中菜单（含隐藏菜单）→ 菜单注册的页面（自定义视图或 `AutoPage`）；
+2. 未命中菜单但 `apps/**/views/<path>/index.vue` 存在 → 该自定义页；
+3. 都没有时探测后端 `/api/<area>/<controller>/meta`（`core/utils/entityPage.ts`）：成功码则渲染 `AutoPage`，页头标题取 `entity.displayName`；
+4. 探测失败 → 404 页。
+
+第 3 步让「后端有控制器、但菜单树里没有该节点」的页面仍可直接访问，与 MVC 按控制器路由注册的行为等价（典型：未开启多租户时的租户/租户成员页、被可见性规则过滤的隐藏页）。
+
 ## 初始化与守卫
 
 `core/router/index.ts` 创建 Router，并在导航前依次：
