@@ -36,6 +36,20 @@ public class ToolbarTests
         => ToolbarBuilder.Build(source, typeof(TestActions), t => t.AddLink("区域地图", "/Base/Org/Map", target: "_blank"), null, null);
     #endregion
 
+    [Fact(DisplayName = "工具栏 - 菜单控制器声明批量刷新按钮")]
+    public void MenuControllerDeclaresRefresh()
+    {
+        var list = new ToolbarCollection();
+        ToolbarBuilder.Collect(typeof(NewLife.Cube.Areas.Admin.Controllers.MenuController), list);
+
+        var item = list.GetItem("RefreshName");
+        Assert.NotNull(item);
+        Assert.Equal("Refresh menu names", item.DisplayName);
+        Assert.Equal("POST", item.Method);
+        Assert.Equal("fa-refresh", item.Icon);
+        Assert.Contains("keys", item.Include ?? []);
+    }
+
     [Fact(DisplayName = "ToDictionary 只输出有意义的属性")]
     public void ToDictionary_OutputsOnlyMeaningfulKeys()
     {
