@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using NewLife;
@@ -8,10 +8,12 @@ using Xunit;
 
 namespace NewLife.Cube.Tests.Common;
 
-/// <summary>覆盖菜单命名契约：自动项跟随代码源文，用户自定义名称永不覆盖</summary>
+/// <summary>覆盖菜单命名契约：自动项落库类型全名并跟随代码，用户自定义名称永不覆盖</summary>
 [Collection("ConfigLocalization")]
 public class MenuNameSyncTests
 {
+    private const String UserKey = "XCode.Membership.User";
+
     private static Menu CreateMenu(String? displayName, String? marker = null) => new()
     {
         Name = "User",
@@ -19,26 +21,36 @@ public class MenuNameSyncTests
         Ex6 = marker,
     };
 
-    [Fact(DisplayName = "命名同步 - 存量空名识别为自动项并写入源文")]
+    [Fact(DisplayName = "命名同步 - 存量空名识别为自动项并写入规范键")]
     public void EmptyNameBecomesAuto()
     {
         var menu = CreateMenu(null);
 
-        Assert.True(MenuHelper.SyncDisplayName(menu, "用户", "User", "UserController"));
-        Assert.Equal("用户", menu.DisplayName);
-        Assert.Equal("用户", menu.Ex6);
+        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户", "User", "UserController"));
+        Assert.Equal(UserKey, menu.DisplayName);
+        Assert.Equal(UserKey, menu.Ex6);
     }
 
     [Fact(DisplayName = "命名同步 - 存量等于菜单名或类型名识别为自动项")]
     public void FallbackNameBecomesAuto()
     {
         var menu = CreateMenu("User");
-        Assert.True(MenuHelper.SyncDisplayName(menu, "用户", "User", "UserController"));
-        Assert.Equal("用户", menu.DisplayName);
+        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户", "User", "UserController"));
+        Assert.Equal(UserKey, menu.DisplayName);
 
         var menu2 = CreateMenu("UserController");
-        Assert.True(MenuHelper.SyncDisplayName(menu2, "用户", "User", "UserController"));
-        Assert.Equal("用户", menu2.DisplayName);
+        Assert.True(MenuHelper.SyncDisplayName(menu2, UserKey, "用户", "User", "UserController"));
+        Assert.Equal(UserKey, menu2.DisplayName);
+    }
+
+    [Fact(DisplayName = "命名同步 - 存量等于代码源文识别为自动项")]
+    public void SourceNameBecomesAuto()
+    {
+        var menu = CreateMenu("用户");
+
+        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
+        Assert.Equal(UserKey, menu.DisplayName);
+        Assert.Equal(UserKey, menu.Ex6);
     }
 
     [Fact(DisplayName = "命名同步 - 存量等于当前语言译文识别为自动项")]
@@ -52,9 +64,9 @@ public class MenuNameSyncTests
             Localization.Culture = culture;
 
             var menu = CreateMenu("User");
-            Assert.True(MenuHelper.SyncDisplayName(menu, "用户"));
-            Assert.Equal("用户", menu.DisplayName);
-            Assert.Equal("用户", menu.Ex6);
+            Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
+            Assert.Equal(UserKey, menu.DisplayName);
+            Assert.Equal(UserKey, menu.Ex6);
         }
         finally
         {
@@ -68,9 +80,9 @@ public class MenuNameSyncTests
     {
         var menu = CreateMenu("Dictionary parameters");
 
-        Assert.True(MenuHelper.SyncDisplayName(menu, "字典参数"));
-        Assert.Equal("字典参数", menu.DisplayName);
-        Assert.Equal("字典参数", menu.Ex6);
+        Assert.True(MenuHelper.SyncDisplayName(menu, "XCode.Membership.Parameter", "字典参数"));
+        Assert.Equal("XCode.Membership.Parameter", menu.DisplayName);
+        Assert.Equal("XCode.Membership.Parameter", menu.Ex6);
     }
 
     [Fact(DisplayName = "命名同步 - 用户自定义名称只标记不覆盖，后续扫描不再修改")]
@@ -78,58 +90,70 @@ public class MenuNameSyncTests
     {
         var menu = CreateMenu("我的用户");
 
-        Assert.True(MenuHelper.SyncDisplayName(menu, "用户"));
+        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
         Assert.Equal("我的用户", menu.DisplayName);
         Assert.Equal(MenuHelper.CustomNameMarker, menu.Ex6);
 
-        Assert.False(MenuHelper.SyncDisplayName(menu, "Users"));
+        Assert.False(MenuHelper.SyncDisplayName(menu, "XCode.Membership.Role", "角色"));
         Assert.Equal("我的用户", menu.DisplayName);
         Assert.Equal(MenuHelper.CustomNameMarker, menu.Ex6);
     }
 
-    [Fact(DisplayName = "命名同步 - 自动项跟随代码源文改名")]
+    [Fact(DisplayName = "命名同步 - 自动项跟随代码改名后的规范键")]
     public void AutoNameFollowsSourceChange()
     {
-        var menu = CreateMenu("用户", "用户");
+        var menu = CreateMenu(UserKey, UserKey);
 
-        Assert.True(MenuHelper.SyncDisplayName(menu, "Users"));
-        Assert.Equal("Users", menu.DisplayName);
-        Assert.Equal("Users", menu.Ex6);
+        Assert.True(MenuHelper.SyncDisplayName(menu, "XCode.Membership.Member", "会员"));
+        Assert.Equal("XCode.Membership.Member", menu.DisplayName);
+        Assert.Equal("XCode.Membership.Member", menu.Ex6);
     }
 
     [Fact(DisplayName = "命名同步 - 自动项被人工改名后转为自定义并保留文本")]
     public void EditedAutoNameBecomesCustom()
     {
-        var menu = CreateMenu("Users", "用户");
+        var menu = CreateMenu("Users", UserKey);
 
-        Assert.True(MenuHelper.SyncDisplayName(menu, "用户"));
+        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
         Assert.Equal("Users", menu.DisplayName);
         Assert.Equal(MenuHelper.CustomNameMarker, menu.Ex6);
 
-        Assert.False(MenuHelper.SyncDisplayName(menu, "用户"));
+        Assert.False(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
         Assert.Equal("Users", menu.DisplayName);
     }
 
-    [Fact(DisplayName = "命名同步 - 源文为空时不处理")]
-    public void EmptySourceDoesNothing()
+    [Fact(DisplayName = "命名同步 - 规范键为空时不处理")]
+    public void EmptyKeyDoesNothing()
     {
         var menu = CreateMenu("Users");
 
-        Assert.False(MenuHelper.SyncDisplayName(menu, null));
-        Assert.False(MenuHelper.SyncDisplayName(menu, ""));
+        Assert.False(MenuHelper.SyncDisplayName(menu, null, "用户"));
+        Assert.False(MenuHelper.SyncDisplayName(menu, "", "用户"));
         Assert.Equal("Users", menu.DisplayName);
         Assert.Null(menu.Ex6);
     }
 
-    [Fact(DisplayName = "命名同步 - 新建自动项写入标记")]
+    [Fact(DisplayName = "命名同步 - 新建自动项同时写入规范键与标记")]
     public void MarkAutoNameWritesMarker()
     {
         var menu = CreateMenu("用户");
 
-        MenuHelper.MarkAutoName(menu, "用户");
-        Assert.Equal("用户", menu.Ex6);
+        MenuHelper.MarkAutoName(menu, UserKey);
+        Assert.Equal(UserKey, menu.DisplayName);
+        Assert.Equal(UserKey, menu.Ex6);
 
+        menu.DisplayName = "用户";
         MenuHelper.MarkAutoName(menu, null);
-        Assert.Equal("用户", menu.Ex6);
+        Assert.Equal("用户", menu.DisplayName);
+        Assert.Equal(UserKey, menu.Ex6);
     }
+
+    [Fact(DisplayName = "命名同步 - 规范键实体全名优先，其次控制器全名")]
+    public void BuildMenuKeyUsesFullName()
+    {
+        Assert.Equal(UserKey, MenuHelper.BuildMenuKey(typeof(TestUserController), typeof(User)));
+        Assert.Equal(typeof(TestUserController).FullName, MenuHelper.BuildMenuKey(typeof(TestUserController)));
+    }
+
+    private sealed class TestUserController { }
 }
