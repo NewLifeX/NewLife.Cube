@@ -78,6 +78,21 @@ internal static class PageMetaBuilder
             var masterField = list.FirstOrDefault(e => String.Equals(e.TryGetValue("name", out var n) ? n as String : null, masterTime.Name, StringComparison.OrdinalIgnoreCase));
             if (masterField != null && masterField.TryGetValue("displayName", out var dn)) displayName = dn as String;
 
+            // MasterTime 可能是雪花主键（DataScale=time），此时主键显示名（如“编号”）不适合当时间区间标题，
+            // 改用创建时间/更新时间的显示名，避免搜索区出现“编号”这样的日期标签
+            if (masterTime.Type != typeof(DateTime))
+            {
+                if (TryGetDisplayName(list, "CreateTime", out var timeName) || TryGetDisplayName(list, "UpdateTime", out timeName))
+                    displayName = timeName;
+                else
+                {
+                    // 搜索字段里没有时间字段时，退回实体字段的显示名（按请求语言翻译）
+                    var timeField = factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("CreateTime"))
+                        ?? factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("UpdateTime"));
+                    if (timeField != null && !timeField.DisplayName.IsNullOrEmpty()) displayName = L.T(timeField.DisplayName);
+                }
+            }
+
             list.RemoveAll(e => String.Equals(e.TryGetValue("name", out var n) ? n as String : null, masterTime.Name, StringComparison.OrdinalIgnoreCase));
 
             list.Add(new Dictionary<String, Object>
@@ -92,6 +107,24 @@ internal static class PageMetaBuilder
         }
 
         return list;
+    }
+
+    /// <summary>从字段输出列表中读取指定字段的显示名</summary>
+    /// <param name="list">已构建的字段输出列表</param>
+    /// <param name="name">字段名</param>
+    /// <param name="displayName">显示名</param>
+    /// <returns>是否取到非空显示名</returns>
+    private static Boolean TryGetDisplayName(List<IDictionary<String, Object>> list, String name, out String displayName)
+    {
+        displayName = null;
+        var field = list.FirstOrDefault(e => String.Equals(e.TryGetValue("name", out var n) ? n as String : null, name, StringComparison.OrdinalIgnoreCase));
+        if (field != null && field.TryGetValue("displayName", out var dn) && dn is String str && !str.IsNullOrEmpty())
+        {
+            displayName = str;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>构建实体标识块</summary>
