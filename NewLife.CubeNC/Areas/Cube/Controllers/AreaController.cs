@@ -24,7 +24,6 @@ public class AreaController : EntityController<Area, AreaModel>
 
         {
             var df = ListFields.GetField("ParentID") as ListField;
-            df.DisplayName = "{ParentPath}";
             df.Url = "/Cube/Area?Id={ParentID}";
         }
         {
