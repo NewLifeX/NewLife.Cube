@@ -1765,4 +1765,28 @@ export default {
   'ai.promptAnalyzeList': '分析目前列表資料',
   'ai.promptFillForm': '幫我填寫目前表單',
   'ai.promptDiagnose': '檢查系統執行狀態',
+
+  'common.operationFailed': '操作失敗',
+  'common.loading': '載入中…',
+  'common.breadcrumb': '麵包屑導覽',
+  'common.systemLoading': '系統載入中，請稍候...',
+
+  'grid.filterAll': '全部',
+  'grid.filterHas': '有',
+  'grid.filterNone': '無',
+  'grid.deleteOneConfirm': '確定要刪除這筆資料嗎？',
+  'grid.deleteSelectedConfirm': '確定刪除選取的 {count} 筆資料嗎？',
+
+  'form.fieldRequired': '{field}不能為空',
+  'form.requiredSuffix': ' 為必填欄位',
+  'form.validateFailedSuffix': ' 驗證失敗',
+
+  'listForm.view': '檢視',
+  'listForm.edit': '編輯',
+  'listForm.failedNoId': '失敗：缺少記錄 id',
+  'listForm.failedNoPrefix': '失敗：缺少介面前綴',
+  'listForm.detailLoadFailedRetry': '詳情載入失敗，請重試',
+  'listForm.noPrefixCannotSave': '缺少介面前綴，無法儲存',
+
+  'workbench.loadFailed': '工作台資料載入失敗',
 };

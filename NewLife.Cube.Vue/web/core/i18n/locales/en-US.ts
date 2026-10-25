@@ -1807,4 +1807,28 @@ export default {
   'ai.promptAnalyzeList': 'Analyze the current list data',
   'ai.promptFillForm': 'Help me fill in the current form',
   'ai.promptDiagnose': 'Check the system status',
+
+  'common.operationFailed': 'Operation failed',
+  'common.loading': 'Loading...',
+  'common.breadcrumb': 'Breadcrumb',
+  'common.systemLoading': 'The system is loading, please wait...',
+
+  'grid.filterAll': 'All',
+  'grid.filterHas': 'Yes',
+  'grid.filterNone': 'No',
+  'grid.deleteOneConfirm': 'Delete this record?',
+  'grid.deleteSelectedConfirm': 'Delete the {count} selected record(s)?',
+
+  'form.fieldRequired': '{field} is required',
+  'form.requiredSuffix': ' is required',
+  'form.validateFailedSuffix': ' failed validation',
+
+  'listForm.view': 'View',
+  'listForm.edit': 'Edit',
+  'listForm.failedNoId': ' failed: the record id is missing',
+  'listForm.failedNoPrefix': ' failed: the API prefix is missing',
+  'listForm.detailLoadFailedRetry': 'Failed to load the details, please try again',
+  'listForm.noPrefixCannotSave': 'The API prefix is missing, cannot save',
+
+  'workbench.loadFailed': 'Failed to load the workbench data',
 };

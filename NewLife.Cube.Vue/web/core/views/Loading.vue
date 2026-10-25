@@ -1,17 +1,19 @@
 ﻿<template>
   <div class="loading-container">
     <div class="loading-spinner"></div>
-    <div class="loading-text">系统加载中，请稍候...</div>
+    <div class="loading-text">{{ t('common.systemLoading') }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { isRoutesInitialized } from '../microAppRouter';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 let checkInterval: number;
 
 onMounted(() => {

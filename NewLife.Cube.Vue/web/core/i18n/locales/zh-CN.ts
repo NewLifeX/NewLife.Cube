@@ -1781,4 +1781,28 @@ export default {
   'ai.promptAnalyzeList': '分析当前列表数据',
   'ai.promptFillForm': '帮我填写当前表单',
   'ai.promptDiagnose': '检查系统运行状态',
+
+  'common.operationFailed': '操作失败',
+  'common.loading': '加载中…',
+  'common.breadcrumb': '面包屑导航',
+  'common.systemLoading': '系统加载中，请稍候...',
+
+  'grid.filterAll': '全部',
+  'grid.filterHas': '有',
+  'grid.filterNone': '无',
+  'grid.deleteOneConfirm': '确定要删除这条数据吗？',
+  'grid.deleteSelectedConfirm': '确定删除选中的 {count} 条数据吗？',
+
+  'form.fieldRequired': '{field}不能为空',
+  'form.requiredSuffix': ' 是必填字段',
+  'form.validateFailedSuffix': ' 校验失败',
+
+  'listForm.view': '查看',
+  'listForm.edit': '编辑',
+  'listForm.failedNoId': '失败：缺少记录 id',
+  'listForm.failedNoPrefix': '失败：缺少接口前缀',
+  'listForm.detailLoadFailedRetry': '详情加载失败，请重试',
+  'listForm.noPrefixCannotSave': '缺少接口前缀，无法保存',
+
+  'workbench.loadFailed': '工作台数据加载失败',
 };

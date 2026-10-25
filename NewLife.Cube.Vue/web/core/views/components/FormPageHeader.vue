@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useMenuStore, type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const menuStore = useMenuStore();
+const { t } = useI18n();
 
 const breadcrumbs = computed<TreeMenuItem[]>(() => {
   const active = menuStore.activeMenu;
@@ -31,7 +33,11 @@ const pageTitle = computed(() => props.title ?? menuStore.activeMenu?.name ?? ''
       <h1 class="fph-title">{{ pageTitle }}</h1>
       <p v-if="subtitle" class="fph-subtitle">{{ subtitle }}</p>
     </div>
-    <nav v-if="breadcrumbs.length > 0" class="fph-breadcrumb" aria-label="面包屑导航">
+    <nav
+      v-if="breadcrumbs.length > 0"
+      class="fph-breadcrumb"
+      :aria-label="t('common.breadcrumb')"
+    >
       <span
         v-for="(item, index) in breadcrumbs"
         :key="item.id"

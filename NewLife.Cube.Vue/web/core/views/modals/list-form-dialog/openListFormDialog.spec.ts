@@ -96,7 +96,7 @@ describe('openListFormDialog', () => {
       method: 'post',
       data: { Enable: false },
     });
-    expect(mocks.ElMessage.success).toHaveBeenCalledWith('新增成功');
+    expect(mocks.ElMessage.success).toHaveBeenCalledWith('Added successfully');
     expect(onSuccess).toHaveBeenCalledOnce();
 
     // onConfirm 返回 true（允许关闭）
@@ -131,7 +131,7 @@ describe('openListFormDialog', () => {
       method: 'put',
       data: { id: 1, Name: 'old', Enable: true },
     });
-    expect(mocks.ElMessage.success).toHaveBeenCalledWith('更新成功');
+    expect(mocks.ElMessage.success).toHaveBeenCalledWith('Updated successfully');
     expect(onSuccess).toHaveBeenCalledOnce();
     await expect(promise).resolves.toBe(true);
   });

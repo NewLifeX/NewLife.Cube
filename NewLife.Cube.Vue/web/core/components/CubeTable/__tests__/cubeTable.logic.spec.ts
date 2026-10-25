@@ -354,9 +354,9 @@ describe('CubeTable/logic 单元格渲染', () => {
 
   it('应该显示是否而不是强转布尔 当布尔列取值时', () => {
     // Boolean('false') === true 是经典坑：字符串必须显式比较
-    expect(cellText(view(FIELDS.enable), 'false')).toBe('否');
-    expect(cellText(view(FIELDS.enable), true)).toBe('是');
-    expect(cellText(view(FIELDS.enable), 1)).toBe('是');
+    expect(cellText(view(FIELDS.enable), 'false')).toBe('No');
+    expect(cellText(view(FIELDS.enable), true)).toBe('Yes');
+    expect(cellText(view(FIELDS.enable), 1)).toBe('Yes');
     expect(cellBoolean('0')).toBe(false);
     expect(cellBoolean(2)).toBe(true);
   });

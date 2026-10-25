@@ -53,7 +53,7 @@ export function getFieldRenderer(name?: string | null): FieldRenderer | undefine
   const hit = registry.get(name);
   if (!hit && !warned.has(name)) {
     warned.add(name);
-    console.warn(`[CubeTable] 字段渲染器未注册：${name}`);
+    console.warn(`[CubeTable] Field renderer not registered: ${name}`);
   }
   return hit;
 }

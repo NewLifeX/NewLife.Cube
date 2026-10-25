@@ -34,6 +34,7 @@ import cubeApi from '@newlifex/cube-vue/core/composables/useCubeApi';
 // ApiError = 后端返回 code != 0 的业务错误（api-core 已统一提示），用于区分网络/HTTP 错误
 import { ApiError } from '@newlifex/api-core';
 import { ElMessage } from 'element-plus';
+import i18n from '../../../i18n';
 import ListFormDialog from './ListFormDialog.vue';
 import type { FieldMeta } from '@newlifex/cube-vue/core/types/field';
 
@@ -139,15 +140,15 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
   const needsDetail = mode !== 'add';
   const id = options.id;
 
-  const label = readonly ? '查看' : '编辑';
+  const label = readonly ? i18n.global.t('listForm.view') : i18n.global.t('listForm.edit');
   // 编辑/查看拿不到 id 时直接失败：打开一个回显不出来的空表单只会误导用户
   if (needsDetail && (id === undefined || id === null || id === '')) {
-    ElMessage.error(`${label}失败：缺少记录 id`);
+    ElMessage.error(`${label}${i18n.global.t('listForm.failedNoId')}`);
     return Promise.resolve(false);
   }
   // 保存与拉详情都依赖 apiPrefix，缺了只能给出明确提示而非发一个错误地址的请求
   if (!options.apiPrefix) {
-    ElMessage.error(`${label}失败：缺少接口前缀`);
+    ElMessage.error(`${label}${i18n.global.t('listForm.failedNoPrefix')}`);
     return Promise.resolve(false);
   }
 
@@ -220,9 +221,9 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
       } catch (err) {
         // 保留弹窗并提示，让用户能关闭重试，而不是静默显示空表单。
         // 业务错误（ApiError）已由 api-core 的 onBusinessError 弹出后端原文，此处不重复提示。
-        console.error('[openListFormDialog] 详情加载失败:', err);
+        console.error('[openListFormDialog] Failed to load details:', err);
         if (!(err instanceof ApiError)) {
-          ElMessage.error('详情加载失败，请重试');
+          ElMessage.error(i18n.global.t('listForm.detailLoadFailedRetry'));
         }
       } finally {
         contentProps.loading = false;
@@ -247,7 +248,7 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
         ? {
             footerButtons: [
               {
-                text: '关闭',
+                text: i18n.global.t('button.close'),
                 type: 'default' as const,
                 onClick: (m: { close: () => void }) => m.close(),
               },
@@ -258,13 +259,13 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
         ? undefined
         : async () => {
             if (!options.apiPrefix) {
-              ElMessage.error('缺少接口前缀，无法保存');
+              ElMessage.error(i18n.global.t('listForm.noPrefixCannotSave'));
               return false;
             }
 
             const missing = findMissingRequired(formData, options.fields);
             if (missing) {
-              ElMessage.warning(`${missing}不能为空`);
+              ElMessage.warning(i18n.global.t('form.fieldRequired', { field: missing }));
               return false;
             }
 
@@ -283,16 +284,16 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
               if (mode === 'edit') {
                 const realKey = resolveKey(data, idKey);
                 await request({ url: `${options.apiPrefix}/${data[realKey]}`, method: 'put', data });
-                ElMessage.success('更新成功');
+                ElMessage.success(i18n.global.t('common.updateSuccess'));
               } else {
                 await request({ url: options.apiPrefix, method: 'post', data });
-                ElMessage.success('新增成功');
+                ElMessage.success(i18n.global.t('common.addSuccess'));
               }
               options.onSuccess?.();
               finish(true);
             } catch (err) {
               // 返回 false 阻止弹窗关闭，让用户修正后重试
-              console.error('[openListFormDialog] 保存失败:', err);
+              console.error('[openListFormDialog] Save failed:', err);
               return false;
             }
           },

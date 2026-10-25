@@ -15,6 +15,7 @@ import {
   resolveSearchControl,
 } from '../../utils/fieldControl';
 import { formatCellDateTime } from '../../engine/logic';
+import i18n from '../../i18n';
 import type { FieldMeta, ListControlType } from '../../types/field';
 import type { CubeColumnView, CubeSearchControl, CubeSearchKind } from './types';
 
@@ -30,16 +31,46 @@ export function showSearchToggle(fieldCount: number): boolean {
 
 /** 布尔搜索选项：`''` 表示不参与筛选（提交时被 `dropEmptyParams` 丢弃） */
 export const BOOLEAN_FILTER_OPTIONS = [
-  { label: '全部', value: '' },
-  { label: '是', value: 'true' },
-  { label: '否', value: 'false' },
+  {
+    get label() {
+      return i18n.global.t('grid.filterAll');
+    },
+    value: '',
+  },
+  {
+    get label() {
+      return i18n.global.t('common.yes');
+    },
+    value: 'true',
+  },
+  {
+    get label() {
+      return i18n.global.t('common.no');
+    },
+    value: 'false',
+  },
 ];
 
 /** 附件存在性搜索选项 */
 export const FILE_EXISTS_OPTIONS = [
-  { label: '全部', value: '' },
-  { label: '有', value: 'true' },
-  { label: '无', value: 'false' },
+  {
+    get label() {
+      return i18n.global.t('grid.filterAll');
+    },
+    value: '',
+  },
+  {
+    get label() {
+      return i18n.global.t('grid.filterHas');
+    },
+    value: 'true',
+  },
+  {
+    get label() {
+      return i18n.global.t('grid.filterNone');
+    },
+    value: 'false',
+  },
 ];
 
 /** 占整行的控件（范围类与值集多选） */
@@ -725,7 +756,7 @@ function singleCellText(column: CubeColumnView, raw: unknown): string {
     case 'html':
       return truncate(String(raw));
     case 'boolean':
-      return cellBoolean(raw) ? '是' : '否';
+      return cellBoolean(raw) ? i18n.global.t('common.yes') : i18n.global.t('common.no');
     default:
       return String(raw);
   }

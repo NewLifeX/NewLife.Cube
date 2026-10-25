@@ -231,7 +231,7 @@ describe('CubeTableSearch 条件渲染', () => {
     const options = Array.from(document.body.querySelectorAll('.el-select-dropdown__item')).map((o) =>
       o.textContent?.trim(),
     );
-    expect(options).toEqual(expect.arrayContaining(['全部', '是', '否']));
+    expect(options).toEqual(expect.arrayContaining(['All', 'Yes', 'No']));
   });
 
   it('应该把值集条件交给 LovSelect 当条件带 lovCode 时', async () => {

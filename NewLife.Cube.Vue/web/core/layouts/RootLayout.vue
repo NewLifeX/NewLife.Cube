@@ -47,7 +47,7 @@ function checkLogin() {
 watch(
   route,
   (newRoute, oldRoute) => {
-    console.log('路由变化', {
+    console.log('Route changed', {
       newPath: newRoute.path,
       oldPath: oldRoute?.path,
       newMeta: newRoute.meta,

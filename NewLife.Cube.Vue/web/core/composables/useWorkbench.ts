@@ -1,4 +1,5 @@
 import { computed, ref, type ComputedRef, type Ref } from 'vue';
+import i18n from '../i18n';
 import { usePageApi } from './useCubeApi';
 import type { MonitorPoint, MonitorSnapshot, WorkbenchData } from '../types/workbench';
 
@@ -83,7 +84,7 @@ export function useWorkbench(): UseWorkbenchReturn {
       if (isSuccessCode(res?.code) && res.data) {
         data.value = res.data;
       } else {
-        error.value = res?.message || '工作台数据加载失败';
+        error.value = res?.message || i18n.global.t('workbench.loadFailed');
       }
     } catch (ex) {
       error.value = ex instanceof Error ? ex.message : String(ex);

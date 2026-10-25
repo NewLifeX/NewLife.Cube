@@ -41,5 +41,5 @@ export function openMenuTab(options: { url: string; title?: string }): void {
     } as any);
   }
 
-  console.log(`打开标签页: ${title || url}`);
+  console.log(`Opening tab: ${title || url}`);
 }

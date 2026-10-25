@@ -244,7 +244,7 @@ describe('CubeTableGrid 字段级渲染器', () => {
       list: [{ Name: '泵体' }],
     });
     expect(await textOf(ctx)).toContain('泵体');
-    expect(warn).toHaveBeenCalledWith('[CubeTable] 字段渲染器未注册：notRegistered');
+    expect(warn).toHaveBeenCalledWith('[CubeTable] Field renderer not registered: notRegistered');
   });
 });
 

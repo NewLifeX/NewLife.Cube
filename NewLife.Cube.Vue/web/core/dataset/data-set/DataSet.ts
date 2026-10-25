@@ -1,4 +1,5 @@
 import { ref, shallowRef } from 'vue';
+import i18n from '../../i18n';
 import { type AxiosRequestConfig, type AxiosInstance } from 'axios';
 import axios from '../../utils/request';
 import { generateResponseData, getDataByKey } from '../../utils/common';
@@ -550,7 +551,7 @@ export class DataSet<T extends Record<string, unknown> = Record<string, unknown>
       if (field.required && (value === undefined || value === null || value === '')) {
         errors.push({
           field: field.name,
-          message: `${field.label || String(field.name)} 是必填字段`,
+          message: `${field.label || String(field.name)}${i18n.global.t('form.requiredSuffix')}`,
         });
         return;
       }
@@ -561,7 +562,7 @@ export class DataSet<T extends Record<string, unknown> = Record<string, unknown>
         if (result !== true) {
           errors.push({
             field: field.name,
-            message: result || `${field.label || String(field.name)} 校验失败`,
+            message: result || `${field.label || String(field.name)}${i18n.global.t('form.validateFailedSuffix')}`,
           });
         }
       }

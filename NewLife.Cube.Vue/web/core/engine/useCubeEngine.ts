@@ -179,7 +179,7 @@ export function useCubeEngine(options: CubeEngineOptions = {}): CubeEngineContex
 export function useCubeContext(): CubeEngineContext {
   const ctx = inject(CubeEngineKey, null);
   if (!ctx) {
-    throw new Error('useCubeContext 必须在 CubeTable / useCubeEngine 之下使用（未找到 CubeEngineKey）');
+    throw new Error('useCubeContext must be used under CubeTable / useCubeEngine (CubeEngineKey not found)');
   }
   return ctx;
 }

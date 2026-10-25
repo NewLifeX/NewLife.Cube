@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import notification from '../components/Notification';
 
 /**
@@ -69,7 +70,7 @@ export function getResponse(
       errorCallback(response);
     } else {
       const msg = {
-        message: response.detailsMessage || response.message || '操作失败',
+        message: response.detailsMessage || response.message || i18n.global.t('common.operationFailed'),
       };
       switch (response.type) {
         case 'info':

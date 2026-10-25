@@ -57,8 +57,8 @@ describe('useCubeTableActions 删除确认', () => {
 
     expect(await actions.removeRow({ id: 1 })).toBe(true);
     expect(remove).toHaveBeenCalledWith({ id: 1 });
-    // 按钮文案必须是「删除」，默认的 OK/Cancel 在中文后台里读起来像误触
-    expect(confirm.mock.calls[0][2]).toMatchObject({ confirmButtonText: '删除', type: 'warning' });
+    // 按钮文案必须是「删除」，默认的 OK/Cancel 读起来像误触
+    expect(confirm.mock.calls[0][2]).toMatchObject({ confirmButtonText: 'Delete', type: 'warning' });
   });
 
   it('应该跳过确认框 当后端 doubleDelete 显式关闭时', async () => {
@@ -80,7 +80,7 @@ describe('useCubeTableActions 删除确认', () => {
     const actions = useCubeTableActions(ctx);
 
     expect(await actions.removeSelectedRows()).toBe(true);
-    expect(confirm.mock.calls[0][0]).toContain('3 条');
+    expect(confirm.mock.calls[0][0]).toContain('3 selected');
     expect(removeSelected).toHaveBeenCalled();
   });
 

@@ -7,6 +7,7 @@
  */
 import { watch } from 'vue';
 import { ElMessageBox } from 'element-plus';
+import i18n from '../../i18n';
 import { saveBlob } from './downloadFile';
 import type { CubeEngineContext } from '../../engine/types';
 
@@ -19,13 +20,17 @@ export interface CubeTableActionOptions {
   importAccept?: () => string | undefined;
 }
 
-const DELETE_TITLE = '确认删除';
-const CONFIRM_BUTTON = '删除';
-const CANCEL_BUTTON = '取消';
+const DELETE_TITLE = () => i18n.global.t('fileManager.confirmDelete');
+const CONFIRM_BUTTON = () => i18n.global.t('button.delete');
+const CANCEL_BUTTON = () => i18n.global.t('button.cancel');
 
 /** 组装删除确认参数（统一走「危险操作 + 明确动词」口径，避免默认 OK/Cancel 英文按钮） */
 function confirmOptions() {
-  return { confirmButtonText: CONFIRM_BUTTON, cancelButtonText: CANCEL_BUTTON, type: 'warning' as const };
+  return {
+    confirmButtonText: CONFIRM_BUTTON(),
+    cancelButtonText: CANCEL_BUTTON(),
+    type: 'warning' as const,
+  };
 }
 
 export function useCubeTableActions(ctx: CubeEngineContext, options: CubeTableActionOptions = {}) {
@@ -38,7 +43,7 @@ export function useCubeTableActions(ctx: CubeEngineContext, options: CubeTableAc
   async function confirmed(message: string): Promise<boolean> {
     if (!needsConfirm()) return true;
     try {
-      await ElMessageBox.confirm(message, DELETE_TITLE, confirmOptions());
+      await ElMessageBox.confirm(message, DELETE_TITLE(), confirmOptions());
       return true;
     } catch {
       return false;
@@ -46,14 +51,14 @@ export function useCubeTableActions(ctx: CubeEngineContext, options: CubeTableAc
   }
 
   async function removeRow(row: Record<string, unknown>): Promise<boolean> {
-    if (!(await confirmed('确定要删除这条数据吗？'))) return false;
+    if (!(await confirmed(i18n.global.t('grid.deleteOneConfirm')))) return false;
     return ctx.remove(row);
   }
 
   async function removeSelectedRows(): Promise<boolean> {
     const count = ctx.selected.value.length;
     if (!count) return false;
-    if (!(await confirmed(`确定删除选中的 ${count} 条数据吗？`))) return false;
+    if (!(await confirmed(i18n.global.t('grid.deleteSelectedConfirm', { count })))) return false;
     return ctx.removeSelected();
   }
 

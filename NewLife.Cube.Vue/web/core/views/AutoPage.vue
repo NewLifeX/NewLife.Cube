@@ -8,11 +8,13 @@
  * - 对象控制器 Index 返回 { code:0, data:{...} }（带 code 且无 page）
  */
 import { ref, onMounted, computed, defineAsyncComponent } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import request from '@newlifex/cube-vue/core/utils/request';
 import { routeToApiPrefix } from '@newlifex/cube-vue/core/utils/url';
 
 const route = useRoute();
+const { t } = useI18n();
 const apiPrefix = computed(() => routeToApiPrefix(String(route.path)));
 const mode = ref<'pending' | 'list' | 'object'>('pending');
 
@@ -36,7 +38,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="mode === 'pending'" class="autopage-loading">加载中…</div>
+    <div v-if="mode === 'pending'" class="autopage-loading">{{ t('common.loading') }}</div>
   <IndexView v-else-if="mode === 'list'" />
   <ObjectView v-else />
 </template>

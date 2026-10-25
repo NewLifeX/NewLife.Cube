@@ -95,7 +95,7 @@ const fetchData = async () => {
     queryParams.total = page?.totalCount || list.length;
   } catch (error) {
     ElMessage.error(t('common.loadFailed'));
-    console.error('加载数据失败:', error);
+    console.error('Failed to load data:', error);
     tableData.value = [];
     queryParams.total = 0;
   } finally {
