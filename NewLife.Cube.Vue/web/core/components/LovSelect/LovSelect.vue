@@ -6,6 +6,7 @@
       disabled
       loading
       placeholder="加载中..."
+      :size="size"
       style="width: 100%"
     />
 
@@ -22,6 +23,7 @@
       :clearable="clearable"
       :disabled="disabled"
       :loading="loading"
+      :size="size"
       :suffix-icon="Search"
       style="width: 100%"
       @visible-change="handleListVisibleChange"
@@ -45,6 +47,10 @@
       :translate-cache="translateCache"
       :multiple="multiple"
       :model-value="listSelectValue"
+      :page-size="pageSize"
+      :width="dialogWidth"
+      :height="dialogHeight"
+      :size="size"
       @select="handleTableSelect"
       @confirm="handleTableMultiConfirm"
     />
@@ -60,6 +66,7 @@
       :clearable="clearable"
       :disabled="disabled"
       :loading="loading"
+      :size="size"
       style="width: 100%"
       @change="handleMultiChange"
     >
@@ -74,6 +81,7 @@
       :clearable="clearable"
       :disabled="disabled"
       :loading="loading"
+      :size="size"
       style="width: 100%"
       @change="handleEnumChange"
     >
@@ -107,6 +115,12 @@ const props = withDefaults(
     parent?: string | number;
     /** 输出值类型：auto=ENUM 出数字·LIST 原生；number/string=强制归一（承 ADR-064） */
     valueType?: LovValueType;
+    /** 列表型弹窗：每页条数，默认 10 */
+    pageSize?: number;
+    /** 列表型弹窗宽度，默认 680px */
+    dialogWidth?: string | number;
+    /** 列表型弹窗表格高度（固定表头 + 滚动），不设置则随内容自适应 */
+    dialogHeight?: string | number;
   }>(),
   {
     placeholder: '请选择',
