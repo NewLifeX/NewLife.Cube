@@ -3,7 +3,7 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>应用日志</h3>
+          <h3>{{ t('appLog.title') }}</h3>
         </div>
       </template>
 
@@ -19,15 +19,15 @@
         v-loading="loading"
       >
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="appId" label="应用ID" width="80" />
-        <el-table-column prop="appName" label="应用名称" />
-        <el-table-column prop="action" label="操作" />
-        <el-table-column prop="createTime" label="创建时间" />
-        <el-table-column prop="remark" label="备注" show-overflow-tooltip />
-        <el-table-column label="状态" width="100">
+        <el-table-column prop="appId" :label="t('appLog.appId')" width="80" />
+        <el-table-column prop="appName" :label="t('appAdmin.appName')" />
+        <el-table-column prop="action" :label="t('appLog.action')" />
+        <el-table-column prop="createTime" :label="t('userSearch.createTime')" />
+        <el-table-column prop="remark" :label="t('common.remark')" show-overflow-tooltip />
+        <el-table-column :label="t('userSearch.status')" width="100">
           <template #default="scope">
             <el-tag :type="scope.row.success ? 'success' : 'danger'">
-              {{ scope.row.success ? '成功' : '失败' }}
+              {{ scope.row.success ? t('appLog.success') : t('appLog.failed') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -48,6 +48,7 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { apiDataToList } from '@newlifex/cube-vue/core/utils/api-helpers';
@@ -70,6 +71,7 @@ interface AppLog extends BaseEntity {
 // 响应式数据
 const loading = ref(false);
 const tableData = ref<AppLog[]>([]);
+const { t } = useI18n();
 
 // 分页与搜索参数
 const queryParams = reactive({
@@ -92,7 +94,7 @@ const fetchData = async () => {
     tableData.value = list;
     queryParams.total = page?.totalCount || list.length;
   } catch (error) {
-    ElMessage.error('加载数据失败');
+    ElMessage.error(t('common.loadFailed'));
     console.error('加载数据失败:', error);
     tableData.value = [];
     queryParams.total = 0;

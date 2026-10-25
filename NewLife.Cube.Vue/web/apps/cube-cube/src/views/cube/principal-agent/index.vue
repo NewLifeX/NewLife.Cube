@@ -3,8 +3,8 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>主体代理</h3>
-          <el-button type="primary" @click="handleAdd">新增代理</el-button>
+          <h3>{{ t('principalAgent.title') }}</h3>
+          <el-button type="primary" @click="handleAdd">{{ t('principalAgent.add') }}</el-button>
         </div>
       </template>
 
@@ -19,24 +19,28 @@
         style="width: 100%"
         v-loading="loading"
       >
-        <el-table-column prop="id" label="编号" width="80" />
-        <el-table-column prop="name" label="名称" min-width="150" />
-        <el-table-column prop="displayName" label="显示名" min-width="150" />
-        <el-table-column prop="type" label="类型" width="120" />
-        <el-table-column prop="category" label="分类" width="120" />
-        <el-table-column prop="enable" label="启用" width="80">
+        <el-table-column prop="id" :label="t('cronJob.id')" width="80" />
+        <el-table-column prop="name" :label="t('appAdmin.name')" min-width="150" />
+        <el-table-column prop="displayName" :label="t('cronJob.displayName')" min-width="150" />
+        <el-table-column prop="type" :label="t('principalAgent.type')" width="120" />
+        <el-table-column prop="category" :label="t('lookup.category')" width="120" />
+        <el-table-column prop="enable" :label="t('cronJob.enable')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '是' : '否' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" min-width="150" />
-        <el-table-column prop="updateTime" label="更新时间" min-width="150" />
-        <el-table-column label="操作" width="160">
+        <el-table-column prop="createTime" :label="t('userSearch.createTime')" min-width="150" />
+        <el-table-column prop="updateTime" :label="t('common.updateTime')" min-width="150" />
+        <el-table-column :label="t('common.actions')" width="160">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">
+              {{ t('button.edit') }}
+            </el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">
+              {{ t('button.delete') }}
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -54,48 +58,48 @@
     <!-- 代理表单对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="formType === 'add' ? '新增代理' : '编辑代理'"
+      :title="formType === 'add' ? t('principalAgent.add') : t('principalAgent.edit')"
       width="600px"
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="代理名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入代理名称" />
+        <el-form-item :label="t('principalAgent.agentName')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('principalAgent.agentNameHint')" />
         </el-form-item>
-        <el-form-item label="显示名称" prop="displayName">
-          <el-input v-model="form.displayName" placeholder="请输入显示名称" />
+        <el-form-item :label="t('cronJob.displayName')" prop="displayName">
+          <el-input v-model="form.displayName" :placeholder="t('cronJob.displayNameHint')" />
         </el-form-item>
-        <el-form-item label="类型" prop="type">
-          <el-select v-model="form.type" placeholder="请选择类型">
-            <el-option label="个人" value="Personal" />
-            <el-option label="企业" value="Enterprise" />
-            <el-option label="机构" value="Organization" />
+        <el-form-item :label="t('principalAgent.type')" prop="type">
+          <el-select v-model="form.type" :placeholder="t('principalAgent.typeHint')">
+            <el-option :label="t('principalAgent.typePersonal')" value="Personal" />
+            <el-option :label="t('principalAgent.typeEnterprise')" value="Enterprise" />
+            <el-option :label="t('principalAgent.typeOrganization')" value="Organization" />
           </el-select>
         </el-form-item>
-        <el-form-item label="分类" prop="category">
-          <el-input v-model="form.category" placeholder="请输入分类" />
+        <el-form-item :label="t('lookup.category')" prop="category">
+          <el-input v-model="form.category" :placeholder="t('attachmentAdmin.categoryHint')" />
         </el-form-item>
-        <el-form-item label="联系人" prop="contactPerson">
-          <el-input v-model="form.contactPerson" placeholder="请输入联系人" />
+        <el-form-item :label="t('principalAgent.contactPerson')" prop="contactPerson">
+          <el-input v-model="form.contactPerson" :placeholder="t('principalAgent.contactPersonHint')" />
         </el-form-item>
-        <el-form-item label="联系电话" prop="contactPhone">
-          <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
+        <el-form-item :label="t('principalAgent.contactPhone')" prop="contactPhone">
+          <el-input v-model="form.contactPhone" :placeholder="t('principalAgent.contactPhoneHint')" />
         </el-form-item>
-        <el-form-item label="联系邮箱" prop="contactEmail">
-          <el-input v-model="form.contactEmail" placeholder="请输入联系邮箱" />
+        <el-form-item :label="t('principalAgent.contactEmail')" prop="contactEmail">
+          <el-input v-model="form.contactEmail" :placeholder="t('principalAgent.contactEmailHint')" />
         </el-form-item>
-        <el-form-item label="地址" prop="address">
-          <el-input v-model="form.address" placeholder="请输入地址" />
+        <el-form-item :label="t('deptSearch.address')" prop="address">
+          <el-input v-model="form.address" :placeholder="t('principalAgent.addressHint')" />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
+        <el-form-item :label="t('areaAdmin.enableStatus')" prop="enable">
           <el-switch v-model="form.enable" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" />
+        <el-form-item :label="t('common.remark')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="t('principalAgent.remarkHint')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -104,6 +108,7 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { pageInfoDefault, type BaseEntity } from '@newlifex/cube-vue/core/types/common';
 import { handleDeleteOperation, handleFormSubmit, apiDataToList } from '@newlifex/cube-vue/core/utils/api-helpers';
 import { request } from '@newlifex/cube-vue/core/utils/request';
@@ -129,6 +134,7 @@ const dialogVisible = ref(false);
 const formType = ref<'add' | 'edit'>('add');
 const formRef = ref<FormInstance | null>(null);
 const tableData = ref<PrincipalAgent[]>([]);
+const { t } = useI18n();
 
 // 分页与搜索参数
 const queryParams = reactive({
@@ -153,18 +159,18 @@ const form = reactive<Partial<PrincipalAgent>>({
 // 表单验证规则
 const formRules = reactive<FormRules>({
   name: [
-    { required: true, message: '请输入代理名称', trigger: 'blur' }
+    { required: true, message: t('principalAgent.agentNameRequired'), trigger: 'blur' }
   ],
   displayName: [
-    { required: true, message: '请输入显示名称', trigger: 'blur' }
+    { required: true, message: t('cronJob.displayNameRequired'), trigger: 'blur' }
   ],
   type: [
-    { required: true, message: '请选择类型', trigger: 'change' }
+    { required: true, message: t('principalAgent.typeRequired'), trigger: 'change' }
   ],
   contactEmail: [
     {
       type: 'email',
-      message: '请输入正确的邮箱地址',
+      message: t('principalAgent.emailInvalid'),
       trigger: ['blur', 'change']
     }
   ]
@@ -234,7 +240,7 @@ const handleDelete = (row: PrincipalAgent) => {
   handleDeleteOperation(
     () => request.delete(`/Cube/PrincipalAgent/${row.id}`),
     () => callback(),
-    `确定要删除代理"${row.displayName || row.name}"吗？`
+    t('principalAgent.deleteConfirm', { name: row.displayName || row.name }),
   );
 };
 

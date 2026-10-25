@@ -1,52 +1,57 @@
 ﻿<template>
   <div class="debug-page">
-    <h1>微应用调试页面</h1>
+    <h1>{{ t('microDebug.title') }}</h1>
 
     <el-card style="margin-bottom: 20px">
       <template #header>
-        <h3>路由初始化状态</h3>
+        <h3>{{ t('microDebug.routeStatus') }}</h3>
       </template>
-      <p>路由初始化状态: {{ routesInitialized ? '已初始化' : '未初始化' }}</p>
-      <p>当前路径: {{ route.path }}</p>
-      <p>当前路由名称: {{ route.name }}</p>
+      <p>
+        {{ t('microDebug.routeStatus') }}:
+        {{ routesInitialized ? t('microDebug.initialized') : t('microDebug.notInitialized') }}
+      </p>
+      <p>{{ t('microDebug.currentPath') }}: {{ route.path }}</p>
+      <p>{{ t('microDebug.currentRouteName') }}: {{ route.name }}</p>
     </el-card>
 
     <el-card style="margin-bottom: 20px">
       <template #header>
-        <h3>已注册路由</h3>
+        <h3>{{ t('microDebug.registeredRoutes') }}</h3>
       </template>
       <el-table :data="routesList" border style="width: 100%">
-        <el-table-column prop="path" label="路径" width="200" />
-        <el-table-column prop="name" label="名称" width="180" />
-        <el-table-column prop="component" label="组件" />
+        <el-table-column prop="path" :label="t('microDebug.path')" width="200" />
+        <el-table-column prop="name" :label="t('appAdmin.name')" width="180" />
+        <el-table-column prop="component" :label="t('microDebug.component')" />
       </el-table>
     </el-card>
 
     <el-card>
       <template #header>
-        <h3>微应用配置</h3>
+        <h3>{{ t('microDebug.microAppConfig') }}</h3>
       </template>
       <el-table :data="microAppsList" border style="width: 100%">
-        <el-table-column prop="name" label="应用名称" width="150" />
-        <el-table-column prop="prefix" label="前缀" width="100" />
-        <el-table-column prop="status" label="状态" width="100" />
-        <el-table-column prop="routeCount" label="路由数量" width="100" />
+        <el-table-column prop="name" :label="t('appAdmin.appName')" width="150" />
+        <el-table-column prop="prefix" :label="t('microDebug.prefix')" width="100" />
+        <el-table-column prop="status" :label="t('userSearch.status')" width="100" />
+        <el-table-column prop="routeCount" :label="t('microDebug.routeCount')" width="100" />
       </el-table>
     </el-card>
 
     <div style="margin-top: 20px">
-      <el-button @click="refreshStatus">刷新状态</el-button>
-      <el-button @click="testRoute">测试路由</el-button>
+      <el-button @click="refreshStatus">{{ t('microDebug.refreshStatus') }}</el-button>
+      <el-button @click="testRoute">{{ t('microDebug.testRoute') }}</el-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
 const routesInitialized = ref(false);
 const routesList = ref<Array<{path: string, name: string | symbol | undefined, component: string}>>([]);
 const microAppsList = ref<Array<{name: string, prefix?: string, status: string, routeCount: number}>>([]);
