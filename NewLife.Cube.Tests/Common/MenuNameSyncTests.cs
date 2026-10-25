@@ -1,159 +1,122 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using NewLife;
+using System.ComponentModel;
 using NewLife.Cube.Membership;
 using XCode.Membership;
 using Xunit;
 
 namespace NewLife.Cube.Tests.Common;
 
-/// <summary>覆盖菜单命名契约：自动项落库类型全名并跟随代码，用户自定义名称永不覆盖</summary>
+/// <summary>覆盖菜单源文快照契约：扫描只填空，刷新按代码源文覆盖</summary>
 [Collection("ConfigLocalization")]
 public class MenuNameSyncTests
 {
-    private const String UserKey = "XCode.Membership.User";
-
-    private static Menu CreateMenu(String? displayName, String? marker = null) => new()
+    private static Menu CreateMenu(String? displayName, String? fullName = null) => new()
     {
-        Name = "User",
+        Name = "Sample",
         DisplayName = displayName,
-        Ex6 = marker,
+        FullName = fullName ?? typeof(SampleController).FullName,
     };
 
-    [Fact(DisplayName = "命名同步 - 存量空名识别为自动项并写入规范键")]
-    public void EmptyNameBecomesAuto()
+    [Fact(DisplayName = "源文快照 - 显示名为空时写入开发者语言")]
+    public void EmptyNameIsFilled()
     {
         var menu = CreateMenu(null);
 
-        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户", "User", "UserController"));
-        Assert.Equal(UserKey, menu.DisplayName);
-        Assert.Equal(UserKey, menu.Ex6);
-    }
-
-    [Fact(DisplayName = "命名同步 - 存量等于菜单名或类型名识别为自动项")]
-    public void FallbackNameBecomesAuto()
-    {
-        var menu = CreateMenu("User");
-        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户", "User", "UserController"));
-        Assert.Equal(UserKey, menu.DisplayName);
-
-        var menu2 = CreateMenu("UserController");
-        Assert.True(MenuHelper.SyncDisplayName(menu2, UserKey, "用户", "User", "UserController"));
-        Assert.Equal(UserKey, menu2.DisplayName);
-    }
-
-    [Fact(DisplayName = "命名同步 - 存量等于代码源文识别为自动项")]
-    public void SourceNameBecomesAuto()
-    {
-        var menu = CreateMenu("用户");
-
-        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
-        Assert.Equal(UserKey, menu.DisplayName);
-        Assert.Equal(UserKey, menu.Ex6);
-    }
-
-    [Fact(DisplayName = "命名同步 - 存量等于当前语言译文识别为自动项")]
-    public void TranslatedNameBecomesAuto()
-    {
-        var prev = Localization.Culture;
-        var culture = CultureInfo.GetCultureInfo("sw");
-        try
-        {
-            Localization.Register(culture, new Dictionary<String, String> { ["用户"] = "User" }, overwrite: true);
-            Localization.Culture = culture;
-
-            var menu = CreateMenu("User");
-            Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
-            Assert.Equal(UserKey, menu.DisplayName);
-            Assert.Equal(UserKey, menu.Ex6);
-        }
-        finally
-        {
-            Localization.Culture = prev;
-            Localization.Unregister(culture);
-        }
-    }
-
-    [Fact(DisplayName = "命名同步 - 存量等于旧版本英文译文识别为自动项")]
-    public void OtherLanguageNameBecomesAuto()
-    {
-        var menu = CreateMenu("Dictionary parameters");
-
-        Assert.True(MenuHelper.SyncDisplayName(menu, "XCode.Membership.Parameter", "字典参数"));
-        Assert.Equal("XCode.Membership.Parameter", menu.DisplayName);
-        Assert.Equal("XCode.Membership.Parameter", menu.Ex6);
-    }
-
-    [Fact(DisplayName = "命名同步 - 用户自定义名称只标记不覆盖，后续扫描不再修改")]
-    public void CustomNameIsProtected()
-    {
-        var menu = CreateMenu("我的用户");
-
-        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
-        Assert.Equal("我的用户", menu.DisplayName);
-        Assert.Equal(MenuHelper.CustomNameMarker, menu.Ex6);
-
-        Assert.False(MenuHelper.SyncDisplayName(menu, "XCode.Membership.Role", "角色"));
-        Assert.Equal("我的用户", menu.DisplayName);
-        Assert.Equal(MenuHelper.CustomNameMarker, menu.Ex6);
-    }
-
-    [Fact(DisplayName = "命名同步 - 自动项跟随代码改名后的规范键")]
-    public void AutoNameFollowsSourceChange()
-    {
-        var menu = CreateMenu(UserKey, UserKey);
-
-        Assert.True(MenuHelper.SyncDisplayName(menu, "XCode.Membership.Member", "会员"));
-        Assert.Equal("XCode.Membership.Member", menu.DisplayName);
-        Assert.Equal("XCode.Membership.Member", menu.Ex6);
-    }
-
-    [Fact(DisplayName = "命名同步 - 自动项被人工改名后转为自定义并保留文本")]
-    public void EditedAutoNameBecomesCustom()
-    {
-        var menu = CreateMenu("Users", UserKey);
-
-        Assert.True(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
-        Assert.Equal("Users", menu.DisplayName);
-        Assert.Equal(MenuHelper.CustomNameMarker, menu.Ex6);
-
-        Assert.False(MenuHelper.SyncDisplayName(menu, UserKey, "用户"));
-        Assert.Equal("Users", menu.DisplayName);
-    }
-
-    [Fact(DisplayName = "命名同步 - 规范键为空时不处理")]
-    public void EmptyKeyDoesNothing()
-    {
-        var menu = CreateMenu("Users");
-
-        Assert.False(MenuHelper.SyncDisplayName(menu, null, "用户"));
-        Assert.False(MenuHelper.SyncDisplayName(menu, "", "用户"));
-        Assert.Equal("Users", menu.DisplayName);
-        Assert.Null(menu.Ex6);
-    }
-
-    [Fact(DisplayName = "命名同步 - 新建自动项同时写入规范键与标记")]
-    public void MarkAutoNameWritesMarker()
-    {
-        var menu = CreateMenu("用户");
-
-        MenuHelper.MarkAutoName(menu, UserKey);
-        Assert.Equal(UserKey, menu.DisplayName);
-        Assert.Equal(UserKey, menu.Ex6);
-
-        menu.DisplayName = "用户";
-        MenuHelper.MarkAutoName(menu, null);
+        Assert.True(MenuHelper.FillDisplayName(menu, "用户"));
         Assert.Equal("用户", menu.DisplayName);
-        Assert.Equal(UserKey, menu.Ex6);
     }
 
-    [Fact(DisplayName = "命名同步 - 规范键实体全名优先，其次控制器全名")]
-    public void BuildMenuKeyUsesFullName()
+    [Fact(DisplayName = "源文快照 - 已有显示名时一个字节都不改")]
+    public void ExistingNameIsKept()
     {
-        Assert.Equal(UserKey, MenuHelper.BuildMenuKey(typeof(TestUserController), typeof(User)));
-        Assert.Equal(typeof(TestUserController).FullName, MenuHelper.BuildMenuKey(typeof(TestUserController)));
+        foreach (var name in new[] { "用户", "User", "我的用户" })
+        {
+            var menu = CreateMenu(name);
+
+            Assert.False(MenuHelper.FillDisplayName(menu, "用户"));
+            Assert.Equal(name, menu.DisplayName);
+        }
     }
 
-    private sealed class TestUserController { }
+    [Fact(DisplayName = "源文快照 - 源文为空时不做任何处理")]
+    public void EmptySourceDoesNothing()
+    {
+        var menu = CreateMenu(null);
+
+        Assert.False(MenuHelper.FillDisplayName(menu, null));
+        Assert.False(MenuHelper.FillDisplayName(menu, ""));
+        Assert.Null(menu.DisplayName);
+    }
+
+    [Fact(DisplayName = "源文解析 - 控制器特性优先")]
+    public void SourceFromControllerDisplayName()
+    {
+        var menu = CreateMenu(null, typeof(SampleController).FullName);
+
+        Assert.Equal("用户", MenuHelper.GetSourceName(menu));
+    }
+
+    [Fact(DisplayName = "源文解析 - 实体类型取表显示名")]
+    public void SourceFromEntity()
+    {
+        var menu = CreateMenu(null, typeof(User).FullName);
+
+        Assert.Equal("用户", MenuHelper.GetSourceName(menu));
+    }
+
+    [Fact(DisplayName = "源文解析 - 无特性控制器回退类名短名")]
+    public void SourceFromTypeName()
+    {
+        var menu = CreateMenu(null, typeof(PlainController).FullName);
+
+        Assert.Equal("Plain", MenuHelper.GetSourceName(menu));
+    }
+
+    [Fact(DisplayName = "源文解析 - 无法解析类型时返回空")]
+    public void SourceUnknownType()
+    {
+        var menu = CreateMenu(null, "No.Such.Type");
+
+        Assert.Null(MenuHelper.GetSourceName(menu));
+    }
+
+    [Fact(DisplayName = "刷新菜单 - 用代码源文覆盖库值")]
+    public void RefreshOverwritesStoredName()
+    {
+        var menu = CreateMenu("旧名字", typeof(SampleController).FullName);
+
+        Assert.True(MenuHelper.RefreshDisplayName(menu));
+        Assert.Equal("用户", menu.DisplayName);
+
+        // 已经是源文时不再改动
+        Assert.False(MenuHelper.RefreshDisplayName(menu));
+    }
+
+    [Fact(DisplayName = "刷新菜单 - 全名为空时按菜单名猜控制器并补全")]
+    public void RefreshFillsFullName()
+    {
+        var menu = CreateMenu("旧名字", "");
+        menu.Name = "UniqueSync";
+
+        Assert.True(MenuHelper.RefreshDisplayName(menu));
+        Assert.Equal("唯一同步", menu.DisplayName);
+        Assert.Equal(typeof(UniqueSyncController).FullName, menu.FullName);
+    }
+
+    [Fact(DisplayName = "刷新菜单 - 找不到控制器时跳过")]
+    public void RefreshSkipsUnknown()
+    {
+        var menu = CreateMenu("旧名字", "No.Such.Type");
+
+        Assert.False(MenuHelper.RefreshDisplayName(menu));
+        Assert.Equal("旧名字", menu.DisplayName);
+    }
+
+    [DisplayName("用户")]
+    private class SampleController { }
+
+    private class PlainController { }
+
+    [DisplayName("唯一同步")]
+    private class UniqueSyncController { }
 }
