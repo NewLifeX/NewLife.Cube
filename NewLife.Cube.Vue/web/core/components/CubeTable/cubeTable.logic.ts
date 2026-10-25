@@ -1011,7 +1011,9 @@ export interface GridFlags {
  *
  * - 勾选列与工具栏「批量删除」同一口径（`enableSelect !== false`），
  *   否则会出现「有批量删除按钮却没有勾选框」或反之；
- * - 操作列与双击编辑在整页只读时一律关闭；
+ * - 操作列默认保留：整页只读时仍需要「查看」入口（MVC 只读列表同样有查看详情），
+ *   但行内「编辑/删除」由 `readOnly` 在渲染层收掉；
+ * - 双击编辑默认关闭（只读时同理）。
  * - 索引列默认关闭（属于额外信息密度，业务页显式要）。
  */
 export function resolveGridFlags(
@@ -1029,7 +1031,7 @@ export function resolveGridFlags(
     readOnly,
     selection: input.selection ?? (setting?.enableSelect !== false && canBatch),
     indexColumn: input.indexColumn ?? false,
-    rowActions: input.rowActions ?? !readOnly,
+    rowActions: input.rowActions ?? true,
     doubleClickEdit: input.doubleClickEdit ?? Boolean(setting?.enableTableDoubleClick),
   };
 }

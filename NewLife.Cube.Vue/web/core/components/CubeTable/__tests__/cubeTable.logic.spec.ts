@@ -279,9 +279,10 @@ describe('CubeTable/logic 工具栏与表格开关', () => {  it('应该默认�
     expect(resolveGridFlags({}, { enableSelect: false })).toMatchObject({ selection: false });
   });
 
-  it('应该在只读时关掉操作列 当未显式指定 rowActions 时', () => {
-    expect(resolveGridFlags({}, { isReadOnly: true }).rowActions).toBe(false);
-    expect(resolveGridFlags({ rowActions: true }, { isReadOnly: true }).rowActions).toBe(true);
+  it('应该在只读时仍保留操作列 当未显式指定 rowActions 时', () => {
+    // 只读页仍需「查看」入口（MVC 只读列表同样有查看详情），编辑/删除在渲染层按 readOnly 收掉
+    expect(resolveGridFlags({}, { isReadOnly: true }).rowActions).toBe(true);
+    expect(resolveGridFlags({ rowActions: false }, { isReadOnly: true }).rowActions).toBe(false);
   });
 
   it('应该默认关索引列与双击编辑 当后端没声明时', () => {

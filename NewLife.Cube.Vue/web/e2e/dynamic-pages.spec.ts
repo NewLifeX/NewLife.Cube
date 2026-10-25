@@ -196,6 +196,28 @@ test.describe('动态页（/meta 驱动）', () => {
     await expect(page.locator('.el-message--error')).toHaveCount(0);
   });
 
+  test('只读页保留查看详情入口', async ({ page }) => {
+    // 只读控制器（ReadOnlyEntityController）在后端没有写入端点，但详情读取与 MVC 一致：
+    // 操作列只给「查看」，编辑/删除收掉。
+    for (const path of ['/Admin/Log', '/Admin/UserStat']) {
+      await page.goto(path);
+      await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 20000 });
+
+      // 操作列单元格带 .ctg-actions 类；等按钮渲染完成再点
+      const action = page.locator('.el-table__body tr .ctg-actions button').first();
+      await expect(action).toBeVisible({ timeout: 20000 });
+      await action.click();
+
+      const dialog = page.locator('.el-dialog');
+      await expect(dialog).toBeVisible({ timeout: 20000 });
+      await expect(dialog.locator('.fmc-field').first()).toBeVisible({ timeout: 20000 });
+
+      // 查看态底部只有「关闭」，点它收口（Esc 在弹窗内不一定生效）
+      await dialog.locator('.el-dialog__footer button').last().click();
+      await expect(dialog).toBeHidden({ timeout: 10000 });
+    }
+  });
+
   test('菜单页渲染后端声明的批量刷新工具栏按钮', async ({ page }) => {
     await page.goto('/Admin/Menu');
     await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 20000 });

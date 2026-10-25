@@ -189,10 +189,11 @@ const builtinRowActions = computed<CubeRowAction[]>(() => {
   const actions: CubeRowAction[] = [
     { key: '__view', label: t('perm.detail'), icon: View, type: 'primary', onClick: (row) => void props.ctx.openView(row) },
   ];
-  if (permissions.canUpdate.value) {
+  // 整页只读（ReadOnlyEntityController）时后端没有写入端点，只保留查看
+  if (!flags.value.readOnly && permissions.canUpdate.value) {
     actions.push({ key: '__edit', label: t('button.edit'), icon: Edit, type: 'primary', onClick: (row) => void props.ctx.openEdit(row) });
   }
-  if (permissions.canDelete.value) {
+  if (!flags.value.readOnly && permissions.canDelete.value) {
     actions.push({ key: '__remove', label: t('button.delete'), icon: Delete, type: 'danger', onClick: (row) => void props.actions.removeRow(row) });
   }
   return actions;

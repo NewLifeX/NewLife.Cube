@@ -283,13 +283,18 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     expect(text.match(/删除/g)?.length).toBe(2);
   });
 
-  it('应该在只读时不给操作列 当后端 isReadOnly 时', async () => {
+  it('应该只给查看不给编辑删除 当后端 isReadOnly 时', async () => {
     const ctx = makeFakeCtx({
       listFields: [FIELDS.name],
       list: [{ Name: 'a' }],
       setting: { isReadOnly: true },
     });
-    expect(await textOf(ctx)).not.toContain('操作');
+    const text = await textOf(ctx);
+    // 只读页仍需查看详情（对齐 MVC 只读列表），但后端没有写入端点，编辑/删除必须收掉
+    expect(text).toContain('操作');
+    expect(text).toContain('查看');
+    expect(text).not.toContain('编辑');
+    expect(text).not.toContain('删除');
   });
 
   it('应该让删除按钮走确认动作而不是直连引擎 当用户点删除时', async () => {
