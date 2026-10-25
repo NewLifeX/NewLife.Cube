@@ -3,8 +3,8 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>附件管理</h3>
-          <el-button type="primary" @click="handleAdd">上传附件</el-button>
+          <h3>{{ t('attachmentAdmin.title') }}</h3>
+          <el-button type="primary" @click="handleAdd">{{ t('attachmentAdmin.upload') }}</el-button>
         </div>
       </template>
 
@@ -21,28 +21,32 @@
       >
         <el-table-column type="selection" width="55" />
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="fileName" label="文件名" show-overflow-tooltip />
-        <el-table-column prop="category" label="分类" />
-        <el-table-column prop="size" label="大小">
+        <el-table-column prop="fileName" :label="t('cubeFile.fileName')" show-overflow-tooltip />
+        <el-table-column prop="category" :label="t('lookup.category')" />
+        <el-table-column prop="size" :label="t('attachmentAdmin.size')">
           <template #default="scope">
             {{ formatFileSize(scope.row.size) }}
           </template>
         </el-table-column>
-        <el-table-column prop="contentType" label="类型" />
-        <el-table-column prop="downloads" label="下载次数" />
-        <el-table-column prop="createTime" label="上传时间" />
-        <el-table-column prop="createUser" label="上传者" />
-        <el-table-column label="状态" width="100">
+        <el-table-column prop="contentType" :label="t('cubeFile.fileType')" />
+        <el-table-column prop="downloads" :label="t('attachmentAdmin.downloads')" />
+        <el-table-column prop="createTime" :label="t('cubeFile.uploadTime')" />
+        <el-table-column prop="createUser" :label="t('attachmentAdmin.uploader')" />
+        <el-table-column :label="t('userSearch.status')" width="100">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '启用' : '禁用' }}
+              {{ scope.row.enable ? t('common.enable') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column :label="t('common.actions')" width="180">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">
+              {{ t('button.edit') }}
+            </el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">
+              {{ t('button.delete') }}
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -60,11 +64,11 @@
     <!-- 附件表单对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="formType === 'add' ? '上传附件' : '编辑附件'"
+      :title="formType === 'add' ? t('attachmentAdmin.upload') : t('attachmentAdmin.edit')"
       width="600px"
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="文件上传" prop="file" v-if="formType === 'add'">
+        <el-form-item :label="t('attachmentAdmin.fileUpload')" prop="file" v-if="formType === 'add'">
           <el-upload
             ref="uploadRef"
             :auto-upload="false"
@@ -77,35 +81,39 @@
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text">
-              将文件拖拽到此处，或<em>点击上传</em>
+              {{ t('attachmentAdmin.dropHint') }}<em>{{ t('attachmentAdmin.clickUpload') }}</em>
             </div>
             <template #tip>
               <div class="el-upload__tip">
-                支持任意格式文件，单个文件不超过100MB
+                {{ t('attachmentAdmin.uploadTip') }}
               </div>
             </template>
           </el-upload>
         </el-form-item>
-        <el-form-item label="文件名" prop="fileName">
-          <el-input v-model="form.fileName" placeholder="请输入文件名" />
+        <el-form-item :label="t('cubeFile.fileName')" prop="fileName">
+          <el-input v-model="form.fileName" :placeholder="t('attachmentAdmin.fileNameHint')" />
         </el-form-item>
-        <el-form-item label="显示名" prop="displayName">
-          <el-input v-model="form.displayName" placeholder="请输入显示名" />
+        <el-form-item :label="t('cronJob.displayName')" prop="displayName">
+          <el-input v-model="form.displayName" :placeholder="t('attachmentAdmin.displayNameHint')" />
         </el-form-item>
-        <el-form-item label="分类" prop="category">
-          <el-input v-model="form.category" placeholder="请输入分类" />
+        <el-form-item :label="t('lookup.category')" prop="category">
+          <el-input v-model="form.category" :placeholder="t('attachmentAdmin.categoryHint')" />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
+        <el-form-item :label="t('areaAdmin.enableStatus')" prop="enable">
           <el-switch v-model="form.enable" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="form.description" type="textarea" placeholder="请输入描述" />
+        <el-form-item :label="t('lookup.description')" prop="description">
+          <el-input
+            v-model="form.description"
+            type="textarea"
+            :placeholder="t('cronJob.descriptionHint')"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
         <el-button type="primary" @click="submitForm" :loading="uploading">
-          {{ formType === 'add' ? '上传' : '保存' }}
+          {{ formType === 'add' ? t('attachmentAdmin.uploadAction') : t('button.save') }}
         </el-button>
       </template>
     </el-dialog>
@@ -114,7 +122,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
 import type { FormInstance, FormRules, UploadProps, UploadFile } from 'element-plus';
@@ -147,6 +155,7 @@ const formType = ref<'add' | 'edit'>('add');
 const formRef = ref<FormInstance | null>(null);
 const uploadRef = ref();
 const tableData = ref<Attachment[]>([]);
+const { t } = useI18n();
 const selectedFile = ref<File | null>(null);
 
 // 分页与搜索参数
@@ -169,7 +178,7 @@ const form = reactive<Partial<Attachment>>({
 // 表单验证规则
 const formRules = reactive<FormRules>({
   fileName: [
-    { required: true, message: '请输入文件名', trigger: 'blur' }
+    { required: true, message: t('attachmentAdmin.fileNameRequired'), trigger: 'blur' }
   ],
 });
 
@@ -203,7 +212,7 @@ const loadData = async () => {
     tableData.value = list;
     queryParams.total = page?.totalCount || list.length;
   } catch (error) {
-    ElMessage.error('加载数据失败');
+    ElMessage.error(t('common.loadFailed'));
     console.error('加载数据失败:', error);
     tableData.value = [];
     queryParams.total = 0;
@@ -246,7 +255,7 @@ const handleFileChange: UploadProps['onChange'] = (uploadFile: UploadFile) => {
 const beforeUpload = (file: File) => {
   const isLt100M = file.size / 1024 / 1024 < 100;
   if (!isLt100M) {
-    ElMessage.error('上传文件大小不能超过 100MB!');
+    ElMessage.error(t('attachmentAdmin.sizeExceeded'));
   }
   return isLt100M;
 };
@@ -268,20 +277,20 @@ const handleEdit = (row: Attachment) => {
 // 删除
 const handleDelete = (row: Attachment) => {
   ElMessageBox.confirm(
-    `确定要删除附件"${row.displayName || row.fileName}"吗？`,
-    '确认删除',
+    t('attachmentAdmin.deleteConfirm', { name: row.displayName || row.fileName }),
+    t('fileManager.confirmDelete'),
     {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
       type: 'warning',
     }
   ).then(async () => {
     try {
       await request.delete(`/Cube/Attachment/${row.id}`);
-      ElMessage.success('删除成功');
+      ElMessage.success(t('common.deleteSuccess'));
       loadData();
     } catch (error) {
-      ElMessage.error('删除失败');
+      ElMessage.error(t('common.deleteFailed'));
       console.error('删除失败:', error);
     }
   });
@@ -313,7 +322,7 @@ const submitForm = () => {
 
         if (formType.value === 'add') {
           if (!selectedFile.value) {
-            ElMessage.error('请选择文件');
+            ElMessage.error(t('attachmentAdmin.fileRequired'));
             return;
           }
 
@@ -331,16 +340,18 @@ const submitForm = () => {
               'Content-Type': 'multipart/form-data',
             },
           });
-          ElMessage.success('上传成功');
+          ElMessage.success(t('attachmentAdmin.uploadSuccess'));
         } else {
           await request.put(`/Cube/Attachment/${form.id}`, form);
-          ElMessage.success('更新成功');
+          ElMessage.success(t('common.updateSuccess'));
         }
 
         dialogVisible.value = false;
         loadData();
       } catch (error) {
-        ElMessage.error(`${formType.value === 'add' ? '上传' : '更新'}失败`);
+        ElMessage.error(
+          formType.value === 'add' ? t('attachmentAdmin.uploadFailed') : t('common.updateFailed')
+        );
         console.error('操作失败:', error);
       } finally {
         uploading.value = false;
