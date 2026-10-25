@@ -84,15 +84,15 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
     }
 
     /// <summary>刷新显示名。按 FullName 重新解析代码源文，覆盖选中菜单的库值</summary>
-    /// <returns>刷新结果</returns>
+    /// <returns>刷新结果。data.url 为 [refresh] 时前端提示后刷新列表</returns>
     /// <remarks>显示名落库的是开发者语言快照，代码改名后不会自动跟进，由管理员在此显式重置。</remarks>
     [EntityAuthorize(PermissionFlags.Update)]
     [ToolbarButton("Refresh menu names", PermissionFlags.Update, Method = "POST", Icon = "fa-refresh")]
     [HttpPost("/api/[area]/[controller]/refreshName")]
-    public ApiResponse<Int32> RefreshName()
+    public ApiResponse<Object> RefreshName()
     {
         var ids = GetRequest("keys").SplitAsInt();
-        if (ids.Length == 0) return new ApiResponse<Int32> { Code = CubeCode.ParamError.ToInt(), Message = L.T("Please select the menus to refresh first.") };
+        if (ids.Length == 0) return new ApiResponse<Object> { Code = CubeCode.ParamError.ToInt(), Message = L.T("Please select the menus to refresh first.") };
 
         var count = 0;
         foreach (var id in ids)
@@ -103,6 +103,6 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
 
         XCode.Membership.Menu.Meta.Session.ClearCache("RefreshName", true);
 
-        return new ApiResponse<Int32> { Code = 0, Message = L.T("Refreshed {0} menus", count), Data = count };
+        return new ApiResponse<Object> { Code = 0, Message = L.T("Refreshed {0} menus", count), Data = new { count, url = "[refresh]" } };
     }
 }

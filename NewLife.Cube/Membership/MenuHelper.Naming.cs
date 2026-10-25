@@ -89,13 +89,28 @@ public static partial class MenuHelper
     /// <summary>解析菜单的开发者语言源文</summary>
     /// <param name="menu">菜单</param>
     /// <returns>控制器/区域/方法的显示名，或实体表描述；无法解析时返回 null</returns>
-    /// <remarks>依次取控制器 <c>[DisplayName]</c>、实体表描述、类型短名；动作菜单取方法显示名。</remarks>
+    /// <remarks>依次取控制器 <c>[DisplayName]</c>、实体表描述、类型短名；动作菜单取方法显示名。结果按类型全名缓存。</remarks>
     public static String? GetSourceName(IMenu menu)
     {
         if (menu == null) return null;
         if (menu.FullName.IsNullOrEmpty()) return null;
 
         var fullName = menu.FullName;
+        if (_sourceNames.TryGetValue(fullName, out var name)) return name;
+
+        name = ResolveSourceName(fullName);
+
+        // 只缓存解析成功的结果，程序集延迟加载后仍可重新查找
+        if (name != null) _sourceNames[fullName] = name;
+
+        return name;
+    }
+
+    /// <summary>按类型全名解析开发者语言源文</summary>
+    /// <param name="fullName">控制器/区域/实体类型全名，或控制器全名加方法名</param>
+    /// <returns>显示名，无法解析时返回 null</returns>
+    private static String? ResolveSourceName(String fullName)
+    {
         var type = ResolveMenuType(fullName);
         if (type == null) return null;
 
@@ -131,6 +146,8 @@ public static partial class MenuHelper
         // 区域等其它类型
         return type.GetDisplayName() ?? type.Name;
     }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<String, String> _sourceNames = [];
 
     /// <summary>判断当前文化是否与源文语言一致</summary>
     /// <param name="culture">当前文化，空时取本地化文化</param>
