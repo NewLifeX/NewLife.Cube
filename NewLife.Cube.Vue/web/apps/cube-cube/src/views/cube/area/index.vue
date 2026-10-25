@@ -3,8 +3,8 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>地区管理</h3>
-          <el-button type="primary" @click="handleAdd">新增地区</el-button>
+          <h3>{{ t('areaAdmin.title') }}</h3>
+          <el-button type="primary" @click="handleAdd">{{ t('areaAdmin.add') }}</el-button>
         </div>
       </template>
 
@@ -23,31 +23,35 @@
         :tree-props="{ children: 'children' }"
       >
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="名称" />
-        <el-table-column prop="fullName" label="全称" />
-        <el-table-column prop="code" label="代码" />
-        <el-table-column prop="pinyin" label="拼音" />
-        <el-table-column prop="jianpin" label="简拼" />
-        <el-table-column prop="longitude" label="经度" />
-        <el-table-column prop="latitude" label="纬度" />
-        <el-table-column label="级别" width="100">
+        <el-table-column prop="name" :label="t('areaAdmin.name')" />
+        <el-table-column prop="fullName" :label="t('areaAdmin.fullName')" />
+        <el-table-column prop="code" :label="t('getArea.code')" />
+        <el-table-column prop="pinyin" :label="t('getArea.pinyin')" />
+        <el-table-column prop="jianpin" :label="t('areaAdmin.jianpin')" />
+        <el-table-column prop="longitude" :label="t('getArea.longitude')" />
+        <el-table-column prop="latitude" :label="t('getArea.latitude')" />
+        <el-table-column :label="t('getArea.level')" width="100">
           <template #default="scope">
             <el-tag :type="getLevelType(scope.row.level)">
               {{ getLevelText(scope.row.level) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column :label="t('userSearch.status')" width="100">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '启用' : '禁用' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column :label="t('common.actions')" width="180">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">
+              {{ t('button.edit') }}
+            </el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">
+              {{ t('button.delete') }}
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -65,22 +69,27 @@
     <!-- 地区表单对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="formType === 'add' ? '新增地区' : '编辑地区'"
+      :title="formType === 'add' ? t('areaAdmin.add') : t('areaAdmin.edit')"
       width="600px"
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="地区名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入地区名称" />
+        <el-form-item :label="t('areaAdmin.areaName')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('areaAdmin.areaNameHint')" />
         </el-form-item>
-        <el-form-item label="全称" prop="fullName">
-          <el-input v-model="form.fullName" placeholder="请输入地区全称" />
+        <el-form-item :label="t('areaAdmin.fullName')" prop="fullName">
+          <el-input v-model="form.fullName" :placeholder="t('areaAdmin.fullNameHint')" />
         </el-form-item>
-        <el-form-item label="地区代码" prop="code">
-          <el-input v-model="form.code" placeholder="请输入地区代码" />
+        <el-form-item :label="t('areaAdmin.areaCode')" prop="code">
+          <el-input v-model="form.code" :placeholder="t('areaAdmin.areaCodeHint')" />
         </el-form-item>
-        <el-form-item label="上级地区" prop="parentId">
-          <el-select v-model="form.parentId" placeholder="请选择上级地区" clearable filterable>
-            <el-option label="无上级" :value="0" />
+        <el-form-item :label="t('areaAdmin.parentArea')" prop="parentId">
+          <el-select
+            v-model="form.parentId"
+            :placeholder="t('areaAdmin.parentAreaHint')"
+            clearable
+            filterable
+          >
+            <el-option :label="t('areaAdmin.noParent')" :value="0" />
             <el-option
               v-for="area in areaOptions"
               :key="area.id"
@@ -89,33 +98,41 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="级别" prop="level">
-          <el-select v-model="form.level" placeholder="请选择级别">
-            <el-option label="省份" :value="1" />
-            <el-option label="城市" :value="2" />
-            <el-option label="区县" :value="3" />
-            <el-option label="乡镇" :value="4" />
+        <el-form-item :label="t('getArea.level')" prop="level">
+          <el-select v-model="form.level" :placeholder="t('areaAdmin.levelHint')">
+            <el-option :label="t('areaAdmin.levelProvince')" :value="1" />
+            <el-option :label="t('areaAdmin.levelCity')" :value="2" />
+            <el-option :label="t('areaAdmin.levelDistrict')" :value="3" />
+            <el-option :label="t('areaAdmin.levelTown')" :value="4" />
           </el-select>
         </el-form-item>
-        <el-form-item label="拼音" prop="pinyin">
-          <el-input v-model="form.pinyin" placeholder="请输入拼音" />
+        <el-form-item :label="t('getArea.pinyin')" prop="pinyin">
+          <el-input v-model="form.pinyin" :placeholder="t('areaAdmin.pinyinHint')" />
         </el-form-item>
-        <el-form-item label="简拼" prop="jianpin">
-          <el-input v-model="form.jianpin" placeholder="请输入简拼" />
+        <el-form-item :label="t('areaAdmin.jianpin')" prop="jianpin">
+          <el-input v-model="form.jianpin" :placeholder="t('areaAdmin.jianpinHint')" />
         </el-form-item>
-        <el-form-item label="经度" prop="longitude">
-          <el-input-number v-model="form.longitude" placeholder="请输入经度" :precision="6" />
+        <el-form-item :label="t('getArea.longitude')" prop="longitude">
+          <el-input-number
+            v-model="form.longitude"
+            :placeholder="t('areaAdmin.longitudeHint')"
+            :precision="6"
+          />
         </el-form-item>
-        <el-form-item label="纬度" prop="latitude">
-          <el-input-number v-model="form.latitude" placeholder="请输入纬度" :precision="6" />
+        <el-form-item :label="t('getArea.latitude')" prop="latitude">
+          <el-input-number
+            v-model="form.latitude"
+            :placeholder="t('areaAdmin.latitudeHint')"
+            :precision="6"
+          />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
+        <el-form-item :label="t('areaAdmin.enableStatus')" prop="enable">
           <el-switch v-model="form.enable" :active-value="true" :inactive-value="false" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -124,6 +141,7 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
@@ -155,6 +173,7 @@ const formType = ref<'add' | 'edit'>('add');
 const formRef = ref<FormInstance | null>(null);
 const tableData = ref<Area[]>([]);
 const areaOptions = ref<Area[]>([]);
+const { t } = useI18n();
 
 // 分页与搜索参数
 const queryParams = reactive({
@@ -180,13 +199,13 @@ const form = reactive<Partial<Area>>({
 // 表单验证规则
 const formRules = reactive<FormRules>({
   name: [
-    { required: true, message: '请输入地区名称', trigger: 'blur' }
+    { required: true, message: t('areaAdmin.areaNameRequired'), trigger: 'blur' }
   ],
   code: [
-    { required: true, message: '请输入地区代码', trigger: 'blur' }
+    { required: true, message: t('areaAdmin.areaCodeRequired'), trigger: 'blur' }
   ],
   level: [
-    { required: true, message: '请选择地区级别', trigger: 'change' }
+    { required: true, message: t('areaAdmin.levelRequired'), trigger: 'change' }
   ]
 });
 
@@ -203,8 +222,14 @@ const getLevelType = (level: number): 'success' | 'primary' | 'warning' | 'dange
 
 // 获取级别文本
 const getLevelText = (level: number) => {
-  const texts = ['', '省份', '城市', '区县', '乡镇'];
-  return texts[level] || '未知';
+  const texts = [
+    '',
+    t('areaAdmin.levelProvince'),
+    t('areaAdmin.levelCity'),
+    t('areaAdmin.levelDistrict'),
+    t('areaAdmin.levelTown'),
+  ];
+  return texts[level] || t('areaAdmin.levelUnknown');
 };
 
 // 加载地区选项
@@ -243,7 +268,7 @@ const loadData = async () => {
     tableData.value = list;
     queryParams.total = page?.totalCount || list.length;
   } catch (error) {
-    ElMessage.error('加载数据失败');
+    ElMessage.error(t('common.loadFailed'));
     console.error('加载数据失败:', error);
     tableData.value = [];
     queryParams.total = 0;
@@ -298,20 +323,20 @@ const PageSizeChange = (size: number) => {
 // 删除
 const handleDelete = (row: Area) => {
   ElMessageBox.confirm(
-    `确定要删除地区"${row.fullName || row.name}"吗？`,
-    '确认删除',
+    t('areaAdmin.deleteConfirm', { name: row.fullName || row.name }),
+    t('fileManager.confirmDelete'),
     {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
       type: 'warning',
     }
   ).then(async () => {
     try {
       await request.delete(`/Cube/Area/${row.id}`);
-      ElMessage.success('删除成功');
+      ElMessage.success(t('common.deleteSuccess'));
       loadData();
     } catch (error) {
-      ElMessage.error('删除失败');
+      ElMessage.error(t('common.deleteFailed'));
       console.error('删除失败:', error);
     }
   });
@@ -344,15 +369,17 @@ const submitForm = () => {
       try {
         if (formType.value === 'add') {
           await request.post('/Cube/Area', form);
-          ElMessage.success('新增成功');
+          ElMessage.success(t('common.addSuccess'));
         } else {
           await request.put(`/Cube/Area/${form.id}`, form);
-          ElMessage.success('更新成功');
+          ElMessage.success(t('common.updateSuccess'));
         }
         dialogVisible.value = false;
         loadData();
       } catch (error) {
-        ElMessage.error(`${formType.value === 'add' ? '新增' : '更新'}失败`);
+        ElMessage.error(
+          formType.value === 'add' ? t('common.addFailed') : t('common.updateFailed')
+        );
         console.error('操作失败:', error);
       }
     }
