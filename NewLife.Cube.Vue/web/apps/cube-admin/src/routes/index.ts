@@ -14,12 +14,7 @@ const routes: RouteRecordRaw[] = [
     name: 'admin-db',
     component: () => import('../views/admin/db/index.vue'),
   },
-  // 部门管理（部门树 + 主管选择）
-  {
-    path: '/Admin/Department',
-    name: 'admin-department',
-    component: () => import('../views/admin/department/index.vue'),
-  },
+
   // 文件管理（上传/下载/预览）
   {
     path: '/Admin/File',
@@ -38,30 +33,15 @@ const routes: RouteRecordRaw[] = [
     name: 'admin-menu',
     component: () => import('../views/admin/menu/index.vue'),
   },
-  // OAuth配置管理（多 Tab 分组 + scope 多选）
-  {
-    path: '/Admin/OAuthConfig',
-    name: 'admin-oauth-config',
-    component: () => import('../views/admin/oauth-config/index.vue'),
-  },
+
   // 角色管理（菜单权限树）
   {
     path: '/Admin/Role',
     name: 'admin-role',
     component: () => import('../views/admin/role/index.vue'),
   },
-  // 租户用户管理（角色分配 + 主角色）
-  {
-    path: '/Admin/TenantUser',
-    name: 'admin-tenant-user',
-    component: () => import('../views/admin/tenant-user/index.vue'),
-  },
-  // 用户管理（角色/部门/地区关联选择）
-  {
-    path: '/Admin/User',
-    name: 'admin-user',
-    component: () => import('../views/admin/user/index.vue'),
-  },
+
+
   // 用户统计（图表）
   {
     path: '/Admin/UserStat',
