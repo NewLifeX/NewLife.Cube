@@ -106,6 +106,13 @@ test.describe('动态页（/meta 驱动）', () => {
     }
   });
 
+  test('接口型控制器显示说明页而不是空表格', async ({ page }) => {
+    // vTest1 下是框架的纯 API 控制器（无实体元数据），不应渲染出点了就报错的工具栏
+    await page.goto('/vTest1/Mfa');
+    await expect(page.locator('.autopage-unsupported')).toBeVisible({ timeout: 20000 });
+    expect(await page.locator('.cube-table').count()).toBe(0);
+  });
+
   test('设置中心以二级 Tab 串联多个设置页', async ({ page }) => {
     await page.goto('/Admin/Cube');
     await expect(page.locator('.el-tabs__item').first()).toBeVisible({ timeout: 15000 });
