@@ -7,18 +7,20 @@
  * - 点击展开下拉菜单，包含个人中心和退出选项
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 
 interface MenuOption {
   id: string;
-  label: string;
+  labelKey: string;
   icon: string;
   danger?: boolean;
 }
 
 const userStore = useUserStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const menuRef = ref<HTMLElement | null>(null);
 const menuOpen = ref(false);
@@ -30,9 +32,9 @@ const userInitial = computed(() =>
 const userName = computed(() => currentUser.value?.displayName || currentUser.value?.name || '');
 
 const menuOptions: MenuOption[] = [
-  { id: 'profile', label: '个人中心', icon: 'user' },
-  { id: 'security', label: '安全中心', icon: 'lock' },
-  { id: 'logout', label: '退出登录', icon: 'logout', danger: true },
+  { id: 'profile', labelKey: 'userMenu.profile', icon: 'user' },
+  { id: 'security', labelKey: 'userMenu.security', icon: 'lock' },
+  { id: 'logout', labelKey: 'userMenu.logout', icon: 'logout', danger: true },
 ];
 
 function toggleMenu() {
@@ -94,7 +96,7 @@ onUnmounted(() => {
           <div class="dropdown-avatar">{{ userInitial }}</div>
           <div class="dropdown-info">
             <div class="dropdown-name">{{ userName }}</div>
-            <div class="dropdown-role">{{ currentUser?.roleNames || '游客' }}</div>
+            <div class="dropdown-role">{{ currentUser?.roleNames || t('userMenu.guest') }}</div>
           </div>
         </div>
         <div class="dropdown-divider"></div>
@@ -131,7 +133,7 @@ onUnmounted(() => {
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          <span>{{ opt.label }}</span>
+          <span>{{ t(opt.labelKey) }}</span>
         </button>
       </div>
     </Transition>

@@ -14,6 +14,7 @@
  *   dropup   — 是否向上弹出，侧边栏底部使用时设 true
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 import { resolveAssetUrl } from '@newlifex/cube-vue/core/utils/url';
@@ -32,6 +33,7 @@ withDefaults(defineProps<Props>(), {
 
 const router = useRouter();
 const userStore = useUserStore();
+const { t } = useI18n();
 
 const menuRef = ref<HTMLElement | null>(null);
 const menuOpen = ref(false);
@@ -40,7 +42,7 @@ const avatarError = ref(false);
 const currentUser = computed(() => userStore.userInfo);
 const userId = computed(() => currentUser.value?.id);
 const userName = computed(
-  () => currentUser.value?.displayName || currentUser.value?.name || '用户',
+  () => currentUser.value?.displayName || currentUser.value?.name || t('userMenu.user'),
 );
 const userInitial = computed(() => userName.value.charAt(0).toUpperCase());
 // 头像地址后端以 / 开头返回时，统一拼接 baseUrl
@@ -142,7 +144,7 @@ onUnmounted(() => {
           </div>
           <div class="dropdown-info">
             <div class="dropdown-name">{{ userName }}</div>
-            <div class="dropdown-role">{{ currentUser?.roleName || '用户' }}</div>
+            <div class="dropdown-role">{{ currentUser?.roleName || t('userMenu.user') }}</div>
           </div>
         </div>
         <div class="dropdown-divider" />
@@ -160,7 +162,7 @@ onUnmounted(() => {
             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-          <span>个人中心</span>
+          <span>{{ t('userMenu.profile') }}</span>
         </button>
 
         <!-- 退出登录 -->
@@ -178,7 +180,7 @@ onUnmounted(() => {
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          <span>退出登录</span>
+          <span>{{ t('userMenu.logout') }}</span>
         </button>
       </div>
     </Transition>

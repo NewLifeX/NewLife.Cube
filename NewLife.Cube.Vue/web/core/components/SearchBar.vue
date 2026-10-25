@@ -6,6 +6,7 @@
  * box  模式 — 搜索框 + 菜单模糊搜索结果下拉
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
 import { useMenuStore, type FlatMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
@@ -16,7 +17,10 @@ interface Props {
   placeholder?: string;
 }
 
-const { mode = 'icon', placeholder = '搜索菜单...' } = defineProps<Props>();
+const { mode = 'icon', placeholder } = defineProps<Props>();
+
+const { t } = useI18n();
+const placeholderText = computed(() => placeholder ?? t('topBar.searchMenu'));
 
 const emit = defineEmits<{ search: [value: string] }>();
 
@@ -94,7 +98,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
 
 <template>
   <!-- 图标模式 -->
-  <ActionButton v-if="mode === 'icon'" title="全局搜索">
+  <ActionButton v-if="mode === 'icon'" :title="t('topBar.globalSearch')">
     <svg
       width="15"
       height="15"
@@ -127,7 +131,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
       <input
         type="text"
         class="sb-input"
-        :placeholder="placeholder"
+        :placeholder="placeholderText"
         :value="searchText"
         @input="handleInput"
         @focus="showResults = searchText.trim().length > 0"
@@ -162,7 +166,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
             <circle cx="11" cy="11" r="8" />
             <path d="M21 21l-4.35-4.35" />
           </svg>
-          <span>未找到匹配菜单</span>
+          <span>{{ t('topBar.noMatchingMenu') }}</span>
         </div>
 
         <!-- 结果列表 -->

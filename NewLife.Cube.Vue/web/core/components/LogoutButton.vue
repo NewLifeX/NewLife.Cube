@@ -3,6 +3,8 @@
  * LogoutButton - 退出登录按钮组件
  * 使用 ActionButton 基类样式
  */
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 import ActionButton from './ActionButton.vue';
 
@@ -17,10 +19,13 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   showLabel: false,
-  label: '退出',
+  label: undefined,
 });
 
 const userStore = useUserStore();
+const { t } = useI18n();
+
+const labelText = computed(() => props.label ?? t('userMenu.logout'));
 
 function handleLogout() {
   if (props.onClick) {
@@ -32,7 +37,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <ActionButton title="退出登录" @click="handleLogout">
+  <ActionButton :title="t('userMenu.logout')" @click="handleLogout">
     <svg
       width="15"
       height="15"
@@ -47,7 +52,7 @@ function handleLogout() {
       <polyline points="16 17 21 12 16 7" />
       <line x1="21" y1="12" x2="9" y2="12" />
     </svg>
-    <span v-if="showLabel" class="logout-label">{{ label }}</span>
+    <span v-if="showLabel" class="logout-label">{{ labelText }}</span>
   </ActionButton>
 </template>
 

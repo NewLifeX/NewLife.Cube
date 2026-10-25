@@ -1732,4 +1732,29 @@ export default {
   'appLog.action': 'Action',
   'appLog.success': 'Succeeded',
   'appLog.failed': 'Failed',
+
+  'form.cannotBeEmpty': ' cannot be empty',
+  'form.requiredMark': 'required fields',
+  'form.saveAndContinue': 'Save and continue',
+
+  'tabs.close': 'Close',
+  'tabs.closeOthers': 'Close others',
+  'tabs.closeAll': 'Close all',
+  'tabs.refreshCurrent': 'Refresh current',
+
+  'userMenu.profile': 'Profile',
+  'userMenu.security': 'Security',
+  'userMenu.logout': 'Sign out',
+  'userMenu.guest': 'Guest',
+  'userMenu.user': 'User',
+
+  'topBar.searchMenu': 'Search menus...',
+  'topBar.globalSearch': 'Global search',
+  'topBar.noMatchingMenu': 'No matching menu',
+  'topBar.expandMenu': 'Expand menu',
+  'topBar.collapseMenu': 'Collapse menu',
+
+  'iconSelector.select': 'Select an icon',
+  'iconSelector.search': 'Search icons',
+  'iconSelector.empty': 'No matching icon',
 };

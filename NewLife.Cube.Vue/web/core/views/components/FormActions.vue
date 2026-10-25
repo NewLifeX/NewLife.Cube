@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
 interface Props {
   showContinue?: boolean;
 }
@@ -12,22 +14,28 @@ const emit = defineEmits<{
   continue: [];
   cancel: [];
 }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
   <div class="form-actions">
-    <span class="fa-hint">* 为必填字段</span>
+    <span class="fa-hint">* {{ t('form.requiredMark') }}</span>
     <div class="fa-buttons">
-      <button class="fa-btn fa-btn--cancel" type="button" @click="emit('cancel')">取消</button>
+      <button class="fa-btn fa-btn--cancel" type="button" @click="emit('cancel')">
+        {{ t('button.cancel') }}
+      </button>
       <button
         v-if="showContinue"
         class="fa-btn fa-btn--continue"
         type="button"
         @click="emit('continue')"
       >
-        保存并继续
+        {{ t('form.saveAndContinue') }}
       </button>
-      <button class="fa-btn fa-btn--primary" type="button" @click="emit('submit')">保存</button>
+      <button class="fa-btn fa-btn--primary" type="button" @click="emit('submit')">
+        {{ t('button.save') }}
+      </button>
     </div>
   </div>
 </template>

@@ -1,21 +1,22 @@
 ﻿<template>
   <el-form :inline="true" :model="searchForm" class="cube-search-form cube-search-form-right">
-    <el-form-item label="关键词">
-      <el-input v-model="searchForm.q" placeholder="关键词搜索" clearable>
+    <el-form-item :label="t('userSearch.keyword')">
+      <el-input v-model="searchForm.q" :placeholder="t('userSearch.keywordHint')" clearable>
         <template #prefix>
           <span class="search-prefix">&#128269;</span>
         </template>
       </el-input>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="handleSearch">查询</el-button>
-      <el-button @click="handleReset">重置</el-button>
+      <el-button type="primary" @click="handleSearch">{{ t('button.search') }}</el-button>
+      <el-button @click="handleReset">{{ t('button.reset') }}</el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script setup lang="ts">
 import { reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 // 定义组件名称
 defineOptions({
@@ -39,6 +40,8 @@ const props = withDefaults(defineProps<Props>(), {
   onReset: () => {},
   onCallback: () => {}
 });
+
+const { t } = useI18n();
 
 // // 查询表单数据
 const searchForm = reactive({

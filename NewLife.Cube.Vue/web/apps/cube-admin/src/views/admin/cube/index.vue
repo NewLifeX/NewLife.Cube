@@ -723,7 +723,7 @@ const loadData = async () => {
     }
   } catch (error) {
     ElMessage.error(t('cubeSetting.loadFailed'));
-    console.error('加载配置失败:', error);
+    console.error('Failed to load config:', error);
   } finally {
     loading.value = false;
   }
@@ -737,7 +737,7 @@ const handleSave = async () => {
     ElMessage.success(t('cubeSetting.saveSuccess'));
   } catch (error) {
     ElMessage.error(t('cubeSetting.saveFailed'));
-    console.error('保存配置失败:', error);
+    console.error('Failed to save config:', error);
   } finally {
     loading.value = false;
   }

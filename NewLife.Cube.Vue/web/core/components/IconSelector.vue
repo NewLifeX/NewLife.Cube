@@ -6,7 +6,10 @@
  * 列表图标预览由 ListTableContent 直接渲染，本组件用于表单编辑。
  */
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
@@ -14,7 +17,7 @@ const props = withDefaults(
     disabled?: boolean;
     placeholder?: string;
   }>(),
-  { modelValue: '', disabled: false, placeholder: '选择图标' },
+  { modelValue: '', disabled: false, placeholder: undefined },
 );
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>();
@@ -53,14 +56,14 @@ function selectIcon(name: string) {
       <template #reference>
         <el-button :disabled="disabled" class="icon-selector__trigger">
           <el-icon v-if="currentIcon"><component :is="currentIcon" /></el-icon>
-          <span class="icon-selector__label">{{ modelValue || placeholder }}</span>
+          <span class="icon-selector__label">{{ modelValue || placeholder || t('iconSelector.select') }}</span>
         </el-button>
       </template>
 
       <div class="icon-selector__panel">
         <el-input
           v-model="keyword"
-          placeholder="搜索图标"
+          :placeholder="t('iconSelector.search')"
           clearable
           size="small"
           class="icon-selector__search"
@@ -77,7 +80,9 @@ function selectIcon(name: string) {
           >
             <el-icon><component :is="(ElementPlusIconsVue as Record<string, unknown>)[name]" /></el-icon>
           </button>
-          <p v-if="filteredIcons.length === 0" class="icon-selector__empty">无匹配图标</p>
+          <p v-if="filteredIcons.length === 0" class="icon-selector__empty">
+        {{ t('iconSelector.empty') }}
+      </p>
         </div>
       </div>
     </el-popover>

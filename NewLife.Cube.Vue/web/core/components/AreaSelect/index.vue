@@ -10,6 +10,7 @@
  * `v-model` 只暴露最后一级地区编号（与后端 AreaId 字段一致）。
  */
 import { ref, watch } from 'vue';
+import i18n from '../../i18n';
 import request from '../../utils/request';
 import {
   areaPathIds,
@@ -33,7 +34,7 @@ const props = withDefaults(
     modelValue: null,
     level: 3,
     disabled: false,
-    placeholder: '请选择地区',
+    placeholder: undefined,
   },
 );
 
@@ -65,7 +66,7 @@ const cascaderProps = {
     fetchChildren(id)
       .then((options) => resolve(options))
       .catch((err) => {
-        console.error('[AreaSelect] 地区子级加载失败:', err);
+        console.error('[AreaSelect] Failed to load child areas:', err);
         resolve([]);
       })
       .finally(() => {
@@ -91,7 +92,7 @@ async function syncPath(value: unknown): Promise<void> {
     const path = areaPathIds(normalizeAreaResponse(res));
     selected.value = path.length ? path : [id];
   } catch (err) {
-    console.error('[AreaSelect] 地区路径加载失败:', err);
+    console.error('[AreaSelect] Failed to load area path:', err);
     selected.value = [id];
   }
 }
@@ -120,7 +121,7 @@ function onChange(value: unknown): void {
     :options="[]"
     :props="cascaderProps"
     :disabled="disabled || loading"
-    :placeholder="placeholder"
+    :placeholder="placeholder ?? i18n.global.t('form.placeholderArea')"
     clearable
     @update:model-value="onChange"
   />

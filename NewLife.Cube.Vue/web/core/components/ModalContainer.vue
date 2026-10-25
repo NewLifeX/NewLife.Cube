@@ -47,6 +47,7 @@ import type {
 /* 使用 core/types/forms 的 FormColumnConfig 替代 src/ 层的 ColumnConfig，
    消除 core/ 对 src/ 的跨层依赖，确保框架层不耦合旧版遗留代码 */
 import type { FormColumnConfig } from '../types/forms';
+import i18n from '../i18n';
 
 /**
  * config 表单模式的控件渲染辅助。
@@ -272,7 +273,7 @@ export default defineComponent({
               label: c.label ?? prop,
               prop,
               rules: c.required
-                ? [{ required: true, message: `${c.label}不能为空`, trigger: 'blur' }]
+                ? [{ required: true, message: `${c.label}${i18n.global.t('form.cannotBeEmpty')}`, trigger: 'blur' }]
                 : [],
             },
             () => fieldVNode,
@@ -367,7 +368,7 @@ export default defineComponent({
         h(
           ElButton,
           { onClick: () => handleCancel(item) },
-          { default: () => o.cancelText ?? '取消' },
+          { default: () => o.cancelText ?? i18n.global.t('button.cancel') },
         ),
         h(
           ElButton,
@@ -380,7 +381,7 @@ export default defineComponent({
                 'config' in o && o.config && item.formData ? item.formData : undefined,
               ),
           },
-          { default: () => o.confirmText ?? '确定' },
+          { default: () => o.confirmText ?? i18n.global.t('button.confirm') },
         ),
       ]);
     }

@@ -1708,4 +1708,29 @@ export default {
   'appLog.action': '操作',
   'appLog.success': '成功',
   'appLog.failed': '失败',
+
+  'form.cannotBeEmpty': '不能为空',
+  'form.requiredMark': '为必填字段',
+  'form.saveAndContinue': '保存并继续',
+
+  'tabs.close': '关闭',
+  'tabs.closeOthers': '关闭其他',
+  'tabs.closeAll': '关闭全部',
+  'tabs.refreshCurrent': '刷新当前',
+
+  'userMenu.profile': '个人中心',
+  'userMenu.security': '安全中心',
+  'userMenu.logout': '退出登录',
+  'userMenu.guest': '游客',
+  'userMenu.user': '用户',
+
+  'topBar.searchMenu': '搜索菜单...',
+  'topBar.globalSearch': '全局搜索',
+  'topBar.noMatchingMenu': '未找到匹配菜单',
+  'topBar.expandMenu': '展开菜单',
+  'topBar.collapseMenu': '收起菜单',
+
+  'iconSelector.select': '选择图标',
+  'iconSelector.search': '搜索图标',
+  'iconSelector.empty': '无匹配图标',
 };

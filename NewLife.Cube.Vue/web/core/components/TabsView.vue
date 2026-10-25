@@ -6,6 +6,7 @@
  * 标签数据由 tabs store 管理，随路由自动增删。
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useTabsStore, type TabItem } from '../stores/tabs';
 import { useMenuStore } from '../stores/menu';
@@ -18,6 +19,7 @@ const ElIconArrowRight = ElementPlusIcons.ArrowRight;
 const router = useRouter();
 const tabsStore = useTabsStore();
 const menuStore = useMenuStore();
+const { t } = useI18n();
 
 const scrollContainer = ref<HTMLDivElement>();
 const hasOverflow = ref(false);
@@ -223,11 +225,17 @@ if (typeof document !== 'undefined') {
           class="tabs-context-item"
           @click="handleContextClose"
         >
-          关闭
+          {{ t('tabs.close') }}
         </div>
-        <div class="tabs-context-item" @click="handleContextCloseOthers">关闭其他</div>
-        <div class="tabs-context-item" @click="handleContextCloseAll">关闭全部</div>
-        <div class="tabs-context-item" @click="handleContextRefresh">刷新当前</div>
+        <div class="tabs-context-item" @click="handleContextCloseOthers">
+          {{ t('tabs.closeOthers') }}
+        </div>
+        <div class="tabs-context-item" @click="handleContextCloseAll">
+          {{ t('tabs.closeAll') }}
+        </div>
+        <div class="tabs-context-item" @click="handleContextRefresh">
+          {{ t('tabs.refreshCurrent') }}
+        </div>
       </div>
     </Teleport>
   </div>

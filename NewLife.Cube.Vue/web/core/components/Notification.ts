@@ -4,6 +4,7 @@
  * 封装 Element Plus 的 ElNotification 组件
  */
 import { ElNotification } from 'element-plus'
+import i18n from '../i18n'
 import type { NotificationParams } from '../types/notification'
 
 /**
@@ -17,7 +18,7 @@ const info = (params: NotificationParams) => {
   ElNotification({
     type: 'info',
     message: params.message,
-    title: params.title || '信息',
+    title: params.title || i18n.global.t('notification.info'),
     duration: params.duration || 3000,
   })
 }
@@ -33,7 +34,7 @@ const success = (params: NotificationParams) => {
   ElNotification({
     type: 'success',
     message: params.message,
-    title: params.title || '成功',
+    title: params.title || i18n.global.t('notification.success'),
     duration: params.duration || 3000,
   })
 }
@@ -49,7 +50,7 @@ const error = (params: NotificationParams) => {
   ElNotification({
     type: 'error',
     message: params.message,
-    title: params.title || '错误',
+    title: params.title || i18n.global.t('notification.error'),
     duration: params.duration || 5000,
   })
 }
@@ -65,7 +66,7 @@ const warning = (params: NotificationParams) => {
   ElNotification({
     type: 'warning',
     message: params.message,
-    title: params.title || '警告',
+    title: params.title || i18n.global.t('notification.warning'),
     duration: params.duration || 4000,
   })
 }

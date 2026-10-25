@@ -1,17 +1,19 @@
 ﻿<template>
   <el-form :inline="true"  class="cube-search-form cube-search-form-right">
-    <el-form-item label="关键词">
-      <el-input v-model="$data.searchText" placeholder="关键词搜索" clearable />
+    <el-form-item :label="t('userSearch.keyword')">
+      <el-input v-model="$data.searchText" :placeholder="t('userSearch.keywordHint')" clearable />
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="onSearch">查询</el-button>
-      <el-button @click="onReset">重置</el-button>
+      <el-button type="primary" @click="onSearch">{{ t('button.search') }}</el-button>
+      <el-button @click="onReset">{{ t('button.reset') }}</el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script setup lang="ts">
 import { reactive } from "vue";
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 const $props = defineProps({
   fnSearch: {
     type: Function,

@@ -9,7 +9,7 @@
     <div v-show="!collapsed" class="cube-side-menu-search">
       <el-input
         v-model="searchText"
-        placeholder="搜索菜单..."
+        :placeholder="t('topBar.searchMenu')"
         :prefix-icon="Search"
         size="small"
         clearable
@@ -111,7 +111,7 @@
       </div>
       <button
         class="cube-side-menu-collapse-btn"
-        :title="collapsed ? '展开菜单' : '收起菜单'"
+        :title="collapsed ? t('topBar.expandMenu') : t('topBar.collapseMenu')"
         @click="$emit('toggle')"
       >
         <el-icon :size="16">
@@ -175,6 +175,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, useSlots } from "vue";
+import { useI18n } from 'vue-i18n';
 import { type Component } from "vue";
 import {
   useMenuStore,
@@ -193,6 +194,7 @@ import { Search, Expand, Fold } from "@element-plus/icons-vue";
 const props = defineProps<{ collapsed?: boolean }>();
 defineEmits<{ (e: "toggle"): void }>();
 const slots = useSlots();
+const { t } = useI18n();
 
 const menuStore = useMenuStore();
 const { treeMenus, activeMenu } = storeToRefs(menuStore);

@@ -1692,4 +1692,29 @@ export default {
   'appLog.action': '操作',
   'appLog.success': '成功',
   'appLog.failed': '失敗',
+
+  'form.cannotBeEmpty': '不能為空',
+  'form.requiredMark': '為必填欄位',
+  'form.saveAndContinue': '儲存並繼續',
+
+  'tabs.close': '關閉',
+  'tabs.closeOthers': '關閉其他',
+  'tabs.closeAll': '關閉全部',
+  'tabs.refreshCurrent': '重新整理目前',
+
+  'userMenu.profile': '個人中心',
+  'userMenu.security': '安全中心',
+  'userMenu.logout': '登出',
+  'userMenu.guest': '訪客',
+  'userMenu.user': '使用者',
+
+  'topBar.searchMenu': '搜尋選單...',
+  'topBar.globalSearch': '全域搜尋',
+  'topBar.noMatchingMenu': '找不到符合的選單',
+  'topBar.expandMenu': '展開選單',
+  'topBar.collapseMenu': '收合選單',
+
+  'iconSelector.select': '選擇圖示',
+  'iconSelector.search': '搜尋圖示',
+  'iconSelector.empty': '無符合圖示',
 };
