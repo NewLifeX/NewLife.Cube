@@ -3,33 +3,35 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>获取区域子项</h3>
-          <el-button type="primary" @click="handleGetAreaChilds">获取子区域</el-button>
+          <h3>{{ t('areaChilds.title') }}</h3>
+          <el-button type="primary" @click="handleGetAreaChilds">
+            {{ t('areaChilds.getChilds') }}
+          </el-button>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="区域ID">
-          <el-input-number v-model="searchForm.id" :min="0" placeholder="区域ID" />
+        <el-form-item :label="t('getArea.areaId')">
+          <el-input-number v-model="searchForm.id" :min="0" :placeholder="t('getArea.areaId')" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleSearch">{{ t('button.search') }}</el-button>
+          <el-button @click="resetSearch">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="区域名称" min-width="150" />
-        <el-table-column prop="fullName" label="全名" min-width="200" />
-        <el-table-column prop="parentId" label="上级区域ID" width="120" />
-        <el-table-column prop="level" label="级别" width="80" />
-        <el-table-column prop="code" label="代码" width="100" />
-        <el-table-column prop="pinyin" label="拼音" width="120" />
-        <el-table-column label="状态" width="80">
+        <el-table-column prop="name" :label="t('getArea.areaName')" min-width="150" />
+        <el-table-column prop="fullName" :label="t('deptSearch.fullName')" min-width="200" />
+        <el-table-column prop="parentId" :label="t('getArea.parentAreaId')" width="120" />
+        <el-table-column prop="level" :label="t('getArea.level')" width="80" />
+        <el-table-column prop="code" :label="t('getArea.code')" width="100" />
+        <el-table-column prop="pinyin" :label="t('getArea.pinyin')" width="120" />
+        <el-table-column :label="t('userSearch.status')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '启用' : '禁用' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -40,6 +42,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义搜索参数类型
@@ -61,6 +64,7 @@ interface AreaData {
 
 // 表格数据
 const tableData = ref<AreaData[]>([]);
+const { t } = useI18n();
 const loading = ref(false);
 
 // 查询表单
@@ -82,8 +86,9 @@ const loadData = async () => {
     if (Array.isArray(response)) {
       tableData.value = response.map((item, index) => ({
         id: item.id || index + 1,
-        name: item.name || `区域${index + 1}`,
-        fullName: item.fullName || item.name || `区域${index + 1}`,
+        name: item.name || t('getArea.defaultAreaName', { index: index + 1 }),
+        fullName:
+          item.fullName || item.name || t('getArea.defaultAreaName', { index: index + 1 }),
         parentId: item.parentId || item.parentID || 0,
         level: item.level || 0,
         code: item.code || '',

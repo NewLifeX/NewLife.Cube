@@ -3,38 +3,49 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>文件管理</h3>
-          <el-button type="primary" @click="handleGetFile">获取文件</el-button>
+          <h3>{{ t('cubeFile.title') }}</h3>
+          <el-button type="primary" @click="handleGetFile">{{ t('cubeFile.getFile') }}</el-button>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="文件ID">
-          <el-input v-model="searchForm.id" placeholder="请输入文件ID" clearable />
+        <el-form-item :label="t('cubeFile.fileId')">
+          <el-input v-model="searchForm.id" :placeholder="t('cubeFile.fileIdHint')" clearable />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleGetFile">获取文件</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleGetFile">{{ t('cubeFile.getFile') }}</el-button>
+          <el-button @click="resetSearch">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
       <!-- 文件列表 -->
       <el-table :data="fileList" border style="width: 100%" v-loading="loading">
-        <el-table-column prop="id" label="文件ID" width="120" />
-        <el-table-column prop="name" label="文件名" min-width="200" />
-        <el-table-column prop="size" label="文件大小" width="100">
+        <el-table-column prop="id" :label="t('cubeFile.fileId')" width="120" />
+        <el-table-column prop="name" :label="t('cubeFile.fileName')" min-width="200" />
+        <el-table-column prop="size" :label="t('cubeFile.fileSize')" width="100">
           <template #default="scope">
             {{ formatFileSize(scope.row.size) }}
           </template>
         </el-table-column>
-        <el-table-column prop="type" label="文件类型" width="120" />
-        <el-table-column prop="url" label="文件URL" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="uploadTime" label="上传时间" width="160" />
-        <el-table-column label="操作" width="200">
+        <el-table-column prop="type" :label="t('cubeFile.fileType')" width="120" />
+        <el-table-column
+          prop="url"
+          :label="t('cubeFile.fileUrl')"
+          min-width="200"
+          show-overflow-tooltip
+        />
+        <el-table-column prop="uploadTime" :label="t('cubeFile.uploadTime')" width="160" />
+        <el-table-column :label="t('common.actions')" width="200">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="previewFile(scope.row)">预览</el-button>
-            <el-button type="success" size="small" @click="downloadFile(scope.row)">下载</el-button>
-            <el-button type="info" size="small" @click="copyFileUrl(scope.row)">复制链接</el-button>
+            <el-button type="primary" size="small" @click="previewFile(scope.row)">
+              {{ t('cubeFile.preview') }}
+            </el-button>
+            <el-button type="success" size="small" @click="downloadFile(scope.row)">
+              {{ t('cubeFile.download') }}
+            </el-button>
+            <el-button type="info" size="small" @click="copyFileUrl(scope.row)">
+              {{ t('cubeFile.copyLink') }}
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -66,19 +77,23 @@
             type="textarea"
             :rows="20"
             readonly
-            placeholder="文本内容将显示在这里"
+            :placeholder="t('cubeFile.textPlaceholder')"
           />
         </div>
         <!-- 其他文件类型 -->
         <div v-else class="other-file-preview">
-          <el-empty description="该文件类型不支持预览">
-            <el-button type="primary" @click="downloadFile(selectedFile!)">下载文件</el-button>
+          <el-empty :description="t('cubeFile.previewUnsupported')">
+            <el-button type="primary" @click="downloadFile(selectedFile!)">
+              {{ t('cubeFile.downloadFile') }}
+            </el-button>
           </el-empty>
         </div>
       </div>
       <template #footer>
-        <el-button @click="previewVisible = false">关闭</el-button>
-        <el-button type="primary" @click="downloadFile(selectedFile!)">下载</el-button>
+        <el-button @click="previewVisible = false">{{ t('button.close') }}</el-button>
+        <el-button type="primary" @click="downloadFile(selectedFile!)">
+          {{ t('cubeFile.download') }}
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -86,6 +101,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { ElMessage } from 'element-plus';
 
@@ -119,11 +135,12 @@ const pageSize = ref(10);
 const previewVisible = ref(false);
 const selectedFile = ref<FileData | null>(null);
 const fileContent = ref('');
+const { t } = useI18n();
 
 // 获取文件
 const handleGetFile = async () => {
   if (!searchForm.id) {
-    ElMessage.warning('请输入文件ID');
+    ElMessage.warning(t('cubeFile.fileIdRequired'));
     return;
   }
 
@@ -147,7 +164,7 @@ const handleGetFile = async () => {
     if (response) {
       const fileData: FileData = {
         id: searchForm.id,
-        name: response.name || response.fileName || `文件_${searchForm.id}`,
+        name: response.name || response.fileName || t('cubeFile.defaultFileName', { id: searchForm.id }),
         size: response.size || 0,
         type: response.type || response.contentType || 'unknown',
         url: response.url || `/Cube/File?id=${searchForm.id}`,
@@ -156,13 +173,13 @@ const handleGetFile = async () => {
 
       fileList.value = [fileData];
       total.value = 1;
-      ElMessage.success('文件获取成功');
+      ElMessage.success(t('cubeFile.getSuccess'));
     } else {
       fileList.value = [];
       total.value = 0;
     }
   } catch {
-    ElMessage.error('文件获取失败');
+    ElMessage.error(t('cubeFile.getFailed'));
     fileList.value = [];
     total.value = 0;
   } finally {
@@ -198,16 +215,16 @@ const downloadFile = (file: FileData) => {
   link.click();
   document.body.removeChild(link);
 
-  ElMessage.success('文件下载完成');
+  ElMessage.success(t('cubeFile.downloadDone'));
 };
 
 // 复制文件链接
 const copyFileUrl = async (file: FileData) => {
   try {
     await navigator.clipboard.writeText(file.url);
-    ElMessage.success('文件链接已复制到剪贴板');
+    ElMessage.success(t('cubeFile.linkCopied'));
   } catch {
-    ElMessage.error('复制失败，请手动复制');
+    ElMessage.error(t('ssoAccessToken.copyFailed'));
   }
 };
 
@@ -235,7 +252,7 @@ const loadTextContent = async (file: FileData) => {
     })) as unknown as string;
     fileContent.value = response;
   } catch {
-    fileContent.value = '文本内容加载失败';
+    fileContent.value = t('cubeFile.textLoadFailed');
   }
 };
 

@@ -3,25 +3,25 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>Cube信息</h3>
-          <el-button type="primary" @click="handleGetInfo">获取信息</el-button>
+          <h3>{{ t('cubeInfo.title') }}</h3>
+          <el-button type="primary" @click="handleGetInfo">{{ t('cubeInfo.getInfo') }}</el-button>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="状态">
-          <el-input v-model="searchForm.state" placeholder="请输入状态" clearable />
+        <el-form-item :label="t('cubeInfo.state')">
+          <el-input v-model="searchForm.state" :placeholder="t('cubeInfo.stateHint')" clearable />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleSearch">{{ t('button.search') }}</el-button>
+          <el-button @click="resetSearch">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
-        <el-table-column prop="key" label="键" />
-        <el-table-column prop="value" label="值" />
-        <el-table-column prop="description" label="描述" />
+        <el-table-column prop="key" :label="t('cubeInfo.key')" />
+        <el-table-column prop="value" :label="t('cubeInfo.value')" />
+        <el-table-column prop="description" :label="t('lookup.description')" />
       </el-table>
 
       <div class="pagination">
@@ -41,6 +41,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义接口类型
@@ -58,6 +59,7 @@ interface CubeInfoData {
 // 表格数据
 const tableData = ref<CubeInfoData[]>([]);
 const loading = ref(false);
+const { t } = useI18n();
 const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
@@ -85,7 +87,7 @@ const loadData = async () => {
         dataArray.push({
           key,
           value: String(value),
-          description: `${key}的值`,
+          description: t('cubeInfo.valueOf', { key }),
         });
       });
       tableData.value = dataArray;

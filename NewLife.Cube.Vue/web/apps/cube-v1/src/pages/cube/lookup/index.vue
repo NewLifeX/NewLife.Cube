@@ -3,32 +3,36 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>Cube Lookup 查询</h3>
-          <el-button type="primary" @click="handleLookup">查询</el-button>
+          <h3>{{ t('lookup.title') }}</h3>
+          <el-button type="primary" @click="handleLookup">{{ t('button.search') }}</el-button>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="代码">
-          <el-input v-model="searchForm.codes" placeholder="请输入代码，多个用逗号分隔" clearable />
+        <el-form-item :label="t('lookup.code')">
+          <el-input
+            v-model="searchForm.codes"
+            :placeholder="t('lookup.codeHint')"
+            clearable
+          />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleLookup">查询</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleLookup">{{ t('button.search') }}</el-button>
+          <el-button @click="resetSearch">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
-        <el-table-column prop="code" label="代码" width="120" />
-        <el-table-column prop="name" label="名称" min-width="150" />
-        <el-table-column prop="value" label="值" min-width="200" />
-        <el-table-column prop="description" label="描述" min-width="200" />
-        <el-table-column prop="category" label="分类" width="120" />
-        <el-table-column prop="sort" label="排序" width="80" />
-        <el-table-column prop="status" label="状态" width="80">
+        <el-table-column prop="code" :label="t('lookup.code')" width="120" />
+        <el-table-column prop="name" :label="t('lookup.name')" min-width="150" />
+        <el-table-column prop="value" :label="t('lookup.value')" min-width="200" />
+        <el-table-column prop="description" :label="t('lookup.description')" min-width="200" />
+        <el-table-column prop="category" :label="t('lookup.category')" width="120" />
+        <el-table-column prop="sort" :label="t('common.sort')" width="80" />
+        <el-table-column prop="status" :label="t('userSearch.status')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.status ? 'success' : 'danger'">
-              {{ scope.row.status ? '启用' : '禁用' }}
+              {{ scope.row.status ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -51,6 +55,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义接口类型
@@ -74,6 +79,7 @@ const loading = ref(false);
 const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
+const { t } = useI18n();
 
 // 查询表单
 const searchForm = reactive<LookupParams>({

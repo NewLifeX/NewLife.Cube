@@ -3,18 +3,18 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>Cube API列表</h3>
-          <el-button type="primary" @click="handleGetApis">获取API列表</el-button>
+          <h3>{{ t('cubeApis.title') }}</h3>
+          <el-button type="primary" @click="handleGetApis">{{ t('cubeApis.getApis') }}</el-button>
         </div>
       </template>
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="API名称" min-width="150" />
+        <el-table-column prop="name" :label="t('cubeApis.apiName')" min-width="150" />
         <el-table-column prop="url" label="URL" min-width="200" />
-        <el-table-column prop="method" label="请求方法" width="100" />
-        <el-table-column prop="description" label="描述" min-width="200" />
-        <el-table-column prop="createTime" label="创建时间" width="160" />
+        <el-table-column prop="method" :label="t('cubeApis.method')" width="100" />
+        <el-table-column prop="description" :label="t('lookup.description')" min-width="200" />
+        <el-table-column prop="createTime" :label="t('userSearch.createTime')" width="160" />
       </el-table>
 
       <div class="pagination">
@@ -34,6 +34,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义数据类型
@@ -49,6 +50,7 @@ interface ApiData {
 // 表格数据
 const tableData = ref<ApiData[]>([]);
 const loading = ref(false);
+const { t } = useI18n();
 const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
