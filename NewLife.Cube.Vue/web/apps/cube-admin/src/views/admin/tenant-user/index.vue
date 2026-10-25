@@ -1,22 +1,22 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>租户用户管理</h1>
-      <p>管理租户下的用户关系及权限分配</p>
+      <h1>{{ t('tenantUser.title') }}</h1>
+      <p>{{ t('tenantUser.subtitle') }}</p>
     </div>
 
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>租户用户列表</span>
+          <span>{{ t('tenantUser.listTitle') }}</span>
           <div>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              添加租户用户
+              {{ t('tenantUser.add') }}
             </el-button>
             <el-button @click="refreshList">
               <el-icon><Refresh /></el-icon>
-              刷新
+              {{ t('grid.refresh') }}
             </el-button>
           </div>
         </div>
@@ -37,41 +37,41 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" />
-          <el-table-column prop="id" label="编号" width="80" />
-          <el-table-column prop="tenantId" label="租户ID" width="100" />
-          <el-table-column prop="tenantName" label="租户名称" />
-          <el-table-column prop="userId" label="用户ID" width="100" />
-          <el-table-column prop="userName" label="用户名称" />
-          <el-table-column prop="enable" label="启用状态" width="100">
+          <el-table-column prop="id" :label="t('common.id')" width="80" />
+          <el-table-column prop="tenantId" :label="t('tenantUser.tenantId')" width="100" />
+          <el-table-column prop="tenantName" :label="t('tenant.name')" />
+          <el-table-column prop="userId" :label="t('desc.userID')" width="100" />
+          <el-table-column prop="userName" :label="t('tenantUser.userName')" />
+          <el-table-column prop="enable" :label="t('coreSetting.enable')" width="100">
             <template #default="{ row }">
               <el-tag :type="row.enable ? 'success' : 'danger'">
-                {{ row.enable ? '启用' : '禁用' }}
+                {{ row.enable ? t('tenantUser.enabled') : t('tenantUser.disabled') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="roleId" label="主要角色ID" width="120" />
-          <el-table-column prop="roleName" label="主要角色" />
-          <el-table-column prop="roleNames" label="所有角色" show-overflow-tooltip />
-          <el-table-column prop="createTime" label="创建时间" width="160">
+          <el-table-column prop="roleId" :label="t('tenantUser.primaryRoleId')" width="120" />
+          <el-table-column prop="roleName" :label="t('tenantUser.primaryRole')" />
+          <el-table-column prop="roleNames" :label="t('tenantUser.allRoles')" show-overflow-tooltip />
+          <el-table-column prop="createTime" :label="t('desc.createTime')" width="160">
             <template #default="{ row }">
               {{ formatDate(row.createTime) }}
             </template>
           </el-table-column>
-          <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+          <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
             <template #default="scope">
               {{ scope.row.remark || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right">
+          <el-table-column :label="t('common.actions')" width="200" fixed="right">
             <template #default="{ row }">
               <el-button size="small" @click="handleDetail(row)">
-                详情
+                {{ t('desc.detail') }}
               </el-button>
               <el-button size="small" @click="handleEdit(row)">
-                编辑
+                {{ t('button.edit') }}
               </el-button>
               <el-button size="small" type="danger" @click="handleDelete(row)">
-                删除
+                {{ t('button.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -91,7 +91,7 @@
     <!-- 添加/编辑对话框 -->
     <el-dialog
       v-model="showFormDialog"
-      :title="isEdit ? '编辑租户用户' : '添加租户用户'"
+      :title="isEdit ? t('tenantUser.edit') : t('tenantUser.add')"
       width="600px"
     >
       <el-form
@@ -101,30 +101,30 @@
         label-width="120px"
         v-loading="loading.form"
       >
-        <el-form-item label="租户ID" prop="tenantId">
-          <el-input v-model="formData.tenantId" placeholder="请输入租户ID" />
+        <el-form-item :label="t('tenantUser.tenantId')" prop="tenantId">
+          <el-input v-model="formData.tenantId" :placeholder="t('tenantUser.tenantIdHint')" />
         </el-form-item>
-        <el-form-item label="用户ID" prop="userId">
-          <el-input v-model="formData.userId" placeholder="请输入用户ID" />
+        <el-form-item :label="t('desc.userID')" prop="userId">
+          <el-input v-model="formData.userId" :placeholder="t('tenantUser.userIdHint')" />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
+        <el-form-item :label="t('coreSetting.enable')" prop="enable">
           <el-switch v-model="formData.enable" />
         </el-form-item>
-        <el-form-item label="主要角色ID" prop="roleId">
-          <el-input v-model="formData.roleId" placeholder="请输入主要角色ID" />
+        <el-form-item :label="t('tenantUser.primaryRoleId')" prop="roleId">
+          <el-input v-model="formData.roleId" :placeholder="t('tenantUser.primaryRoleIdHint')" />
         </el-form-item>
-        <el-form-item label="角色组" prop="roleIds">
+        <el-form-item :label="t('tenantUser.roleGroup')" prop="roleIds">
           <el-input
             v-model="formData.roleIds"
-            placeholder="请输入角色ID，多个用逗号分隔"
+            :placeholder="t('tenantUser.roleGroupHint')"
             type="textarea"
             :rows="3"
           />
         </el-form-item>
-        <el-form-item label="描述" prop="remark">
+        <el-form-item :label="t('tenantUser.description')" prop="remark">
           <el-input
             v-model="formData.remark"
-            placeholder="请输入描述"
+            :placeholder="t('tenantUser.descriptionHint')"
             type="textarea"
             :rows="3"
           />
@@ -132,43 +132,43 @@
       </el-form>
 
       <template #footer>
-        <el-button @click="showFormDialog = false">取消</el-button>
+        <el-button @click="showFormDialog = false">{{ t('button.cancel') }}</el-button>
         <el-button type="primary" @click="handleSubmit" :loading="loading.submit">
-          {{ isEdit ? '更新' : '创建' }}
+          {{ isEdit ? t('button.save') : t('tenantUser.create') }}
         </el-button>
       </template>
     </el-dialog>
 
     <!-- 详情对话框 -->
-    <el-dialog v-model="showDetailDialog" title="租户用户详情" width="800px">
+    <el-dialog v-model="showDetailDialog" :title="t('tenantUser.detailTitle')" width="800px">
       <div v-loading="loading.detail">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="编号">{{ detailData.id }}</el-descriptions-item>
-          <el-descriptions-item label="租户ID">{{ detailData.tenantId }}</el-descriptions-item>
-          <el-descriptions-item label="租户名称">{{ detailData.tenantName }}</el-descriptions-item>
-          <el-descriptions-item label="用户ID">{{ detailData.userId }}</el-descriptions-item>
-          <el-descriptions-item label="用户名称">{{ detailData.userName }}</el-descriptions-item>
-          <el-descriptions-item label="启用状态">
+          <el-descriptions-item :label="t('common.id')">{{ detailData.id }}</el-descriptions-item>
+          <el-descriptions-item :label="t('tenantUser.tenantId')">{{ detailData.tenantId }}</el-descriptions-item>
+          <el-descriptions-item :label="t('tenant.name')">{{ detailData.tenantName }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.userID')">{{ detailData.userId }}</el-descriptions-item>
+          <el-descriptions-item :label="t('tenantUser.userName')">{{ detailData.userName }}</el-descriptions-item>
+          <el-descriptions-item :label="t('coreSetting.enable')">
             <el-tag :type="detailData.enable ? 'success' : 'danger'">
-              {{ detailData.enable ? '启用' : '禁用' }}
+              {{ detailData.enable ? t('tenantUser.enabled') : t('tenantUser.disabled') }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="主要角色ID">{{ detailData.roleId }}</el-descriptions-item>
-          <el-descriptions-item label="主要角色">{{ detailData.roleName }}</el-descriptions-item>
-          <el-descriptions-item label="角色组" :span="2">{{ detailData.roleIds }}</el-descriptions-item>
-          <el-descriptions-item label="所有角色" :span="2">{{ detailData.roleNames }}</el-descriptions-item>
-          <el-descriptions-item label="创建者">{{ detailData.createUserId }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ formatDate(detailData.createTime) }}</el-descriptions-item>
-          <el-descriptions-item label="创建地址">{{ detailData.createIP }}</el-descriptions-item>
-          <el-descriptions-item label="更新者">{{ detailData.updateUserId }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ formatDate(detailData.updateTime) }}</el-descriptions-item>
-          <el-descriptions-item label="更新地址">{{ detailData.updateIP }}</el-descriptions-item>
-          <el-descriptions-item label="描述" :span="2">{{ detailData.remark }}</el-descriptions-item>
+          <el-descriptions-item :label="t('tenantUser.primaryRoleId')">{{ detailData.roleId }}</el-descriptions-item>
+          <el-descriptions-item :label="t('tenantUser.primaryRole')">{{ detailData.roleName }}</el-descriptions-item>
+          <el-descriptions-item :label="t('tenantUser.roleGroup')" :span="2">{{ detailData.roleIds }}</el-descriptions-item>
+          <el-descriptions-item :label="t('tenantUser.allRoles')" :span="2">{{ detailData.roleNames }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.createUser')">{{ detailData.createUserId }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.createTime')">{{ formatDate(detailData.createTime) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.createIP')">{{ detailData.createIP }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.updateUser')">{{ detailData.updateUserId }}</el-descriptions-item>
+          <el-descriptions-item :label="t('common.updateTime')">{{ formatDate(detailData.updateTime) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.updateIP')">{{ detailData.updateIP }}</el-descriptions-item>
+          <el-descriptions-item :label="t('tenantUser.description')" :span="2">{{ detailData.remark }}</el-descriptions-item>
         </el-descriptions>
       </div>
 
       <template #footer>
-        <el-button @click="showDetailDialog = false">关闭</el-button>
+        <el-button @click="showDetailDialog = false">{{ t('button.close') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -176,6 +176,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import { request } from '@newlifex/cube-vue/core/utils/request'
@@ -207,6 +208,7 @@ interface TenantUser extends BaseEntity {
 // 表格数据
 const tableData = ref<TenantUser[]>([])
 const selectedRows = ref<TenantUser[]>([])
+const { t } = useI18n()
 
 // 表单数据
 const formData = ref<Partial<TenantUser>>({})
@@ -223,10 +225,10 @@ const formRef = ref()
 // 表单校验规则
 const formRules = {
   tenantId: [
-    { required: true, message: '请输入租户ID', trigger: 'blur' }
+    { required: true, message: t('tenantUser.tenantIdRequired'), trigger: 'blur' }
   ],
   userId: [
-    { required: true, message: '请输入用户ID', trigger: 'blur' }
+    { required: true, message: t('tenantUser.userIdRequired'), trigger: 'blur' }
   ]
 }
 
@@ -382,11 +384,11 @@ const handleEdit = async (row: TenantUser) => {
 const handleDelete = async (row: TenantUser) => {
   try {
     await ElMessageBox.confirm(
-      `确定要删除租户用户 "${row.userName}" 吗？`,
-      '确认删除',
+      t('tenantUser.deleteConfirm', { name: row.userName }),
+      t('fileManager.confirmDelete'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('button.confirm'),
+        cancelButtonText: t('button.cancel'),
         type: 'warning',
       }
     )
@@ -394,7 +396,7 @@ const handleDelete = async (row: TenantUser) => {
     await deleteTenantUser(row.id)
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('删除租户用户错误:', error)
+      console.error('Failed to delete the tenant user:', error)
     }
   }
 }
@@ -410,7 +412,7 @@ const handleSubmit = async () => {
       await createTenantUser(formData.value)
     }
   } catch (error) {
-    console.error('表单提交错误:', error)
+    console.error('Failed to submit the form:', error)
   }
 }
 
