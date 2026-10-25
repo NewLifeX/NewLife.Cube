@@ -3,44 +3,48 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>设置页面配置</h3>
-          <el-button type="primary" @click="handleSetConfig">保存配置</el-button>
+          <h3>{{ t('setPageConfig.title') }}</h3>
+          <el-button type="primary" @click="handleSetConfig">
+            {{ t('setPageConfig.saveConfig') }}
+          </el-button>
         </div>
       </template>
 
       <el-form :model="configForm" :rules="formRules" ref="formRef" label-width="120px" class="config-form">
-        <el-form-item label="类型" prop="kind">
-          <el-input v-model="configForm.kind" placeholder="请输入配置类型" />
+        <el-form-item :label="t('setPageConfig.kind')" prop="kind">
+          <el-input v-model="configForm.kind" :placeholder="t('setPageConfig.kindHint')" />
         </el-form-item>
-        <el-form-item label="页面" prop="page">
-          <el-input v-model="configForm.page" placeholder="请输入页面名称" />
+        <el-form-item :label="t('setPageConfig.page')" prop="page">
+          <el-input v-model="configForm.page" :placeholder="t('setPageConfig.pageHint')" />
         </el-form-item>
-        <el-form-item label="配置数据" prop="configData">
+        <el-form-item :label="t('setPageConfig.configData')" prop="configData">
           <el-input
             v-model="configForm.configData"
             type="textarea"
             :rows="15"
-            placeholder="请输入配置数据（JSON格式）"
+            :placeholder="t('setPageConfig.configDataHint')"
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSetConfig" :loading="saving">保存配置</el-button>
-          <el-button @click="resetForm">重置</el-button>
-          <el-button @click="formatJson">格式化JSON</el-button>
-          <el-button @click="validateJson">验证JSON</el-button>
+          <el-button type="primary" @click="handleSetConfig" :loading="saving">
+            {{ t('setPageConfig.saveConfig') }}
+          </el-button>
+          <el-button @click="resetForm">{{ t('button.reset') }}</el-button>
+          <el-button @click="formatJson">{{ t('setPageConfig.formatJson') }}</el-button>
+          <el-button @click="validateJson">{{ t('setPageConfig.validateJson') }}</el-button>
         </el-form-item>
       </el-form>
 
       <!-- 配置模板 -->
       <el-card class="template-card">
         <template #header>
-          <h4>配置模板</h4>
+          <h4>{{ t('setPageConfig.templatesTitle') }}</h4>
         </template>
         <el-row :gutter="20">
-          <el-col :span="8" v-for="template in configTemplates" :key="template.name">
+          <el-col :span="8" v-for="template in configTemplates" :key="template.nameKey">
             <el-card class="template-item" @click="loadTemplate(template)">
-              <h5>{{ template.name }}</h5>
-              <p>{{ template.description }}</p>
+              <h5>{{ t(template.nameKey) }}</h5>
+              <p>{{ t(template.descKey) }}</p>
             </el-card>
           </el-col>
         </el-row>
@@ -49,16 +53,23 @@
       <!-- 保存历史记录 -->
       <el-card v-if="saveHistory.length > 0" class="history-card">
         <template #header>
-          <h4>保存历史</h4>
+          <h4>{{ t('setPageConfig.historyTitle') }}</h4>
         </template>
         <el-table :data="saveHistory" border style="width: 100%">
-          <el-table-column prop="kind" label="类型" width="150" />
-          <el-table-column prop="page" label="页面" width="150" />
-          <el-table-column prop="configData" label="配置数据" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="saveTime" label="保存时间" width="160" />
-          <el-table-column label="操作" width="120">
+          <el-table-column prop="kind" :label="t('setPageConfig.kind')" width="150" />
+          <el-table-column prop="page" :label="t('setPageConfig.page')" width="150" />
+          <el-table-column
+            prop="configData"
+            :label="t('setPageConfig.configData')"
+            min-width="200"
+            show-overflow-tooltip
+          />
+          <el-table-column prop="saveTime" :label="t('setPageConfig.saveTime')" width="160" />
+          <el-table-column :label="t('common.actions')" width="120">
             <template #default="scope">
-              <el-button type="primary" size="small" @click="loadHistory(scope.row)">载入</el-button>
+              <el-button type="primary" size="small" @click="loadHistory(scope.row)">
+                {{ t('setPageConfig.load') }}
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -69,6 +80,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 
@@ -84,8 +96,8 @@ interface HistoryItem extends SetConfigParams {
 }
 
 interface ConfigTemplate {
-  name: string;
-  description: string;
+  nameKey: string;
+  descKey: string;
   kind: string;
   page: string;
   data: string;
@@ -94,6 +106,7 @@ interface ConfigTemplate {
 // 表单引用
 const formRef = ref<FormInstance | null>(null);
 const saving = ref(false);
+const { t } = useI18n();
 
 // 表单数据
 const configForm = reactive<SetConfigParams>({
@@ -108,15 +121,15 @@ const saveHistory = ref<HistoryItem[]>([]);
 // 配置模板
 const configTemplates = ref<ConfigTemplate[]>([
   {
-    name: '表格配置',
-    description: '数据表格的基本配置',
+    nameKey: 'setPageConfig.templateTable.name',
+    descKey: 'setPageConfig.templateTable.desc',
     kind: 'table',
     page: 'list',
     data: JSON.stringify({
       columns: [
         { prop: 'id', label: 'ID', width: 80 },
-        { prop: 'name', label: '名称', minWidth: 150 },
-        { prop: 'status', label: '状态', width: 100 }
+        { prop: 'name', label: t('setPageConfig.fieldName'), minWidth: 150 },
+        { prop: 'status', label: t('setPageConfig.fieldStatus'), width: 100 }
       ],
       pagination: {
         pageSize: 20,
@@ -125,15 +138,15 @@ const configTemplates = ref<ConfigTemplate[]>([
     }, null, 2)
   },
   {
-    name: '表单配置',
-    description: '表单字段的配置',
+    nameKey: 'setPageConfig.templateForm.name',
+    descKey: 'setPageConfig.templateForm.desc',
     kind: 'form',
     page: 'edit',
     data: JSON.stringify({
       fields: [
-        { name: 'name', label: '名称', type: 'input', required: true },
-        { name: 'email', label: '邮箱', type: 'input', required: true },
-        { name: 'status', label: '状态', type: 'switch', required: false }
+        { name: 'name', label: t('setPageConfig.fieldName'), type: 'input', required: true },
+        { name: 'email', label: t('setPageConfig.fieldEmail'), type: 'input', required: true },
+        { name: 'status', label: t('setPageConfig.fieldStatus'), type: 'switch', required: false }
       ],
       layout: {
         labelWidth: '100px',
@@ -142,15 +155,15 @@ const configTemplates = ref<ConfigTemplate[]>([
     }, null, 2)
   },
   {
-    name: '菜单配置',
-    description: '页面菜单的配置',
+    nameKey: 'setPageConfig.templateMenu.name',
+    descKey: 'setPageConfig.templateMenu.desc',
     kind: 'menu',
     page: 'navigation',
     data: JSON.stringify({
       items: [
-        { name: '首页', path: '/home', icon: 'home' },
-        { name: '用户管理', path: '/users', icon: 'user' },
-        { name: '设置', path: '/settings', icon: 'setting' }
+        { name: t('setPageConfig.menuHome'), path: '/home', icon: 'home' },
+        { name: t('setPageConfig.menuUsers'), path: '/users', icon: 'user' },
+        { name: t('setPageConfig.menuSettings'), path: '/settings', icon: 'setting' }
       ],
       style: {
         theme: 'dark',
@@ -163,13 +176,13 @@ const configTemplates = ref<ConfigTemplate[]>([
 // 表单验证规则
 const formRules = reactive<FormRules>({
   kind: [
-    { required: true, message: '请输入配置类型', trigger: 'blur' },
+    { required: true, message: t('setPageConfig.kindRequired'), trigger: 'blur' },
   ],
   page: [
-    { required: true, message: '请输入页面名称', trigger: 'blur' },
+    { required: true, message: t('setPageConfig.pageRequired'), trigger: 'blur' },
   ],
   configData: [
-    { required: true, message: '请输入配置数据', trigger: 'blur' },
+    { required: true, message: t('setPageConfig.configDataRequired'), trigger: 'blur' },
   ],
 });
 
@@ -183,7 +196,7 @@ const handleSetConfig = async () => {
       try {
         JSON.parse(configForm.configData || '{}');
       } catch {
-        ElMessage.error('配置数据不是有效的JSON格式');
+        ElMessage.error(t('setPageConfig.invalidJson'));
         return;
       }
 
@@ -196,7 +209,7 @@ const handleSetConfig = async () => {
           },
         });
 
-        ElMessage.success('配置保存成功');
+        ElMessage.success(t('setPageConfig.saveSuccess'));
 
         // 添加到历史记录
         saveHistory.value.unshift({
@@ -210,7 +223,7 @@ const handleSetConfig = async () => {
         }
 
       } catch (error) {
-        ElMessage.error('配置保存失败');
+        ElMessage.error(t('setPageConfig.saveFailed'));
         console.error('Set page config error:', error);
       } finally {
         saving.value = false;
@@ -237,9 +250,9 @@ const formatJson = () => {
     try {
       const parsed = JSON.parse(configForm.configData);
       configForm.configData = JSON.stringify(parsed, null, 2);
-      ElMessage.success('JSON格式化成功');
+      ElMessage.success(t('setPageConfig.formatSuccess'));
     } catch {
-      ElMessage.error('JSON格式不正确');
+      ElMessage.error(t('setPageConfig.invalidJsonShort'));
     }
   }
 };
@@ -247,15 +260,15 @@ const formatJson = () => {
 // 验证JSON
 const validateJson = () => {
   if (!configForm.configData) {
-    ElMessage.warning('请先输入配置数据');
+    ElMessage.warning(t('setPageConfig.configDataRequired'));
     return;
   }
 
   try {
     JSON.parse(configForm.configData);
-    ElMessage.success('JSON格式验证通过');
+    ElMessage.success(t('setPageConfig.validateSuccess'));
   } catch {
-    ElMessage.error('JSON格式验证失败');
+    ElMessage.error(t('setPageConfig.validateFailed'));
   }
 };
 
@@ -266,7 +279,7 @@ const loadTemplate = (template: ConfigTemplate) => {
     page: template.page,
     configData: template.data,
   });
-  ElMessage.success(`模板 "${template.name}" 已载入`);
+  ElMessage.success(t('setPageConfig.templateLoaded', { name: t(template.nameKey) }));
 };
 
 // 载入历史记录
@@ -276,7 +289,7 @@ const loadHistory = (item: HistoryItem) => {
     page: item.page,
     configData: item.configData,
   });
-  ElMessage.success('历史记录已载入');
+  ElMessage.success(t('setPageConfig.historyLoaded'));
 };
 </script>
 

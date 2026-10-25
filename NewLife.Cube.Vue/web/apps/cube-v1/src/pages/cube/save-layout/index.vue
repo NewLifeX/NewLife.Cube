@@ -3,50 +3,65 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>保存布局配置</h3>
-          <el-button type="primary" @click="handleSaveLayout">保存布局</el-button>
+          <h3>{{ t('saveLayout.title') }}</h3>
+          <el-button type="primary" @click="handleSaveLayout">
+            {{ t('saveLayout.saveLayout') }}
+          </el-button>
         </div>
       </template>
 
       <el-form :model="layoutForm" :rules="formRules" ref="formRef" label-width="120px" class="layout-form">
-        <el-form-item label="用户ID" prop="userid">
-          <el-input-number v-model="layoutForm.userid" placeholder="请输入用户ID" :min="0" />
+        <el-form-item :label="t('saveLayout.userId')" prop="userid">
+          <el-input-number
+            v-model="layoutForm.userid"
+            :placeholder="t('saveLayout.userIdHint')"
+            :min="0"
+          />
         </el-form-item>
-        <el-form-item label="分类" prop="category">
-          <el-input v-model="layoutForm.category" placeholder="请输入分类" />
+        <el-form-item :label="t('saveLayout.category')" prop="category">
+          <el-input v-model="layoutForm.category" :placeholder="t('saveLayout.categoryHint')" />
         </el-form-item>
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="layoutForm.name" placeholder="请输入名称" />
+        <el-form-item :label="t('saveLayout.name')" prop="name">
+          <el-input v-model="layoutForm.name" :placeholder="t('saveLayout.nameHint')" />
         </el-form-item>
-        <el-form-item label="配置值" prop="value">
+        <el-form-item :label="t('saveLayout.value')" prop="value">
           <el-input
             v-model="layoutForm.value"
             type="textarea"
             :rows="10"
-            placeholder="请输入配置值（JSON格式）"
+            :placeholder="t('saveLayout.valueHint')"
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSaveLayout" :loading="saving">保存布局</el-button>
-          <el-button @click="resetForm">重置</el-button>
-          <el-button @click="formatJson">格式化JSON</el-button>
+          <el-button type="primary" @click="handleSaveLayout" :loading="saving">
+            {{ t('saveLayout.saveLayout') }}
+          </el-button>
+          <el-button @click="resetForm">{{ t('button.reset') }}</el-button>
+          <el-button @click="formatJson">{{ t('setPageConfig.formatJson') }}</el-button>
         </el-form-item>
       </el-form>
 
       <!-- 保存历史记录 -->
       <el-card v-if="saveHistory.length > 0" class="history-card">
         <template #header>
-          <h4>保存历史</h4>
+          <h4>{{ t('setPageConfig.historyTitle') }}</h4>
         </template>
         <el-table :data="saveHistory" border style="width: 100%">
-          <el-table-column prop="userid" label="用户ID" width="80" />
-          <el-table-column prop="category" label="分类" width="120" />
-          <el-table-column prop="name" label="名称" min-width="150" />
-          <el-table-column prop="value" label="配置值" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="saveTime" label="保存时间" width="160" />
-          <el-table-column label="操作" width="120">
+          <el-table-column prop="userid" :label="t('saveLayout.userId')" width="80" />
+          <el-table-column prop="category" :label="t('saveLayout.category')" width="120" />
+          <el-table-column prop="name" :label="t('saveLayout.name')" min-width="150" />
+          <el-table-column
+            prop="value"
+            :label="t('saveLayout.value')"
+            min-width="200"
+            show-overflow-tooltip
+          />
+          <el-table-column prop="saveTime" :label="t('setPageConfig.saveTime')" width="160" />
+          <el-table-column :label="t('common.actions')" width="120">
             <template #default="scope">
-              <el-button type="primary" size="small" @click="loadHistory(scope.row)">载入</el-button>
+              <el-button type="primary" size="small" @click="loadHistory(scope.row)">
+                {{ t('setPageConfig.load') }}
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -57,6 +72,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 
@@ -75,6 +91,7 @@ interface HistoryItem extends SaveLayoutParams {
 // 表单引用
 const formRef = ref<FormInstance | null>(null);
 const saving = ref(false);
+const { t } = useI18n();
 
 // 表单数据
 const layoutForm = reactive<SaveLayoutParams>({
@@ -90,16 +107,16 @@ const saveHistory = ref<HistoryItem[]>([]);
 // 表单验证规则
 const formRules = reactive<FormRules>({
   userid: [
-    { required: true, message: '请输入用户ID', trigger: 'blur' },
+    { required: true, message: t('saveLayout.userIdRequired'), trigger: 'blur' },
   ],
   category: [
-    { required: true, message: '请输入分类', trigger: 'blur' },
+    { required: true, message: t('saveLayout.categoryRequired'), trigger: 'blur' },
   ],
   name: [
-    { required: true, message: '请输入名称', trigger: 'blur' },
+    { required: true, message: t('saveLayout.nameRequired'), trigger: 'blur' },
   ],
   value: [
-    { required: true, message: '请输入配置值', trigger: 'blur' },
+    { required: true, message: t('saveLayout.valueRequired'), trigger: 'blur' },
   ],
 });
 
@@ -120,7 +137,7 @@ const handleSaveLayout = async () => {
           },
         });
 
-        ElMessage.success('布局保存成功');
+        ElMessage.success(t('saveLayout.saveSuccess'));
 
         // 添加到历史记录
         saveHistory.value.unshift({
@@ -134,7 +151,7 @@ const handleSaveLayout = async () => {
         }
 
       } catch (error) {
-        ElMessage.error('布局保存失败');
+        ElMessage.error(t('saveLayout.saveFailed'));
         console.error('Save layout error:', error);
       } finally {
         saving.value = false;
@@ -162,9 +179,9 @@ const formatJson = () => {
     try {
       const parsed = JSON.parse(layoutForm.value);
       layoutForm.value = JSON.stringify(parsed, null, 2);
-      ElMessage.success('JSON格式化成功');
+      ElMessage.success(t('setPageConfig.formatSuccess'));
     } catch {
-      ElMessage.error('JSON格式不正确');
+      ElMessage.error(t('setPageConfig.invalidJsonShort'));
     }
   }
 };
@@ -177,7 +194,7 @@ const loadHistory = (item: HistoryItem) => {
     name: item.name,
     value: item.value,
   });
-  ElMessage.success('历史记录已载入');
+  ElMessage.success(t('setPageConfig.historyLoaded'));
 };
 </script>
 

@@ -3,71 +3,79 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>获取页面配置</h3>
-          <el-button type="primary" @click="handleGetConfig">获取配置</el-button>
+          <h3>{{ t('getPageConfig.title') }}</h3>
+          <el-button type="primary" @click="handleGetConfig">
+            {{ t('getPageConfig.getConfig') }}
+          </el-button>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="类型">
-          <el-input v-model="searchForm.kind" placeholder="请输入配置类型" clearable />
+        <el-form-item :label="t('setPageConfig.kind')">
+          <el-input v-model="searchForm.kind" :placeholder="t('setPageConfig.kindHint')" clearable />
         </el-form-item>
-        <el-form-item label="页面">
-          <el-input v-model="searchForm.page" placeholder="请输入页面名称" clearable />
+        <el-form-item :label="t('setPageConfig.page')">
+          <el-input v-model="searchForm.page" :placeholder="t('setPageConfig.pageHint')" clearable />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleGetConfig">获取配置</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleGetConfig">
+            {{ t('getPageConfig.getConfig') }}
+          </el-button>
+          <el-button @click="resetSearch">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
       <!-- 配置结果展示 -->
       <el-card v-if="configData" class="config-card">
         <template #header>
-          <h4>配置结果</h4>
+          <h4>{{ t('getPageConfig.resultTitle') }}</h4>
         </template>
         <el-descriptions :column="1" border>
-          <el-descriptions-item label="类型">
+          <el-descriptions-item :label="t('setPageConfig.kind')">
             {{ searchForm.kind }}
           </el-descriptions-item>
-          <el-descriptions-item label="页面">
+          <el-descriptions-item :label="t('setPageConfig.page')">
             {{ searchForm.page }}
           </el-descriptions-item>
-          <el-descriptions-item label="配置数据">
+          <el-descriptions-item :label="t('setPageConfig.configData')">
             <el-input
               v-model="formattedConfig"
               type="textarea"
               :rows="15"
               readonly
-              placeholder="配置数据将显示在这里"
+              :placeholder="t('getPageConfig.configPlaceholder')"
             />
           </el-descriptions-item>
         </el-descriptions>
         <div class="config-actions">
-          <el-button type="primary" @click="copyConfig">复制配置</el-button>
-          <el-button type="success" @click="downloadConfig">下载配置</el-button>
+          <el-button type="primary" @click="copyConfig">{{ t('getPageConfig.copyConfig') }}</el-button>
+          <el-button type="success" @click="downloadConfig">
+            {{ t('getPageConfig.downloadConfig') }}
+          </el-button>
         </div>
       </el-card>
 
       <!-- 历史查询记录 -->
       <el-card v-if="queryHistory.length > 0" class="history-card">
         <template #header>
-          <h4>查询历史</h4>
+          <h4>{{ t('getPageConfig.historyTitle') }}</h4>
         </template>
         <el-table :data="queryHistory" border style="width: 100%">
-          <el-table-column prop="kind" label="类型" width="150" />
-          <el-table-column prop="page" label="页面" width="150" />
-          <el-table-column prop="queryTime" label="查询时间" width="160" />
-          <el-table-column prop="hasData" label="是否有数据" width="100">
+          <el-table-column prop="kind" :label="t('setPageConfig.kind')" width="150" />
+          <el-table-column prop="page" :label="t('setPageConfig.page')" width="150" />
+          <el-table-column prop="queryTime" :label="t('getPageConfig.queryTime')" width="160" />
+          <el-table-column prop="hasData" :label="t('getPageConfig.hasData')" width="100">
             <template #default="scope">
               <el-tag :type="scope.row.hasData ? 'success' : 'warning'">
-                {{ scope.row.hasData ? '有数据' : '无数据' }}
+                {{ scope.row.hasData ? t('getPageConfig.dataYes') : t('getPageConfig.dataNo') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120">
+          <el-table-column :label="t('common.actions')" width="120">
             <template #default="scope">
-              <el-button type="primary" size="small" @click="loadHistory(scope.row)">重新查询</el-button>
+              <el-button type="primary" size="small" @click="loadHistory(scope.row)">
+                {{ t('getPageConfig.queryAgain') }}
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -78,6 +86,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { ElMessage } from 'element-plus';
 
@@ -101,6 +110,7 @@ const searchForm = reactive<PageConfigParams>({
 // 配置数据
 const configData = ref<unknown>(null);
 const queryHistory = ref<QueryHistoryItem[]>([]);
+const { t } = useI18n();
 
 // 格式化后的配置数据
 const formattedConfig = computed(() => {
@@ -115,7 +125,7 @@ const formattedConfig = computed(() => {
 // 获取配置
 const handleGetConfig = async () => {
   if (!searchForm.kind || !searchForm.page) {
-    ElMessage.warning('请输入类型和页面名称');
+    ElMessage.warning(t('getPageConfig.searchRequired'));
     return;
   }
 
@@ -142,9 +152,9 @@ const handleGetConfig = async () => {
       queryHistory.value = queryHistory.value.slice(0, 10);
     }
 
-    ElMessage.success('配置获取成功');
+    ElMessage.success(t('getPageConfig.getSuccess'));
   } catch {
-    ElMessage.error('配置获取失败');
+    ElMessage.error(t('getPageConfig.getFailed'));
     configData.value = null;
   }
 };
@@ -159,22 +169,22 @@ const resetSearch = () => {
 // 复制配置
 const copyConfig = async () => {
   if (!formattedConfig.value) {
-    ElMessage.warning('没有配置数据可复制');
+    ElMessage.warning(t('getPageConfig.noDataToCopy'));
     return;
   }
 
   try {
     await navigator.clipboard.writeText(formattedConfig.value);
-    ElMessage.success('配置已复制到剪贴板');
+    ElMessage.success(t('getPageConfig.copied'));
   } catch {
-    ElMessage.error('复制失败，请手动复制');
+    ElMessage.error(t('ssoAccessToken.copyFailed'));
   }
 };
 
 // 下载配置
 const downloadConfig = () => {
   if (!formattedConfig.value) {
-    ElMessage.warning('没有配置数据可下载');
+    ElMessage.warning(t('getPageConfig.noDataToDownload'));
     return;
   }
 
@@ -188,7 +198,7 @@ const downloadConfig = () => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  ElMessage.success('配置文件下载完成');
+  ElMessage.success(t('getPageConfig.downloadDone'));
 };
 
 // 载入历史记录
