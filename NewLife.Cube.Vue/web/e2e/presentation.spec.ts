@@ -116,9 +116,10 @@ test.describe('页面呈现架构全链路', () => {
   });
 
   test('M3 自定义页：整页接管且不渲染 CubeTable', async ({ page }) => {
-    await page.goto('/Admin/Menu');
-    await expect(page.getByRole('heading', { name: '菜单管理' })).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('.menu-container')).toBeVisible();
+    // 菜单页已改为 /meta 动态渲染（树形表格），这里改用仍为自定义实现的文件管理页
+    await page.goto('/Admin/File');
+    await expect(page.locator('.page-header')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.file-list')).toBeVisible();
     await expect(page.locator('.cube-table')).toHaveCount(0);
   });
 });
