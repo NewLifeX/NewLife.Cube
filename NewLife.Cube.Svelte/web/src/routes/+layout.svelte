@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
   import { collapsed, darkMode, siteConfig, siteTitle } from '$lib/stores/app';
   import { user, menus, isLoggedIn, displayName, fetchUserInfo, fetchMenus, logout } from '$lib/stores/user';
   import { getApi } from '$lib/api';
@@ -37,6 +38,27 @@
   function buildUrl(item: MenuItem): string {
     return item.url?.startsWith('/') ? item.url : `/${item.url ?? ''}`;
   }
+
+  // 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+  let autoCollapsed = false;
+  function syncResponsive() {
+    const narrow = shouldAutoCollapseSidebar(window.innerWidth);
+    if (narrow && !$collapsed) {
+      collapsed.update((value) => !value);
+      autoCollapsed = true;
+    } else if (!narrow && autoCollapsed) {
+      if ($collapsed) collapsed.update((value) => !value);
+      autoCollapsed = false;
+    }
+  }
+
+  onMount(() => {
+    syncResponsive();
+    window.addEventListener('resize', syncResponsive);
+    return () => window.removeEventListener('resize', syncResponsive);
+  });
+
+  onDestroy(() => window.removeEventListener('resize', syncResponsive));
 </script>
 
 {#if page.url.pathname.startsWith('/login')}

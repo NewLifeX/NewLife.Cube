@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
+import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
 import api from '@/api';
 import type { MenuItem as CubeMenuItem } from '@newlifex/api-core';
 
@@ -38,6 +39,25 @@ export default function Layout() {
     api.site.getSite().then((res) => { if (res.data) setSiteInfo(res.data); }).catch(() => {});
     // 加载用户信息
     if (!userInfo) fetchUserInfo().catch(() => {});
+  }, []);
+
+  // 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+  useEffect(() => {
+    let autoCollapsed = false;
+    const sync = () => {
+      const state = useAppStore.getState();
+      const narrow = shouldAutoCollapseSidebar(window.innerWidth);
+      if (narrow && !state.collapsed) {
+        state.toggleCollapse();
+        autoCollapsed = true;
+      } else if (!narrow && autoCollapsed) {
+        if (state.collapsed) state.toggleCollapse();
+        autoCollapsed = false;
+      }
+    };
+    sync();
+    window.addEventListener('resize', sync);
+    return () => window.removeEventListener('resize', sync);
   }, []);
 
   const handleLogout = async () => {

@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, RouterLink } from '@angular/router';
+import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
@@ -81,6 +82,9 @@ export class LayoutComponent implements OnInit {
     private router: Router,
   ) {}
 
+  /** 窄屏是否由本组件自动折叠，宽屏时据此恢复展开 */
+  private autoCollapsed = false;
+
   ngOnInit() {
     this.appService.fetchSiteConfig();
     if (!this.userService.isLoggedIn()) {
@@ -88,6 +92,20 @@ export class LayoutComponent implements OnInit {
         if (this.userService.isLoggedIn()) this.userService.fetchMenus();
         else this.router.navigate(['/login']);
       });
+    }
+    this.syncResponsive();
+  }
+
+  /** 窄屏自动折叠侧边栏，宽屏恢复用户手动展开 */
+  @HostListener('window:resize')
+  syncResponsive() {
+    const narrow = shouldAutoCollapseSidebar(window.innerWidth);
+    if (narrow && !this.appService.collapsed()) {
+      this.appService.toggleCollapsed();
+      this.autoCollapsed = true;
+    } else if (!narrow && this.autoCollapsed) {
+      if (this.appService.collapsed()) this.appService.toggleCollapsed();
+      this.autoCollapsed = false;
     }
   }
 

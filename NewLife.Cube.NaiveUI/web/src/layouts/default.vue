@@ -57,8 +57,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import SidebarMenu from './SidebarMenu.vue';
@@ -96,7 +97,25 @@ onMounted(async () => {
   if (!userStore.userInfo) {
     try { await userStore.fetchUserInfo(); } catch { /* ignore */ }
   }
+
+  syncResponsive();
+  window.addEventListener('resize', syncResponsive);
 });
+
+// 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+let autoCollapsed = false;
+function syncResponsive() {
+  const narrow = shouldAutoCollapseSidebar(window.innerWidth);
+  if (narrow && !appStore.collapsed) {
+    appStore.collapsed = true;
+    autoCollapsed = true;
+  } else if (!narrow && autoCollapsed) {
+    appStore.collapsed = false;
+    autoCollapsed = false;
+  }
+}
+
+onBeforeUnmount(() => window.removeEventListener('resize', syncResponsive));
 </script>
 
 <style scoped>

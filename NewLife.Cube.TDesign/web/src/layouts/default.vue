@@ -54,8 +54,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onBeforeUnmount, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
 import { ViewListIcon, SunnyIcon, MoonIcon } from 'tdesign-icons-vue-next';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
@@ -80,6 +81,9 @@ function handleUserAction(data: { value: string }) {
 }
 
 onMounted(async () => {
+  syncResponsive();
+  window.addEventListener('resize', syncResponsive);
+
   try {
     const res = await api.site.getSite();
     if (res?.data) appStore.siteConfig = res.data;
@@ -89,6 +93,21 @@ onMounted(async () => {
   if (!userStore.isLoggedIn) { router.push('/login'); return; }
   await userStore.fetchMenus();
 });
+
+// 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+let autoCollapsed = false;
+function syncResponsive() {
+  const narrow = shouldAutoCollapseSidebar(window.innerWidth);
+  if (narrow && !appStore.collapsed) {
+    appStore.collapsed = true;
+    autoCollapsed = true;
+  } else if (!narrow && autoCollapsed) {
+    appStore.collapsed = false;
+    autoCollapsed = false;
+  }
+}
+
+onBeforeUnmount(() => window.removeEventListener('resize', syncResponsive));
 </script>
 
 <style scoped>

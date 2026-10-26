@@ -74,8 +74,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
 import {
   IconApps,
   IconMenuFold,
@@ -128,4 +129,24 @@ async function handleLogout() {
   await userStore.logout();
   router.push('/login');
 }
+
+// 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+let autoCollapsed = false;
+function syncResponsive() {
+  const narrow = shouldAutoCollapseSidebar(window.innerWidth);
+  if (narrow && !appStore.collapsed) {
+    appStore.collapsed = true;
+    autoCollapsed = true;
+  } else if (!narrow && autoCollapsed) {
+    appStore.collapsed = false;
+    autoCollapsed = false;
+  }
+}
+
+onMounted(() => {
+  syncResponsive();
+  window.addEventListener('resize', syncResponsive);
+});
+
+onBeforeUnmount(() => window.removeEventListener('resize', syncResponsive));
 </script>

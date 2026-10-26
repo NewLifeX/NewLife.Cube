@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
+import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
 import api from '@/api';
 import type { MenuItem as CubeMenuItem } from '@newlifex/api-core';
 
@@ -25,6 +26,25 @@ export default function Layout() {
     // 站点品牌由匿名接口 /Cube/Site 提供；LoginConfig 只含登录能力
     api.site.getSite().then((res) => { if (res.data) setSiteInfo(res.data); }).catch(() => {});
     if (!userInfo) fetchUserInfo().catch(() => {});
+  }, []);
+
+  // 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+  useEffect(() => {
+    let autoCollapsed = false;
+    const sync = () => {
+      const state = useAppStore.getState();
+      const narrow = shouldAutoCollapseSidebar(window.innerWidth);
+      if (narrow && !state.collapsed) {
+        state.toggleCollapse();
+        autoCollapsed = true;
+      } else if (!narrow && autoCollapsed) {
+        if (state.collapsed) state.toggleCollapse();
+        autoCollapsed = false;
+      }
+    };
+    sync();
+    window.addEventListener('resize', sync);
+    return () => window.removeEventListener('resize', sync);
   }, []);
 
   const handleLogout = async () => {
