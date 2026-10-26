@@ -24,7 +24,7 @@
 🌐 [简体中文](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.zh-CN.md) | [繁體中文](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.zh-TW.md) | [Español](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.es.md) | [Deutsch](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.de.md) | [日本語](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.ja.md) | [Français](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.fr.md) | [Português](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.pt.md) | [Русский](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.ru.md) | [한국어](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.ko.md) | [العربية](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.ar.md)
 <!-- lang:end -->
 
-NewLife.Cube is a rapid web development platform for "data-driven + fast iteration + deep customization" scenarios. In minutes, an entity class or database table becomes a complete admin UI with permissions, lists, details, CRUD, export and statistics, while standard APIs are exposed for Vue / Blazor / Antd / mobile or third-party systems. The default template has been proven in real projects with a single table of 10 billion rows.
+NewLife.Cube is a rapid web development platform for "data-driven + fast iteration + deep customization" scenarios. In minutes, an entity class or database table becomes a complete admin UI with permissions, lists, details, CRUD, export and statistics, while standard APIs are exposed for Vue (official front-end) / React / Antd / mobile or third-party systems. The default template has been proven in real projects with a single table of 10 billion rows.
 
 Demo: <https://cube.newlifex.com> `CentOS7 + CDN` · SSO center: <https://sso.newlifex.com> `OAuth server` · Swagger: <https://cube3.newlifex.com>  
 
@@ -357,7 +357,7 @@ Milestones (excerpt):
 | --- | --- |
 | NewLife.Cube | Core: entity controllers, permissions, menus, field metadata, API. |
 | NewLife.CubeNC | Legacy MVC / Razor compatibility layer. |
-| Classic skins | AdminLTE / Metronic / Metronic8 / Tabler / LayuiAdmin / ElementUI / Blazor (separate packages; feature-frozen since 2026-10-26 — compile-only, no new features). |
+| Classic skins | AdminLTE / Metronic / Metronic8 / Tabler / LayuiAdmin / ElementUI / Blazor (separate packages; feature-frozen — compile-only, no new features and no bug fixes). |
 | New-generation skins | pnpm workspace: NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign (reference implementations, not published to NuGet). |
 | NewLife.Cube.Swagger | Swagger documents grouped by area. |
 | CubeDemo / CubeDemoNC | Samples. |

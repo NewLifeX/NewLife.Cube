@@ -22,7 +22,7 @@
 🌐 [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Português](README.pt.md) | [Русский](README.ru.md) | [한국어](README.ko.md) | [العربية](README.ar.md)
 <!-- lang:end -->
 
-NewLife.Cube is a rapid web development platform for "data-driven + fast iteration + deep customization" scenarios. In minutes, an entity class or database table becomes a complete admin UI with permissions, lists, details, CRUD, export and statistics, while standard APIs are exposed for Vue / Blazor / Antd / mobile or third-party systems. The default template has been proven in real projects with a single table of 10 billion rows.
+NewLife.Cube is a rapid web development platform for "data-driven + fast iteration + deep customization" scenarios. In minutes, an entity class or database table becomes a complete admin UI with permissions, lists, details, CRUD, export and statistics, while standard APIs are exposed for Vue (official front-end) / React / Antd / mobile or third-party systems. The default template has been proven in real projects with a single table of 10 billion rows.
 
 Demo: <https://cube.newlifex.com> `CentOS7 + CDN` · SSO center: <https://sso.newlifex.com> `OAuth server` · Swagger: <https://cube3.newlifex.com>  
 
@@ -355,7 +355,7 @@ Milestones (excerpt):
 | --- | --- |
 | NewLife.Cube | Core: entity controllers, permissions, menus, field metadata, API. |
 | NewLife.CubeNC | Legacy MVC / Razor compatibility layer. |
-| Classic skins | AdminLTE / Metronic / Metronic8 / Tabler / LayuiAdmin / ElementUI / Blazor (separate packages; feature-frozen since 2026-10-26 — compile-only, no new features). |
+| Classic skins | AdminLTE / Metronic / Metronic8 / Tabler / LayuiAdmin / ElementUI / Blazor (separate packages; feature-frozen — compile-only, no new features and no bug fixes). |
 | New-generation skins | pnpm workspace: NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign (reference implementations, not published to NuGet). |
 | NewLife.Cube.Swagger | Swagger documents grouped by area. |
 | CubeDemo / CubeDemoNC | Samples. |
