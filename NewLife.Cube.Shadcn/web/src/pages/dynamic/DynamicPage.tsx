@@ -4,7 +4,7 @@ import {
   Plus, Trash2, Download, Upload, Search, RefreshCw, Eye, Pencil, ChevronDown,
 } from 'lucide-react';
 import { Auth } from '@newlifex/api-core';
-import { resolveWidgets, type FieldMapping } from '@newlifex/field-mapping';
+import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
 import * as echarts from 'echarts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -239,7 +239,7 @@ export default function DynamicPage() {
       </div>
 
       {/* 数据表格 */}
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -247,7 +247,16 @@ export default function DynamicPage() {
                 <Checkbox checked={data.length > 0 && selected.size === data.length} onCheckedChange={toggleSelectAll} />
               </TableHead>
               {listFields.map((f) => (
-                <TableHead key={f.field.name}>{f.field.displayName ?? f.field.name}</TableHead>
+                <TableHead
+                  key={f.field.name}
+                  style={{
+                    width: resolveColumnWidth(f.field),
+                    minWidth: resolveColumnWidth(f.field),
+                    textAlign: resolveColumnAlign(f.field),
+                  }}
+                >
+                  {f.field.displayName ?? f.field.name}
+                </TableHead>
               ))}
               <TableHead className="text-right">操作</TableHead>
             </TableRow>
@@ -261,7 +270,16 @@ export default function DynamicPage() {
                     <Checkbox checked={selected.has(id)} onCheckedChange={() => toggleSelect(id)} />
                   </TableCell>
                   {listFields.map((f) => (
-                    <TableCell key={f.field.name}>{renderCell(row, f)}</TableCell>
+                    <TableCell
+                      key={f.field.name}
+                      style={{
+                        width: resolveColumnWidth(f.field),
+                        minWidth: resolveColumnWidth(f.field),
+                        textAlign: resolveColumnAlign(f.field),
+                      }}
+                    >
+                      {renderCell(row, f)}
+                    </TableCell>
                   ))}
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">

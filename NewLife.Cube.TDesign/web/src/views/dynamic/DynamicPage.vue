@@ -78,7 +78,7 @@ import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
 import { Auth, type DataField } from '@newlifex/api-core';
-import { toCamelCase } from '@newlifex/field-mapping';
+import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
 import { Button as TButton } from 'tdesign-vue-next';
 import * as echarts from 'echarts';
 
@@ -148,7 +148,13 @@ const footData = computed(() => {
 const tableColumns = computed(() => {
   const cols: any[] = [{ colKey: 'row-select', type: 'multiple', width: 50 }];
   for (const f of listFields.value) {
-    cols.push({ colKey: toCamelCase(f.name), title: f.displayName || f.name, ellipsis: true });
+    cols.push({
+      colKey: toCamelCase(f.name),
+      title: f.displayName || f.name,
+      ellipsis: true,
+      width: resolveColumnWidth(f),
+      align: resolveColumnAlign(f),
+    });
   }
   cols.push({
     colKey: 'op', title: '操作', width: 180, fixed: 'right',

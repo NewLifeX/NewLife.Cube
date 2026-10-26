@@ -64,6 +64,7 @@
       :columns="columns"
       :data="tableData"
       :loading="loading"
+      :scroll="{ x: tableScrollX }"
       :pagination="pagination"
       :row-selection="{ type: 'checkbox', showCheckedAll: true, selectedRowKeys: selectedKeys, onSelectionChange: onSelectionChange }"
       row-key="id"
@@ -118,6 +119,7 @@ import { useRoute } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import { IconSearch, IconPlus, IconDelete, IconDown } from '@arco-design/web-vue/es/icon';
 import { Auth, type DataField } from '@newlifex/api-core';
+import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
 import * as echarts from 'echarts';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -181,11 +183,17 @@ const columns = computed(() => {
       dataIndex: f.name,
       ellipsis: true,
       tooltip: true,
-      width: f.maxWidth || undefined,
+      width: resolveColumnWidth(f),
+      align: resolveColumnAlign(f),
     }));
   cols.push({ title: '操作', dataIndex: 'operations', ellipsis: false, tooltip: false, width: 180 } as any);
   return cols;
 });
+
+/** 横向滚动兜底宽度：固定列按实际宽度，自适应列按 140px 估算 */
+const tableScrollX = computed(() =>
+  columns.value.reduce((sum, col) => sum + (typeof col.width === 'number' ? col.width : 140), 0)
+);
 
 const formFields = computed(() => (isEdit.value ? editFields.value : addFields.value));
 const importUrl = computed(() => `${typePath.value}/import`);

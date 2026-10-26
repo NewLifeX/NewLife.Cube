@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon, ArrowDropDown } from '@mui/icons-material';
 import { Auth, type DataField } from '@newlifex/api-core';
-import { resolveWidgets, type FieldMapping } from '@newlifex/field-mapping';
+import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
 import * as echarts from 'echarts';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -272,7 +272,13 @@ export default function DynamicPage() {
                 />
               </TableCell>
               {listFields.map((f) => (
-                <TableCell key={f.field.name}>{f.field.displayName ?? f.field.name}</TableCell>
+                <TableCell
+                  key={f.field.name}
+                  align={resolveColumnAlign(f.field)}
+                  sx={{ width: resolveColumnWidth(f.field), minWidth: resolveColumnWidth(f.field) }}
+                >
+                  {f.field.displayName ?? f.field.name}
+                </TableCell>
               ))}
               <TableCell align="right">操作</TableCell>
             </TableRow>
@@ -286,7 +292,11 @@ export default function DynamicPage() {
                     <Checkbox checked={isSelected(id)} onChange={() => handleSelectOne(id)} />
                   </TableCell>
                   {listFields.map((f) => (
-                    <TableCell key={f.field.name}>
+                    <TableCell
+                      key={f.field.name}
+                      align={resolveColumnAlign(f.field)}
+                      sx={{ width: resolveColumnWidth(f.field), minWidth: resolveColumnWidth(f.field) }}
+                    >
                       {renderCell(row, f)}
                     </TableCell>
                   ))}

@@ -17,6 +17,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { Auth, type DataField } from '@newlifex/api-core';
+import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
 import { ApiService } from '../../services/api.service';
 import { UserService } from '../../services/user.service';
 import { FieldInputComponent } from '../../components/field-input.component';
@@ -111,6 +112,7 @@ import * as echarts from 'echarts';
       [nzPageSize]="pageSize"
       [nzTotal]="total"
       [nzFrontPagination]="false"
+      [nzScroll]="{ x: tableScrollX }"
       nzShowSizeChanger
       (nzPageIndexChange)="onPageChange($event)"
       (nzPageSizeChange)="onPageSizeChange($event)"
@@ -120,7 +122,7 @@ import * as echarts from 'echarts';
           <th nzShowCheckbox [(nzChecked)]="allChecked" (nzCheckedChange)="onAllChecked($event)"></th>
           @for (field of listFields; track field.name) {
             @if (field.visible !== false) {
-              <th>{{ field.displayName || field.name }}</th>
+              <th [nzWidth]="columnWidthPx(field)" [style.text-align]="columnAlign(field)">{{ field.displayName || field.name }}</th>
             }
           }
           <th nzWidth="180px">操作</th>
@@ -132,7 +134,7 @@ import * as echarts from 'echarts';
             <td nzShowCheckbox [nzChecked]="checkedIds.has(row['id'])" (nzCheckedChange)="onItemChecked(row['id'], $event)"></td>
             @for (field of listFields; track field.name) {
               @if (field.visible !== false) {
-                <td>{{ row[field.name] }}</td>
+                <td [style.text-align]="columnAlign(field)">{{ row[field.name] }}</td>
               }
             }
             <td>
@@ -236,6 +238,25 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
   private chartInstances: any[] = [];
   private chartsInitialized = false;
   private resizeHandler = () => { for (const inst of this.chartInstances) { inst?.resize(); } };
+
+  /** 表格横向滚动宽度：固定列按实际宽度，自适应列按 140px 估算，末尾预留操作列 */
+  get tableScrollX(): string {
+    const total = this.listFields
+      .filter((field) => field.visible !== false)
+      .reduce((sum, field) => sum + (resolveColumnWidth(field) ?? 140), 0);
+    return `${total + 230}px`;
+  }
+
+  /** 列宽（像素字符串）。null 交给表格自适应 */
+  columnWidthPx(field: DataField): string | null {
+    const width = resolveColumnWidth(field);
+    return width ? `${width}px` : null;
+  }
+
+  /** 列对齐，统一左/中/右 */
+  columnAlign(field: DataField): 'left' | 'center' | 'right' {
+    return resolveColumnAlign(field);
+  }
 
   exportOptions = [
     { label: '导出 Excel', value: 'Excel' },

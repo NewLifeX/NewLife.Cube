@@ -5,7 +5,7 @@
   import { getMenuPermission } from '$lib/stores/user';
   import FieldInput from '$lib/components/FieldInput.svelte';
   import { Auth, type DataField } from '@newlifex/api-core';
-  import { toCamelCase } from '@newlifex/field-mapping';
+  import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
   import * as echarts from 'echarts';
 
   const exportOptions = [
@@ -32,6 +32,13 @@
   let editFields: DataField[] = $state([]);
   let detailFields: DataField[] = $state([]);
   let searchFields: DataField[] = $state([]);
+
+  /** 表格最小宽度：固定列按实际宽度，自适应列按 140px 估算，末尾预留操作列，窄屏横向滚动 */
+  const tableMinWidth = $derived(
+    listFields
+      .filter((field) => field.visible !== false)
+      .reduce((sum, field) => sum + (resolveColumnWidth(field) ?? 140), 0) + 230,
+  );
 
   // 数据
   let data: any[] = $state([]);
@@ -298,16 +305,19 @@
 
 <!-- Table -->
 <div class="card p-0 overflow-auto">
-  <table class="w-full text-sm">
+  <table class="w-full text-sm" style="min-width: {tableMinWidth}px">
     <thead>
       <tr class="border-b" style="border-color: var(--border); background: var(--bg-secondary)">
         <th class="w-10 px-3 py-3">
           <input type="checkbox" checked={allSelected} onchange={toggleAll} />
         </th>
         {#each listFields as f}
-          <th class="px-3 py-3 text-left font-medium" style="color: var(--text-secondary)">{f.displayName || f.name}</th>
+          <th
+            class="px-3 py-3 font-medium"
+            style="color: var(--text-secondary); width: {resolveColumnWidth(f) ?? 'auto'}; text-align: {resolveColumnAlign(f)}"
+          >{f.displayName || f.name}</th>
         {/each}
-        <th class="px-3 py-3 text-left font-medium" style="color: var(--text-secondary)">操作</th>
+        <th class="px-3 py-3 text-left font-medium" style="color: var(--text-secondary); width: 180px">操作</th>
       </tr>
     </thead>
     <tbody>
@@ -322,7 +332,7 @@
               <input type="checkbox" checked={selectedIds.has(row.id)} onchange={() => toggleOne(row.id)} />
             </td>
             {#each listFields as f}
-              <td class="px-3 py-2.5">{getValue(row, f) ?? '-'}</td>
+              <td class="px-3 py-2.5" style="text-align: {resolveColumnAlign(f)}">{getValue(row, f) ?? '-'}</td>
             {/each}
             <td class="px-3 py-2.5">
               <div class="flex gap-2">

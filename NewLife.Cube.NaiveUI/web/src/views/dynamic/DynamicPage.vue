@@ -54,6 +54,7 @@
       @update:checked-row-keys="(keys: any[]) => (checkedKeys = keys)"
       :pagination="pagination"
       :summary="statSummary"
+      :scroll-x="tableScrollX"
       remote
       @update:page="loadData"
       @update:page-size="handlePageSizeChange"
@@ -103,7 +104,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, markRaw, h, type R
 import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type DataTableCreateSummary, type FormInst, type PaginationProps, type UploadCustomRequestOptions } from 'naive-ui';
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
 import { Auth, type DataField } from '@newlifex/api-core';
-import { resolveWidgets, type FieldMapping } from '@newlifex/field-mapping';
+import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
 import * as echarts from 'echarts';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -206,7 +207,8 @@ const tableColumns = computed<DataTableColumn[]>(() => {
     const col: DataTableColumn = {
       key: m.field.name,
       title: m.field.displayName ?? m.field.name,
-      width: m.field.maxWidth,
+      width: resolveColumnWidth(m.field),
+      align: resolveColumnAlign(m.field),
       ellipsis: { tooltip: true },
     };
 
@@ -265,6 +267,11 @@ const tableColumns = computed<DataTableColumn[]>(() => {
 
   return cols;
 });
+
+/** 横向滚动兜底宽度：固定列按实际宽度，自适应列按 140px 估算，窄屏下表格横向滚动而不是挤压变形 */
+const tableScrollX = computed(() =>
+  tableColumns.value.reduce((sum, col) => sum + (typeof col.width === 'number' ? col.width : 140), 0)
+);
 
 // --- 数据加载 ---
 async function loadFields() {

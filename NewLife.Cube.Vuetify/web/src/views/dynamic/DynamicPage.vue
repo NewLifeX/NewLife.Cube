@@ -139,6 +139,7 @@
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, markRaw } from 'vue';
 import { useRoute } from 'vue-router';
 import { Auth, type DataField } from '@newlifex/api-core';
+import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
 import * as echarts from 'echarts';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -206,6 +207,13 @@ const chartList = ref<any[]>([]);
 const chartInstances = ref<any[]>([]);
 
 // 表头
+/** Vuetify 3 的列对齐取 start/center/end，与统一规范的 left/center/right 互转 */
+function vuetifyAlign(align: 'left' | 'center' | 'right'): 'start' | 'center' | 'end' {
+  if (align === 'right') return 'end';
+  if (align === 'center') return 'center';
+  return 'start';
+}
+
 const headers = computed(() => {
   const cols = listFields.value
     .filter((f) => f.visible !== false)
@@ -213,8 +221,10 @@ const headers = computed(() => {
       title: f.displayName || f.name,
       key: f.name,
       sortable: false,
+      width: resolveColumnWidth(f),
+      align: vuetifyAlign(resolveColumnAlign(f)),
     }));
-  cols.push({ title: '操作', key: 'actions', sortable: false });
+  cols.push({ title: '操作', key: 'actions', sortable: false, width: 180, align: 'end' });
   return cols;
 });
 
