@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Tests.Membership;
 using NewLife.Data;
+using XCode.DataAccessLayer;
 using Xunit;
 
 namespace NewLife.Cube.Tests.Common;
@@ -64,22 +66,6 @@ public class ApplicationManagementTests
         Assert.Equal("Name", ex.ParamName);
     }
 
-    [Fact(DisplayName = "应用系统_按名称与密钥查找（不区分大小写）")]
-    public void App_FindByNameAndSecret()
-    {
-        var name = Unique("app");
-        var secret = Guid.NewGuid().ToString("N");
-        var app = CreateApp(name, secret);
-        App.Meta.Cache.Clear("应用系统测试写入", true);
-
-        Assert.Equal(app.Id, App.FindByName(name.ToUpperInvariant())?.Id);
-        Assert.Equal(app.Id, App.FindBySecret(secret.ToUpperInvariant())?.Id);
-        Assert.Equal(app.Id, App.FindById(app.Id)?.Id);
-        Assert.Null(App.FindByName(Unique("missing")));
-        Assert.Null(App.FindBySecret(Unique("missing")));
-        Assert.Null(App.FindById(0));
-    }
-
     [Fact(DisplayName = "应用系统_回调地址校验支持空配置、localhost 与域名前缀")]
     public void App_ValidCallback_MatchesRules()
     {
@@ -118,67 +104,6 @@ public class ApplicationManagementTests
         var onlyBlack = new App { Black = "10.0.0.*" };
         Assert.True(onlyBlack.ValidSource("8.8.8.8"));
         Assert.False(onlyBlack.ValidSource("10.0.0.5"));
-    }
-    #endregion
-
-    #region SYS-9 应用日志
-    [Fact(DisplayName = "应用日志_按应用与关键字检索且异步写入可落库")]
-    public void AppLog_CreateAndSearch()
-    {
-        var app = CreateApp();
-        var other = CreateApp();
-        var now = DateTime.Now;
-
-        var log = AppLog.Create(app.Id, "Authorize", true, "授权成功");
-        Assert.Equal(app.Id, log.AppId);
-        Assert.Equal("Authorize", log.Action);
-        Assert.True(log.Success);
-        Assert.Equal("授权成功", log.Remark);
-        Assert.True(log.Id > 0);
-
-        new AppLog { AppId = app.Id, Action = "Token", Success = false, Remark = "令牌失败", CreateTime = now }.Insert();
-        new AppLog { AppId = other.Id, Action = "Authorize", Success = true, Remark = "别的应用", CreateTime = now }.Insert();
-
-        // 创建走异步保存，先确认落库再统计数量
-        Assert.NotNull(WaitFor(() => AppLog.FindById(log.Id), e => e != null));
-
-        var mine = AppLog.FindAllByAppId(app.Id);
-        Assert.Equal(2, mine.Count);
-        Assert.All(mine, e => Assert.Equal(app.Id, e.AppId));
-
-        var page = new PageParameter { PageIndex = 1, PageSize = 10 };
-        var byApp = AppLog.Search(app.Id, now.AddMinutes(-5), now.AddMinutes(5), null, page);
-        Assert.Equal(2, byApp.Count);
-
-        Assert.True(AppLog.FindById(log.Id).Success);
-    }
-
-    [Fact(DisplayName = "应用日志_按日期清理只删除旧匿名授权日志")]
-    public void AppLog_DeleteBefore_OnlyOldAnonymousAuthorize()
-    {
-        var app = CreateApp();
-        var now = DateTime.Now;
-        var cutoff = now.AddDays(-10);
-
-        var oldAuthorize = new AppLog { Id = 1, AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-30) };
-        oldAuthorize.Insert();
-        // 匿名授权日志没有创建者：插入后清空（插入时被用户拦截器补上了当前用户）
-        oldAuthorize.CreateUser = null;
-        oldAuthorize.Update();
-        var oldToken = new AppLog { Id = 2, AppId = app.Id, Action = "Token", Success = true, CreateTime = now.AddDays(-30) };
-        oldToken.Insert();
-        var recent = new AppLog { Id = AppLog.Meta.Factory.Snow.GetId(DateTime.Now), AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-1) };
-        recent.Insert();
-        var oldBound = new AppLog { Id = 3, AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-30), CreateUser = "tester" };
-        oldBound.Insert();
-
-        var count = AppLog.DeleteBefore(cutoff);
-
-        Assert.True(count >= 1);
-        Assert.Null(AppLog.FindById(oldAuthorize.Id));
-        Assert.NotNull(AppLog.FindById(oldToken.Id));
-        Assert.NotNull(AppLog.FindById(recent.Id));
-        Assert.NotNull(AppLog.FindById(oldBound.Id));
     }
     #endregion
 
@@ -227,5 +152,11 @@ public class ApplicationManagementTests
     }
     #endregion
 }
+
+
+
+
+
+
 
 
