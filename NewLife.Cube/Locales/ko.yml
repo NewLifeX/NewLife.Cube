@@ -1511,3 +1511,7 @@
 "Stored name": "저장된 이름"
 "Refreshed {0} menus": "메뉴 {0}개를 새로 고쳤습니다"
 "Please select the menus to refresh first.": "먼저 새로 고칠 메뉴를 선택하세요."
+"Province": "성"
+"City": "시"
+"District": "구"
+"Town": "읍면"

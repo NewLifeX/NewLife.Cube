@@ -120,14 +120,17 @@
                     closebtn +
                     '<span class="title"></span><div class="arrow"></div>' + '</span>',
                 domclear = '<input name=\'' + $(this.$element).attr("id") + '\' type=\'text\' class=\'.picker-clear\' style=\'float:left;display:none\' value=\'\'/>';
+            var labels = $.extend(
+                { province: '省份', city: '城市', district: '区县', town: '乡镇街道' },
+                this.options.labels || {});
             var dropdown = '<div class="city-picker-dropdown" style="left:' + p.left + 'px;top:' + (p.top + p.height) + 'px;' + //style="left:0px;top:100%;' 备份
                 this.getWidthStyle(p.width, true) + '">' +
                 '<div class="city-select-wrap">' +
                 '<div class="city-select-tab">' +
-                '<a class="active" data-count="province">省份</a>' +
-                (this.includeDem('city') ? '<a data-count="city">城市</a>' : '') +
-                (this.includeDem('district') ? '<a data-count="district">区县</a>' : '') +
-                (this.includeDem('town') ? '<a data-count="town">乡镇街道</a>' : '') + '</div>' +
+                '<a class="active" data-count="province">' + labels.province + '</a>' +
+                (this.includeDem('city') ? '<a data-count="city">' + labels.city + '</a>' : '') +
+                (this.includeDem('district') ? '<a data-count="district">' + labels.district + '</a>' : '') +
+                (this.includeDem('town') ? '<a data-count="town">' + labels.town + '</a>' : '') + '</div>' +
                 '<div class="city-select-content">' +
                 '<div class="city-select province" data-count="province"></div>' +
                 (this.includeDem('city') ? '<div class="city-select city" data-count="city"></div>' : '') +
@@ -700,6 +703,8 @@
         town: '',
         dataUrl: '/Cube/AreaChilds?id=',
         areaParents: '/Cube/AreaParents?id=',
+        // 层级标签，可整体替换以适配多语言界面；为空时使用中文默认
+        labels: null,
         autoPost: false,
         clickShow: function () {
             //console.log("点击处理了");

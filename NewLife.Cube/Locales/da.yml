@@ -1511,3 +1511,7 @@
 "Stored name": "Gemt navn"
 "Refreshed {0} menus": "{0} menuer opdateret"
 "Please select the menus to refresh first.": "Vælg først de menuer, der skal opdateres."
+"Province": "Provins"
+"City": "By"
+"District": "Distrikt"
+"Town": "Kommune"

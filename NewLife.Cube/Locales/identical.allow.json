@@ -244,7 +244,9 @@
     "Normal",
     "{0}, {1}",
     "Performance",
-    "{0}"
+    "{0}",
+    "Province",
+    "District"
   ],
   "it": [
     "Backup",
@@ -394,7 +396,8 @@
     "Caches",
     "Online",
     "Tokens",
-    "{0}, {1}"
+    "{0}, {1}",
+    "District"
   ],
   "sv": [
     "AI",
@@ -680,7 +683,8 @@
     "Link",
     "Online",
     "{0}, {1}",
-    "Personal"
+    "Personal",
+    "District"
   ],
   "el": [
     "{value}s",

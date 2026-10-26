@@ -1511,3 +1511,7 @@
 "Stored name": "Tallennettu nimi"
 "Refreshed {0} menus": "{0} valikkoa päivitetty"
 "Please select the menus to refresh first.": "Valitse ensin päivitettävät valikot."
+"Province": "Maakunta"
+"City": "Kaupunki"
+"District": "Piirikunta"
+"Town": "Kunta"

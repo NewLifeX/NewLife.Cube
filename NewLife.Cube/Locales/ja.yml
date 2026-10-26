@@ -1511,3 +1511,7 @@
 "Stored name": "保存名"
 "Refreshed {0} menus": "{0} 件のメニューを更新しました"
 "Please select the menus to refresh first.": "先に更新するメニューを選択してください。"
+"Province": "省"
+"City": "市"
+"District": "区"
+"Town": "町村"

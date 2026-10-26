@@ -1,0 +1,22 @@
+@using NewLife;
+@using NewLife.Cube;
+@{
+    // 地区选择器公共脚本：数据接口与层级标签。层级标签走词表，缺失译文时回退英文源文
+    var set = CubeSetting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
+}
+<script src="@res/city_picker/city-picker.js?v=@ver"></script>
+<script>
+    $.fn.citypicker.Constructor.DEFAULTS.dataUrl = '/Cube/AreaChilds?id=';
+    $.fn.citypicker.Constructor.DEFAULTS.areaParents = '/Cube/AreaParents?id=';
+    $.fn.citypicker.Constructor.DEFAULTS.labels = {
+        province: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(L.T("Province"))),
+        city: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(L.T("City"))),
+        district: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(L.T("District"))),
+        town: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(L.T("Town")))
+    };
+</script>

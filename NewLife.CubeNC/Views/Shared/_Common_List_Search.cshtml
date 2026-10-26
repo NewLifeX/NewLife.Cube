@@ -17,6 +17,8 @@
     var atts = new Dictionary<String, Object>();
     if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
 
+    // 全角冒号只用于中日韩界面，其它语言用半角冒号，避免英文界面出现全角标点
+    var colon = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.EqualIgnoreCase("zh", "ja", "ko") ? "：" : ":";
 }
 @foreach (SearchField field in fields)
 {
@@ -26,7 +28,7 @@
         <div class="form-group">
             @if (!field.DisplayName.IsNullOrEmpty())
             {
-                <label for="@name" class="control-label">@field.DisplayName：</label>
+                <label for="@name" class="control-label">@field.DisplayName@colon</label>
             }
             @await Html.PartialAsync(field.View, field)
         </div>
@@ -38,7 +40,7 @@
     else if (field.Type == typeof(Boolean))
     {
         <div class="form-group">
-            <label for="@name" class="control-label">@field.DisplayName：</label>
+            <label for="@name" class="control-label">@field.DisplayName@colon</label>
             @Html.ForDropDownList(name, dic, page[name], L.T("All"), true)
         </div>
     }
@@ -65,13 +67,13 @@
         {
             if (field.Multiple)
             {
-                <label for="@name" class="control-label">@field.DisplayName：</label>
+                <label for="@name" class="control-label">@field.DisplayName@colon</label>
                 @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(name, EnumLocalization.GetDescriptions(field.Type), page[name]))
             }
             else
             {
                 <div class="form-group">
-                    <label for="@name" class="control-label">@field.DisplayName：</label>
+                    <label for="@name" class="control-label">@field.DisplayName@colon</label>
                     @Html.ForDropDownList(name, EnumLocalization.GetDescriptions(field.Type), page[name], L.T("All"), true)
                 </div>
             }
