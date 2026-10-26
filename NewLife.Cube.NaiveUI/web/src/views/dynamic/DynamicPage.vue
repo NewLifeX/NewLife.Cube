@@ -1,7 +1,7 @@
 <template>
   <div class="dynamic-page">
-    <!-- ECharts 图表区域 -->
-    <n-card v-if="chartList.length" size="small" style="margin-bottom: 16px">
+    <!-- ECharts 图表区域（图表视图） -->
+    <n-card v-if="viewMode === 'chart' && chartList.length" size="small" style="margin-bottom: 16px">
       <div
         v-for="(_, idx) in chartList"
         :key="idx"
@@ -9,6 +9,7 @@
         style="width: 100%; height: 400px"
       />
     </n-card>
+    <n-empty v-else-if="viewMode === 'chart'" description="暂无图表" style="margin-bottom: 16px" />
 
     <!-- 搜索栏 -->
     <n-card v-if="searchFields.length" size="small" style="margin-bottom: 16px">
@@ -41,11 +42,13 @@
           </template>
           确认删除选中的 {{ checkedKeys.length }} 条记录？
         </n-popconfirm>
+        <n-button @click="toggleView">{{ viewMode === 'table' ? '图表' : '表格' }}</n-button>
       </n-space>
     </div>
 
     <!-- 数据表格 -->
     <n-data-table
+      v-show="viewMode === 'table'"
       :columns="tableColumns"
       :data="tableData"
       :loading="loading"
@@ -100,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, nextTick, markRaw, h, type Ref } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, markRaw, h, watch, type Ref } from 'vue';
 import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type DataTableCreateSummary, type FormInst, type PaginationProps, type UploadCustomRequestOptions } from 'naive-ui';
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
 import { Auth, type DataField } from '@newlifex/api-core';
@@ -416,6 +419,22 @@ async function handleImport({ file }: UploadCustomRequestOptions) {
 }
 
 // --- ECharts ---
+/** 视图模式：表格 / 图表 */
+const viewMode = ref<'table' | 'chart'>('table');
+
+function toggleView() {
+  viewMode.value = viewMode.value === 'table' ? 'chart' : 'table';
+}
+
+// 离开图表视图时释放实例，避免隐藏容器尺寸为 0 导致图表错位
+watch(viewMode, (mode) => {
+  if (mode === 'chart') return;
+  for (const inst of chartInstances.value) {
+    inst?.dispose();
+  }
+  chartInstances.value = [];
+});
+
 async function loadChartData() {
   try {
     const res = await api.page.getChartData(props.type);

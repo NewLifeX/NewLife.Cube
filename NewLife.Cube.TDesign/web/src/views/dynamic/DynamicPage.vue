@@ -1,7 +1,7 @@
 <template>
   <div>
-    <!-- ECharts 图表区域 -->
-    <div v-if="chartList.length" style="margin-bottom: 16px;">
+    <!-- ECharts 图表区域（图表视图） -->
+    <div v-if="viewMode === 'chart' && chartList.length" style="margin-bottom: 16px;">
       <div
         v-for="(_, idx) in chartList"
         :key="idx"
@@ -9,6 +9,7 @@
         style="width: 100%; height: 400px; background: var(--td-bg-color-container); border-radius: 6px; margin-bottom: 8px;"
       />
     </div>
+    <t-empty v-else-if="viewMode === 'chart'" description="暂无图表" style="margin-bottom: 16px" />
 
     <!-- Toolbar -->
     <t-space style="margin-bottom: 16px" breakLine>
@@ -21,6 +22,7 @@
         <t-button variant="outline">导入</t-button>
       </t-upload>
       <div style="flex: 1" />
+      <t-button variant="outline" @click="toggleView">{{ viewMode === 'table' ? '图表' : '表格' }}</t-button>
       <t-input v-model="keyword" placeholder="搜索..." style="width: 240px" clearable @enter="handleSearch">
         <template #suffix-icon><search-icon @click="handleSearch" style="cursor: pointer" /></template>
       </t-input>
@@ -28,6 +30,7 @@
 
     <!-- Table -->
     <t-table
+      v-show="viewMode === 'table'"
       :data="data"
       :columns="tableColumns"
       :loading="loading"
@@ -129,6 +132,22 @@ const isEdit = ref(false);
 // ECharts
 const chartList = ref<any[]>([]);
 const chartInstances = ref<any[]>([]);
+
+/** 视图模式：表格 / 图表 */
+const viewMode = ref<'table' | 'chart'>('table');
+
+function toggleView() {
+  viewMode.value = viewMode.value === 'table' ? 'chart' : 'table';
+}
+
+// 离开图表视图时释放实例，避免隐藏容器尺寸为 0 导致图表错位
+watch(viewMode, (mode) => {
+  if (mode === 'chart') return;
+  for (const inst of chartInstances.value) {
+    inst?.dispose();
+  }
+  chartInstances.value = [];
+});
 
 // 统计行（footData）
 const footData = computed(() => {

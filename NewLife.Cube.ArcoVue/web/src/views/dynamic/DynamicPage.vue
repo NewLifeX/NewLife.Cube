@@ -1,7 +1,7 @@
 <template>
   <div style="padding: 0 16px;">
-    <!-- ECharts 图表区域 -->
-    <a-card v-if="chartList.length" style="margin-bottom: 16px;">
+    <!-- ECharts 图表区域（图表视图） -->
+    <a-card v-if="viewMode === 'chart' && chartList.length" style="margin-bottom: 16px;">
       <div
         v-for="(_, idx) in chartList"
         :key="idx"
@@ -9,6 +9,7 @@
         style="width: 100%; height: 400px"
       />
     </a-card>
+    <a-empty v-else-if="viewMode === 'chart'" description="暂无图表" style="margin-bottom: 16px" />
 
     <!-- 搜索区域 -->
     <a-card v-if="searchFields.length" style="margin-bottom: 16px;">
@@ -39,6 +40,7 @@
           <template #icon><icon-delete /></template>
           批量删除
         </a-button>
+        <a-button @click="toggleView">{{ viewMode === 'table' ? '图表' : '表格' }}</a-button>
       </a-space>
       <a-space>
         <a-dropdown v-if="canExport" @select="handleExport">
@@ -61,6 +63,7 @@
 
     <!-- 数据表格 -->
     <a-table
+      v-show="viewMode === 'table'"
       :columns="columns"
       :data="tableData"
       :loading="loading"
@@ -173,6 +176,22 @@ const detailData = reactive<Record<string, any>>({});
 // ECharts
 const chartList = ref<any[]>([]);
 const chartInstances = ref<any[]>([]);
+
+/** 视图模式：表格 / 图表 */
+const viewMode = ref<'table' | 'chart'>('table');
+
+function toggleView() {
+  viewMode.value = viewMode.value === 'table' ? 'chart' : 'table';
+}
+
+// 离开图表视图时释放实例，避免隐藏容器尺寸为 0 导致图表错位
+watch(viewMode, (mode) => {
+  if (mode === 'chart') return;
+  for (const inst of chartInstances.value) {
+    inst?.dispose();
+  }
+  chartInstances.value = [];
+});
 
 // 表格列
 const columns = computed(() => {

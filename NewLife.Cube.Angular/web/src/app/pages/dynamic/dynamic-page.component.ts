@@ -16,6 +16,7 @@ import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
 import { ApiService } from '../../services/api.service';
@@ -31,16 +32,19 @@ import * as echarts from 'echarts';
     NzTableModule, NzButtonModule, NzCardModule, NzFormModule,
     NzModalModule, NzDescriptionsModule, NzPopconfirmModule,
     NzUploadModule, NzSpaceModule, NzIconModule, NzDividerModule,
-    NzDropDownModule, FieldInputComponent,
+    NzDropDownModule, NzEmptyModule, FieldInputComponent,
   ],
   template: `
-    <!-- ECharts 图表 -->
-    @if (chartList.length) {
+    <!-- ECharts 图表（图表视图） -->
+    @if (viewMode === 'chart' && chartList.length) {
       <nz-card style="margin-bottom: 16px;">
         @for (opt of chartList; track $index) {
           <div #chartContainer style="width: 100%; height: 400px;"></div>
         }
       </nz-card>
+    }
+    @if (viewMode === 'chart' && !chartList.length) {
+      <nz-empty nzNotFoundContent="暂无图表" style="margin-bottom: 16px"></nz-empty>
     }
 
     <!-- 搜索 -->
@@ -100,12 +104,14 @@ import * as echarts from 'echarts';
             <button nz-button><span nz-icon nzType="upload"></span>导入</button>
           </nz-upload>
         }
+        <button *nzSpaceItem nz-button (click)="toggleView()">{{ viewMode === 'table' ? '图表' : '表格' }}</button>
       </nz-space>
     </div>
 
     <!-- 数据表格 -->
     <nz-table
       #basicTable
+      [style.display]="viewMode === 'table' ? null : 'none'"
       [nzData]="tableData"
       [nzLoading]="loading"
       [nzPageIndex]="pageIndex"
@@ -235,6 +241,8 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
 
   // ECharts
   chartList: any[] = [];
+  /** 视图模式：表格 / 图表 */
+  viewMode: 'table' | 'chart' = 'table';
   private chartInstances: any[] = [];
   private chartsInitialized = false;
   private resizeHandler = () => { for (const inst of this.chartInstances) { inst?.resize(); } };
@@ -245,6 +253,12 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
       .filter((field) => field.visible !== false)
       .reduce((sum, field) => sum + (resolveColumnWidth(field) ?? 140), 0);
     return `${total + 230}px`;
+  }
+
+  /** 切换表格/图表视图。回到表格时释放图表实例，避免隐藏容器尺寸为 0 */
+  toggleView() {
+    this.viewMode = this.viewMode === 'table' ? 'chart' : 'table';
+    if (this.viewMode === 'table') this.disposeCharts();
   }
 
   /** 列宽（像素字符串）。null 交给表格自适应 */

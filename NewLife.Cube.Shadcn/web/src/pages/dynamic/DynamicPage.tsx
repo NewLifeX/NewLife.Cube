@@ -58,6 +58,7 @@ export default function DynamicPage() {
 
   // ECharts
   const [chartList, setChartList] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
   const chartRefs = useRef<(HTMLDivElement | null)[]>([]);
   const chartInstances = useRef<any[]>([]);
 
@@ -112,6 +113,8 @@ export default function DynamicPage() {
   useEffect(() => { loadChartData(); }, [type]);
 
   useEffect(() => {
+    if (viewMode !== 'chart') return;
+
     chartList.forEach((opt, idx) => {
       const el = chartRefs.current[idx];
       if (!el) return;
@@ -130,7 +133,7 @@ export default function DynamicPage() {
       for (const inst of chartInstances.current) { inst?.dispose(); }
       chartInstances.current = [];
     };
-  }, [chartList]);
+  }, [chartList, viewMode]);
 
   // 选择
   const toggleSelect = (id: string | number) => {
@@ -180,13 +183,16 @@ export default function DynamicPage() {
 
   return (
     <div className="space-y-4">
-      {/* ECharts 图表区域 */}
-      {chartList.length > 0 && (
+      {/* ECharts 图表区域（图表视图） */}
+      {viewMode === 'chart' && chartList.length > 0 && (
         <div className="rounded-lg border bg-card p-4">
           {chartList.map((_, idx) => (
             <div key={idx} ref={(el) => { chartRefs.current[idx] = el; }} style={{ width: '100%', height: 400 }} />
           ))}
         </div>
+      )}
+      {viewMode === 'chart' && chartList.length === 0 && (
+        <p className="py-12 text-center text-sm text-muted-foreground">暂无图表</p>
       )}
 
       {/* 搜索栏 */}
@@ -235,11 +241,14 @@ export default function DynamicPage() {
           </Button>
         )}
         <div className="flex-1" />
+        <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === 'table' ? 'chart' : 'table')}>
+          {viewMode === 'table' ? '图表' : '表格'}
+        </Button>
         <Button variant="ghost" size="icon" onClick={() => loadData()}><RefreshCw className="h-4 w-4" /></Button>
       </div>
 
       {/* 数据表格 */}
-      <div className="rounded-md border overflow-x-auto">
+      <div className="rounded-md border overflow-x-auto" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
         <Table>
           <TableHeader>
             <TableRow>

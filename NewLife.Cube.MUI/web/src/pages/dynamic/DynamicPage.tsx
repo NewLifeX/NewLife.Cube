@@ -51,6 +51,7 @@ export default function DynamicPage() {
 
   // ECharts
   const [chartList, setChartList] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
   const chartRefs = useRef<(HTMLDivElement | null)[]>([]);
   const chartInstances = useRef<any[]>([]);
 
@@ -116,8 +117,10 @@ export default function DynamicPage() {
 
   useEffect(() => { loadChartData(); }, [type]);
 
-  // 初始化/更新图表
+  // 初始化/更新图表（仅图表视图，避免隐藏容器尺寸为 0）
   useEffect(() => {
+    if (viewMode !== 'chart') return;
+
     chartList.forEach((opt, idx) => {
       const el = chartRefs.current[idx];
       if (!el) return;
@@ -136,7 +139,7 @@ export default function DynamicPage() {
       for (const inst of chartInstances.current) { inst?.dispose(); }
       chartInstances.current = [];
     };
-  }, [chartList]);
+  }, [chartList, viewMode]);
 
   // 选择
   const isSelected = (id: string | number) => selected.includes(id);
@@ -194,8 +197,8 @@ export default function DynamicPage() {
 
   return (
     <Box>
-      {/* ECharts 图表区域 */}
-      {chartList.length > 0 && (
+      {/* ECharts 图表区域（图表视图） */}
+      {viewMode === 'chart' && chartList.length > 0 && (
         <Card sx={{ mb: 2 }}>
           <CardContent>
             {chartList.map((_, idx) => (
@@ -207,6 +210,11 @@ export default function DynamicPage() {
             ))}
           </CardContent>
         </Card>
+      )}
+      {viewMode === 'chart' && chartList.length === 0 && (
+        <Typography color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>
+          暂无图表
+        </Typography>
       )}
 
       {/* 搜索栏 */}
@@ -256,11 +264,14 @@ export default function DynamicPage() {
           </Button>
         )}
         <Box flexGrow={1} />
+        <Button variant="outlined" size="small" sx={{ mr: 1 }} onClick={() => setViewMode(viewMode === 'table' ? 'chart' : 'table')}>
+          {viewMode === 'table' ? '图表' : '表格'}
+        </Button>
         <IconButton onClick={() => loadData()}><Refresh /></IconButton>
       </Toolbar>
 
       {/* 数据表格 */}
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ display: viewMode === 'table' ? 'block' : 'none' }}>
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>

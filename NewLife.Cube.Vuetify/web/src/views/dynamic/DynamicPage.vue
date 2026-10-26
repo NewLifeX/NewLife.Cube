@@ -1,7 +1,7 @@
 <template>
   <div>
-    <!-- ECharts 图表区域 -->
-    <v-card v-if="chartList.length" class="mb-4 pa-4">
+    <!-- ECharts 图表区域（图表视图） -->
+    <v-card v-if="viewMode === 'chart' && chartList.length" class="mb-4 pa-4">
       <div
         v-for="(_, idx) in chartList"
         :key="idx"
@@ -9,6 +9,12 @@
         style="width: 100%; height: 400px"
       />
     </v-card>
+    <v-empty-state
+      v-else-if="viewMode === 'chart'"
+      class="mb-4"
+      icon="mdi-chart-box-outline"
+      title="暂无图表"
+    />
 
     <!-- 搜索 -->
     <v-card v-if="searchFields.length" class="mb-4 pa-4">
@@ -30,6 +36,7 @@
       <div class="d-flex ga-2">
         <v-btn v-if="canAdd" color="primary" prepend-icon="mdi-plus" @click="handleAdd">新增</v-btn>
         <v-btn v-if="canDelete" color="error" :disabled="!selected.length" prepend-icon="mdi-delete" @click="handleBatchDelete">批量删除</v-btn>
+        <v-btn variant="tonal" @click="toggleView">{{ viewMode === 'table' ? '图表' : '表格' }}</v-btn>
       </div>
       <div class="d-flex ga-2">
         <v-menu v-if="canExport">
@@ -49,6 +56,7 @@
 
     <!-- 数据表格 -->
     <v-data-table
+      v-show="viewMode === 'table'"
       :headers="headers"
       :items="tableData"
       :loading="loading"
@@ -205,6 +213,22 @@ const fileInput = ref<HTMLInputElement | null>(null);
 // ECharts
 const chartList = ref<any[]>([]);
 const chartInstances = ref<any[]>([]);
+
+/** 视图模式：表格 / 图表 */
+const viewMode = ref<'table' | 'chart'>('table');
+
+function toggleView() {
+  viewMode.value = viewMode.value === 'table' ? 'chart' : 'table';
+}
+
+// 离开图表视图时释放实例，避免隐藏容器尺寸为 0 导致图表错位
+watch(viewMode, (mode) => {
+  if (mode === 'chart') return;
+  for (const inst of chartInstances.value) {
+    inst?.dispose();
+  }
+  chartInstances.value = [];
+});
 
 // 表头
 /** Vuetify 3 的列对齐取 start/center/end，与统一规范的 left/center/right 互转 */
