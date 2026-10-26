@@ -66,6 +66,22 @@ public class ApplicationManagementTests
         Assert.Equal("Name", ex.ParamName);
     }
 
+    [Fact(DisplayName = "应用系统_按名称与密钥查找（不区分大小写）")]
+    public void App_FindByNameAndSecret()
+    {
+        var name = Unique("app");
+        var secret = Guid.NewGuid().ToString("N");
+        var app = CreateApp(name, secret);
+        App.Meta.Cache.Clear("应用系统测试写入", true);
+
+        Assert.Equal(app.Id, App.FindByName(name.ToUpperInvariant())?.Id);
+        Assert.Equal(app.Id, App.FindBySecret(secret.ToUpperInvariant())?.Id);
+        Assert.Equal(app.Id, App.FindById(app.Id)?.Id);
+        Assert.Null(App.FindByName(Unique("missing")));
+        Assert.Null(App.FindBySecret(Unique("missing")));
+        Assert.Null(App.FindById(0));
+    }
+
     [Fact(DisplayName = "应用系统_回调地址校验支持空配置、localhost 与域名前缀")]
     public void App_ValidCallback_MatchesRules()
     {
@@ -104,6 +120,70 @@ public class ApplicationManagementTests
         var onlyBlack = new App { Black = "10.0.0.*" };
         Assert.True(onlyBlack.ValidSource("8.8.8.8"));
         Assert.False(onlyBlack.ValidSource("10.0.0.5"));
+    }
+    #endregion
+
+    #region SYS-9 应用日志
+    [Fact(DisplayName = "应用日志_按应用检索且异步写入可落库")]
+    public void AppLog_CreateAndSearch()
+    {
+        var app = CreateApp();
+        var other = CreateApp();
+        var now = DateTime.Now;
+
+        var log = AppLog.Create(app.Id, "Authorize", true, "授权成功");
+        Assert.Equal(app.Id, log.AppId);
+        Assert.Equal("Authorize", log.Action);
+        Assert.True(log.Success);
+        Assert.Equal("授权成功", log.Remark);
+        Assert.True(log.Id > 0);
+
+        new AppLog { AppId = app.Id, Action = "Token", Success = false, Remark = "令牌失败", CreateTime = now }.Insert();
+        new AppLog { AppId = other.Id, Action = "Authorize", Success = true, Remark = "别的应用", CreateTime = now }.Insert();
+
+        // 创建走异步保存，先确认落库再统计数量
+        var saved = WaitFor(() => AppLog.FindById(log.Id), e => e != null);
+        Assert.NotNull(saved);
+        Assert.True(saved.Success);
+
+        var mine = WaitFor(() => AppLog.FindAllByAppId(app.Id), e => e.Count >= 2);
+        Assert.Equal(2, mine.Count);
+        Assert.All(mine, e => Assert.Equal(app.Id, e.AppId));
+
+        var page = new PageParameter { PageIndex = 1, PageSize = 10 };
+        var byApp = AppLog.Search(app.Id, now.AddMinutes(-5), now.AddMinutes(5), null, page);
+        Assert.Equal(2, byApp.Count);
+    }
+
+    [Fact(DisplayName = "应用日志_按日期清理只删除旧匿名授权日志")]
+    public void AppLog_DeleteBefore_OnlyOldAnonymousAuthorize()
+    {
+        var app = CreateApp();
+        var now = DateTime.Now;
+        var cutoff = now.AddDays(-10);
+
+        // 旧日志用远小于雪崩编号的随机区间编号，避免与其它用例产生的行冲突
+        var baseId = NewLife.Security.Rand.Next(1_000_000, 9_000_000);
+        var oldAuthorize = new AppLog { Id = baseId, AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-30) };
+        oldAuthorize.Insert();
+        var oldToken = new AppLog { Id = baseId + 1, AppId = app.Id, Action = "Token", Success = true, CreateTime = now.AddDays(-30) };
+        oldToken.Insert();
+        var recent = new AppLog { Id = AppLog.Meta.Factory.Snow.GetId(DateTime.Now), AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-1) };
+        recent.Insert();
+        var oldBound = new AppLog { Id = baseId + 2, AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-30), CreateUser = "tester" };
+        oldBound.Insert();
+
+        // 匿名授权日志必须没有创建者；用户拦截器可能补上当前登录用户，这里直接改库还原匿名态。
+        // 必须使用实体自己的会话连接，避免全局 Cube 连接与实体会话绑定不一致时改到别的库
+        AppLog.Meta.Session.Dal.Execute($"Update AppLog Set CreateUser=null Where Id={baseId}", CommandType.Text);
+
+        var count = AppLog.DeleteBefore(cutoff);
+
+        Assert.True(count >= 1, $"应至少删除 1 条旧匿名授权日志，实际 {count}");
+        Assert.Null(AppLog.FindById(oldAuthorize.Id));
+        Assert.NotNull(AppLog.FindById(oldToken.Id));
+        Assert.NotNull(AppLog.FindById(recent.Id));
+        Assert.NotNull(AppLog.FindById(oldBound.Id));
     }
     #endregion
 

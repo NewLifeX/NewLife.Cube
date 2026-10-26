@@ -83,9 +83,12 @@ public class TenantAuthFixture : IDisposable
         if (File.Exists(dbFile)) File.Delete(dbFile);
 
         DAL.AddConnStr("Membership", $"Data Source={dbFile}", null, "SQLite");
-        // 与 CubeService.AddCube 一致：Cube/Log 连接映射到 Membership
-        DAL.ConnStrs!.TryAdd("Cube", "MapTo=Membership");
-        DAL.ConnStrs!.TryAdd("Log", "MapTo=Membership");
+        // 与 CubeService.AddCube 一致：Cube/Log 连接映射到 Membership。
+        // 必须覆盖而非 TryAdd，并清掉 DAL 缓存：其它用例可能已把 Cube/Log 指向临时库，
+        // 而 DAL 实例按连接名全局缓存，沿用旧映射会让本夹具建的表对 Cube/Log 实体不可见（no such table）
+        DAL.ConnStrs!["Cube"] = "MapTo=Membership";
+        DAL.ConnStrs!["Log"] = "MapTo=Membership";
+        ResetDalCache();
 
         // 主动按表建结构：EntitySession 的“已检查”标记换库后不会复位，
         // 其他用例先访问过实体时不再触发建表，直接 SetTables 绕过缓存，避免 no such table
@@ -110,7 +113,10 @@ public class TenantAuthFixture : IDisposable
             (IDataTable)App.Meta.Table.DataTable.Clone(),
             (IDataTable)AppLog.Meta.Table.DataTable.Clone(),
             (IDataTable)CronJob.Meta.Table.DataTable.Clone(),
-            (IDataTable)Department.Meta.Table.DataTable.Clone());
+            (IDataTable)Department.Meta.Table.DataTable.Clone(),
+            (IDataTable)MailConfig.Meta.Table.DataTable.Clone(),
+            (IDataTable)SmsConfig.Meta.Table.DataTable.Clone(),
+            (IDataTable)PrincipalAgent.Meta.Table.DataTable.Clone());
 
         // 2. 固定JWT密钥，保证测试内令牌签发/校验可复现
         CubeSetting.Current.JwtSecret = "HS256:CubeTenantReproTestSecret";
@@ -133,6 +139,16 @@ public class TenantAuthFixture : IDisposable
         UserService = new UserService(new PasswordService(), new TestCacheProvider(), null!, null!, null!, new TenantContextService(), null!);
 
         Seed();
+    }
+
+    /// <summary>清除 XCode 按连接名缓存的 DAL 与连接信息，使新的连接串映射立即生效。仅供测试使用</summary>
+    private static void ResetDalCache()
+    {
+        var flags = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic;
+        foreach (var name in new[] { "_dals" })
+        {
+            if (typeof(DAL).GetField(name, flags)?.GetValue(null) is System.Collections.IDictionary dic) dic.Clear();
+        }
     }
 
     public void Dispose()
@@ -773,3 +789,4 @@ public class TenantAuthExpectationTests
         }
     }
 }
+
