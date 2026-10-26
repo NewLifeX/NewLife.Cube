@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Tests.Common;
 using XCode.DataAccessLayer;
 using Xunit;
 
@@ -15,13 +16,12 @@ public class OAuthLogRetentionTests
     public void DeleteBefore_DeletesOldRowsInBatches()
     {
         var dbFile = Path.Combine(Path.GetTempPath(), $"OAuthLogRetentionTests_{Guid.NewGuid():N}.db");
-        // 本测试会临时覆写全局 Cube 连接串：先记录原值，结束后恢复，避免污染其它测试的 Cube/Log→Membership 映射
-        String? oldCube = null;
-        var hadCube = DAL.ConnStrs != null && DAL.ConnStrs.TryGetValue("Cube", out oldCube);
+        // 用连接作用域临时把 Cube 指向独立库：切换时会清掉 DAL 与实体会话缓存，
+        // 结束后还原连接串并再次清理，避免与其它用例的 Cube 库互相污染
+        using var conn = TestConnections.Use("Cube", $"Data Source={dbFile}");
         try
         {
-            DAL.AddConnStr("Cube", $"Data Source={dbFile}", null, "SQLite");
-            DAL.CreateTable();
+            DAL.Create("Cube").SetTables((IDataTable)OAuthLog.Meta.Table.DataTable.Clone());
 
             var now = DateTime.Now;
             var oldAnonymous = new OAuthLog
@@ -63,14 +63,6 @@ public class OAuthLogRetentionTests
         }
         finally
         {
-            // 恢复被覆写的全局 Cube 连接串：MapTo 类字符串按 XCode 约定直接写回 ConnStrs；再重置该连接名缓存的 DAL 实例，使映射在下次使用时重新解析（Reset 为实例方法）
-            if (DAL.ConnStrs != null)
-            {
-                if (hadCube) DAL.ConnStrs["Cube"] = oldCube!;
-                else DAL.ConnStrs.TryRemove("Cube", out _);
-            }
-            DAL.Create("Cube").Reset();
-
             try
             {
                 if (File.Exists(dbFile)) File.Delete(dbFile);
@@ -82,3 +74,6 @@ public class OAuthLogRetentionTests
         }
     }
 }
+
+
+

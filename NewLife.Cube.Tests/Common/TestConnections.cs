@@ -24,7 +24,13 @@ internal static class TestConnections
     public static IDisposable Use(String name, String connStr)
     {
         DAL.ConnStrs.TryGetValue(name, out var old);
-        DAL.ConnStrs[name] = connStr;
+
+        // MapTo 映射按 XCode 约定直接写 ConnStrs；真实连接串走 AddConnStr，让连接信息缓存同步更新
+        if (connStr.StartsWith("MapTo=", StringComparison.OrdinalIgnoreCase))
+            DAL.ConnStrs[name] = connStr;
+        else
+            DAL.AddConnStr(name, connStr, null, null);
+
         ResetCaches();
 
         return new Scope(name, old);
