@@ -1337,4 +1337,16 @@ export default {
   'listForm.noPrefixCannotSave': 'بادئة API مفقودة، لا يمكن الحفظ',
 
   'workbench.loadFailed': 'فشل تحميل بيانات لوحة العمل',
+  'workbench.editLayout': 'تعديل التخطيط',
+  'workbench.finishLayout': 'تم',
+  'workbench.saveLayout': 'حفظ التخطيط',
+  'workbench.resetLayout': 'استعادة الافتراضي',
+  'workbench.layoutSaved': 'تم حفظ التخطيط',
+  'workbench.layoutSaveFailed': 'فشل حفظ التخطيط',
+  'workbench.layoutReset': 'تمت استعادة التخطيط الافتراضي',
+  'workbench.hideCard': 'إخفاء',
+  'workbench.showCard': 'استعادة',
+  'workbench.hiddenCards': 'البطاقات المخفية',
+  'workbench.noHiddenCards': 'لا توجد بطاقات مخفية',
+  'workbench.dragHint': 'اسحب البطاقات لإعادة الترتيب، ويمكن استعادة المخفية من الأسفل',
 };

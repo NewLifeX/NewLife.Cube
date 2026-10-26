@@ -6,9 +6,10 @@
  * 性能监控卡按 5 秒轮询 `Admin/Index/MonitorData`。页面只做布局与渲染，
  * 加载/错误/轮询生命周期集中在 `useWorkbench`。
  */
-import { computed, markRaw, onMounted, onUnmounted, type Component } from 'vue';
+import { computed, markRaw, onMounted, onUnmounted, ref, type Component } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { ElMessage } from 'element-plus';
 import {
   Calendar,
   Clock,
@@ -25,6 +26,7 @@ import {
 } from '@element-plus/icons-vue';
 import { useWorkbench } from '../composables/useWorkbench';
 import { normalizeCols, normalizeKpiColor, normalizeRoles } from './workbench/widget';
+import { buildWidgetLayout, mergeWidgetsWithLayout, moveWidget, type WidgetLayoutMap } from './workbench/layout';
 
 const { t } = useI18n();
 import WorkbenchMonitor from './workbench/WorkbenchMonitor.vue';
@@ -32,8 +34,19 @@ import WorkbenchWidgetBody from './workbench/WorkbenchWidgetBody.vue';
 import type { WorkbenchKpi, WorkbenchWidget } from '../types/workbench';
 
 const router = useRouter();
-const { data, loading, error, monitorPoints, hasChartWidget, load, startMonitorPolling, stopMonitorPolling } =
-  useWorkbench();
+const {
+  data,
+  loading,
+  error,
+  monitorPoints,
+  hasChartWidget,
+  load,
+  startMonitorPolling,
+  stopMonitorPolling,
+  loadLayout,
+  saveLayout,
+  resetLayout,
+} = useWorkbench();
 
 /** KPI 名称 → 图标。后端只下发名称/配色，图标由皮肤决定 */
 const KPI_ICONS: Record<string, Component> = {
@@ -73,8 +86,7 @@ const FA_ICONS: Record<string, Component> = {
 const FALLBACK_ICON = markRaw(Document);
 
 const kpis = computed(() => data.value?.kpis ?? []);
-const widgets = computed(() => data.value?.widgets ?? []);
-const hasContent = computed(() => kpis.value.length > 0 || widgets.value.length > 0);
+const hasContent = computed(() => kpis.value.length > 0 || (data.value?.widgets?.length ?? 0) > 0);
 const displayName = computed(
   () => data.value?.user?.displayName || data.value?.profile?.displayName || data.value?.user?.name || '-',
 );
@@ -118,16 +130,106 @@ function openKpi(kpi: WorkbenchKpi): void {
   if (kpi.url) void router.push(kpi.url);
 }
 
-async function reload(): Promise<void> {
+// ── 卡片布局：拖动排序 / 隐藏 / 保存 / 恢复默认 ──
+
+/** 后端持久化的用户布局 */
+const layout = ref<WidgetLayoutMap>({});
+/** 可见卡片（顺序即显示顺序） */
+const visibleWidgets = ref<WorkbenchWidget[]>([]);
+/** 隐藏卡片 */
+const hiddenWidgets = ref<WorkbenchWidget[]>([]);
+/** 是否处于布局编辑模式 */
+const layoutEditing = ref(false);
+/** 是否有未保存的布局改动 */
+const layoutDirty = ref(false);
+/** 保存中 */
+const savingLayout = ref(false);
+/** 正在拖动的卡片名 */
+const draggingName = ref('');
+
+function applyLayout(widgets: WorkbenchWidget[]): void {
+  const merged = mergeWidgetsWithLayout(widgets, layout.value);
+  visibleWidgets.value = merged.visible;
+  hiddenWidgets.value = merged.hidden;
+}
+
+function onDragStart(name: string): void {
+  draggingName.value = name;
+}
+
+function onDrop(target: string): void {
+  if (!draggingName.value) return;
+  visibleWidgets.value = moveWidget(visibleWidgets.value, draggingName.value, target);
+  draggingName.value = '';
+  layoutDirty.value = true;
+}
+
+function hideWidget(name: string): void {
+  const index = visibleWidgets.value.findIndex((item) => item.name === name);
+  if (index < 0) return;
+
+  const [widget] = visibleWidgets.value.splice(index, 1);
+  hiddenWidgets.value.push(widget);
+  layoutDirty.value = true;
+}
+
+function showWidget(name: string): void {
+  const index = hiddenWidgets.value.findIndex((item) => item.name === name);
+  if (index < 0) return;
+
+  const [widget] = hiddenWidgets.value.splice(index, 1);
+  visibleWidgets.value.push(widget);
+  layoutDirty.value = true;
+}
+
+async function saveLayoutChanges(): Promise<void> {
+  savingLayout.value = true;
+  try {
+    const map = buildWidgetLayout(visibleWidgets.value, hiddenWidgets.value);
+    if (await saveLayout(map)) {
+      layout.value = map;
+      layoutDirty.value = false;
+      ElMessage.success(t('workbench.layoutSaved'));
+    } else {
+      ElMessage.error(t('workbench.layoutSaveFailed'));
+    }
+  } finally {
+    savingLayout.value = false;
+  }
+}
+
+async function resetLayoutChanges(): Promise<void> {
+  savingLayout.value = true;
+  try {
+    if (await resetLayout()) {
+      layout.value = {};
+      layoutDirty.value = false;
+      applyLayout(data.value?.widgets ?? []);
+      ElMessage.success(t('workbench.layoutReset'));
+    } else {
+      ElMessage.error(t('workbench.layoutSaveFailed'));
+    }
+  } finally {
+    savingLayout.value = false;
+  }
+}
+
+async function loadData(): Promise<void> {
   await load();
+  layout.value = await loadLayout();
+  applyLayout(data.value?.widgets ?? []);
   if (hasChartWidget.value) startMonitorPolling();
   else stopMonitorPolling();
 }
 
-onMounted(async () => {
+async function reload(): Promise<void> {
   await load();
+  applyLayout(data.value?.widgets ?? []);
   if (hasChartWidget.value) startMonitorPolling();
-});
+  else stopMonitorPolling();
+}
+
+onMounted(loadData);
 
 onUnmounted(stopMonitorPolling);
 </script>
@@ -156,6 +258,15 @@ onUnmounted(stopMonitorPolling);
         </div>
         <div class="wb-banner-actions">
           <el-tag v-if="roleText" type="primary" effect="plain">{{ roleText }}</el-tag>
+          <el-button :type="layoutEditing ? 'primary' : 'default'" @click="layoutEditing = !layoutEditing">
+            {{ layoutEditing ? t('workbench.finishLayout') : t('workbench.editLayout') }}
+          </el-button>
+          <template v-if="layoutEditing">
+            <el-button :loading="savingLayout" :disabled="!layoutDirty" type="primary" @click="saveLayoutChanges">
+              {{ t('workbench.saveLayout') }}
+            </el-button>
+            <el-button :loading="savingLayout" @click="resetLayoutChanges">{{ t('workbench.resetLayout') }}</el-button>
+          </template>
           <el-button :loading="loading" @click="reload">{{ t('grid.refresh') }}</el-button>
         </div>
       </section>
@@ -188,21 +299,61 @@ onUnmounted(stopMonitorPolling);
         </button>
       </section>
 
+      <!-- 布局编辑提示与隐藏卡片 -->
+      <el-alert
+        v-if="layoutEditing"
+        class="wb-alert"
+        type="info"
+        :title="t('workbench.dragHint')"
+        show-icon
+        :closable="false"
+      />
+      <section v-if="layoutEditing" class="wb-hidden" data-cy="workbench-hidden">
+        <h3>{{ t('workbench.hiddenCards') }}</h3>
+        <div v-if="hiddenWidgets.length" class="wb-hidden-list">
+          <el-tag
+            v-for="widget in hiddenWidgets"
+            :key="widget.name"
+            closable
+            @close="showWidget(widget.name)"
+          >
+            {{ widget.title }} · {{ t('workbench.showCard') }}
+          </el-tag>
+        </div>
+        <p v-else class="wb-hidden-empty">{{ t('workbench.noHiddenCards') }}</p>
+      </section>
+
       <!-- 内容卡 -->
-      <section v-if="widgets.length" class="wb-grid" data-cy="workbench-widgets">
+      <section v-if="visibleWidgets.length" class="wb-grid" data-cy="workbench-widgets">
         <el-card
-          v-for="widget in widgets"
+          v-for="widget in visibleWidgets"
           :key="widget.name"
           class="wb-card"
+          :class="{ 'wb-card-editing': layoutEditing, 'wb-card-dragging': draggingName === widget.name }"
           :style="cardStyle(widget.cols)"
+          :draggable="layoutEditing"
           shadow="never"
           data-cy="workbench-widget"
+          @dragstart="onDragStart(widget.name)"
+          @dragend="draggingName = ''"
+          @dragover.prevent
+          @drop.prevent="onDrop(widget.name)"
         >
           <template #header>
             <div class="wb-card-header">
               <el-icon><component :is="iconForWidget(widget)" /></el-icon>
               <span class="wb-card-title">{{ widget.title }}</span>
               <span v-if="widget.category" class="wb-card-category">{{ widget.category }}</span>
+              <el-button
+                v-if="layoutEditing"
+                class="wb-card-hide"
+                link
+                type="danger"
+                :title="t('workbench.hideCard')"
+                @click="hideWidget(widget.name)"
+              >
+                {{ t('workbench.hideCard') }}
+              </el-button>
             </div>
           </template>
 
@@ -433,6 +584,48 @@ onUnmounted(stopMonitorPolling);
   gap: 8px;
   min-width: 0;
   color: var(--el-text-color-primary);
+}
+
+/* 布局编辑：卡片可拖动，隐藏按钮贴右 */
+.wb-card-editing {
+  cursor: grab;
+  outline: 1px dashed var(--el-color-primary-light-5);
+  outline-offset: -4px;
+}
+
+.wb-card-dragging {
+  opacity: 0.55;
+}
+
+.wb-card-hide {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.wb-hidden {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  background: var(--el-fill-color-light);
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+  }
+}
+
+.wb-hidden-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wb-hidden-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
 }
 
 .wb-card-title {

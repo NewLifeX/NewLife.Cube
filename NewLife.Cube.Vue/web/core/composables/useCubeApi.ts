@@ -124,6 +124,14 @@ export function usePageApi(area: string, controller: string) {
         method: 'get',
       }).then((res: AxiosResponse<ApiResponse<T>>) => res.data),
 
+    /** 调用自定义 Action（POST） */
+    postAction: <T = unknown>(action: string, data?: unknown) =>
+      cubeApi.client.request<ApiResponse<T>>({
+        url: `${type}/${action}`,
+        method: 'post',
+        data,
+      }).then((res: AxiosResponse<ApiResponse<T>>) => res.data),
+
     /**
      * 字典/枚举查询
      * @param codes - C# 类型全名字符串，多个用逗号分隔

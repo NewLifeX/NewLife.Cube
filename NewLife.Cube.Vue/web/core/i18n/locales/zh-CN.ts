@@ -1426,4 +1426,16 @@ export default {
   'listForm.noPrefixCannotSave': '缺少接口前缀，无法保存',
 
   'workbench.loadFailed': '工作台数据加载失败',
+  'workbench.editLayout': '编辑布局',
+  'workbench.finishLayout': '完成',
+  'workbench.saveLayout': '保存布局',
+  'workbench.resetLayout': '恢复默认',
+  'workbench.layoutSaved': '布局已保存',
+  'workbench.layoutSaveFailed': '布局保存失败',
+  'workbench.layoutReset': '已恢复默认布局',
+  'workbench.hideCard': '隐藏',
+  'workbench.showCard': '恢复',
+  'workbench.hiddenCards': '隐藏的卡片',
+  'workbench.noHiddenCards': '没有被隐藏的卡片',
+  'workbench.dragHint': '拖动卡片可调整顺序，隐藏的卡片可从下方恢复',
 };

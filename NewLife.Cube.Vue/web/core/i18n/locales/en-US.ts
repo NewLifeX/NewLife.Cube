@@ -1435,4 +1435,16 @@ export default {
   'listForm.noPrefixCannotSave': 'The API prefix is missing, cannot save',
 
   'workbench.loadFailed': 'Failed to load the workbench data',
+  'workbench.editLayout': 'Edit layout',
+  'workbench.finishLayout': 'Done',
+  'workbench.saveLayout': 'Save layout',
+  'workbench.resetLayout': 'Restore default',
+  'workbench.layoutSaved': 'Layout saved',
+  'workbench.layoutSaveFailed': 'Failed to save layout',
+  'workbench.layoutReset': 'Default layout restored',
+  'workbench.hideCard': 'Hide',
+  'workbench.showCard': 'Restore',
+  'workbench.hiddenCards': 'Hidden cards',
+  'workbench.noHiddenCards': 'No hidden cards',
+  'workbench.dragHint': 'Drag cards to reorder; restore hidden cards below',
 };

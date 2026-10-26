@@ -1370,6 +1370,18 @@ export default {
   'workbench.monitorChartLabel': 'Gráfico de uso de CPU y memoria',
   'workbench.waitingMonitorData': 'Esperando datos de supervisión...',
   'workbench.loadFailed': 'No se pudieron cargar los datos del panel de trabajo',
+  'workbench.editLayout': 'Editar diseño',
+  'workbench.finishLayout': 'Listo',
+  'workbench.saveLayout': 'Guardar diseño',
+  'workbench.resetLayout': 'Restaurar predeterminado',
+  'workbench.layoutSaved': 'Diseño guardado',
+  'workbench.layoutSaveFailed': 'No se pudo guardar el diseño',
+  'workbench.layoutReset': 'Diseño predeterminado restaurado',
+  'workbench.hideCard': 'Ocultar',
+  'workbench.showCard': 'Restaurar',
+  'workbench.hiddenCards': 'Tarjetas ocultas',
+  'workbench.noHiddenCards': 'No hay tarjetas ocultas',
+  'workbench.dragHint': 'Arrastra las tarjetas para reordenarlas; restaura las ocultas abajo',
 
   // Diseños
   'layout.topMenu': 'Menú superior',

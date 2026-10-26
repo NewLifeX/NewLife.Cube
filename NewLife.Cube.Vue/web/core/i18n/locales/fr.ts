@@ -1415,4 +1415,16 @@ export default {
   'listForm.noPrefixCannotSave': 'Le préfixe d\'API est manquant, enregistrement impossible',
 
   'workbench.loadFailed': 'Échec du chargement des données de l\'espace de travail',
+  'workbench.editLayout': 'Modifier la disposition',
+  'workbench.finishLayout': 'Terminé',
+  'workbench.saveLayout': 'Enregistrer la disposition',
+  'workbench.resetLayout': 'Restaurer par défaut',
+  'workbench.layoutSaved': 'Disposition enregistrée',
+  'workbench.layoutSaveFailed': 'Échec de l\'enregistrement de la disposition',
+  'workbench.layoutReset': 'Disposition par défaut restaurée',
+  'workbench.hideCard': 'Masquer',
+  'workbench.showCard': 'Restaurer',
+  'workbench.hiddenCards': 'Cartes masquées',
+  'workbench.noHiddenCards': 'Aucune carte masquée',
+  'workbench.dragHint': 'Faites glisser les cartes pour les réordonner ; restaurez les cartes masquées ci-dessous',
 };

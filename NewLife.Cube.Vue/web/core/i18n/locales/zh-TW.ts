@@ -1414,4 +1414,16 @@ export default {
   'listForm.noPrefixCannotSave': '缺少介面前綴，無法儲存',
 
   'workbench.loadFailed': '工作台資料載入失敗',
+  'workbench.editLayout': '編輯版面',
+  'workbench.finishLayout': '完成',
+  'workbench.saveLayout': '儲存版面',
+  'workbench.resetLayout': '恢復預設',
+  'workbench.layoutSaved': '版面已儲存',
+  'workbench.layoutSaveFailed': '版面儲存失敗',
+  'workbench.layoutReset': '已恢復預設版面',
+  'workbench.hideCard': '隱藏',
+  'workbench.showCard': '恢復',
+  'workbench.hiddenCards': '隱藏的卡片',
+  'workbench.noHiddenCards': '沒有被隱藏的卡片',
+  'workbench.dragHint': '拖曳卡片可調整順序，隱藏的卡片可從下方恢復',
 };

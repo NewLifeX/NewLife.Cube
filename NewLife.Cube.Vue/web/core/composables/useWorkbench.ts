@@ -2,6 +2,7 @@ import { computed, ref, type ComputedRef, type Ref } from 'vue';
 import i18n from '../i18n';
 import { usePageApi } from './useCubeApi';
 import type { MonitorPoint, MonitorSnapshot, WorkbenchData } from '../types/workbench';
+import type { WidgetLayoutMap } from '../pages/workbench/layout';
 
 /** 监控曲线最多保留的点数。5 秒一轮，约保留最近 5 分钟 */
 export const MAX_MONITOR_POINTS = 60;
@@ -54,6 +55,12 @@ export interface UseWorkbenchReturn {
   startMonitorPolling: (interval?: number) => void;
   /** 停止监控轮询 */
   stopMonitorPolling: () => void;
+  /** 读取当前用户的工作台卡片布局 */
+  loadLayout: () => Promise<WidgetLayoutMap>;
+  /** 保存工作台卡片布局 */
+  saveLayout: (layout: WidgetLayoutMap) => Promise<boolean>;
+  /** 重置工作台卡片布局为默认 */
+  resetLayout: () => Promise<boolean>;
 }
 
 /**
@@ -124,6 +131,29 @@ export function useWorkbench(): UseWorkbenchReturn {
     }
   }
 
+  /** 读取用户布局。失败时回退默认顺序，不打断工作台主流程 */
+  async function loadLayout(): Promise<WidgetLayoutMap> {
+    try {
+      const res = await api.getAction<WidgetLayoutMap>('GetWidgetLayout');
+      if (isSuccessCode(res?.code) && res.data && typeof res.data === 'object') return res.data;
+    } catch {
+      // 布局属于增强信息，接口不可用时按后端默认顺序渲染
+    }
+    return {};
+  }
+
+  /** 保存布局。返回是否成功，由页面决定提示文案 */
+  async function saveLayout(layout: WidgetLayoutMap): Promise<boolean> {
+    const res = await api.postAction('SaveWidgetLayout', layout);
+    return isSuccessCode(res?.code);
+  }
+
+  /** 重置布局。返回是否成功 */
+  async function resetLayout(): Promise<boolean> {
+    const res = await api.postAction('ResetWidgetLayout');
+    return isSuccessCode(res?.code);
+  }
+
   return {
     data,
     loading,
@@ -135,5 +165,8 @@ export function useWorkbench(): UseWorkbenchReturn {
     pollMonitor,
     startMonitorPolling,
     stopMonitorPolling,
+    loadLayout,
+    saveLayout,
+    resetLayout,
   };
 }

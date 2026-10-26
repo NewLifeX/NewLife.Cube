@@ -1383,4 +1383,16 @@ export default {
   'listForm.noPrefixCannotSave': 'API 접두사가 없어 저장할 수 없습니다',
 
   'workbench.loadFailed': '워크벤치 데이터를 불러오지 못했습니다',
+  'workbench.editLayout': '레이아웃 편집',
+  'workbench.finishLayout': '완료',
+  'workbench.saveLayout': '레이아웃 저장',
+  'workbench.resetLayout': '기본값 복원',
+  'workbench.layoutSaved': '레이아웃이 저장되었습니다',
+  'workbench.layoutSaveFailed': '레이아웃 저장에 실패했습니다',
+  'workbench.layoutReset': '기본 레이아웃으로 복원되었습니다',
+  'workbench.hideCard': '숨기기',
+  'workbench.showCard': '복원',
+  'workbench.hiddenCards': '숨긴 카드',
+  'workbench.noHiddenCards': '숨긴 카드가 없습니다',
+  'workbench.dragHint': '카드를 끌어 순서를 바꾸고, 숨긴 카드는 아래에서 복원할 수 있습니다',
 };
