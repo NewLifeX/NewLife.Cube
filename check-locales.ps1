@@ -129,8 +129,9 @@ if ($MetadataKeys) {
 foreach ($dir in @($MetadataSourceDir | Where-Object { $_ })) {
     $dirPath = if ([IO.Path]::IsPathRooted($dir)) { $dir } else { Join-Path $root $dir }
     if (!(Test-Path $dirPath)) { continue }
-    foreach ($file in Get-ChildItem $dirPath -Recurse -Filter *.cs -File) {
-        $text = [IO.File]::ReadAllText($file.FullName)
+    # 跳过 obj/bin 生成代码，并去掉整行注释，避免把注释掉的旧特性收进元数据键（与 collect-metadata-keys.ps1 口径一致）
+    foreach ($file in Get-ChildItem $dirPath -Recurse -Filter *.cs -File | Where-Object { $_.FullName -notmatch '\\(obj|bin)\\' }) {
+        $text = ([IO.File]::ReadAllText($file.FullName) -split "`r?`n" | Where-Object { !$_.TrimStart().StartsWith('//') }) -join "`n"
         foreach ($m in [regex]::Matches($text, '\[(?:DisplayName|Description)\("((?:[^"\\]|\\.)*)"\)\]')) {
             $key = $m.Groups[1].Value.Replace('\"', '"').Replace('\\', '\')
             if ($key) { [void]$metadataKeySet.Add($key) }
