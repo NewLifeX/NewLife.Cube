@@ -11,7 +11,7 @@
 ### 权威与同步
 
 - **English 与简体中文为双权威**：内容变更必须在同一 PR 内同时更新 `README.md` 与 `README.zh-CN.md`；发布前以英文版为对外口径。
-- **其他语种允许滞后**：开头必须写明「本翻译可能滞后，以 [English README](README.md) 为准」。
+- **其他语种允许滞后**：开头必须写明「本翻译可能滞后，以 [English README](../README.md) 为准」。
 - **冲突处理**：英文与简体中文不一致时，以英文版为准并回补中文；不得让默认落地页长期落后。
 
 ### 当前顺序
@@ -61,7 +61,7 @@
 
 1. 翻译整篇 README，文件名用 `README.{BCP 47 语言标签}.md`；English 固定 `README.md`，简体中文固定 `README.zh-CN.md`，繁體中文固定 `README.zh-TW.md`。
 2. 在 `readme-languages.json` 的 `languages` 数组**末尾**追加 `{ "code", "name", "file" }`，`name` 用本族语名称。
-3. 在正文开头补上与其它版本一致的说明：「本翻译可能滞后，以 [English README](README.md) 为准」。
+3. 在正文开头补上与其它版本一致的说明：「本翻译可能滞后，以 [English README](../README.md) 为准」。
 4. 运行 `pwsh -File sync-readme-languages.ps1` 生成切换行，再运行 `-Check` 确认。
 5. 根目录新增了 README 却没登记到配置，脚本会直接报错，避免切换行静默漏掉该语种。
 

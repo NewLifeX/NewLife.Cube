@@ -226,7 +226,7 @@ app.UseTDesign(app.Environment);
 前端 workspace 構建約定：
 
 - 倉庫根目錄 `pnpm build`：僅構建 `packages/` 下公共模組，不再預設遞迴編譯所有皮膚。
-- 倉庫根目錄單皮膚構建：使用 `pnpm build:vue`、`pnpm build:react`、`pnpm build:naive`、`pnpm build:mui`、`pnpm build:shadcn`、`pnpm build:arco`、`pnpm build:angular`、`pnpm build:vuetify`、`pnpm build:svelte`、`pnpm build:tdesign`。
+- 倉庫根目錄單皮膚構建：使用 `pnpm build:vue`、`pnpm build:naive`、`pnpm build:mui`、`pnpm build:shadcn`、`pnpm build:arco`、`pnpm build:angular`、`pnpm build:vuetify`、`pnpm build:svelte`、`pnpm build:tdesign`。
 - 倉庫根目錄單皮膚開發：使用對應的 `pnpm dev:xxx`。
 - 需要一次性構建或啟動全部前端時，顯式使用 `pnpm build:all` 或 `pnpm dev:all`。
 - 若已進入具體皮膚目錄 `web/`，繼續使用該目錄下的 `pnpm build` / `pnpm dev` 即可，互不干擾。

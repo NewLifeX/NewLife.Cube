@@ -192,13 +192,13 @@ public class AppController : EntityController<App, AppModel>
 
 | 功能 | 关键特性 |
 | --- | --- |
-| 多前端共存 | Vue / Blazor / AntDesign / 传统 Razor 可渐进迁移。 |
+| 多前端共存 | Vue（官方）、8 套仓库内参考 SPA 皮肤与传统 Razor 可渐进迁移；React（Ant Design）由独立仓库 CubeAntd 维护；Blazor 为已冻结的 MVC 主题实验。 |
 | 主题内嵌资源 | `CubeEmbeddedFileProvider` 把主题静态资源打包进程序集。 |
 | 皮肤注册 | `AddTheme/AddSkin` 注册皮肤，Use 阶段任选其一（`app.UseMetronic(env)` 等）。 |
 | 自定义主题 | 仿照 `MetronicModule` 实现 IModule 并在 Use 阶段挂载。 |
 | 视图覆写 | 子项目同路径同名 `.cshtml` 覆盖父级。 |
 | 多语言 | 11 种运行时语言用于接口消息，按请求识别区域，并提供 11 语言 Vue 前端。 |
-| 新一代皮肤包 | 基于 pnpm workspace + 公共模块 `@newlifex/api-core`（统一 API / Token / 类型）和 `@newlifex/field-mapping`（字段元数据 → 控件映射），8 套皮肤开箱即用，NuGet 引包即得完整前端。 |
+| 新一代皮肤包 | 基于 pnpm workspace + 公共模块 `@newlifex/api-core`（统一 API / Token / 类型）和 `@newlifex/field-mapping`（字段元数据 → 控件映射）。`NewLife.Cube.Vue` 为官方皮肤；8 套 SPA 皮肤为仓库内参考实现，不发布 NuGet，构建其 `web` 后引用 .NET 项目；React 皮肤独立为 CubeAntd 仓库。 |
 
 | NuGet 包 | 框架 | UI 库 | 开发端口 |
 |---------|------|-------|---------|
@@ -226,7 +226,7 @@ app.UseTDesign(app.Environment);
 前端 workspace 构建约定：
 
 - 仓库根目录 `pnpm build`：仅构建 `packages/` 下公共模块，不再默认递归编译所有皮肤。
-- 仓库根目录单皮肤构建：使用 `pnpm build:vue`、`pnpm build:react`、`pnpm build:naive`、`pnpm build:mui`、`pnpm build:shadcn`、`pnpm build:arco`、`pnpm build:angular`、`pnpm build:vuetify`、`pnpm build:svelte`、`pnpm build:tdesign`。
+- 仓库根目录单皮肤构建：使用 `pnpm build:vue`、`pnpm build:naive`、`pnpm build:mui`、`pnpm build:shadcn`、`pnpm build:arco`、`pnpm build:angular`、`pnpm build:vuetify`、`pnpm build:svelte`、`pnpm build:tdesign`。
 - 仓库根目录单皮肤开发：使用对应的 `pnpm dev:xxx`。
 - 需要一次性构建或启动全部前端时，显式使用 `pnpm build:all` 或 `pnpm dev:all`。
 - 若已进入具体皮肤目录 `web/`，继续使用该目录下的 `pnpm build` / `pnpm dev` 即可，互不干扰。
@@ -365,8 +365,8 @@ https://github.com/NewLifeX/NewLife.CubeVue · https://github.com/NewLifeX/NewLi
 | NewLife.Cube.Swagger | 按区域自动分组的 Swagger 文档。 |
 | CubeDemo / CubeDemoNC | 示例。 |
 | CubeSSO | 统一用户中心 & OAuth 服务端。 |
-| NewLife.Cube.Blazor | Blazor 前端实验。 |
-| Test / XUnitTest / E2EMvcTest / AotSmoke / WebSmoke | 测试与验证（WebSmoke 在非 x64/arm64 指令集上启动 Kestrel 并完成一次 HTTP 往返）。 |
+| NewLife.Cube.Blazor | Blazor 实验（已冻结的 MVC 主题）。 |
+| Test / XUnitTest / NewLife.Cube.Tests / E2EMvcTest / AotSmoke / WebSmoke | 测试与验证（WebSmoke 在非 x64/arm64 指令集上启动 Kestrel 并完成一次 HTTP 往返）。 |
 
 </details>
 

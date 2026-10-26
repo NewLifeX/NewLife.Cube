@@ -192,13 +192,13 @@ public class AppController : EntityController<App, AppModel>
 
 | Feature | Key Characteristics |
 | --- | --- |
-| Multiple front-ends | Vue / Blazor / AntDesign / classic Razor coexist and migrate gradually. |
+| Multiple front-ends | Vue (official), eight in-repo reference SPA skins and classic Razor coexist; React (Ant Design) is maintained in a separate CubeAntd repository; Blazor is a frozen MVC-theme experiment. |
 | Embedded theme assets | `CubeEmbeddedFileProvider` ships theme assets inside the package. |
 | Theme registration | Register skins via `AddTheme/AddSkin` and pick one in `UseCube` (`app.UseMetronic(env)` etc.). |
 | Custom themes | Implement `IModule` like `MetronicModule` and mount it in the use phase. |
 | View overrides | A `.cshtml` with the same path in a child project overrides the parent. |
 | Localization | 11 runtime languages for API messages, request-level culture detection and an 11-language Vue front-end. |
-| New-generation skins | pnpm workspace with shared packages `@newlifex/api-core` (API / token / types) and `@newlifex/field-mapping` (field metadata -> controls). `NewLife.Cube.Vue` is the official skin; the others live in this repo as reference implementations and are not published to NuGet — build their `web` project with pnpm, then reference the .NET project. |
+| New-generation skins | pnpm workspace with shared packages `@newlifex/api-core` (API / token / types) and `@newlifex/field-mapping` (field metadata -> controls). `NewLife.Cube.Vue` is the official skin; the eight SPA skins live in this repo as reference implementations and are not published to NuGet — build their `web` project with pnpm, then reference the .NET project. React lives in the separate CubeAntd repository. |
 
 | Skin project | Framework | UI library | Dev port |
 |---------------|-----------|------------|----------|
@@ -228,7 +228,7 @@ app.UseTDesign(app.Environment);
 Front-end workspace conventions:
 
 - Root `pnpm build`: builds only the shared modules under `packages/`; it no longer recurses into every skin.
-- Build one skin: `pnpm build:vue`, `pnpm build:react`, `pnpm build:naive`, `pnpm build:mui`, `pnpm build:shadcn`, `pnpm build:arco`, `pnpm build:angular`, `pnpm build:vuetify`, `pnpm build:svelte`, `pnpm build:tdesign`.
+- Build one skin: `pnpm build:vue`, `pnpm build:naive`, `pnpm build:mui`, `pnpm build:shadcn`, `pnpm build:arco`, `pnpm build:angular`, `pnpm build:vuetify`, `pnpm build:svelte`, `pnpm build:tdesign`.
 - Develop one skin: the matching `pnpm dev:xxx`.
 - Build or start everything: `pnpm build:all` / `pnpm dev:all`.
 - Inside a skin's `web/` directory, use its own `pnpm build` / `pnpm dev`.
@@ -362,8 +362,8 @@ Milestones (excerpt):
 | NewLife.Cube.Swagger | Swagger documents grouped by area. |
 | CubeDemo / CubeDemoNC | Samples. |
 | CubeSSO | Unified user center and OAuth server. |
-| NewLife.Cube.Blazor | Blazor front-end experiment. |
-| Test / XUnitTest / E2EMvcTest / AotSmoke / WebSmoke | Tests and verification (WebSmoke starts Kestrel and does one HTTP round-trip on non-x64/arm64 instruction sets). |
+| NewLife.Cube.Blazor | Blazor experiment (frozen MVC theme). |
+| Test / XUnitTest / NewLife.Cube.Tests / E2EMvcTest / AotSmoke / WebSmoke | Tests and verification (WebSmoke starts Kestrel and does one HTTP round-trip on non-x64/arm64 instruction sets). |
 
 </details>
 
