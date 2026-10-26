@@ -117,7 +117,8 @@ public class TenantAuthFixture : IDisposable
             (IDataTable)MailConfig.Meta.Table.DataTable.Clone(),
             (IDataTable)SmsConfig.Meta.Table.DataTable.Clone(),
             (IDataTable)PrincipalAgent.Meta.Table.DataTable.Clone(),
-            (IDataTable)OAuthLog.Meta.Table.DataTable.Clone());
+            (IDataTable)OAuthLog.Meta.Table.DataTable.Clone(),
+            (IDataTable)AccessRule.Meta.Table.DataTable.Clone());
 
         // 2. 固定JWT密钥，保证测试内令牌签发/校验可复现
         CubeSetting.Current.JwtSecret = "HS256:CubeTenantReproTestSecret";
@@ -780,6 +781,7 @@ public class TenantAuthExpectationTests
         }
     }
 }
+
 
 
 

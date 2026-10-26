@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Cube.Tests.Common;
 using NewLife.Cube.Tests.Membership;
 using NewLife.Cube.Web;
 using XCode.DataAccessLayer;
@@ -17,45 +18,34 @@ public class SecurityDefenseCollection { }
 /// <summary>安全访问测试的SQLite夹具。类级注册 Cube/Log 连接，类结束后恢复全局连接，避免影响其它测试类</summary>
 public class AccessServiceDbFixture : IDisposable
 {
-    private readonly String _oldCube;
-    private readonly String _oldLog;
-    private readonly Boolean _hadCube;
-    private readonly Boolean _hadLog;
+    private readonly IDisposable _cubeScope;
+    private readonly IDisposable _logScope;
 
     /// <summary>实例化，注册临时SQLite并建表</summary>
     public AccessServiceDbFixture()
     {
         var dbFile = Path.Combine(Path.GetTempPath(), $"CubeSecDb_{Guid.NewGuid():N}.db");
 
-        if (DAL.ConnStrs != null)
-        {
-            _hadCube = DAL.ConnStrs.TryGetValue("Cube", out _oldCube);
-            _hadLog = DAL.ConnStrs.TryGetValue("Log", out _oldLog);
-        }
+        // 用连接作用域切换连接：会同步清理 DAL 与实体会话缓存，
+        // 结束后自动还原连接串并再次清理，避免与其它测试类抢同一个全局连接缓存
+        _cubeScope = TestConnections.Use("Cube", $"Data Source={dbFile}");
+        _logScope = TestConnections.Use("Log", $"Data Source={dbFile}");
 
-        DAL.AddConnStr("Cube", $"Data Source={dbFile}", null, "SQLite");
-        DAL.AddConnStr("Log", $"Data Source={dbFile}", null, "SQLite");
-
-        // 触发表结构检查与自动建表
-        _ = AccessRule.Meta.Count;
-        _ = XLog.Meta.Count;
-        _ = NotificationRecord.Meta.Count;
+        // 主动按表建结构，避免依赖实体首次访问时的自动建表（换库后已检查标记不会复位）
+        DAL.Create("Cube").SetTables(
+            (IDataTable)AccessRule.Meta.Table.DataTable.Clone(),
+            (IDataTable)NotificationRecord.Meta.Table.DataTable.Clone(),
+            (IDataTable)XCode.Membership.Log.Meta.Table.DataTable.Clone());
+        DAL.Create("Log").SetTables(
+            (IDataTable)NotificationRecord.Meta.Table.DataTable.Clone(),
+            (IDataTable)XCode.Membership.Log.Meta.Table.DataTable.Clone());
     }
 
     /// <summary>恢复全局连接并清缓存，避免其它测试类拿到本夹具的临时库</summary>
     public void Dispose()
     {
-        if (DAL.ConnStrs != null)
-        {
-            if (_hadCube) DAL.ConnStrs["Cube"] = _oldCube;
-            else DAL.ConnStrs.TryRemove("Cube", out _);
-
-            if (_hadLog) DAL.ConnStrs["Log"] = _oldLog;
-            else DAL.ConnStrs.TryRemove("Log", out _);
-        }
-
-        DAL.Create("Cube").Reset();
-        DAL.Create("Log").Reset();
+        _logScope.Dispose();
+        _cubeScope.Dispose();
     }
 }
 
@@ -332,3 +322,6 @@ public class AccessServiceTests : IDisposable, IClassFixture<AccessServiceDbFixt
         Assert.NotNull(log);
     }
 }
+
+
+
