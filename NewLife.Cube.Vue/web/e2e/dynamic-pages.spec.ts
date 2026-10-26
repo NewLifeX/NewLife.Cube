@@ -135,6 +135,12 @@ test.describe('动态页（/meta 驱动）', () => {
 
     // 五个单对象配置页 + 四个列表型配置实体（短信/邮件/OAuth/访问规则）平铺在同一导航里
     expect(await tabs.count()).toBeGreaterThanOrEqual(9);
+    // 魔方设置有多个 Category，表单卡片头部应为分类 Tab，而不是「基本信息」
+    const groupTabs = page.locator('.fmc-group-tabs .el-tabs__item');
+    await expect(groupTabs.first()).toBeVisible({ timeout: 15000 });
+    expect(await groupTabs.count()).toBeGreaterThanOrEqual(2);
+    // 字段说明以 Label 旁问号 Tooltip 呈现
+    await expect(page.locator('.fmc-help').first()).toBeVisible();
     // 首屏配置表单由 /meta 驱动
     await expect(page.locator('.fmc-field').first()).toBeVisible({ timeout: 15000 });
 

@@ -272,6 +272,8 @@ export default {
   'password.complexity': 'パスワードのセキュリティ規則を満たしています',
   'form.basicInfo': '基本情報',
   'form.otherGroup': 'その他',
+  'form.defaultGroup': '既定',
+  'form.groupTabShort': '{name}（オプション）',
   'form.placeholderInput': '入力してください...',
   'form.placeholderNumber': '数値を入力してください',
   'form.placeholderSelect': '選択してください',

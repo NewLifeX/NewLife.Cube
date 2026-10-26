@@ -307,6 +307,8 @@ export default {
   // Form container
   'form.basicInfo': 'Basic information',
   'form.otherGroup': 'Other',
+  'form.defaultGroup': 'Default',
+  'form.groupTabShort': '{name} options',
   'form.placeholderInput': 'Please enter...',
   'form.placeholderNumber': 'Please enter a number',
   'form.placeholderSelect': 'Please select',

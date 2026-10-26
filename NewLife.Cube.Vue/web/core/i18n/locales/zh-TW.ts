@@ -291,6 +291,8 @@ export default {
   // 表單容器
   'form.basicInfo': '基本資訊',
   'form.otherGroup': '其他',
+  'form.defaultGroup': '預設選項',
+  'form.groupTabShort': '{name}選項',
   'form.placeholderInput': '請輸入...',
   'form.placeholderNumber': '請輸入數值',
   'form.placeholderSelect': '請選擇',

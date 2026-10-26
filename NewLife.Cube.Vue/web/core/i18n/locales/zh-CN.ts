@@ -306,6 +306,8 @@ export default {
   // 表单容器
   'form.basicInfo': '基本信息',
   'form.otherGroup': '其他',
+  'form.defaultGroup': '默认选项',
+  'form.groupTabShort': '{name}选项',
   'form.placeholderInput': '请输入...',
   'form.placeholderNumber': '请输入数值',
   'form.placeholderSelect': '请选择',

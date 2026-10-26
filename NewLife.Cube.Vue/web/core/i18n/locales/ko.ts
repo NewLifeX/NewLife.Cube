@@ -292,6 +292,8 @@ export default {
   // 폼 컨테이너
   'form.basicInfo': '기본 정보',
   'form.otherGroup': '기타',
+  'form.defaultGroup': '기본',
+  'form.groupTabShort': '{name} 옵션',
   'form.placeholderInput': '입력하세요...',
   'form.placeholderNumber': '숫자를 입력하세요',
   'form.placeholderSelect': '선택하세요',

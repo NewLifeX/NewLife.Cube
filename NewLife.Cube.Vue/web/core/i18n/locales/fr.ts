@@ -296,6 +296,8 @@ export default {
   // Conteneur de formulaire
   'form.basicInfo': 'Informations de base',
   'form.otherGroup': 'Autre',
+  'form.defaultGroup': 'Par défaut',
+  'form.groupTabShort': '{name} (options)',
   'form.placeholderInput': 'Veuillez saisir...',
   'form.placeholderNumber': 'Saisissez un nombre',
   'form.placeholderSelect': 'Veuillez sélectionner',

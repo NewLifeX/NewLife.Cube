@@ -8,8 +8,9 @@
  *
  * v-model 绑定整个表单对象；任一控件变更时聚合 emit 整个对象（沿用既有行为）。
  */
-import { computed, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { QuestionFilled } from '@element-plus/icons-vue';
 import type { FieldMeta, ControlType } from '../../types/field';
 import {
   areaLevel,
@@ -45,6 +46,10 @@ interface Props {
   disabled?: boolean;
   /** 分组方式：auto=有多个分类时按分类分区，category=强制按分类，none=平铺，函数=自定义分组 */
   groupBy?: 'auto' | 'category' | 'none' | ((field: FieldMeta) => string);
+  /** 分组呈现：tabs=分类 Tab（默认），sections=标题分区 */
+  groupDisplay?: 'tabs' | 'sections';
+  /** 字段说明呈现：tooltip=Label 旁问号提示（默认），placeholder=沿用输入框占位，none=不展示 */
+  descriptionMode?: 'tooltip' | 'placeholder' | 'none';
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -54,6 +59,8 @@ const props = withDefaults(defineProps<Props>(), {
   apiPrefix: '',
   columns: 2,
   groupBy: 'auto',
+  groupDisplay: 'tabs',
+  descriptionMode: 'tooltip',
 });
 
 const { t } = useI18n();
@@ -61,8 +68,18 @@ const { t } = useI18n();
 /** 未指定标题时的默认表单标题 */
 const titleText = computed(() => props.title || t('form.basicInfo'));
 
-/** 无分类字段的兜底分组名 */
+/** 无分类字段的兜底分组名（sections 模式） */
 const defaultGroup = computed(() => t('form.otherGroup'));
+
+/** 无分类字段的 Tab 文案（tabs 模式，对齐 MVC 的「默认选项」） */
+const defaultTabGroup = computed(() => t('form.defaultGroup'));
+
+/** 空分类在 el-tabs 内部的占位 name，避免空字符串被当作未设置 */
+const DEFAULT_GROUP_KEY = '__default_group__';
+
+const useTabs = computed(() => props.groupDisplay === 'tabs');
+
+const activeGroupKey = ref('');
 
 /** preset 行级显隐：hidden 与 visibleWhen 共同决定字段是否出现在当前模型下 */
 const visibleFields = computed(() =>
@@ -81,15 +98,58 @@ const groups = computed(() => {
 
   const map = new Map<string, typeof fields>();
   for (const field of fields) {
-    const key = typeof props.groupBy === 'function'
-      ? props.groupBy(field)?.trim() || defaultGroup.value
-      : field.category?.trim() || defaultGroup.value;
+    const key =
+      (typeof props.groupBy === 'function' ? props.groupBy(field) : field.category)?.trim() || '';
     const list = map.get(key) ?? [];
     list.push(field);
     map.set(key, list);
   }
-  return [...map.entries()].map(([key, fields]) => ({ key, title: key, fields }));
+  return [...map.entries()].map(([key, fields]) => ({
+    key,
+    // 分区模式沿用「其他」，Tab 模式在 groupTabTitle 里换成「默认选项」
+    title: key || defaultGroup.value,
+    fields,
+  }));
 });
+
+/** 空分类分组的 Tab name（不能为空字符串） */
+const tabNameOf = (group: { key: string }) => group.key || DEFAULT_GROUP_KEY;
+
+/** Tab 文案：对齐 MVC 规则，空分类用「默认选项」，短分类名补「选项」 */
+function groupTabTitle(group: { key: string }): string {
+  const name = group.key.trim();
+  if (!name) return defaultTabGroup.value;
+  return name.length < 4 ? t('form.groupTabShort', { name }) : name;
+}
+
+/** 当前激活分组；找不到时回退第一组 */
+const activeGroup = computed(
+  () => groups.value.find((group) => tabNameOf(group) === activeGroupKey.value) ?? groups.value[0],
+);
+
+/** 实际渲染的分组：Tab 模式只渲染当前分类，分区模式渲染全部分组 */
+const displayGroups = computed(() =>
+  useTabs.value ? (activeGroup.value ? [activeGroup.value] : []) : groups.value,
+);
+
+// 字段异步加载或显隐变化后，保证激活 Tab 始终有效
+watch(
+  () => groups.value.map(tabNameOf),
+  (keys) => {
+    if (!keys.includes(activeGroupKey.value)) activeGroupKey.value = keys[0] ?? '';
+  },
+  { immediate: true },
+);
+
+/** 字段说明：tooltip 模式展示在 Label 旁，placeholder/none 模式不展示 */
+function descriptionOf(field: FieldMeta): string {
+  return props.descriptionMode === 'tooltip' ? (field.description ?? '').trim() : '';
+}
+
+/** 输入框占位：placeholder 模式沿用旧行为（描述优先），其余模式使用通用提示 */
+function hintOf(field: FieldMeta, key: string): string {
+  return props.descriptionMode === 'placeholder' ? field.description || t(key) : t(key);
+}
 
 const emit = defineEmits<{
   'update:modelValue': [val: Record<string, unknown>];
@@ -201,12 +261,24 @@ function toMultiArray(val: unknown): string[] {
 
 <template>
   <div class="form-content">
-    <div class="fmc-header">
+    <!-- 分类 Tab：替换「基本信息」卡片标题，单分类时整个头部隐藏 -->
+    <div v-if="useTabs && groups.length > 1" class="fmc-header fmc-header--tabs">
+      <el-tabs v-model="activeGroupKey" class="fmc-group-tabs">
+        <el-tab-pane
+          v-for="group in groups"
+          :key="group.key"
+          :name="tabNameOf(group)"
+          :label="groupTabTitle(group)"
+        />
+      </el-tabs>
+    </div>
+    <!-- 分区模式保留原来的卡片标题 -->
+    <div v-else-if="!useTabs" class="fmc-header">
       <h2 class="fmc-title">{{ titleText }}</h2>
     </div>
     <div class="fmc-body">
-      <section v-for="group in groups" :key="group.key" class="fmc-group">
-        <h3 v-if="group.title" class="fmc-group-title">{{ group.title }}</h3>
+      <section v-for="group in displayGroups" :key="group.key" class="fmc-group">
+        <h3 v-if="!useTabs && group.title" class="fmc-group-title">{{ group.title }}</h3>
         <div class="fmc-grid" :style="{ gridTemplateColumns: `repeat(${props.columns}, 1fr)` }">
           <div
             v-for="field in group.fields"
@@ -218,6 +290,17 @@ function toMultiArray(val: unknown): string[] {
             {{ field.displayName || field.name }}
             <!-- 查看（禁用）模式下不展示必填星号：详情只读无填写语义 -->
             <span v-if="!props.disabled && isRequired(field)" class="fmc-required" aria-hidden="true">*</span>
+            <!-- 字段说明：完整描述放 Tooltip，避免长文本挤占两列表单 -->
+            <el-tooltip
+              v-if="descriptionOf(field)"
+              :content="descriptionOf(field)"
+              placement="top"
+              :show-after="200"
+            >
+              <el-icon class="fmc-help" :aria-label="descriptionOf(field)" tabindex="0">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
           </label>
 
           <!-- 字段级渲染器：后端声明 view，前端按名注册；未注册时回退内置控件 -->
@@ -240,7 +323,7 @@ function toMultiArray(val: unknown): string[] {
             :rows="3"
             class="fmc-textarea"
             :disabled="props.disabled"
-            :placeholder="field.description || t('form.placeholderInput')"
+            :placeholder="hintOf(field, 'form.placeholderInput')"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -255,7 +338,7 @@ function toMultiArray(val: unknown): string[] {
               :disabled="props.disabled"
               :precision="resolveNumberPrecision(field)"
               :step="resolveNumberStep(field)"
-              :placeholder="field.description || t('form.placeholderNumber')"
+              :placeholder="hintOf(field, 'form.placeholderNumber')"
               :model-value="toNumber(getValue(field.name))"
               @update:model-value="(v: number | undefined) => updateNumber(field.name, v)"
             />
@@ -266,7 +349,7 @@ function toMultiArray(val: unknown): string[] {
           <el-select
             v-else-if="controlOf(field) === 'select'"
             class="fmc-select"
-            :placeholder="field.description || t('form.placeholderSelect')"
+            :placeholder="hintOf(field, 'form.placeholderSelect')"
             :model-value="asScalar(getValue(field.name))"
             @update:model-value="(v: string | number) => updateField(field.name, v)"
           >
@@ -305,7 +388,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'timePicker'"
             class="fmc-date-picker"
             :disabled="props.disabled"
-            :placeholder="field.description || t('form.placeholderTime')"
+            :placeholder="hintOf(field, 'form.placeholderTime')"
             format="HH:mm:ss"
             value-format="HH:mm:ss"
             :model-value="String(getValue(field.name) ?? '')"
@@ -318,7 +401,7 @@ function toMultiArray(val: unknown): string[] {
             :model-value="asAreaValue(getValue(field.name))"
             :level="areaLevel(field)"
             :disabled="props.disabled"
-            :placeholder="field.description || t('form.placeholderArea')"
+            :placeholder="hintOf(field, 'form.placeholderArea')"
             @update:model-value="(v: number | undefined) => updateField(field.name, v)"
           />
 
@@ -329,7 +412,7 @@ function toMultiArray(val: unknown): string[] {
             :disabled="props.disabled"
             :parent="field.parentField ? (getValue(field.parentField) as string | number | undefined) : undefined"
             :model-value="(getValue(field.name) as string | number | undefined)"
-            :placeholder="field.description || t('form.placeholderSelect')"
+            :placeholder="hintOf(field, 'form.placeholderSelect')"
             @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(field.name, v)"
           />
 
@@ -341,7 +424,7 @@ function toMultiArray(val: unknown): string[] {
             :disabled="props.disabled"
             :parent="field.parentField ? (getValue(field.parentField) as string | number | undefined) : undefined"
             :model-value="toMultiArray(getValue(field.name))"
-            :placeholder="field.description || t('form.placeholderMultiSelect')"
+            :placeholder="hintOf(field, 'form.placeholderMultiSelect')"
             @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(field.name, v)"
           />
 
@@ -414,7 +497,7 @@ function toMultiArray(val: unknown): string[] {
             class="fmc-input"
             :disabled="props.disabled"
             :type="controlOf(field) === 'email' ? 'email' : controlOf(field) === 'tel' ? 'tel' : 'url'"
-            :placeholder="field.description || t('form.placeholderInput')"
+            :placeholder="hintOf(field, 'form.placeholderInput')"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -428,7 +511,7 @@ function toMultiArray(val: unknown): string[] {
             type="password"
             show-password
             autocomplete="new-password"
-            :placeholder="field.description || t('form.placeholderInput')"
+            :placeholder="hintOf(field, 'form.placeholderInput')"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -448,7 +531,7 @@ function toMultiArray(val: unknown): string[] {
             :id="`fmc-${field.name}`"
             class="fmc-input"
             :disabled="props.disabled"
-            :placeholder="field.description || t('form.placeholderInput')"
+            :placeholder="hintOf(field, 'form.placeholderInput')"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -471,6 +554,19 @@ function toMultiArray(val: unknown): string[] {
 .fmc-header {
   padding: 14px 18px;
   border-bottom: 1px solid var(--el-border-color-light);
+}
+
+/* 分类 Tab 模式：Tab 条就是卡片头部，隐藏多余的下边框线 */
+.fmc-header--tabs {
+  padding: 6px 18px 0;
+}
+
+.fmc-group-tabs :deep(.el-tabs__header) {
+  margin: 0;
+}
+
+.fmc-group-tabs :deep(.el-tabs__nav-wrap::after) {
+  display: none;
 }
 
 .fmc-title {
@@ -524,6 +620,21 @@ function toMultiArray(val: unknown): string[] {
 .fmc-required {
   color: var(--el-color-danger);
   margin-left: 2px;
+}
+
+/* 字段说明问号：完整描述走 Tooltip，不占用两列表单的横向空间 */
+.fmc-help {
+  margin-left: 4px;
+  color: var(--el-text-color-placeholder);
+  font-size: 14px;
+  vertical-align: -3px;
+  cursor: help;
+  outline: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--el-color-primary);
+  }
 }
 
 /**

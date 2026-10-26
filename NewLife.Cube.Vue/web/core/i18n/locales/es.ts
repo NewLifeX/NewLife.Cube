@@ -293,6 +293,8 @@ export default {
   // Contenedor de formularios
   'form.basicInfo': 'Información básica',
   'form.otherGroup': 'Otros',
+  'form.defaultGroup': 'Predeterminado',
+  'form.groupTabShort': '{name} (opciones)',
   'form.placeholderInput': 'Introduzca...',
   'form.placeholderNumber': 'Introduzca un número',
   'form.placeholderSelect': 'Seleccione',

@@ -272,6 +272,8 @@ export default {
   'password.complexity': 'Соответствует правилам парольной безопасности',
   'form.basicInfo': 'Основная информация',
   'form.otherGroup': 'Прочее',
+  'form.defaultGroup': 'По умолчанию',
+  'form.groupTabShort': '{name} (параметры)',
   'form.placeholderInput': 'Введите...',
   'form.placeholderNumber': 'Введите число',
   'form.placeholderSelect': 'Выберите',

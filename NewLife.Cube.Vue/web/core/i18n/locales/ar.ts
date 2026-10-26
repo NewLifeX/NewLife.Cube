@@ -281,6 +281,8 @@ export default {
 
   'form.basicInfo': 'المعلومات الأساسية',
   'form.otherGroup': 'أخرى',
+  'form.defaultGroup': 'افتراضي',
+  'form.groupTabShort': '{name} (خيارات)',
   'form.placeholderInput': 'يرجى الإدخال...',
   'form.placeholderNumber': 'يرجى إدخال رقم',
   'form.placeholderSelect': 'يرجى الاختيار',

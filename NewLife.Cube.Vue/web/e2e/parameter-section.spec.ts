@@ -48,6 +48,8 @@ test.describe('参数管理（标准动态页）', () => {
 
     const dialog = page.locator('.el-dialog').first();
     await expect(dialog).toBeVisible({ timeout: 15000 });
+    // 字段由 /meta 异步下发，等待表单渲染完成后再比对文案
+    await expect(dialog.locator('.fmc-field').first()).toBeVisible({ timeout: 15000 });
 
     // 弹窗里的字段标签来自后端 meta.detail，逐项比对，不写死中文/英文（主键不出现在详情里）
     const meta = await readMeta(page, '/api/Admin/Parameter/meta');
@@ -72,6 +74,8 @@ test.describe('参数管理（标准动态页）', () => {
 
     const dialog = page.locator('.el-dialog').first();
     await expect(dialog).toBeVisible({ timeout: 15000 });
+    // 字段由 /meta 异步下发，等待表单渲染完成后再比对文案
+    await expect(dialog.locator('.fmc-field').first()).toBeVisible({ timeout: 15000 });
 
     // 表单字段与标签来自后端 meta.add（主键不在新增表单里），逐项比对
     const meta = await readMeta(page, '/api/Admin/Parameter/meta');

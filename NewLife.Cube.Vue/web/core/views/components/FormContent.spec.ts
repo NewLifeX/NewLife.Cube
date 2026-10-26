@@ -90,9 +90,9 @@ describe('FormContent 分组', () => {
   const titles = (wrapper: ReturnType<typeof mount>) =>
     wrapper.findAll('.fmc-group-title').map((node) => node.text());
 
-  it('应该按 Category 保序分组并把无分类字段归入其他 当 groupBy=auto 时', () => {
+  it('应该按 Category 保序分组并把无分类字段归入其他 当 groupBy=auto 且 groupDisplay=sections 时', () => {
     const wrapper = mount(FormContent, {
-      props: { fields: GROUPED_FIELDS, modelValue: {} },
+      props: { fields: GROUPED_FIELDS, modelValue: {}, groupDisplay: 'sections' },
       global: { plugins: [ElementPlus, testI18n] },
     });
 
@@ -107,6 +107,9 @@ describe('FormContent 分组', () => {
 
     expect(titles(wrapper)).toEqual([]);
     expect(wrapper.findAll('.fmc-field')).toHaveLength(GROUPED_FIELDS.length);
+    // 单分组不渲染头部与分类 Tab
+    expect(wrapper.find('.fmc-header').exists()).toBe(false);
+    expect(wrapper.find('.fmc-group-tabs').exists()).toBe(false);
   });
 
   it('应该强制按 Category 分组 当只有一个分类且 groupBy=category 时', () => {
@@ -115,6 +118,7 @@ describe('FormContent 分组', () => {
         fields: [GROUPED_FIELDS[0], GROUPED_FIELDS[1]],
         modelValue: {},
         groupBy: 'category',
+        groupDisplay: 'sections',
       },
       global: { plugins: [ElementPlus, testI18n] },
     });
@@ -128,10 +132,85 @@ describe('FormContent 分组', () => {
         fields: GROUPED_FIELDS,
         modelValue: {},
         groupBy: (field: FieldMeta) => (field.name === 'Remark' ? '自定义' : ''),
+        groupDisplay: 'sections',
       },
       global: { plugins: [ElementPlus, testI18n] },
     });
 
     expect(titles(wrapper)).toEqual(['其他', '自定义']);
+  });
+
+  it('默认按 Category 渲染 Tab，空分类显示「默认选项」', () => {
+    const wrapper = mount(FormContent, {
+      props: { fields: GROUPED_FIELDS, modelValue: {} },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+
+    const tabs = wrapper.findAll('.fmc-group-tabs .el-tabs__item');
+    expect(tabs.map((node) => node.text())).toEqual(['基本信息', '扩展信息', '默认选项']);
+    // 默认只渲染第一个分类的字段
+    expect(wrapper.findAll('.fmc-field')).toHaveLength(2);
+    expect(wrapper.text()).toContain('方案名称');
+    expect(wrapper.text()).not.toContain('备注');
+  });
+
+  it('切换分类 Tab 后渲染对应分类字段', async () => {
+    const wrapper = mount(FormContent, {
+      props: { fields: GROUPED_FIELDS, modelValue: {} },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+
+    await wrapper.findAll('.fmc-group-tabs .el-tabs__item')[1].trigger('click');
+    expect(wrapper.findAll('.fmc-field')).toHaveLength(1);
+    expect(wrapper.text()).toContain('备注');
+  });
+
+  it('短分类名补「选项」后缀', () => {
+    const wrapper = mount(FormContent, {
+      props: {
+        fields: [
+          { name: 'A', displayName: 'A', typeName: 'String', category: 'AI' },
+          { name: 'B', displayName: 'B', typeName: 'String', category: '五字分类名' },
+        ],
+        modelValue: {},
+      },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+
+    const tabs = wrapper.findAll('.fmc-group-tabs .el-tabs__item');
+    expect(tabs.map((node) => node.text())).toEqual(['AI选项', '五字分类名']);
+  });
+});
+
+describe('FormContent 字段说明', () => {
+  const FIELD: FieldMeta = {
+    name: 'Name',
+    displayName: '名称',
+    typeName: 'String',
+    description: '名称的唯一标识，保存后不可修改',
+  };
+
+  it('默认把 Description 放到 Label 旁的小问号 Tooltip，输入框使用通用占位', () => {
+    const wrapper = mount(FormContent, {
+      props: { fields: [FIELD], modelValue: {} },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+
+    const help = wrapper.find('.fmc-help');
+    expect(help.exists()).toBe(true);
+    expect(help.attributes('aria-label')).toBe(FIELD.description);
+    const input = wrapper.find('input.el-input__inner');
+    expect(input.attributes('placeholder')).toBe('请输入...');
+  });
+
+  it('descriptionMode=placeholder 时保留旧行为：无问号，描述进占位符', () => {
+    const wrapper = mount(FormContent, {
+      props: { fields: [FIELD], modelValue: {}, descriptionMode: 'placeholder' },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+
+    expect(wrapper.find('.fmc-help').exists()).toBe(false);
+    const input = wrapper.find('input.el-input__inner');
+    expect(input.attributes('placeholder')).toBe(FIELD.description);
   });
 });

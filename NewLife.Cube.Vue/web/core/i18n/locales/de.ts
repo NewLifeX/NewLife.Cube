@@ -272,6 +272,8 @@ export default {
   'password.complexity': 'Entspricht den Kennwort-Sicherheitsregeln',
   'form.basicInfo': 'Grundinformationen',
   'form.otherGroup': 'Sonstiges',
+  'form.defaultGroup': 'Standard',
+  'form.groupTabShort': '{name} (Optionen)',
   'form.placeholderInput': 'Bitte eingeben...',
   'form.placeholderNumber': 'Bitte eine Zahl eingeben',
   'form.placeholderSelect': 'Bitte auswählen',
