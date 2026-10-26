@@ -110,7 +110,7 @@ Open `/` to sign in, use Swagger for APIs, and call the standard CRUD APIs from 
 | --- | --- |
 | EntityController scaffolding | Entity class + controller gives CRUD, statistics, export and permissions immediately; `ReadOnlyEntityController` covers read-only lists. |
 | Static-constructor configuration | Configure fields, action buttons, related links, statistics and export in a controller static constructor. |
-| Field metadata API | `GetFields?kind=1..4` (List / Detail / AddForm / EditForm) drives dynamic front-end generation — no hard coding. |
+| Field metadata API | `meta` (page settings + List / Detail / AddForm / EditForm / Search fields) drives dynamic front-end generation — no hard coding. |
 | Menu tree | `/Cube/MenuTree` builds multi-level menus from permissions; `/Admin/Index/GetMenuTree` serves the classic MVC UI. |
 | Standard API response | `ApiResponse` wraps code / data / page / stat for every endpoint. |
 | Zero deployment | Schema creation and seed data happen automatically on first run, with no manual intervention. |
@@ -127,7 +127,7 @@ Open `/` to sign in, use Swagger for APIs, and call the standard CRUD APIs from 
 | --- | --- |
 | Field set customization | `ListFields.RemoveField` / `AddListField` adjust columns, links and targets per controller. |
 | Change log | `LogOnChange = true` writes an audit entry for every modification. |
-| Dynamic front-end fields | The front-end fetches `/Cube/App/GetFields?kind=1` for list field definitions — no hard coding. |
+| Dynamic front-end fields | The front-end fetches `/Cube/App/meta` for page metadata and field definitions — no hard coding. |
 
 ```csharp
 public class AppController : EntityController<App, AppModel>
@@ -153,7 +153,7 @@ public class AppController : EntityController<App, AppModel>
 | --- | --- |
 | `/Auth/Login` | Sign in and receive a JWT token (header / cookie / query). |
 | `/Cube/MenuTree` | Permission-aware menu tree. |
-| `/{Area}/{Controller}/GetFields?kind=1..4` | Field metadata for list / detail / add form / edit form. |
+| `/{Area}/{Controller}/meta` | Page metadata for list / detail / add form / edit form / search. |
 | Main route + dynamic parameters | Query with paging, sorting and condition composition. |
 | `Detail` / `Insert` / `Update` / `Delete` | Standard CRUD actions. |
 | `stat` / `page` | Statistics row and paging information. |
@@ -198,9 +198,9 @@ public class AppController : EntityController<App, AppModel>
 | Custom themes | Implement `IModule` like `MetronicModule` and mount it in the use phase. |
 | View overrides | A `.cshtml` with the same path in a child project overrides the parent. |
 | Localization | 11 runtime languages for API messages, request-level culture detection and an 11-language Vue front-end. |
-| New-generation skins | pnpm workspace with shared packages `@newlifex/api-core` (API / token / types) and `@newlifex/field-mapping` (field metadata -> controls); reference the NuGet package to get the complete front-end. |
+| New-generation skins | pnpm workspace with shared packages `@newlifex/api-core` (API / token / types) and `@newlifex/field-mapping` (field metadata -> controls). `NewLife.Cube.Vue` is the official skin; the others live in this repo as reference implementations and are not published to NuGet — build their `web` project with pnpm, then reference the .NET project. |
 
-| NuGet package | Framework | UI library | Dev port |
+| Skin project | Framework | UI library | Dev port |
 |---------------|-----------|------------|----------|
 | `NewLife.Cube.NaiveUI` | Vue 3 | Naive UI | 5180 |
 | `NewLife.Cube.MUI` | React 19 | MUI 6 (Material) | 5181 |
@@ -210,6 +210,8 @@ public class AppController : EntityController<App, AppModel>
 | `NewLife.Cube.Vuetify` | Vue 3 | Vuetify 3 | 5185 |
 | `NewLife.Cube.Svelte` | SvelteKit 2 + Svelte 5 | Tailwind CSS 4 | 5186 |
 | `NewLife.Cube.TDesign` | Vue 3 | TDesign | 5187 |
+
+> The skins above are reference implementations kept in this repository, not published NuGet packages. `NewLife.Cube.Vue` is the official skin with full unit and E2E coverage.
 
 ```csharp
 // Pick one
@@ -355,8 +357,8 @@ Milestones (excerpt):
 | --- | --- |
 | NewLife.Cube | Core: entity controllers, permissions, menus, field metadata, API. |
 | NewLife.CubeNC | Legacy MVC / Razor compatibility layer. |
-| Classic skins | AdminLTE / Metronic / Metronic8 / Tabler / LayuiAdmin / ElementUI / Blazor (separate packages). |
-| New-generation skins | pnpm workspace: NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign. |
+| Classic skins | AdminLTE / Metronic / Metronic8 / Tabler / LayuiAdmin / ElementUI / Blazor (separate packages; feature-frozen since 2026-10-26 — compile-only, no new features). |
+| New-generation skins | pnpm workspace: NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign (reference implementations, not published to NuGet). |
 | NewLife.Cube.Swagger | Swagger documents grouped by area. |
 | CubeDemo / CubeDemoNC | Samples. |
 | CubeSSO | Unified user center and OAuth server. |
@@ -371,7 +373,7 @@ Milestones (excerpt):
 | Concept | Description |
 | --- | --- |
 | EntityController | Configure fields, action buttons, related links, statistics and export in a static constructor. |
-| Field metadata API | `GetFields?kind=List\|Detail\|AddForm\|EditForm` drives dynamic front-end generation. |
+| Field metadata API | `meta` (page settings + List / Detail / AddForm / EditForm / Search fields) drives dynamic front-end generation. |
 | Menu tree | `/Admin/Index/GetMenuTree` builds multi-level menus from permissions. |
 | Permission model | User -> role -> menu (action set). The first registered user becomes administrator and `admin` is disabled. |
 | ApiResponse | Standard response wrapper with code / data / page / stat. |
@@ -452,6 +454,7 @@ Detailed requirements, feature tracking and architecture live in [`Doc/`](https:
 - 📋 [Requirements](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/需求文档.md) — vision, goals, functional requirements
 - ✅ [Feature list](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/功能清单.md) — implementation/test/comment tracking
 - 🏗️ [Architecture](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/架构设计.md) — layering, modules, key decisions
+- 🧩 [Page presentation](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/Api/页面呈现架构.md) — dynamic / hybrid / custom pages, backend and frontend extension ladders
 - 🤖 [AI](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/AI-人工智能.md) — AI capabilities, configuration and extension points
 - 🔔 [Alerts and inbox](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/ALM-在线告警与站内信.md) — online threshold alerts and broadcast messages
 - ✉️ [Email/phone verification](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/AUTH-邮箱手机验证.md) — activation contract and UI integration

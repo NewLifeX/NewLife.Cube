@@ -196,9 +196,9 @@ public class AppController : EntityController<App, AppModel>
 | Custom themes | Implement `IModule` like `MetronicModule` and mount it in the use phase. |
 | View overrides | A `.cshtml` with the same path in a child project overrides the parent. |
 | Localization | 11 runtime languages for API messages, request-level culture detection and an 11-language Vue front-end. |
-| New-generation skins | pnpm workspace with shared packages `@newlifex/api-core` (API / token / types) and `@newlifex/field-mapping` (field metadata -> controls); reference the NuGet package to get the complete front-end. |
+| New-generation skins | pnpm workspace with shared packages `@newlifex/api-core` (API / token / types) and `@newlifex/field-mapping` (field metadata -> controls). `NewLife.Cube.Vue` is the official skin; the others live in this repo as reference implementations and are not published to NuGet — build their `web` project with pnpm, then reference the .NET project. |
 
-| NuGet package | Framework | UI library | Dev port |
+| Skin project | Framework | UI library | Dev port |
 |---------------|-----------|------------|----------|
 | `NewLife.Cube.NaiveUI` | Vue 3 | Naive UI | 5180 |
 | `NewLife.Cube.MUI` | React 19 | MUI 6 (Material) | 5181 |
@@ -208,6 +208,8 @@ public class AppController : EntityController<App, AppModel>
 | `NewLife.Cube.Vuetify` | Vue 3 | Vuetify 3 | 5185 |
 | `NewLife.Cube.Svelte` | SvelteKit 2 + Svelte 5 | Tailwind CSS 4 | 5186 |
 | `NewLife.Cube.TDesign` | Vue 3 | TDesign | 5187 |
+
+> The skins above are reference implementations kept in this repository, not published NuGet packages. `NewLife.Cube.Vue` is the official skin with full unit and E2E coverage.
 
 ```csharp
 // Pick one
@@ -353,8 +355,8 @@ Milestones (excerpt):
 | --- | --- |
 | NewLife.Cube | Core: entity controllers, permissions, menus, field metadata, API. |
 | NewLife.CubeNC | Legacy MVC / Razor compatibility layer. |
-| Classic skins | AdminLTE / Metronic / Metronic8 / Tabler / LayuiAdmin / ElementUI / Blazor (separate packages). |
-| New-generation skins | pnpm workspace: NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign. |
+| Classic skins | AdminLTE / Metronic / Metronic8 / Tabler / LayuiAdmin / ElementUI / Blazor (separate packages; feature-frozen since 2026-10-26 — compile-only, no new features). |
+| New-generation skins | pnpm workspace: NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign (reference implementations, not published to NuGet). |
 | NewLife.Cube.Swagger | Swagger documents grouped by area. |
 | CubeDemo / CubeDemoNC | Samples. |
 | CubeSSO | Unified user center and OAuth server. |
