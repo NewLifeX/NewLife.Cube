@@ -246,6 +246,11 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             };
         }
 
+        // 单设备模式：新登录踢掉旧设备，确保同一账号仅保留当前会话。必须在 MFA 拦截之后执行，
+        // 否则用户未完成二步验证就已把其他设备踢下线；若本次请求已提前颁发令牌（密码登录管线），
+        // 说明踢机已在其颁发前完成，此处跳过以免吊销刚签发的会话
+        if (!set.EnableMultiDeviceLogin && user.ID > 0 && httpContext.Items["jwtToken"] == null) UserToken.RevokeByUser(user.ID);
+
         // 先颁发令牌，JWT 缓存在 context.Items["jwtToken"]
         // 记住登录状态（Remember）：JWT 有效期与 Cookie 一致延长到 365 天，
         // 前端（SPA 存 localStorage）在有效期内重开系统免登录；令牌带 jti，退出登录仍可吊销

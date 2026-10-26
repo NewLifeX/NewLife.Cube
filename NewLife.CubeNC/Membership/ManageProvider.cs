@@ -117,6 +117,9 @@ public class ManageProvider2 : ManageProvider
         var context = Context?.HttpContext;
         if (context != null && user != null)
         {
+            // 单设备模式：新登录踢掉旧设备，必须在颁发新令牌之前执行，否则会连带吊销刚签发的会话
+            if (!set.EnableMultiDeviceLogin) UserToken.RevokeByUser(user.ID);
+
             // 先颁发令牌（含 UserToken + JWT(jti)），JWT 缓存在 context.Items
             // 记住登录状态（Remember）：JWT 有效期与 Cookie 一致延长到 365 天，前端重开系统免登录
             var tokenExpire = remember ? TimeSpan.FromDays(365) : TimeSpan.FromSeconds(set.TokenExpire);
