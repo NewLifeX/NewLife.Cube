@@ -88,7 +88,7 @@ public class TenantAuthFixture : IDisposable
         // 而 DAL 实例按连接名全局缓存，沿用旧映射会让本夹具建的表对 Cube/Log 实体不可见（no such table）
         DAL.ConnStrs!["Cube"] = "MapTo=Membership";
         DAL.ConnStrs!["Log"] = "MapTo=Membership";
-        ResetDalCache();
+        NewLife.Cube.Tests.Common.TestConnections.ResetCaches();
 
         // 主动按表建结构：EntitySession 的“已检查”标记换库后不会复位，
         // 其他用例先访问过实体时不再触发建表，直接 SetTables 绕过缓存，避免 no such table
@@ -139,16 +139,6 @@ public class TenantAuthFixture : IDisposable
         UserService = new UserService(new PasswordService(), new TestCacheProvider(), null!, null!, null!, new TenantContextService(), null!);
 
         Seed();
-    }
-
-    /// <summary>清除 XCode 按连接名缓存的 DAL 与连接信息，使新的连接串映射立即生效。仅供测试使用</summary>
-    private static void ResetDalCache()
-    {
-        var flags = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic;
-        foreach (var name in new[] { "_dals" })
-        {
-            if (typeof(DAL).GetField(name, flags)?.GetValue(null) is System.Collections.IDictionary dic) dic.Clear();
-        }
     }
 
     public void Dispose()
@@ -789,4 +779,5 @@ public class TenantAuthExpectationTests
         }
     }
 }
+
 
