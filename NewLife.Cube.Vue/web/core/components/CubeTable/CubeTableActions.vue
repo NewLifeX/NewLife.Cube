@@ -294,7 +294,7 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
         @change="onToolbarFile"
       />
 
-      <el-button v-if="flags.add && !flags.readOnly" type="primary" :icon="Plus" @click="ctx.openCreate()">
+      <el-button v-if="flags.add && !flags.readOnly" type="primary" :icon="Plus" data-role="add" @click="ctx.openCreate()">
         {{ t('button.add') }}
       </el-button>
 
