@@ -10,6 +10,7 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { FormsModule } from '@angular/forms';
 import { AppService } from '../services/app.service';
 import { UserService } from '../services/user.service';
@@ -21,34 +22,54 @@ import { UserService } from '../services/user.service';
     CommonModule, RouterOutlet, RouterLink, FormsModule,
     NzLayoutModule, NzMenuModule, NzBreadCrumbModule,
     NzButtonModule, NzDropDownModule, NzAvatarModule,
-    NzSwitchModule, NzIconModule,
+    NzSwitchModule, NzIconModule, NzDrawerModule,
   ],
   template: `
     <nz-layout style="min-height: 100vh">
-      <nz-sider nzCollapsible [nzCollapsed]="appService.collapsed()" [nzTrigger]="null" [nzWidth]="220" [nzCollapsedWidth]="48">
-        <div style="height: 48px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px;">
-          {{ appService.collapsed() ? '魔' : (appService.siteConfig()?.name || '魔方管理平台') }}
-        </div>
-        <ul nz-menu nzTheme="dark" nzMode="inline">
-          @for (item of userService.menus(); track item.id) {
-            @if (item.children?.length) {
-              <li nz-submenu [nzTitle]="item.displayName || item.name" nzIcon="appstore">
-                @for (child of item.children; track child.id) {
-                  <li nz-menu-item (click)="navigateTo(child.url)">{{ child.displayName || child.name }}</li>
-                }
-              </li>
-            } @else {
-              <li nz-menu-item nzIcon="file" (click)="navigateTo(item.url)">{{ item.displayName || item.name }}</li>
+      @if (!isNarrow) {
+        <nz-sider nzCollapsible [nzCollapsed]="appService.collapsed()" [nzTrigger]="null" [nzWidth]="220" [nzCollapsedWidth]="48">
+          <div style="height: 48px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px;">
+            {{ appService.collapsed() ? '魔' : (appService.siteConfig()?.name || '魔方管理平台') }}
+          </div>
+          <ul nz-menu nzTheme="dark" nzMode="inline">
+            @for (item of userService.menus(); track item.id) {
+              @if (item.children?.length) {
+                <li nz-submenu [nzTitle]="item.displayName || item.name" nzIcon="appstore">
+                  @for (child of item.children; track child.id) {
+                    <li nz-menu-item (click)="navigateTo(child.url)">{{ child.displayName || child.name }}</li>
+                  }
+                </li>
+              } @else {
+                <li nz-menu-item nzIcon="file" (click)="navigateTo(item.url)">{{ item.displayName || item.name }}</li>
+              }
             }
-          }
-        </ul>
-      </nz-sider>
+          </ul>
+        </nz-sider>
+      }
+
+      <nz-drawer [nzVisible]="mobileOpen" nzPlacement="left" [nzWidth]="220" [nzTitle]="appService.siteConfig()?.name || '魔方管理平台'" (nzOnClose)="mobileOpen = false">
+        <ng-container *nzDrawerContent>
+          <ul nz-menu nzMode="inline">
+            @for (item of userService.menus(); track item.id) {
+              @if (item.children?.length) {
+                <li nz-submenu [nzTitle]="item.displayName || item.name" nzIcon="appstore">
+                  @for (child of item.children; track child.id) {
+                    <li nz-menu-item (click)="navigateTo(child.url)">{{ child.displayName || child.name }}</li>
+                  }
+                </li>
+              } @else {
+                <li nz-menu-item nzIcon="file" (click)="navigateTo(item.url)">{{ item.displayName || item.name }}</li>
+              }
+            }
+          </ul>
+        </ng-container>
+      </nz-drawer>
 
       <nz-layout>
         <nz-header style="background: #fff; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 12px;">
-            <button nz-button nzType="text" (click)="appService.toggleCollapsed()">
-              <span nz-icon [nzType]="appService.collapsed() ? 'menu-unfold' : 'menu-fold'"></span>
+            <button nz-button nzType="text" (click)="isNarrow ? (mobileOpen = true) : appService.toggleCollapsed()">
+              <span nz-icon [nzType]="!isNarrow && !appService.collapsed() ? 'menu-fold' : 'menu-unfold'"></span>
             </button>
             <nz-breadcrumb>
               <nz-breadcrumb-item><a routerLink="/home">首页</a></nz-breadcrumb-item>
@@ -68,12 +89,24 @@ import { UserService } from '../services/user.service';
           </div>
         </nz-header>
 
-        <nz-content style="padding: 16px;">
+        <nz-content class="layout-content">
           <router-outlet />
         </nz-content>
       </nz-layout>
     </nz-layout>
   `,
+  styles: [
+    `
+      .layout-content {
+        padding: 16px;
+      }
+      @media (max-width: 767px) {
+        .layout-content {
+          padding: 8px;
+        }
+      }
+    `,
+  ],
 })
 export class LayoutComponent implements OnInit {
   constructor(
@@ -84,6 +117,10 @@ export class LayoutComponent implements OnInit {
 
   /** 窄屏是否由本组件自动折叠，宽屏时据此恢复展开 */
   private autoCollapsed = false;
+  /** 窄屏状态：使用抽屉菜单 */
+  isNarrow = false;
+  /** 窄屏抽屉是否打开 */
+  mobileOpen = false;
 
   ngOnInit() {
     this.appService.fetchSiteConfig();
@@ -100,16 +137,23 @@ export class LayoutComponent implements OnInit {
   @HostListener('window:resize')
   syncResponsive() {
     const narrow = shouldAutoCollapseSidebar(window.innerWidth);
-    if (narrow && !this.appService.collapsed()) {
-      this.appService.toggleCollapsed();
-      this.autoCollapsed = true;
-    } else if (!narrow && this.autoCollapsed) {
-      if (this.appService.collapsed()) this.appService.toggleCollapsed();
-      this.autoCollapsed = false;
+    this.isNarrow = narrow;
+    if (narrow) {
+      if (!this.appService.collapsed()) {
+        this.appService.toggleCollapsed();
+        this.autoCollapsed = true;
+      }
+    } else {
+      this.mobileOpen = false;
+      if (this.autoCollapsed) {
+        if (this.appService.collapsed()) this.appService.toggleCollapsed();
+        this.autoCollapsed = false;
+      }
     }
   }
 
   navigateTo(url?: string) {
+    this.mobileOpen = false;
     if (url) this.router.navigateByUrl(url);
   }
 

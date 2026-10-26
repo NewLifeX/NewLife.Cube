@@ -1,7 +1,8 @@
 <template>
   <n-layout has-sider class="layout-container">
-    <!-- 侧边栏 -->
+    <!-- 侧边栏（宽屏） -->
     <n-layout-sider
+      v-if="!isNarrow"
       bordered
       collapse-mode="width"
       :collapsed="appStore.collapsed"
@@ -18,10 +19,22 @@
       <sidebar-menu />
     </n-layout-sider>
 
+    <!-- 侧边栏（窄屏抽屉） -->
+    <n-drawer v-model:show="mobileMenu" placement="left" :width="240">
+      <n-drawer-content :native-scrollbar="false" closable body-content-style="padding: 0">
+        <div class="layout-logo" @click="router.push('/home')">
+          <img v-if="appStore.logo" :src="appStore.logo" alt="logo" class="logo-img" />
+          <span class="logo-text">{{ appStore.siteName }}</span>
+        </div>
+        <sidebar-menu :collapsed="false" />
+      </n-drawer-content>
+    </n-drawer>
+
     <n-layout>
       <!-- 顶栏 -->
       <n-layout-header bordered class="layout-header">
         <div class="header-left">
+          <n-button v-if="isNarrow" quaternary class="menu-trigger" @click="mobileMenu = true">☰</n-button>
           <n-breadcrumb>
             <n-breadcrumb-item v-for="item in breadcrumbs" :key="item.path">
               {{ item.meta?.title ?? item.name }}
@@ -57,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
 import { useAppStore } from '@/stores/app';
@@ -102,18 +115,35 @@ onMounted(async () => {
   window.addEventListener('resize', syncResponsive);
 });
 
-// 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+// 窄屏使用抽屉菜单；宽屏恢复用户手动展开
+const isNarrow = ref(false);
+const mobileMenu = ref(false);
 let autoCollapsed = false;
+
 function syncResponsive() {
   const narrow = shouldAutoCollapseSidebar(window.innerWidth);
-  if (narrow && !appStore.collapsed) {
-    appStore.collapsed = true;
-    autoCollapsed = true;
-  } else if (!narrow && autoCollapsed) {
-    appStore.collapsed = false;
-    autoCollapsed = false;
+  isNarrow.value = narrow;
+  if (narrow) {
+    if (!appStore.collapsed) {
+      appStore.collapsed = true;
+      autoCollapsed = true;
+    }
+  } else {
+    mobileMenu.value = false;
+    if (autoCollapsed) {
+      appStore.collapsed = false;
+      autoCollapsed = false;
+    }
   }
 }
+
+// 路由切换后关闭抽屉，避免遮挡内容
+watch(
+  () => route.fullPath,
+  () => {
+    mobileMenu.value = false;
+  },
+);
 
 onBeforeUnmount(() => window.removeEventListener('resize', syncResponsive));
 </script>
@@ -156,6 +186,22 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncResponsive));
 .header-left {
   display: flex;
   align-items: center;
+  gap: 4px;
+}
+
+.menu-trigger {
+  font-size: 18px;
+  line-height: 1;
+}
+
+@media (max-width: 767px) {
+  .layout-content {
+    padding: 8px;
+  }
+
+  .layout-header {
+    padding: 0 8px;
+  }
 }
 
 .header-right {

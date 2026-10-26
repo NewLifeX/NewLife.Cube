@@ -25,6 +25,8 @@ export default function Layout() {
 
   const [menus, setMenus] = useState<CubeMenuItem[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isNarrow, setIsNarrow] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // 检查登录
   useEffect(() => {
@@ -41,24 +43,35 @@ export default function Layout() {
     if (!userInfo) fetchUserInfo().catch(() => {});
   }, []);
 
-  // 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+  // 窄屏使用抽屉菜单；宽屏恢复用户手动展开
   useEffect(() => {
     let autoCollapsed = false;
     const sync = () => {
       const state = useAppStore.getState();
       const narrow = shouldAutoCollapseSidebar(window.innerWidth);
-      if (narrow && !state.collapsed) {
-        state.toggleCollapse();
-        autoCollapsed = true;
-      } else if (!narrow && autoCollapsed) {
-        if (state.collapsed) state.toggleCollapse();
-        autoCollapsed = false;
+      setIsNarrow(narrow);
+      if (narrow) {
+        if (!state.collapsed) {
+          state.toggleCollapse();
+          autoCollapsed = true;
+        }
+      } else {
+        setMobileOpen(false);
+        if (autoCollapsed) {
+          if (state.collapsed) state.toggleCollapse();
+          autoCollapsed = false;
+        }
       }
     };
     sync();
     window.addEventListener('resize', sync);
     return () => window.removeEventListener('resize', sync);
   }, []);
+
+  // 路由切换后关闭抽屉
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     setAnchorEl(null);
@@ -68,34 +81,41 @@ export default function Layout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* 侧边栏 */}
+      {/* 侧边栏：宽屏常驻，窄屏为抽屉 */}
       <Drawer
-        variant="permanent"
+        variant={isNarrow ? 'temporary' : 'permanent'}
+        open={isNarrow ? mobileOpen : true}
+        onClose={() => setMobileOpen(false)}
         sx={{
-          width: collapsed ? 64 : DRAWER_WIDTH,
+          width: isNarrow ? DRAWER_WIDTH : collapsed ? 64 : DRAWER_WIDTH,
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: collapsed ? 64 : DRAWER_WIDTH,
+            width: isNarrow ? DRAWER_WIDTH : collapsed ? 64 : DRAWER_WIDTH,
             transition: 'width 0.2s',
             overflowX: 'hidden',
           },
         }}
       >
         <Toolbar sx={{ justifyContent: 'center' }}>
-          {!collapsed && <Typography variant="h6" noWrap>{siteName}</Typography>}
+          {(!collapsed || isNarrow) && <Typography variant="h6" noWrap>{siteName}</Typography>}
         </Toolbar>
         <Divider />
         <List component="nav" dense>
-          <SidebarItems menus={menus} collapsed={collapsed} onNavigate={(url) => navigate(url)} currentPath={location.pathname} />
+          <SidebarItems
+            menus={menus}
+            collapsed={isNarrow ? false : collapsed}
+            onNavigate={(url) => navigate(url)}
+            currentPath={location.pathname}
+          />
         </List>
       </Drawer>
 
       {/* 主区域 */}
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <AppBar position="sticky" color="default" elevation={1}>
           <Toolbar variant="dense">
-            <IconButton edge="start" onClick={toggleCollapse} sx={{ mr: 1 }}>
-              {collapsed ? <MenuIcon /> : <ChevronLeft />}
+            <IconButton edge="start" onClick={() => (isNarrow ? setMobileOpen(true) : toggleCollapse())} sx={{ mr: 1 }}>
+              {!isNarrow && !collapsed ? <ChevronLeft /> : <MenuIcon />}
             </IconButton>
 
             <Breadcrumbs sx={{ flexGrow: 1 }}>

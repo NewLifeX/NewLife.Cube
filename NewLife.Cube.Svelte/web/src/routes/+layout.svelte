@@ -11,6 +11,14 @@
 
   let openKeys: Record<string, boolean> = $state({});
   let showUser = $state(false);
+  let isNarrow = $state(false);
+  let mobileOpen = $state(false);
+
+  // 路由切换后关闭抽屉
+  $effect(() => {
+    page.url.pathname;
+    mobileOpen = false;
+  });
 
   onMount(async () => {
     try {
@@ -39,16 +47,22 @@
     return item.url?.startsWith('/') ? item.url : `/${item.url ?? ''}`;
   }
 
-  // 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+  // 窄屏使用抽屉菜单；宽屏恢复用户手动展开
   let autoCollapsed = false;
   function syncResponsive() {
     const narrow = shouldAutoCollapseSidebar(window.innerWidth);
-    if (narrow && !$collapsed) {
-      collapsed.update((value) => !value);
-      autoCollapsed = true;
-    } else if (!narrow && autoCollapsed) {
-      if ($collapsed) collapsed.update((value) => !value);
-      autoCollapsed = false;
+    isNarrow = narrow;
+    if (narrow) {
+      if (!$collapsed) {
+        collapsed.update((value) => !value);
+        autoCollapsed = true;
+      }
+    } else {
+      mobileOpen = false;
+      if (autoCollapsed) {
+        if ($collapsed) collapsed.update((value) => !value);
+        autoCollapsed = false;
+      }
     }
   }
 
@@ -65,47 +79,88 @@
   <slot />
 {:else}
   <div class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="flex flex-col transition-all duration-300 overflow-y-auto"
-      style="width: {$collapsed ? '64px' : '240px'}; background: var(--bg-sidebar)">
-      <div class="flex items-center h-14 px-4 text-white font-bold text-lg border-b border-white/10">
-        {#if !$collapsed}<span>{$siteTitle}</span>{/if}
-      </div>
-      <nav class="flex-1 py-2">
-        {#each $menus as item}
-          {#if item.children?.length}
-            <div>
-              <button class="flex items-center w-full px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition-colors"
-                onclick={() => toggleKey(item.name ?? '')}>
-                <span class="flex-1 text-left">{$collapsed ? '' : (item.displayName || item.name)}</span>
-                {#if !$collapsed}
-                  <svg class="w-4 h-4 transition-transform" class:rotate-90={openKeys[item.name ?? '']} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
+    <!-- Sidebar（宽屏） -->
+    {#if !isNarrow}
+      <aside class="flex flex-col transition-all duration-300 overflow-y-auto"
+        style="width: {$collapsed ? '64px' : '240px'}; background: var(--bg-sidebar)">
+        <div class="flex items-center h-14 px-4 text-white font-bold text-lg border-b border-white/10">
+          {#if !$collapsed}<span>{$siteTitle}</span>{/if}
+        </div>
+        <nav class="flex-1 py-2">
+          {#each $menus as item}
+            {#if item.children?.length}
+              <div>
+                <button class="flex items-center w-full px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition-colors"
+                  onclick={() => toggleKey(item.name ?? '')}>
+                  <span class="flex-1 text-left">{$collapsed ? '' : (item.displayName || item.name)}</span>
+                  {#if !$collapsed}
+                    <svg class="w-4 h-4 transition-transform" class:rotate-90={openKeys[item.name ?? '']} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  {/if}
+                </button>
+                {#if openKeys[item.name ?? ''] && !$collapsed}
+                  {#each item.children as child}
+                    <a href={buildUrl(child)} class="flex items-center pl-10 pr-4 py-2 text-sm text-gray-400 hover:bg-white/10 hover:text-white transition-colors {page.url.pathname === buildUrl(child) ? 'text-white bg-white/10' : ''}">
+                      {child.displayName || child.name}
+                    </a>
+                  {/each}
                 {/if}
-              </button>
-              {#if openKeys[item.name ?? ''] && !$collapsed}
-                {#each item.children as child}
-                  <a href={buildUrl(child)} class="flex items-center pl-10 pr-4 py-2 text-sm text-gray-400 hover:bg-white/10 hover:text-white transition-colors {page.url.pathname === buildUrl(child) ? 'text-white bg-white/10' : ''}">
-                    {child.displayName || child.name}
-                  </a>
-                {/each}
+              </div>
+            {:else}
+              <a href={buildUrl(item)} class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition-colors {page.url.pathname === buildUrl(item) ? 'text-white bg-white/10' : ''}">
+                {$collapsed ? '' : (item.displayName || item.name)}
+              </a>
+            {/if}
+          {/each}
+        </nav>
+      </aside>
+    {/if}
+
+    <!-- Sidebar（窄屏抽屉） -->
+    {#if isNarrow && mobileOpen}
+      <div class="fixed inset-0 z-40 flex">
+        <button type="button" aria-label="关闭菜单" class="absolute inset-0 bg-black/40" onclick={() => (mobileOpen = false)}></button>
+        <aside class="relative z-50 flex w-60 flex-col overflow-y-auto shadow-lg" style="background: var(--bg-sidebar)">
+          <div class="flex items-center justify-between h-14 px-4 text-white font-bold text-lg border-b border-white/10">
+            <span>{$siteTitle}</span>
+            <button type="button" class="text-white/80 hover:text-white" onclick={() => (mobileOpen = false)}>✕</button>
+          </div>
+          <nav class="flex-1 py-2">
+            {#each $menus as item}
+              {#if item.children?.length}
+                <div>
+                  <button class="flex items-center w-full px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition-colors"
+                    onclick={() => toggleKey(item.name ?? '')}>
+                    <span class="flex-1 text-left">{item.displayName || item.name}</span>
+                    <svg class="w-4 h-4 transition-transform" class:rotate-90={openKeys[item.name ?? '']} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  {#if openKeys[item.name ?? '']}
+                    {#each item.children as child}
+                      <a href={buildUrl(child)} class="flex items-center pl-10 pr-4 py-2 text-sm text-gray-400 hover:bg-white/10 hover:text-white transition-colors">
+                        {child.displayName || child.name}
+                      </a>
+                    {/each}
+                  {/if}
+                </div>
+              {:else}
+                <a href={buildUrl(item)} class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition-colors">
+                  {item.displayName || item.name}
+                </a>
               {/if}
-            </div>
-          {:else}
-            <a href={buildUrl(item)} class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition-colors {page.url.pathname === buildUrl(item) ? 'text-white bg-white/10' : ''}">
-              {$collapsed ? '' : (item.displayName || item.name)}
-            </a>
-          {/if}
-        {/each}
-      </nav>
-    </aside>
+            {/each}
+          </nav>
+        </aside>
+      </div>
+    {/if}
 
     <!-- Main -->
     <div class="flex-1 flex flex-col overflow-hidden">
       <!-- Header -->
       <header class="flex items-center h-14 px-4 border-b" style="border-color: var(--border); background: var(--bg)">
-        <button class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800" onclick={() => collapsed.update(v => !v)}>
+        <button class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800" onclick={() => isNarrow ? (mobileOpen = true) : collapsed.update(v => !v)}>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
@@ -139,7 +194,7 @@
       </header>
 
       <!-- Content -->
-      <main class="flex-1 overflow-auto p-6" style="background: var(--bg-secondary)">
+      <main class="flex-1 overflow-auto p-3 sm:p-6" style="background: var(--bg-secondary)">
         <slot />
       </main>
     </div>

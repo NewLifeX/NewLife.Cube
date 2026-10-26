@@ -1,9 +1,15 @@
 <template>
   <v-layout>
-    <!-- 侧边栏 -->
-    <v-navigation-drawer :rail="appStore.collapsed" permanent>
+    <!-- 侧边栏：宽屏常驻，窄屏为抽屉 -->
+    <v-navigation-drawer
+      v-model="mobileMenu"
+      :rail="!isNarrow && appStore.collapsed"
+      :permanent="!isNarrow"
+      :temporary="isNarrow"
+      width="240"
+    >
       <v-list-item
-        :title="appStore.collapsed ? '魔' : (appStore.siteConfig?.name || '魔方管理平台')"
+        :title="!isNarrow && appStore.collapsed ? '魔' : (appStore.siteConfig?.name || '魔方管理平台')"
         class="text-center font-weight-bold"
         nav
       />
@@ -36,7 +42,7 @@
 
     <!-- 顶栏 -->
     <v-app-bar density="compact" flat>
-      <v-app-bar-nav-icon @click="appStore.toggleCollapsed" />
+      <v-app-bar-nav-icon @click="isNarrow ? (mobileMenu = !mobileMenu) : appStore.toggleCollapsed()" />
       <v-breadcrumbs :items="breadcrumbs" />
       <v-spacer />
       <v-btn :icon="appStore.darkMode ? 'mdi-weather-night' : 'mdi-weather-sunny'" @click="appStore.toggleDarkMode" />
@@ -65,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
 import { useAppStore } from '@/stores/app';
@@ -103,18 +109,34 @@ async function handleLogout() {
   router.push('/login');
 }
 
-// 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+// 窄屏使用抽屉菜单；宽屏恢复用户手动展开
+const isNarrow = ref(false);
+const mobileMenu = ref(false);
 let autoCollapsed = false;
+
 function syncResponsive() {
   const narrow = shouldAutoCollapseSidebar(window.innerWidth);
-  if (narrow && !appStore.collapsed) {
-    appStore.collapsed = true;
-    autoCollapsed = true;
-  } else if (!narrow && autoCollapsed) {
-    appStore.collapsed = false;
-    autoCollapsed = false;
+  isNarrow.value = narrow;
+  if (narrow) {
+    if (!appStore.collapsed) {
+      appStore.collapsed = true;
+      autoCollapsed = true;
+    }
+  } else {
+    mobileMenu.value = false;
+    if (autoCollapsed) {
+      appStore.collapsed = false;
+      autoCollapsed = false;
+    }
   }
 }
+
+watch(
+  () => route.fullPath,
+  () => {
+    mobileMenu.value = false;
+  },
+);
 
 onMounted(() => {
   syncResponsive();

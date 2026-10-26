@@ -1,7 +1,7 @@
 <template>
   <t-layout>
-    <!-- Sidebar -->
-    <t-aside :width="appStore.collapsed ? '64px' : '232px'" style="transition: width .3s">
+    <!-- Sidebar（宽屏） -->
+    <t-aside v-if="!isNarrow" :width="appStore.collapsed ? '64px' : '232px'" style="transition: width .3s">
       <div style="height: 56px; display: flex; align-items: center; padding: 0 16px; font-weight: bold; font-size: 16px; color: var(--td-text-color-primary)">
         <span v-if="!appStore.collapsed">{{ appStore.siteTitle }}</span>
       </div>
@@ -19,10 +19,26 @@
       </t-menu>
     </t-aside>
 
+    <!-- Sidebar（窄屏抽屉） -->
+    <t-drawer v-model:visible="mobileMenu" placement="left" size="232px" :footer="false" :header="appStore.siteTitle">
+      <t-menu :value="$route.path" @change="(v: string) => $router.push(v)" expandMutex>
+        <template v-for="item in userStore.menus" :key="item.name">
+          <t-submenu v-if="item.children?.length" :value="item.url || item.name" :title="item.displayName || item.name">
+            <t-menu-item v-for="child in item.children" :key="child.name" :value="buildUrl(child)">
+              {{ child.displayName || child.name }}
+            </t-menu-item>
+          </t-submenu>
+          <t-menu-item v-else :value="buildUrl(item)">
+            {{ item.displayName || item.name }}
+          </t-menu-item>
+        </template>
+      </t-menu>
+    </t-drawer>
+
     <t-layout>
       <!-- Header -->
       <t-header style="height: 56px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--td-component-border)">
-        <t-button theme="default" variant="text" shape="square" @click="appStore.collapsed = !appStore.collapsed">
+        <t-button theme="default" variant="text" shape="square" @click="isNarrow ? (mobileMenu = true) : (appStore.collapsed = !appStore.collapsed)">
           <template #icon><view-list-icon /></template>
         </t-button>
 
@@ -46,7 +62,7 @@
       </t-header>
 
       <!-- Content -->
-      <t-content style="padding: 16px; overflow: auto; background: var(--td-bg-color-page)">
+      <t-content class="layout-content">
         <router-view />
       </t-content>
     </t-layout>
@@ -54,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
 import { ViewListIcon, SunnyIcon, MoonIcon } from 'tdesign-icons-vue-next';
@@ -80,6 +96,35 @@ function handleUserAction(data: { value: string }) {
   }
 }
 
+// 窄屏使用抽屉菜单；宽屏恢复用户手动展开
+const isNarrow = ref(false);
+const mobileMenu = ref(false);
+let autoCollapsed = false;
+
+function syncResponsive() {
+  const narrow = shouldAutoCollapseSidebar(window.innerWidth);
+  isNarrow.value = narrow;
+  if (narrow) {
+    if (!appStore.collapsed) {
+      appStore.collapsed = true;
+      autoCollapsed = true;
+    }
+  } else {
+    mobileMenu.value = false;
+    if (autoCollapsed) {
+      appStore.collapsed = false;
+      autoCollapsed = false;
+    }
+  }
+}
+
+watch(
+  () => router.currentRoute.value.fullPath,
+  () => {
+    mobileMenu.value = false;
+  },
+);
+
 onMounted(async () => {
   syncResponsive();
   window.addEventListener('resize', syncResponsive);
@@ -94,19 +139,6 @@ onMounted(async () => {
   await userStore.fetchMenus();
 });
 
-// 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
-let autoCollapsed = false;
-function syncResponsive() {
-  const narrow = shouldAutoCollapseSidebar(window.innerWidth);
-  if (narrow && !appStore.collapsed) {
-    appStore.collapsed = true;
-    autoCollapsed = true;
-  } else if (!narrow && autoCollapsed) {
-    appStore.collapsed = false;
-    autoCollapsed = false;
-  }
-}
-
 onBeforeUnmount(() => window.removeEventListener('resize', syncResponsive));
 </script>
 
@@ -116,5 +148,16 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncResponsive));
 }
 .t-layout .t-aside {
   border-right: 1px solid var(--td-component-border);
+}
+.layout-content {
+  padding: 16px;
+  overflow: auto;
+  background: var(--td-bg-color-page);
+}
+
+@media (max-width: 767px) {
+  .layout-content {
+    padding: 8px;
+  }
 }
 </style>

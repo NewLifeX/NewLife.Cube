@@ -19,6 +19,8 @@ export default function Layout() {
 
   const [menus, setMenus] = useState<CubeMenuItem[]>([]);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isNarrow, setIsNarrow] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!api.tokenManager.getToken()) { navigate('/login'); return; }
@@ -28,24 +30,35 @@ export default function Layout() {
     if (!userInfo) fetchUserInfo().catch(() => {});
   }, []);
 
-  // 窄屏自动折叠侧边栏，宽屏恢复用户手动展开
+  // 窄屏使用抽屉菜单；宽屏恢复用户手动展开
   useEffect(() => {
     let autoCollapsed = false;
     const sync = () => {
       const state = useAppStore.getState();
       const narrow = shouldAutoCollapseSidebar(window.innerWidth);
-      if (narrow && !state.collapsed) {
-        state.toggleCollapse();
-        autoCollapsed = true;
-      } else if (!narrow && autoCollapsed) {
-        if (state.collapsed) state.toggleCollapse();
-        autoCollapsed = false;
+      setIsNarrow(narrow);
+      if (narrow) {
+        if (!state.collapsed) {
+          state.toggleCollapse();
+          autoCollapsed = true;
+        }
+      } else {
+        setMobileOpen(false);
+        if (autoCollapsed) {
+          if (state.collapsed) state.toggleCollapse();
+          autoCollapsed = false;
+        }
       }
     };
     sync();
     window.addEventListener('resize', sync);
     return () => window.removeEventListener('resize', sync);
   }, []);
+
+  // 路由切换后关闭抽屉
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await logout();
@@ -54,25 +67,43 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
-      {/* 侧边栏 */}
-      <aside className={cn(
-        'flex flex-col border-r bg-sidebar-background transition-all duration-200',
-        collapsed ? 'w-16' : 'w-60'
-      )}>
-        <div className="flex h-14 items-center justify-center border-b px-4">
-          {!collapsed && <span className="text-lg font-semibold truncate">{siteName}</span>}
+      {/* 侧边栏：宽屏常驻，窄屏为抽屉 */}
+      {!isNarrow && (
+        <aside className={cn(
+          'flex flex-col border-r bg-sidebar-background transition-all duration-200',
+          collapsed ? 'w-16' : 'w-60'
+        )}>
+          <div className="flex h-14 items-center justify-center border-b px-4">
+            {!collapsed && <span className="text-lg font-semibold truncate">{siteName}</span>}
+          </div>
+          <nav className="flex-1 overflow-y-auto py-2">
+            <SidebarItems menus={menus} collapsed={collapsed} currentPath={location.pathname} onNavigate={(p) => navigate(p)} />
+          </nav>
+        </aside>
+      )}
+      {isNarrow && mobileOpen && (
+        <div className="fixed inset-0 z-40 flex">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
+          <aside className="relative z-50 flex w-60 flex-col border-r bg-sidebar-background shadow-lg">
+            <div className="flex h-14 items-center justify-between border-b px-4">
+              <span className="text-lg font-semibold truncate">{siteName}</span>
+              <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>
+                <PanelLeftClose className="h-4 w-4" />
+              </Button>
+            </div>
+            <nav className="flex-1 overflow-y-auto py-2">
+              <SidebarItems menus={menus} collapsed={false} currentPath={location.pathname} onNavigate={(p) => navigate(p)} />
+            </nav>
+          </aside>
         </div>
-        <nav className="flex-1 overflow-y-auto py-2">
-          <SidebarItems menus={menus} collapsed={collapsed} currentPath={location.pathname} onNavigate={(p) => navigate(p)} />
-        </nav>
-      </aside>
+      )}
 
       {/* 主区域 */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* 顶栏 */}
         <header className="flex h-14 items-center gap-2 border-b px-4">
-          <Button variant="ghost" size="icon" onClick={toggleCollapse}>
-            {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          <Button variant="ghost" size="icon" onClick={() => (isNarrow ? setMobileOpen(true) : toggleCollapse())}>
+            {!isNarrow && !collapsed ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
           </Button>
 
           <nav className="flex items-center gap-1 text-sm text-muted-foreground flex-1">
@@ -100,7 +131,7 @@ export default function Layout() {
         </header>
 
         {/* 内容 */}
-        <main className="flex-1 overflow-auto p-4">
+        <main className="flex-1 overflow-auto p-2 md:p-4">
           <Outlet />
         </main>
       </div>
