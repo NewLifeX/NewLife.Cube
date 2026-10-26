@@ -247,7 +247,11 @@ public sealed class TenantUserTests : IAsyncLifetime
         await _page.WaitForTimeoutAsync(1_500);
 
         Assert.NotNull(alertMsg);
-        Assert.Contains("已存在", alertMsg, StringComparison.OrdinalIgnoreCase);
+        // 运行时消息以英文为源文，中文界面由词表翻译；界面语言不同时断言两种语言都放行
+        Assert.True(
+            alertMsg.Contains("已存在", StringComparison.OrdinalIgnoreCase) ||
+            alertMsg.Contains("already exists", StringComparison.OrdinalIgnoreCase),
+            $"[{testId}] 重复添加应提示用户已存在，实际提示：{alertMsg}");
 
         // DB 中管理员绑定数不变（仍 1）
         Assert.True(DatabaseHelper.CountTenantUser(tid, adminId) == 1,
