@@ -128,14 +128,31 @@ test.describe('动态页（/meta 驱动）', () => {
     }
   });
 
-  test('设置中心以二级 Tab 串联多个设置页', async ({ page }) => {
+  test('设置中心混排单对象配置与列表型配置，各页独立路由', async ({ page }) => {
     await page.goto('/Admin/Cube');
-    await expect(page.locator('.el-tabs__item').first()).toBeVisible({ timeout: 15000 });
+    const tabs = page.locator('.settings-tabs .el-tabs__item');
+    await expect(tabs.first()).toBeVisible({ timeout: 15000 });
 
-    // 只串单对象配置页（Core/Cube/Sys/XCode/Star）；邮件/短信/OAuth 是列表实体，走各自的动态列表页
-    expect(await page.locator('.el-tabs__item').count()).toBeGreaterThanOrEqual(5);
-    // 至少一个 Tab 能加载出元数据字段
-    await expect(page.locator('.el-form-item, .fmc-field').first()).toBeVisible({ timeout: 15000 });
+    // 五个单对象配置页 + 四个列表型配置实体（短信/邮件/OAuth/访问规则）平铺在同一导航里
+    expect(await tabs.count()).toBeGreaterThanOrEqual(9);
+    // 首屏配置表单由 /meta 驱动
+    await expect(page.locator('.fmc-field').first()).toBeVisible({ timeout: 15000 });
+
+    // 切换 Tab 走独立路由，而不是 ?tab= 查询参数
+    await tabs.nth(0).click();
+    await expect(page).toHaveURL(/\/Admin\/Core$/);
+    await expect(page.locator('.fmc-field').first()).toBeVisible({ timeout: 15000 });
+
+    // 列表型配置页同样带设置导航，并以元数据渲染表格
+    await page.locator('.settings-tabs .el-tabs__item').nth(6).click();
+    await expect(page).toHaveURL(/\/Admin\/MailConfig$/);
+    await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 20000 });
+  });
+
+  test('旧设置中心 ?tab= 深链重定向到独立路由', async ({ page }) => {
+    await page.goto('/Admin/Cube?tab=Sys');
+    await expect(page).toHaveURL(/\/Admin\/Sys$/);
+    await expect(page.locator('.settings-tabs .el-tabs__item.is-active').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('/Cube 区域列表同样按元数据渲染', async ({ page }) => {
