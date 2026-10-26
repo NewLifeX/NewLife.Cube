@@ -160,16 +160,16 @@ public class ApplicationManagementTests
         var now = DateTime.Now;
         var cutoff = now.AddDays(-10);
 
-        var oldAuthorize = new AppLog { Id = AppLog.Meta.Factory.Snow.GetId(now.AddDays(-30)), AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-30) };
+        var oldAuthorize = new AppLog { Id = 1, AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-30) };
         oldAuthorize.Insert();
         // 匿名授权日志没有创建者：插入后清空（插入时被用户拦截器补上了当前用户）
         oldAuthorize.CreateUser = null;
         oldAuthorize.Update();
-        var oldToken = new AppLog { Id = AppLog.Meta.Factory.Snow.GetId(now.AddDays(-30).AddMinutes(-1)), AppId = app.Id, Action = "Token", Success = true, CreateTime = now.AddDays(-30) };
+        var oldToken = new AppLog { Id = 2, AppId = app.Id, Action = "Token", Success = true, CreateTime = now.AddDays(-30) };
         oldToken.Insert();
-        var recent = new AppLog { Id = AppLog.Meta.Factory.Snow.GetId(now.AddDays(-1)), AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-1) };
+        var recent = new AppLog { Id = AppLog.Meta.Factory.Snow.GetId(DateTime.Now), AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-1) };
         recent.Insert();
-        var oldBound = new AppLog { Id = AppLog.Meta.Factory.Snow.GetId(now.AddDays(-30).AddMinutes(-2)), AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-30), CreateUser = "tester" };
+        var oldBound = new AppLog { Id = 3, AppId = app.Id, Action = "Authorize", Success = true, CreateTime = now.AddDays(-30), CreateUser = "tester" };
         oldBound.Insert();
 
         var count = AppLog.DeleteBefore(cutoff);
@@ -227,3 +227,5 @@ public class ApplicationManagementTests
     }
     #endregion
 }
+
+
