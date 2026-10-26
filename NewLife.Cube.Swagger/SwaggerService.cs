@@ -103,7 +103,10 @@ public static class SwaggerService
 
 #if NET9_0_OR_GREATER
         // .NET 内建 OpenAPI：反射魔方 AreaBase，按 Area 自动注册具名文档（消费者 dotnet build 即产出各域 openapi.json）
-        services.AddCubeOpenApiByAreas();
+        // 该能力依赖 Microsoft.AspNetCore.OpenApi（基于 Microsoft.OpenApi 1.x 编译），与 Swashbuckle 10.x 引用的 Microsoft.OpenApi 2.x 不兼容；
+        // 消费者若把该程序集从输出中剔除（ExcludeAssets=all）以避开冲突，这里必须跳过，否则启动即抛 FileNotFoundException / TypeLoadException
+        if (Type.GetType("Microsoft.AspNetCore.OpenApi.OpenApiOptions, Microsoft.AspNetCore.OpenApi") != null)
+            services.AddCubeOpenApiByAreas();
 #endif
 
         return services;
@@ -167,9 +170,9 @@ public static class SwaggerService
         {
             branch.Use(async (ctx, next) =>
             {
-            var userName = app.Configuration["Swagger:UserName"] ?? "newlife";
-            var password = app.Configuration["Swagger:Password"] ?? "newlife@2026";
-            if (!VerifyBasicAuth(ctx, userName, password))
+                var userName = app.Configuration["Swagger:UserName"] ?? "newlife";
+                var password = app.Configuration["Swagger:Password"] ?? "newlife@2026";
+                if (!VerifyBasicAuth(ctx, userName, password))
                 {
                     ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     ctx.Response.Headers.WWWAuthenticate = "Basic realm=\"Scalar\"";

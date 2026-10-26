@@ -3,7 +3,7 @@
     :model-value="dialogVisible"
     @update:model-value="$emit('update:dialogVisible', $event)"
     :title="t('lov.selectTitle', { name: lovMeta?.name || lovCode })"
-    width="680px"
+    :width="width || '680px'"
     top="5vh"
     append-to-body
     :close-on-click-modal="false"
@@ -15,7 +15,7 @@
           v-if="field.componentType === 'input'"
           v-model="searchParams[field.field]"
           :placeholder="field.title"
-          size="small"
+          :size="size"
           clearable
           style="width: 160px"
         />
@@ -26,14 +26,14 @@
           :code="field.refLovCode"
           v-model="searchParams[field.field]"
           :placeholder="field.title"
-          size="small"
+          :size="size"
           clearable
         />
         <el-select
           v-else-if="field.componentType === 'select'"
           v-model="searchParams[field.field]"
           :placeholder="field.title"
-          size="small"
+          :size="size"
           clearable
           style="width: 160px"
         >
@@ -43,12 +43,12 @@
           v-else-if="field.componentType === 'datepicker'"
           v-model="searchParams[field.field]"
           :placeholder="field.title"
-          size="small"
+          :size="size"
           style="width: 160px"
         />
       </template>
-      <el-button type="primary" size="small" @click="searchData">{{ t('button.search') }}</el-button>
-      <el-button size="small" @click="resetSearch">{{ t('button.reset') }}</el-button>
+      <el-button type="primary" :size="size" @click="searchData">{{ t('button.search') }}</el-button>
+      <el-button :size="size" @click="resetSearch">{{ t('button.reset') }}</el-button>
     </div>
 
     <!-- 数据表格 -->
@@ -60,6 +60,8 @@
       :row-key="getRowKey"
       :highlight-current-row="!multiple"
       :row-class-name="rowClassName"
+      :height="height"
+      :size="size"
       style="width: 100%"
       @row-click="selectRow"
       @selection-change="onSelectionChange"
@@ -79,7 +81,7 @@
         :key="col.field"
         :prop="col.field"
         :label="col.title"
-        :width="col.width || undefined"
+        :min-width="col.width || 120"
         :align="col.align || 'left'"
       >
         <template #default="{ row }">
@@ -95,6 +97,7 @@
         v-model:page-size="pageSize"
         :total="total"
         :page-sizes="[10, 20, 50, 100]"
+        :size="size"
         layout="total, sizes, prev, pager, next, jumper"
         @current-change="fetchListData"
         @size-change="
@@ -110,8 +113,8 @@
       <div class="lst-footer">
         <span class="lst-selected-count">{{ t('lov.selectedCount', { count: selectedCountText }) }}</span>
         <span class="lst-footer-buttons">
-          <el-button @click="$emit('update:dialogVisible', false)">{{ t('button.cancel') }}</el-button>
-          <el-button v-if="multiple" type="primary" @click="confirmMulti">{{ t('button.confirm') }}</el-button>
+          <el-button :size="size" @click="$emit('update:dialogVisible', false)">{{ t('button.cancel') }}</el-button>
+          <el-button v-if="multiple" type="primary" :size="size" @click="confirmMulti">{{ t('button.confirm') }}</el-button>
         </span>
       </div>
     </template>
@@ -144,7 +147,7 @@ import type {
   LovTableColumn,
 } from '@newlifex/cube-vue/core/types/lov';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   dialogVisible: boolean;
   lovCode: string;
   lovMeta: LovListMeta | null;
@@ -154,7 +157,17 @@ const props = defineProps<{
   multiple?: boolean;
   /** 当前已选值（单选为单个值，多选为逗号分隔字符串或 string[]/number[]），弹窗打开时用于回显已选 */
   modelValue?: string | number | Array<string | number> | undefined;
-}>();
+  /** 每页条数，默认 10 */
+  pageSize?: number;
+  /** 弹窗宽度，默认 680px */
+  width?: string | number;
+  /** 表格高度（固定表头 + 内容滚动），不设置则随内容自适应 */
+  height?: string | number;
+  /** 弹窗内控件尺寸（搜索栏/表格/分页/按钮），默认 default */
+  size?: 'large' | 'default' | 'small';
+}>(), {
+  size: 'default',
+});
 
 const emit = defineEmits<{
   (e: 'update:dialogVisible', value: boolean): void;
@@ -202,7 +215,8 @@ const tableLoading = ref(false);
 const searchParams = ref<Record<string, string | number | undefined>>({});
 const tableData = ref<Record<string, unknown>[]>([]);
 const currentPage = ref(1);
-const pageSize = ref(20);
+// 每页条数：由父组件 pageSize 参数控制，未设置时默认 10
+const pageSize = ref(props.pageSize ?? 10);
 const total = ref(0);
 
 /** 弹窗底部「已选统计」文本（右下角展示） */
