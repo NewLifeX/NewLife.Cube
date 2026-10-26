@@ -26,6 +26,9 @@ public class AccessRuleController : EntityController<AccessRule, AccessRuleModel
         {
             df.DisplayName = "Unblock time";
             df.Url = "/api/Admin/AccessRule/Unblock?id={Id}";
+            // 前端列表按 AJAX 调用并把返回消息提示给用户，随后刷新列表；
+            // 未标记时浏览器点击会整页跳走，拿不到解封结果提示
+            df.DataAction = "get";
         }
     }
 
