@@ -50,8 +50,9 @@ public sealed class LocalizationUiTests : IAsyncLifetime
 
     /// <summary>收集界面骨架中仍含中日韩字符的文本</summary>
     /// <param name="testId">用例编号</param>
+    /// <param name="selectors">待扫描的 CSS 选择器集合，为空时使用界面骨架默认集合</param>
     /// <returns>问题清单，格式为「选择器 => 文本」</returns>
-    private async Task<List<String>> CollectCjkAsync(String testId)
+    private async Task<List<String>> CollectCjkAsync(String testId, String[]? selectors = null)
     {
         var script = @"(selectors) => {
             const cjk = /[\u4e00-\u9fff\u3400-\u4dbf\u3000-\u303f\uff00-\uffef]/;
@@ -65,11 +66,39 @@ public sealed class LocalizationUiTests : IAsyncLifetime
             }
             return out;
         }";
-        var selectors = ChromeSelectors.Split(", ", StringSplitOptions.RemoveEmptyEntries);
+        selectors ??= ChromeSelectors.Split(", ", StringSplitOptions.RemoveEmptyEntries);
         var items = await _page.EvaluateAsync<String[]>(script, selectors);
 
         return [.. items ?? []];
     }
+
+    /// <summary>收集指定下拉框中仍含中日韩字符的选项文本</summary>
+    /// <param name="selector">下拉框选择器</param>
+    /// <returns>问题清单，格式为「字段名:选项文本」</returns>
+    private async Task<(Int32 Selects, List<String> Items)> CollectOptionCjkAsync(String selector)
+    {
+        var script = @"(selector) => {
+            const cjk = /[\u4e00-\u9fff\u3400-\u4dbf\u3000-\u303f\uff00-\uffef]/;
+            const sels = document.querySelectorAll(selector);
+            const out = [];
+            for (const sel of sels) {
+                for (const o of sel.options) {
+                    const t = (o.text || '').trim();
+                    if (t && cjk.test(t)) out.push(sel.name + ':' + t);
+                }
+            }
+            return JSON.stringify({ count: sels.length, items: out });
+        }";
+        var json = await _page.EvaluateAsync<String>(script, selector);
+        var result = System.Text.Json.JsonSerializer.Deserialize<OptionScan>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        return (result?.Count ?? 0, result?.Items ?? []);
+    }
+
+    /// <summary>下拉选项扫描结果</summary>
+    /// <param name="Count">命中的下拉框数量</param>
+    /// <param name="Items">含中日韩字符的选项文本</param>
+    private sealed record OptionScan(Int32 Count, List<String> Items);
 
     /// <summary>在英文界面打开指定页面并断言界面骨架无中文残留</summary>
     /// <param name="testId">用例编号</param>
@@ -149,6 +178,35 @@ public sealed class LocalizationUiTests : IAsyncLifetime
         await PageHelpers.LoginAsAdminAsync(_page);
         await AssertPageLocalizedAsync("TC-I18N-505", "/Admin/Cube");
         await AssertPageLocalizedAsync("TC-I18N-505", "/Admin/Index/Main");
+    }
+
+    [Fact(DisplayName = "TC-I18N-506 枚举与配色等元数据选项按语言翻译")]
+    [Trait("Category", "Localization")]
+    [Trait("Priority", "P1")]
+    public async Task TC_I18N_506_EnumOptionsLocalized()
+    {
+        const String testId = "TC-I18N-506";
+        await PageHelpers.LoginAsAdminAsync(_page);
+
+        var cases = new (String Path, String Selector)[]
+        {
+            ("/Admin/Tenant/Add", "select[name=Type]"),
+            ("/Admin/Department/Add", "select[name=Type]"),
+            ("/Admin/Menu/Add", "select[name=Type]"),
+            ("/Admin/Role/Add", "select[name=Type], select[name=DataScope]"),
+            ("/Admin/Cube", "select[name=AIColorScheme], select[name=TableStyle], select[name=TableDensity]"),
+        };
+
+        foreach (var (path, selector) in cases)
+        {
+            var sep = path.Contains('?') ? '&' : '?';
+            await PageHelpers.GotoAndWaitAsync(_page, path + sep + "lang=en-US");
+            await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+            var (count, items) = await CollectOptionCjkAsync(selector);
+            Assert.True(count > 0, $"[{testId}] {path} 未找到下拉框 {selector}");
+            Assert.True(items.Count == 0, $"[{testId}] {path} 的元数据选项仍为中文：{String.Join(" | ", items)}");
+        }
     }
 
     #endregion
