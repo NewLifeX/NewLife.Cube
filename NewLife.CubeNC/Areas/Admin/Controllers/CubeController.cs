@@ -72,7 +72,8 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
             if (df != null)
             {
                 df.ItemType = "singleSelect";
-                df.DataSource = e => CubeSetting.ColorSchemes.Keys.ToDictionary(e => e, e => e);
+                // 方案名同时是落库值与联动映射键，只在显示上按语言翻译
+                df.DataSource = e => CubeSetting.ColorSchemes.Keys.ToDictionary(e => e, e => L.T(e));
                 // 联动映射传给前端：方案名 → "主色,辅色"
                 df.Properties["ColorMap"] = JsonHelper.ToJson(CubeSetting.ColorSchemes);
                 df.Properties["ColorTargets"] = "AIPrimaryColor,AISecondaryColor";

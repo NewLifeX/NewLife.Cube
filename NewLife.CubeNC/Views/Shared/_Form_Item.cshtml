@@ -163,8 +163,23 @@
                 var root = entity.GetType().GetValue("Root") as IEntityTree;
                 // 找到完整菜单树，但是排除当前节点这个分支
                 var list = root.FindAllChildsExcept(treeEntity);
-                var data = new SelectList(list, set.Key, "TreeNodeText", itemModel.Value);
-                @Html.DropDownList(item.Name, data, new { @class = "multiselect" })
+                // 菜单名称按当前语言显示（与侧边栏/列表页口径一致）：保留树形缩进前缀，只替换库中原名
+                var options = new List<SelectListItem>();
+                foreach (var node in list)
+                {
+                    var text = node.GetValue("TreeNodeText") + "";
+                    if (node is IMenu menu)
+                    {
+                        // 树形文本以库中原名结尾，按当前语言替换显示名（与侧边栏/列表页口径一致）
+                        var raw = menu.DisplayName + "";
+                        var name = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu);
+                        if (!raw.IsNullOrEmpty() && !name.IsNullOrEmpty() && text.EndsWith(raw)) text = text[..^raw.Length] + name;
+                    }
+
+                    var key = node[set.Key] + "";
+                    options.Add(new SelectListItem { Value = key, Text = text, Selected = key == itemModel.Value + "" });
+                }
+                @Html.DropDownList(item.Name, options, new { @class = "multiselect" })
             }
         }
         else
