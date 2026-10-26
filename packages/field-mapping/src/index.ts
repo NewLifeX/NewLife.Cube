@@ -230,3 +230,94 @@ export function toCamelCase(str: string): string {
   const s = str.replace(/[-_](\w)/g, (_, c) => (c ? c.toUpperCase() : ''));
   return s.charAt(0).toLowerCase() + s.slice(1);
 }
+
+/** 列宽规范：数值列最小宽度（像素） */
+export const NUMBER_COLUMN_WIDTH = 100;
+
+/** 列宽规范：时间列宽度（像素） */
+export const TIME_COLUMN_WIDTH = 140;
+
+/** 列宽规范：主键列宽度（像素） */
+export const KEY_COLUMN_WIDTH = 80;
+
+/** 列宽规范：图标/颜色/布尔等窄列宽度（像素） */
+export const NARROW_COLUMN_WIDTH = 90;
+
+/** 列宽规范：图片/文件列宽度（像素） */
+export const MEDIA_COLUMN_WIDTH = 100;
+
+/** 数值类型名集合（大小写不敏感） */
+const NUMBER_TYPES = new Set([
+  'int16',
+  'int32',
+  'int64',
+  'uint16',
+  'uint32',
+  'uint64',
+  'byte',
+  'sbyte',
+  'single',
+  'double',
+  'decimal',
+  'intptr',
+  'uintptr',
+]);
+
+/** 时间类型名集合（大小写不敏感） */
+const TIME_TYPES = new Set(['datetime', 'datetimeoffset', 'dateonly', 'date', 'time', 'timespan']);
+
+/**
+ * 计算列表列宽（SKIN-12 列宽规范）
+ *
+ * 优先级：呈现配置 `width`（数字）→ 主键 → 图片/文件 → 图标/颜色/布尔 → 时间 → 数值 → 自适应（undefined）。
+ * 字符串列不设固定宽度，交给表格自适应；`width: 'auto'` 同样视为自适应。
+ *
+ * @param field 字段元数据
+ * @returns 像素宽度；undefined 表示自适应
+ * @example resolveColumnWidth({ name: 'Id', primaryKey: true }) // 80
+ * @example resolveColumnWidth({ name: 'CreateTime', typeName: 'DateTime' }) // 140
+ * @example resolveColumnWidth({ name: 'Name', typeName: 'String' }) // undefined
+ */
+export function resolveColumnWidth(field: DataField): number | undefined {
+  if (!field) return undefined;
+  if (typeof field.width === 'number' && field.width > 0) return field.width;
+  if (field.width === 'auto') return undefined;
+  if (field.primaryKey) return KEY_COLUMN_WIDTH;
+
+  const itemType = (field.itemType || '').toLowerCase();
+  if (itemType === 'image' || itemType === 'avatar' || itemType === 'file' || itemType === 'upload') return MEDIA_COLUMN_WIDTH;
+  if (itemType === 'color' || itemType === 'icon' || itemType === 'switch' || itemType === 'boolean' || itemType === 'checkbox') {
+    return NARROW_COLUMN_WIDTH;
+  }
+
+  const typeName = (field.typeName || '').toLowerCase();
+  if (TIME_TYPES.has(typeName)) return TIME_COLUMN_WIDTH;
+  if (typeName === 'boolean' || typeName === 'bool') return NARROW_COLUMN_WIDTH;
+  if (NUMBER_TYPES.has(typeName)) return NUMBER_COLUMN_WIDTH;
+
+  return undefined;
+}
+
+/**
+ * 计算列表列对齐（SKIN-12 列宽规范配套）
+ *
+ * 数值右对齐便于比较大小；主键与图标/颜色/布尔居中；其余左对齐。
+ *
+ * @param field 字段元数据
+ * @returns 对齐方式
+ * @example resolveColumnAlign({ name: 'Count', typeName: 'Int32' }) // 'right'
+ */
+export function resolveColumnAlign(field: DataField): 'left' | 'center' | 'right' {
+  if (!field) return 'left';
+  if (field.primaryKey) return 'center';
+
+  const itemType = (field.itemType || '').toLowerCase();
+  if (['image', 'avatar', 'file', 'upload', 'color', 'icon', 'switch', 'boolean', 'checkbox'].includes(itemType)) return 'center';
+
+  const typeName = (field.typeName || '').toLowerCase();
+  if (NUMBER_TYPES.has(typeName)) return 'right';
+  if (typeName === 'boolean' || typeName === 'bool') return 'center';
+
+  return 'left';
+}
+
