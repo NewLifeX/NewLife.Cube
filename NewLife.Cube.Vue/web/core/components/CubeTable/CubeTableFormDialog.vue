@@ -8,7 +8,7 @@
  *
  * 表单体复用 `FormContent.vue`（字段 → 控件的唯一分发点），本组件只管容器与动作。
  */
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import FormContent from '../../views/components/FormContent.vue';
 import { dialogShapeFor } from './cubeTable.logic';
@@ -16,6 +16,14 @@ import type { CubeEngineContext } from '../../engine/types';
 
 const props = defineProps<{ ctx: CubeEngineContext }>();
 const { t } = useI18n();
+
+/** FormContent 暴露的校验入口 */
+const formRef = ref<{ validate?: () => boolean } | null>(null);
+
+function submit(): void {
+  if (formRef.value?.validate && !formRef.value.validate()) return;
+  props.ctx.submitForm();
+}
 
 /**
  * 直接取引擎上下文里的 Ref 来绑（`docs/architecture/cube-engine.md` §8.7 的意图）。
@@ -59,6 +67,7 @@ function onModelInput(value: Record<string, unknown>): void {
     <el-skeleton v-if="formLoading" :rows="skeletonRows" animated />
     <FormContent
       v-else
+      ref="formRef"
       :fields="formFields"
       :model-value="ctx.formModel"
       :api-prefix="ctx.apiPrefix.value"
@@ -75,7 +84,7 @@ function onModelInput(value: Record<string, unknown>): void {
         v-else
         type="primary"
         :loading="submitting"
-        @click="ctx.submitForm()"
+        @click="submit"
       >
         {{ t('button.save') }}
       </el-button>

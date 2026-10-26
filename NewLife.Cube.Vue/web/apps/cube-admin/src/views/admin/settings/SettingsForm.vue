@@ -35,6 +35,8 @@ const loading = ref(false);
 const loaded = ref(false);
 const error = ref(false);
 const saving = ref(false);
+/** FormContent 暴露的校验入口 */
+const formRef = ref<{ validate?: () => boolean } | null>(null);
 
 async function load() {
   loading.value = true;
@@ -52,6 +54,8 @@ async function load() {
 }
 
 async function save() {
+  if (formRef.value?.validate && !formRef.value.validate()) return;
+
   saving.value = true;
   try {
     const payload = serializeSubmitModel(model.value, fields.value);
@@ -76,6 +80,7 @@ watch(
     <div v-if="error" class="settings-unavailable">{{ t('settingsCenter.unavailable') }}</div>
     <template v-else-if="loaded">
       <FormContent
+        ref="formRef"
         :fields="fields"
         :model-value="model"
         :api-prefix="apiPrefix"

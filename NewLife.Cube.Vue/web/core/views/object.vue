@@ -29,6 +29,8 @@ const fields = ref<FieldMeta[]>([]);
 const model = ref<Record<string, any>>({});
 const loading = ref(false);
 const saving = ref(false);
+/** FormContent 暴露的校验入口 */
+const formRef = ref<{ validate?: () => boolean } | null>(null);
 
 async function load() {
   loading.value = true;
@@ -53,6 +55,8 @@ async function load() {
 }
 
 async function handleSubmit() {
+  if (formRef.value?.validate && !formRef.value.validate()) return;
+
   saving.value = true;
   try {
     const payload = serializeSubmitModel(model.value, fields.value);
@@ -72,6 +76,7 @@ onMounted(load);
   <div class="object-page" v-loading="loading">
     <FormPageHeader :title="props.title || (route.meta?.title as string) || t('objectPage.settings')" />
     <FormContent
+      ref="formRef"
       :fields="fields"
       :model-value="model"
       :api-prefix="apiPrefix"

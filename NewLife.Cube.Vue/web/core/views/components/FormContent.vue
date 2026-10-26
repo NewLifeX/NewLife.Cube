@@ -209,6 +209,49 @@ function getValue(key: string): unknown {
   return props.modelValue?.[resolveKey(key)];
 }
 
+/** 字段级校验错误：字段名 → 提示文案 */
+const errors = ref<Record<string, string>>({});
+
+/** 判断值是否为空（null/undefined/空白字符串/空数组） */
+function isEmptyValue(value: unknown): boolean {
+  if (value === null || value === undefined) return true;
+  if (typeof value === 'string') return value.trim() === '';
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
+}
+
+/**
+ * 校验必填字段
+ *
+ * 表单提交前由父组件通过 `defineExpose` 调用；返回 false 时父组件应中止提交。
+ * 仅校验当前可见字段，禁用（详情）模式直接通过。
+ *
+ * @returns 是否全部通过
+ */
+function validate(): boolean {
+  const next: Record<string, string> = {};
+  if (!props.disabled) {
+    for (const field of visibleFields.value) {
+      if (!isRequired(field)) continue;
+      if (isEmptyValue(getValue(field.name))) {
+        next[field.name] = t('form.fieldRequired', { field: field.displayName || field.name });
+      }
+    }
+  }
+  errors.value = next;
+  return Object.keys(next).length === 0;
+}
+
+/** 清除单个字段的错误提示（用户修改后立即消失） */
+function clearError(name: string): void {
+  if (!errors.value[name]) return;
+  const next = { ...errors.value };
+  delete next[name];
+  errors.value = next;
+}
+
+defineExpose({ validate });
+
 /** 模板内类型收窄：不在模板里写 `as A | B`（竖线会被 vue/no-deprecated-filter 误判为过滤器） */
 function asScalar(val: unknown): string | number | undefined {
   return val as string | number | undefined;
@@ -227,6 +270,7 @@ function toNumber(val: unknown): number | undefined {
 
 /** 回写使用模型实际存在的键（保持行数据 camelCase），避免同字段大小写双键共存 */
 function updateField(key: string, value: unknown) {
+  clearError(key);
   emit('update:modelValue', { ...props.modelValue, [resolveKey(key)]: value });
 }
 
@@ -535,6 +579,8 @@ function toMultiArray(val: unknown): string[] {
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
+
+          <div v-if="errors[field.name]" class="fmc-error" role="alert">{{ errors[field.name] }}</div>
           </div>
         </div>
       </section>
@@ -620,6 +666,13 @@ function toMultiArray(val: unknown): string[] {
 .fmc-required {
   color: var(--el-color-danger);
   margin-left: 2px;
+}
+
+.fmc-error {
+  margin-top: 4px;
+  color: var(--el-color-danger);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 /* 字段说明问号：完整描述走 Tooltip，不占用两列表单的横向空间 */

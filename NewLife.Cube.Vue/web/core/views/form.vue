@@ -78,6 +78,8 @@ const auto = computed(() => !!!props.fields);
 const internalModelValue = ref<Record<string, unknown>>({});
 const internalFields = ref<FieldMeta[]>([]);
 const isSubmitting = ref(false);
+/** FormContent 暴露的校验入口（注入组件同样支持） */
+const formRef = ref<{ validate?: () => boolean } | null>(null);
 
 async function fetchPageMeta() {
   if (!auto.value) return;
@@ -124,6 +126,8 @@ async function fetchDetail() {
 }
 
 async function handleSubmit() {
+  if (formRef.value?.validate && !formRef.value.validate()) return;
+
   if (auto.value) {
     if (isSubmitting.value) return;
     isSubmitting.value = true;
@@ -198,6 +202,7 @@ onMounted(async () => {
       <slot name="form">
         <component
           :is="FormContentComp"
+          ref="formRef"
           :fields="renderFields"
           :model-value="renderModelValue"
           :api-prefix="apiPrefix"
