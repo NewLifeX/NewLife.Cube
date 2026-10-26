@@ -601,3 +601,40 @@ export type { DataField } from '@newlifex/api-core';
 export type { FieldMapping } from '@newlifex/field-mapping';
 export { resolveWidgets, resolveWidget } from '@newlifex/field-mapping';
 export { buildExportUrl, EXPORT_FORMATS, resolveUrl, checkAuth, Auth } from '@newlifex/page-utils';
+
+// 工作台数据归一化与视图模型
+export {
+  WORKBENCH_TYPE,
+  WORKBENCH_DASHBOARD_ACTION,
+  WORKBENCH_MONITOR_ACTION,
+  MAX_MONITOR_POINTS,
+  MONITOR_POLL_INTERVAL,
+  isSuccessCode,
+  formatCell,
+  extractLink,
+  normalizeRoles,
+  isExternalLink,
+  asRecord,
+  normalizeKpiColor,
+  normalizeCols,
+  toMonitorPoint,
+  appendMonitorPoint,
+  buildMonitorChart,
+  buildWorkbenchView,
+  createWorkbenchLoader,
+} from './workbench';
+export type {
+  WorkbenchKpi,
+  WorkbenchWidget,
+  WorkbenchQuickLink,
+  WorkbenchData,
+  MonitorSnapshot,
+  MonitorPoint,
+  WorkbenchRow,
+  WorkbenchLink,
+  WorkbenchLogItem,
+  WorkbenchKpiView,
+  WorkbenchWidgetView,
+  WorkbenchView,
+  MonitorChartGeometry,
+} from './workbench';

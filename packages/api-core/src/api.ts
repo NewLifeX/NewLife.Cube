@@ -463,6 +463,14 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string, metaCache
     /** 获取图表数据 */
     getChartData: (type: string) =>
       request<unknown[]>({ url: `${type}/charts`, method: 'get' }),
+
+    /** 调用控制器自定义 GET Action，如 PageApi.getAction('Admin/Index', 'Dashboard') */
+    getAction: <T = unknown>(type: string, action: string, params?: Record<string, unknown>) =>
+      request<T>({ url: `${type}/${action}`, method: 'get', params }),
+
+    /** 调用控制器自定义 POST Action，如 PageApi.postAction('Admin/Index', 'SaveWidgetLayout', layout) */
+    postAction: <T = unknown>(type: string, action: string, data?: unknown) =>
+      request<T>({ url: `${type}/${action}`, method: 'post', data }),
   };
 }
 
