@@ -604,8 +604,7 @@ export { buildExportUrl, EXPORT_FORMATS, resolveUrl, checkAuth, Auth } from '@ne
 
 // 工作台数据归一化与视图模型
 export {
-  WORKBENCH_TYPE,
-  WORKBENCH_DASHBOARD_ACTION,
+  WORKBENCH_TYPE,  WORKBENCH_DASHBOARD_ACTION,
   WORKBENCH_MONITOR_ACTION,
   MAX_MONITOR_POINTS,
   MONITOR_POLL_INTERVAL,
@@ -638,3 +637,6 @@ export type {
   WorkbenchView,
   MonitorChartGeometry,
 } from './workbench';
+
+// 响应式布局判定
+export { MOBILE_BREAKPOINT, shouldAutoCollapseSidebar } from './layout';
