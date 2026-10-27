@@ -1,18 +1,7 @@
 import { create } from 'zustand';
 import type { UserInfo, MenuItem } from '@newlifex/api-core';
+import { getMenuPermission } from '@newlifex/page-utils';
 import api from '@/api';
-
-/** 递归查找菜单树中 URL 匹配的节点 */
-function findMenu(menus: MenuItem[], path: string): MenuItem | undefined {
-  for (const m of menus) {
-    if (m.url && path.toLowerCase().endsWith(m.url.toLowerCase())) return m;
-    if (m.children?.length) {
-      const found = findMenu(m.children, path);
-      if (found) return found;
-    }
-  }
-  return undefined;
-}
 
 interface UserState {
   userInfo: UserInfo | null;
@@ -61,7 +50,6 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   getMenuPermission: (path: string) => {
-    const item = findMenu(get().menus, path);
-    return item?.permissions ?? {};
+    return getMenuPermission(get().menus, path);
   },
 }));

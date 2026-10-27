@@ -24,7 +24,9 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
-    "prepare": "pnpm build"
+    "prepare": "pnpm build",
+    "pretest": "tsup src/index.ts --format esm,cjs --dts",
+    "test": "node --test \"tests/**/*.test.cjs\""
   },
   "devDependencies": {
     "tsup": "^8.0.0",
