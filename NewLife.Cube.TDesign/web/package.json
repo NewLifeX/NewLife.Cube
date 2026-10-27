@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:unit": "vitest run --config vitest.config.ts",
     "dev": "vite --port 5187",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview --port 5187"
@@ -22,6 +23,7 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "vitest": "^3.2.6",
     "@vitejs/plugin-vue": "^5.2.0",
     "typescript": "^5.7.0",
     "unplugin-auto-import": "^19.0.0",

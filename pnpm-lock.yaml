@@ -123,6 +123,9 @@ importers:
       vite:
         specifier: ^6.4.3
         version: 6.4.5(@types/node@22.19.19)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
+      vitest:
+        specifier: ^3.2.6
+        version: 3.2.6(@types/node@22.19.19)(jiti@2.6.1)(jsdom@29.1.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
       vue-tsc:
         specifier: ^2.2.0
         version: 2.2.12(typescript@5.7.3)
@@ -239,6 +242,9 @@ importers:
       vite:
         specifier: ^6.4.3
         version: 6.4.5(@types/node@22.19.19)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
+      vitest:
+        specifier: ^3.2.6
+        version: 3.2.6(@types/node@22.19.19)(jiti@2.6.1)(jsdom@29.1.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
       vue-tsc:
         specifier: ^2.2.0
         version: 2.2.12(typescript@5.7.3)
@@ -354,6 +360,9 @@ importers:
       vite:
         specifier: ^6.4.3
         version: 6.4.5(@types/node@22.19.19)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
+      vitest:
+        specifier: ^3.2.6
+        version: 3.2.6(@types/node@22.19.19)(jiti@2.6.1)(jsdom@29.1.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
 
   NewLife.Cube.Svelte/web:
     dependencies:
@@ -403,6 +412,9 @@ importers:
       vite:
         specifier: ^6.4.3
         version: 6.4.5(@types/node@22.19.19)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
+      vitest:
+        specifier: ^3.2.6
+        version: 3.2.6(@types/node@22.19.19)(jiti@2.6.1)(jsdom@29.1.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
 
   NewLife.Cube.TDesign/web:
     dependencies:
@@ -452,6 +464,9 @@ importers:
       vite:
         specifier: ^6.4.3
         version: 6.4.5(@types/node@22.19.19)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
+      vitest:
+        specifier: ^3.2.6
+        version: 3.2.6(@types/node@22.19.19)(jiti@2.6.1)(jsdom@29.1.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(sugarss@2.0.0)(terser@5.49.0)
       vue-tsc:
         specifier: ^2.2.0
         version: 2.2.12(typescript@5.7.3)

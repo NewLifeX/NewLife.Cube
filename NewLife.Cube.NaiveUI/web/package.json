@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "test:unit": "vitest run --config vitest.config.ts",
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
@@ -22,6 +23,7 @@
     "echarts": "^5.6.0"
   },
   "devDependencies": {
+    "vitest": "^3.2.6",
     "@vitejs/plugin-vue": "^5.2.0",
     "typescript": "^5.7.0",
     "vite": "^6.4.3",

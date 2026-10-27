@@ -13,6 +13,7 @@
 
 import { defineStore } from 'pinia';
 import { type CubeApi, type UserInfo, type MenuItem, type RegisterModel } from '@newlifex/api-core';
+import { getMenuPermission as resolveMenuPermission } from '@newlifex/page-utils';
 import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
 /**
@@ -22,7 +23,8 @@ import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type For
  * @param storeId - Store ID，默认 'user'
  */
 export function createPiniaAuthStore(api: CubeApi, storeId = 'user') {
-  let logic: AuthLogic | null = null;
+  // 以 store 实例为键保存逻辑对象，避免多个 Pinia 实例共享同一份逻辑状态
+  const logics = new WeakMap<object, AuthLogic>();
 
   return defineStore(storeId, {
     state: (): AuthState => ({
@@ -44,12 +46,14 @@ export function createPiniaAuthStore(api: CubeApi, storeId = 'user') {
     actions: {
       /** 获取/初始化 AuthLogic 实例 */
       _getLogic(): AuthLogic {
+        let logic = logics.get(this);
         if (!logic) {
           logic = new AuthLogic(api, (partial) => {
             if (partial.userInfo !== undefined) this.userInfo = partial.userInfo;
             if (partial.permissions !== undefined) this.permissions = partial.permissions;
             if (partial.menus !== undefined) this.menus = partial.menus;
           });
+          logics.set(this, logic);
         }
         return logic;
       },
@@ -66,7 +70,8 @@ export function createPiniaAuthStore(api: CubeApi, storeId = 'user') {
         return this._getLogic().fetchMenus();
       },
       getMenuPermission(path: string): Record<string, string> {
-        return this._getLogic().getMenuPermission(path);
+        // 直接读 store 状态，菜单支持外部直接赋值（如登录后一次性下发）
+        return resolveMenuPermission(this.menus, path);
       },
     },
   });

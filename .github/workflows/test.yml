@@ -422,6 +422,13 @@ jobs:
       run: |
         pnpm --filter ./NewLife.Cube.MUI/web run test:unit
         pnpm --filter ./NewLife.Cube.Vuetify/web run test:unit
+    - name: Skin unit tests (NaiveUI / ArcoVue / TDesign / Shadcn / Svelte)
+      run: |
+        pnpm --filter ./NewLife.Cube.NaiveUI/web run test:unit
+        pnpm --filter ./NewLife.Cube.ArcoVue/web run test:unit
+        pnpm --filter ./NewLife.Cube.TDesign/web run test:unit
+        pnpm --filter ./NewLife.Cube.Shadcn/web run test:unit
+        pnpm --filter ./NewLife.Cube.Svelte/web run test:unit
     - name: Use Node 22 for native TS test runner
       uses: actions/setup-node@v4
       with:

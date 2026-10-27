@@ -14,6 +14,7 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import { type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type ApiResponse, type LoginResult, type AuthCategory } from '@newlifex/api-core';
 import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
+import { getMenuPermission as resolveMenuPermission } from '@newlifex/page-utils';
 
 export interface ZustandAuthState extends AuthState {
   isLoggedIn: () => boolean;
@@ -68,7 +69,8 @@ export function createZustandAuthStore(api: CubeApi): UseBoundStore<StoreApi<Zus
       },
 
       getMenuPermission: (path: string) => {
-        return logic.getMenuPermission(path);
+        // 直接读 store 状态，菜单支持外部直接赋值（如登录后一次性下发）
+        return resolveMenuPermission(get().menus, path);
       },
     };
   });

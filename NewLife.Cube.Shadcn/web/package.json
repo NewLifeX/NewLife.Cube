@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "test:unit": "vitest run --config vitest.config.ts",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
@@ -40,6 +41,7 @@
     "echarts": "^5.6.0"
   },
   "devDependencies": {
+    "vitest": "^3.2.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
