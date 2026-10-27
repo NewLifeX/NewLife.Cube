@@ -16,6 +16,7 @@
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
     <ProjectReference Include="..\NewLife.Cube\NewLife.Cube.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.Vue\NewLife.Cube.Vue.csproj" />
   </ItemGroup>
 
   <ItemGroup>
