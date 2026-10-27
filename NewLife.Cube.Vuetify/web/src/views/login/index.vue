@@ -36,6 +36,10 @@
         </v-card-text>
       </template>
 
+      <v-card-text class="text-center pt-0 pb-0">
+        <v-btn variant="text" color="primary" @click="router.push('/forgot-password')">忘记密码？</v-btn>
+      </v-card-text>
+
       <v-card-text v-if="registerEnabled" class="text-center pt-0">
         <span class="text-body-2 text-medium-emphasis">还没有账号？</span>
         <v-btn variant="text" color="primary" @click="goRegister">立即注册</v-btn>

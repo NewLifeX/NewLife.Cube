@@ -96,6 +96,10 @@ export default function Login() {
             </>
           ) : null}
 
+          <Box textAlign="center" mt={1}>
+            <Button size="small" onClick={() => navigate('/forgot-password')}>忘记密码？</Button>
+          </Box>
+
           {registerEnabled ? (
             <Box textAlign="center" mt={2}>
               <Typography variant="body2" color="text.secondary" component="span">

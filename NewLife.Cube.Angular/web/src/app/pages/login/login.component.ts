@@ -44,6 +44,9 @@ import { resolveRegisterModes, resolveRegisterTenant } from '../../utils/registe
             }
           </div>
         }
+        <div style="text-align: center; margin-top: 8px;">
+          <button nz-button nzType="link" (click)="goForgotPassword()">忘记密码？</button>
+        </div>
         @if (registerEnabled) {
           <div style="text-align: center; margin-top: 16px; color: rgba(0, 0, 0, 0.45);">
             还没有账号？
@@ -109,6 +112,10 @@ export class LoginComponent implements OnInit {
   }
 
   /** 进入注册页，保留租户查询参数 */
+  goForgotPassword() {
+    this.router.navigate(['/forgot-password']);
+  }
+
   goRegister() {
     const queryParams: Record<string, string> = {};
     if (this.tenant.appId) queryParams['appId'] = this.tenant.appId;
