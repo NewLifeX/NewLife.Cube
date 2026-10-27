@@ -704,7 +704,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                     var rs = 0;
                     var sw = Stopwatch.StartNew();
                     {
-                        using var fs = new FileStream(bak, FileMode.OpenOrCreate);
+                        // 文件名只精确到秒，同一秒内二次备份会命中同一文件；用 Create 截断，避免残留旧内容导致 gz 损坏
+                        using var fs = new FileStream(bak, FileMode.Create);
                         using var gs = new GZipStream(fs, CompressionLevel.SmallestSize, true);
                         rs = dal.Backup(fact.Table.DataTable, gs, default);
                         sw.Stop();
