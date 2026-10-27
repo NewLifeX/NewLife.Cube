@@ -149,7 +149,7 @@ const visible = computed(
 
 /** 当前查询条件（搜索模型），用于 link 的 appendQuery 与 action 的 include */
 function currentQuery(): Record<string, unknown> {
-  return { ...(props.ctx.searchModel ?? {}) };
+  return { ...props.ctx.searchModel };
 }
 
 async function onToolbar(item: BackendToolbarItem): Promise<void> {

@@ -228,7 +228,7 @@ export const initApp = async (optionsOrConfigure?: InitAppOptions | ConfigureFun
 
   // 注册页面 Section 覆盖组件
   // 优先级：options.sections（手动指定）> virtual:@newlifex/cube-vue-sections（插件自动扫描）
-  const mergedSections = { ...autoSectionModules, ...(sections ?? {}) };
+  const mergedSections = { ...autoSectionModules, ...sections };
   if (Object.keys(mergedSections).length > 0) {
     registerPageSections(app, mergedSections);
   }

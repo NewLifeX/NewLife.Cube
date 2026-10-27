@@ -226,7 +226,7 @@ export function createCubeEngine(
   function currentQuery(): Record<string, unknown> {
     return buildQueryParams({
       keyword: keyword.value,
-      filters: { ...(options.extraQuery?.() ?? {}), ...searchModel },
+      filters: { ...options.extraQuery?.(), ...searchModel },
       keywordEnabled: keywordEnabled.value,
       multiKeys: multiKeys.value,
     });

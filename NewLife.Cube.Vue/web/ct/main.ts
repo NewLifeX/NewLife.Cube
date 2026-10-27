@@ -36,7 +36,7 @@ function unmountCurrent() {
   mountEl = document.createElement('div');
   mountEl.classList.add('gal-preview');
   document.body.appendChild(mountEl);
-  currentProps = reactive({ ...(props ?? s.props ?? {}) });
+  currentProps = reactive({ ...props ?? s.props });
   currentApp = createApp({
     render: () => h(s.component as never, currentProps as never),
   });

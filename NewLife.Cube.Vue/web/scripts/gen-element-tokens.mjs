@@ -52,7 +52,7 @@ function walk(dir) {
       walk(full);
       continue;
     }
-    if (!/\.css$/.test(entry.name)) continue;
+    if (!entry.name.endsWith(".css")) continue;
     const text = fs.readFileSync(full, 'utf8');
     const re = /--el-[\w-]+/g;
     let m;

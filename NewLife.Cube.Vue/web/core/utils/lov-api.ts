@@ -115,7 +115,7 @@ export async function fetchLovListDataDirect(
   requestParams: LovListDataRequest,
 ): Promise<LovListDataResponse> {
   const method = (config.method || 'GET').toUpperCase();
-  const params: Record<string, unknown> = { ...(requestParams.params || {}) };
+  const params: Record<string, unknown> = { ...requestParams.params };
   const fixedParams: Record<string, string> = config.fixedParams || {};
 
   // 分页参数

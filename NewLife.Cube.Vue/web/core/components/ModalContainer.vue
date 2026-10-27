@@ -61,7 +61,6 @@ function hControl(
   props: Record<string, unknown>,
   children?: unknown,
 ): VNode {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (h as any)(type, props, children) as VNode;
 }
 
@@ -289,7 +288,7 @@ export default defineComponent({
       // component 模式
       if ('component' in o && o.component && item.resolvedComponent) {
         const opts = o as ComponentModalOptions;
-        const props: Record<string, unknown> = { ...(opts.componentProps || {}) };
+        const props: Record<string, unknown> = { ...opts.componentProps };
         const events = buildComponentEvents(item);
         // 合并事件
         Object.assign(props, events);

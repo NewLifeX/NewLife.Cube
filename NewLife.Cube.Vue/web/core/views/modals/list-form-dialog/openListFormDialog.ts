@@ -168,7 +168,7 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
     // Object.assign 回写只有落在响应式对象上才能触发弹窗内容重渲染；
     // 否则 FormContent 的受控 :model-value 永不更新，Element Plus 会在下一次
     // 输入同步时把 DOM 值重置回旧值，表现为"输入框打不进字"。
-    const formData = reactive<Record<string, unknown>>({ ...(options.modelValue ?? {}) });
+    const formData = reactive<Record<string, unknown>>({ ...options.modelValue });
 
     // 新增模式下，Boolean 开关字段默认注入 false（“否”），
     // 用户未操作开关也能以 false 正常提交，避免缺省 undefined 导致必填误报或后端收 null

@@ -299,7 +299,7 @@ describe('createCubeEngine 删除', () => {
     const before = http.calls.length;
     const ok = await ctx.remove({ id: 9 });
     expect(ok).toBe(true);
-    const del = [...http.calls.slice(before)].reverse().find((c) => c.method === 'delete');
+    const del = http.calls.slice(before).reverse().find((c) => c.method === 'delete');
     expect(del?.url).toBe(`${TYPE}/9`);
     expect(del?.params).toBeUndefined();
     expect(notify.success).toHaveBeenCalledWith(t('engine.deleteSuccess'));
