@@ -12,6 +12,18 @@ using Xunit;
 
 namespace NewLife.Cube.Tests.Common;
 
+/// <summary>依赖 Vue 皮肤前端静态资源的用例。未构建前端（wwwroot 被忽略，CI 无产物）时自动跳过</summary>
+internal sealed class SpaAssetsFactAttribute : FactAttribute
+{
+    public SpaAssetsFactAttribute()
+    {
+        // 嵌入式文件提供器打包的是 wwwroot 下的产物；源码仓库不含该目录，未执行 pnpm build 时程序集内没有 index.html
+        var names = typeof(VueService).Assembly.GetManifestResourceNames();
+        if (!names.Any(e => e.EndsWith("index.html", StringComparison.OrdinalIgnoreCase)))
+            Skip = "未构建 Vue 皮肤前端静态资源（NewLife.Cube.Vue/wwwroot），跳过 SPA 回退用例";
+    }
+}
+
 /// <summary>
 /// SPA-3 回退路由测试。用真实 Kestrel（随机端口）跑 Vue 皮肤的 UseVue，验证前端路由与不存在的静态资源都回退到 index.html，
 /// 嵌入式静态文件可正常访问。
@@ -36,7 +48,7 @@ public class SpaFallbackTests
         return (app, client);
     }
 
-    [Fact(DisplayName = "SPA回退_前端路由回退到index.html")]
+    [SpaAssetsFact(DisplayName = "SPA回退_前端路由回退到index.html")]
     public async Task Fallback_FrontendRoute_ServesIndex()
     {
         var (app, client) = await StartAsync();
@@ -75,7 +87,7 @@ public class SpaFallbackTests
         }
     }
 
-    [Fact(DisplayName = "SPA回退_嵌入式静态文件可直接访问")]
+    [SpaAssetsFact(DisplayName = "SPA回退_嵌入式静态文件可直接访问")]
     public async Task StaticFile_Embedded_IsServed()
     {
         var (app, client) = await StartAsync();
