@@ -16,8 +16,8 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
     }
 
     /// <summary>搜索数据集</summary>
-    /// <param name="p"></param>
-    /// <returns></returns>
+    /// <param name="p">分页与搜索参数</param>
+    /// <returns>用户统计列表</returns>
     protected override IEnumerable<UserStat> Search(Pager p)
     {
         var start = p["dtStart"].ToDateTime();

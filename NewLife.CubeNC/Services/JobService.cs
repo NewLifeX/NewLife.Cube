@@ -15,8 +15,8 @@ namespace NewLife.Cube.Services;
 public static class JobServiceExtersions
 {
     /// <summary>启用魔方CronJob</summary>
-    /// <param name="services"></param>
-    /// <returns></returns>
+    /// <param name="services">服务集合</param>
+    /// <returns>服务集合，便于链式调用</returns>
     public static IServiceCollection AddCubeJob(this IServiceCollection services)
     {
         //// 注册作业服务，这些作业可以使用DI
@@ -42,8 +42,8 @@ public static class JobServiceExtersions
 
 /// <summary>定时作业服务</summary>
 /// <remarks>实例化作业服务</remarks>
-/// <param name="serviceProvider"></param>
-/// <param name="tracer"></param>
+/// <param name="serviceProvider">服务提供者，用于解析作业实例</param>
+/// <param name="tracer">链路追踪器</param>
 public class JobService(IServiceProvider serviceProvider, ITracer tracer) : IHostedService
 {
     #region 核心控制
@@ -51,8 +51,8 @@ public class JobService(IServiceProvider serviceProvider, ITracer tracer) : IHos
     private static TimerX _timer;
 
     /// <summary>启动</summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>启动定时器后完成的异步任务</returns>
     public Task StartAsync(CancellationToken cancellationToken)
     {
         // 定时检测作业参数的变更，如果管理界面修改了作业参数，需要唤醒定时器马上检查
@@ -62,8 +62,8 @@ public class JobService(IServiceProvider serviceProvider, ITracer tracer) : IHos
     }
 
     /// <summary>停止</summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>释放定时器后完成的异步任务</returns>
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _timer.TryDispose();
@@ -79,8 +79,8 @@ public class JobService(IServiceProvider serviceProvider, ITracer tracer) : IHos
     public static void Wake() => _timer.SetNext(1_000);
 
     /// <summary>唤醒具体作业</summary>
-    /// <param name="jobId"></param>
-    /// <param name="ms"></param>
+    /// <param name="jobId">作业编号</param>
+    /// <param name="ms">提前唤醒的延迟毫秒数</param>
     public static void Wake(Int32 jobId, Int32 ms)
     {
         var job = _jobs.FirstOrDefault(e => e.Job.Id == jobId);
@@ -272,8 +272,8 @@ internal class MyJob : IDisposable
     public void Wake(Int32 ms) => _timer?.SetNext(ms);
 
     /// <summary>检查是否正在执行，如果执行则跳过本次处理</summary>
-    /// <param name="job"></param>
-    /// <returns></returns>
+    /// <param name="job">待检查的作业</param>
+    /// <returns>该作业正在执行时返回 true</returns>
     private Boolean CheckRunning(CronJob job)
     {
         // 吃掉所有缓存和数据库异常，避免影响正常业务

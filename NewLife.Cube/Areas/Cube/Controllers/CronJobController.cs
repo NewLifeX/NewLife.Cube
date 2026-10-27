@@ -42,10 +42,10 @@ public class CronJobController : EntityController<CronJob, CronJobModel>
     }
 
     /// <summary>修改数据时，唤醒作业服务跟进</summary>
-    /// <param name="entity"></param>
-    /// <param name="type"></param>
-    /// <param name="post"></param>
-    /// <returns></returns>
+    /// <param name="entity">待校验的作业实体</param>
+    /// <param name="type">数据操作类型（添加/修改/删除）</param>
+    /// <param name="post">是否为提交后校验</param>
+    /// <returns>校验通过返回 true，否则抛出异常或返回 false</returns>
     protected override Boolean Valid(CronJob entity, DataObjectMethodType type, Boolean post)
     {
         if (post)
@@ -82,8 +82,8 @@ public class CronJobController : EntityController<CronJob, CronJobModel>
     }
 
     /// <summary>马上执行</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+    /// <param name="id">作业编号</param>
+    /// <returns>执行结果 JSON</returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]
     public ActionResult ExecuteNow(String id)

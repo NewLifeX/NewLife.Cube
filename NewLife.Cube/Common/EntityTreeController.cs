@@ -62,7 +62,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     }
 
     /// <summary>实体树配置</summary>
-    /// <returns></returns>
+    /// <returns>实体树配置（父字段、排序字段等）</returns>
     protected IEntityTreeSetting GetSetting()
     {
         //var set = EntityTree<TEntity>.Setting;
@@ -71,8 +71,8 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     }
 
     /// <summary>实体树的数据来自缓存</summary>
-    /// <param name="p"></param>
-    /// <returns></returns>
+    /// <param name="p">分页与搜索参数</param>
+    /// <returns>来自实体缓存的树形数据</returns>
     protected override IEnumerable<TEntity> Search(Pager p)
     {
         // 一页显示全部菜单，取自缓存
@@ -104,8 +104,8 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     //}
 
     /// <summary>上升</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+    /// <param name="id">主键</param>
+    /// <returns>上移后重定向到列表页</returns>
     [DisplayName("Move up")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPatch]
@@ -120,8 +120,8 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     }
 
     /// <summary>下降</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+    /// <param name="id">主键</param>
+    /// <returns>下移后重定向到列表页</returns>
     [DisplayName("Move down")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPatch]
@@ -136,8 +136,8 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     }
 
     /// <summary>根据ID查找节点</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+    /// <param name="id">主键</param>
+    /// <returns>实体对象，未找到时返回 null</returns>
     protected static TEntity FindByID(Int32 id)
     {
         var key = Factory.Unique.Name;
@@ -157,8 +157,8 @@ public class EntityTreeApiController<TEntity> : EntityTreeApiController<TEntity,
 public class EntityTreeApiController<TEntity, TModel> : EntityTreeController<TEntity, TModel> where TEntity : EntityTree<TEntity>, new()
 {
     /// <summary>上升</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+    /// <param name="id">主键</param>
+    /// <returns>上移结果；API 版返回 JSON 响应</returns>
     [DisplayName("Move up")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]
@@ -175,8 +175,8 @@ public class EntityTreeApiController<TEntity, TModel> : EntityTreeController<TEn
     }
 
     /// <summary>下降</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+    /// <param name="id">主键</param>
+    /// <returns>下移结果；API 版返回 JSON 响应</returns>
     [DisplayName("Move down")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]

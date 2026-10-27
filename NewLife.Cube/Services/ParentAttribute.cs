@@ -21,6 +21,7 @@ public sealed class ParentAttribute : Attribute
     /// <summary>父级枚举类型（由 <see cref="Value"/> 的运行时类型推得，供多父维度时区分）。</summary>
     public Type ParentType => Value.GetType();
 
+    /// <summary>以父枚举值实例化特性</summary>
     /// <param name="value">父枚举的某个成员值，如 <c>Section.PROD</c>。</param>
     public ParentAttribute(Object value) => Value = value ?? throw new ArgumentNullException(nameof(value));
 }

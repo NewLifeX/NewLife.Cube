@@ -18,8 +18,8 @@ public partial class EntityController<TEntity, TModel>
 {
     #region 默认Action
     /// <summary>删除</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+    /// <param name="id">主键</param>
+    /// <returns>删除后重定向到列表页</returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("删除{type}")]
     public virtual ActionResult Delete(String id)
@@ -51,7 +51,7 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>表单，添加/修改</summary>
-    /// <returns></returns>
+    /// <returns>新增表单视图</returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("添加{type}")]
     public virtual ActionResult Add()
@@ -89,8 +89,8 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>保存</summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
+    /// <param name="model">提交的表单模型</param>
+    /// <returns>保存成功后重定向到列表页；失败时回填表单并提示错误</returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
     public virtual async Task<ActionResult> Add(TModel model)
@@ -160,7 +160,7 @@ public partial class EntityController<TEntity, TModel>
 
     /// <summary>表单，添加/修改</summary>
     /// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
-    /// <returns></returns>
+    /// <returns>编辑表单视图</returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("更新{type}")]
     public virtual ActionResult Edit(String id)
@@ -192,8 +192,8 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>保存</summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
+    /// <param name="model">提交的表单模型</param>
+    /// <returns>保存成功后重定向到列表页；失败时回填表单并提示错误</returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]
     public virtual async Task<ActionResult> Edit(TModel model)
@@ -270,7 +270,7 @@ public partial class EntityController<TEntity, TModel>
     /// <summary>批量启用</summary>
     /// <param name="keys">主键集合</param>
     /// <param name="reason">操作原因</param>
-    /// <returns></returns>
+    /// <returns>批量启用结果 JSON，含成功与失败行数</returns>
     [EntityAuthorize(PermissionFlags.Update)]
     public virtual ActionResult EnableSelect(String keys, String reason)
     {
@@ -281,7 +281,7 @@ public partial class EntityController<TEntity, TModel>
     /// <summary>批量禁用</summary>
     /// <param name="keys">主键集合</param>
     /// <param name="reason">操作原因</param>
-    /// <returns></returns>
+    /// <returns>批量禁用结果 JSON，含成功与失败行数</returns>
     [EntityAuthorize(PermissionFlags.Update)]
     public virtual ActionResult DisableSelect(String keys, String reason)
     {
@@ -292,8 +292,8 @@ public partial class EntityController<TEntity, TModel>
 
     #region 高级Action
     /// <summary>高级开发接口</summary>
-    /// <param name="act"></param>
-    /// <returns></returns>
+    /// <param name="act">动作：Backup/BackupAndExport/Restore/Clear 等，其它值交给基类处理</param>
+    /// <returns>高级动作执行结果</returns>
     /// <exception cref="InvalidOperationException"></exception>
     public override async Task<ActionResult> Develop(String act)
     {
@@ -310,7 +310,7 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>导入Excel</summary>
-    /// <returns></returns>
+    /// <returns>导入结果 JSON，含成功与失败行数</returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("导入Excel")]
     [Obsolete("=>ImportFile")]
@@ -336,10 +336,10 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>修改bool值</summary>
-    /// <param name="id"></param>
-    /// <param name="valName"></param>
-    /// <param name="val"></param>
-    /// <returns></returns>
+    /// <param name="id">主键</param>
+    /// <param name="valName">待修改的布尔字段名</param>
+    /// <param name="val">目标布尔值</param>
+    /// <returns>更新结果 JSON，含受影响行数</returns>
     [EntityAuthorize(PermissionFlags.Update)]
     public ActionResult SetBool(Int32 id = 0, String valName = "", Boolean val = true)
     {
@@ -377,9 +377,9 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>启用 或 禁用</summary>
-    /// <param name="id"></param>
-    /// <param name="enable"></param>
-    /// <returns></returns>
+    /// <param name="id">主键</param>
+    /// <param name="enable">是否启用</param>
+    /// <returns>更新结果 JSON</returns>
     [EntityAuthorize(PermissionFlags.Update)]
     public virtual ActionResult SetEnable(Int64 id = 0, Boolean enable = true)
     {
@@ -415,7 +415,7 @@ public partial class EntityController<TEntity, TModel>
 
     #region 批量删除
     /// <summary>删除选中</summary>
-    /// <returns></returns>
+    /// <returns>删除结果 JSON，含成功与失败行数</returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("删除选中")]
     public virtual ActionResult DeleteSelect()
@@ -461,7 +461,7 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>删除全部</summary>
-    /// <returns></returns>
+    /// <returns>删除全部结果 JSON，含成功与失败行数</returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("删除全部")]
     public virtual ActionResult DeleteAll()
@@ -526,7 +526,7 @@ public partial class EntityController<TEntity, TModel>
     #region 导入Excel/Csv/Json/Zip
     /// <summary>导入文件（Excel/Csv/Json/Zip），然后批量写入数据库</summary>
     /// <param name="file">上传的zip文件</param>
-    /// <returns></returns>
+    /// <returns>导入结果 JSON，含成功与失败行数</returns>
     [HttpPost]
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("导入Excel/Csv/Json/Zip")]
@@ -561,7 +561,7 @@ public partial class EntityController<TEntity, TModel>
     private static readonly HttpClient _httpClient = new();
 
     /// <summary>同步数据</summary>
-    /// <returns></returns>
+    /// <returns>同步结果；具体行为由派生控制器决定</returns>
     [NonAction]
     public async Task<ActionResult> Sync()
     {

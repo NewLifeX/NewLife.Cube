@@ -9,7 +9,7 @@ public static class BackupHelper
 {
     /// <summary>判断备份结果是否为已压缩的zip文件</summary>
     /// <param name="bak">备份方法返回的结果</param>
-    /// <returns></returns>
+    /// <returns>备份结果为存在的 zip 文件时返回 true</returns>
     public static Boolean IsCompressedBackup(Object bak)
     {
         if (bak == null) return false;

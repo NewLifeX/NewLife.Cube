@@ -46,7 +46,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>首页</summary>
-    /// <returns></returns>
+    /// <returns>已登录时进入后台，未登录时重定向到登录页</returns>
     //[EntityAuthorize(PermissionFlags.Detail)]
     [AllowAnonymous]
     [HttpGet("/api/[area]/[controller]")]
@@ -70,7 +70,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>服务器信息</summary>
-    /// <returns></returns>
+    /// <returns>服务器信息视图</returns>
     [DisplayName("服务器信息")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
@@ -295,7 +295,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
     /// <summary>保存当前用户工作台卡片布局（排序+隐藏），合并为单行 Parameter 原子保存</summary>
     /// <param name="layout">卡片名到布局项的字典（{name: {sort, hide}}）</param>
-    /// <returns></returns>
+    /// <returns>保存结果 JSON</returns>
     [DisplayName("保存工作台布局")]
     [EntityAuthorize]
     [HttpPost]
@@ -310,7 +310,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>重置当前用户工作台卡片布局为默认（删除布局 Parameter 行）</summary>
-    /// <returns></returns>
+    /// <returns>重置结果 JSON</returns>
     [DisplayName("重置工作台布局")]
     [EntityAuthorize]
     [HttpPost]
@@ -325,7 +325,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
     #region AI 诊断
     /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告（SSE 流式输出）</summary>
-    /// <returns></returns>
+    /// <returns>SSE 流式响应，逐段输出诊断报告</returns>
     [DisplayName("AI 系统诊断")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
@@ -384,7 +384,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     #endregion
 
     /// <summary>服务器变量列表</summary>
-    /// <returns></returns>
+    /// <returns>服务器变量与当前请求信息 JSON</returns>
     [DisplayName("服务器变量列表")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
@@ -417,7 +417,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
     /// <summary>进程模块列表</summary>
     /// <param name="model">All全部,OnlyUser用户</param>
-    /// <returns></returns>
+    /// <returns>进程模块 JSON</returns>
     [DisplayName("进程模块列表")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
@@ -450,8 +450,8 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>程序集列表</summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
+    /// <param name="model">All 全部模块，OnlyUser 仅用户模块</param>
+    /// <returns>程序集列表 JSON</returns>
     [DisplayName("程序集列表")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
@@ -480,7 +480,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>重启</summary>
-    /// <returns></returns>
+    /// <returns>重启结果 JSON</returns>
     [DisplayName("重启")]
     [EntityAuthorize((PermissionFlags)16)]
     [HttpPost]
@@ -505,7 +505,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     /// <summary>
     /// 释放内存，参考之前的Runtime方法
     /// </summary>
-    /// <returns></returns>
+    /// <returns>释放内存结果 JSON</returns>
     [DisplayName("释放内存")]
     [EntityAuthorize((PermissionFlags)16)]
     [HttpGet]
@@ -533,7 +533,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     /// <summary>
     /// 获取菜单树
     /// </summary>
-    /// <returns></returns>
+    /// <returns>菜单树 JSON</returns>
     [EntityAuthorize]
     [HttpGet]
     public ActionResult GetMenuTree(String? module) => Json(0, null, GetMenu(module));

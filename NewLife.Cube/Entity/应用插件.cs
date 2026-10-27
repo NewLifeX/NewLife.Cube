@@ -179,7 +179,7 @@ public partial class AppModule : IEntity<AppModuleModel>
     #region 获取/设置 字段值
     /// <summary>获取/设置 字段值</summary>
     /// <param name="name">字段名</param>
-    /// <returns></returns>
+    /// <returns>字段值</returns>
     public override Object this[String name]
     {
         get => name switch

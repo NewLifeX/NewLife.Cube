@@ -56,7 +56,7 @@ public static class AiFormHelper
 
     /// <summary>判断是否为自动维护字段</summary>
     /// <param name="name">字段名</param>
-    /// <returns></returns>
+    /// <returns>属于自动生成字段时返回 true</returns>
     public static Boolean IsAutoField(String name) => _autoFields.Any(e => name.EqualIgnoreCase(e));
 
     /// <summary>判断配置/表单字段是否为敏感字段（值不应向 AI 暴露）。ApiKey/Secret/Password/Token/连接串等</summary>
@@ -113,7 +113,7 @@ public static class AiFormHelper
     /// <summary>构建表单字段 Schema，供 AI 识别字段结构与约束</summary>
     /// <param name="fields">表单字段集合</param>
     /// <param name="values">当前记录已有值（编辑模式），按字段名匹配填充到 <see cref="AiFormField.Value"/></param>
-    /// <returns></returns>
+    /// <returns>供 AI 使用的字段填表元数据列表</returns>
     public static IList<AiFormField> BuildSchema(FieldCollection fields, IDictionary<String, Object?>? values = null)
     {
         var list = new List<AiFormField>();

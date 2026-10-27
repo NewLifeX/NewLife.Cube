@@ -19,7 +19,7 @@ public class AIService : IAIService
 
     #region 构造
     /// <summary>实例化</summary>
-    /// <param name="setting"></param>
+    /// <param name="setting">魔方配置，读取 AI 开关与服务商参数</param>
     public AIService(CubeSetting setting)
     {
         _setting = setting;
@@ -154,8 +154,8 @@ Output the diagnosis report directly without extra explanation.");
     public ILog Log { get; set; } = Logger.Null;
 
     /// <summary>写日志</summary>
-    /// <param name="action"></param>
-    /// <param name="message"></param>
+    /// <param name="action">操作分类，作为日志前缀</param>
+    /// <param name="message">日志消息</param>
     private void WriteLog(String action, String message) => Log.Info("[AI] {0} {1}", action, message);
     #endregion
 }

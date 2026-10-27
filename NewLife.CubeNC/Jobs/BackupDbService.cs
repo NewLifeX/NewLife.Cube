@@ -20,7 +20,7 @@ public class BackupDbService
     }
 
     /// <summary>备份数据库</summary>
-    /// <param name="connNames"></param>
+    /// <param name="connNames">连接名列表，多个用逗号或分号隔开</param>
     [DisplayName("备份数据库")]
     [Description("参数是连接名connName，多个逗号隔开。仅支持SQLite")]
     public static void BackupDb(String connNames)

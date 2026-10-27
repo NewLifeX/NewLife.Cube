@@ -22,7 +22,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 public class DbController : ControllerBaseX, IPageDataContext
 {
     /// <summary>数据库列表</summary>
-    /// <returns></returns>
+    /// <returns>数据库连接列表 JSON</returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet("/api/[area]/[controller]")]
     public ActionResult Index()
@@ -104,7 +104,7 @@ public class DbController : ControllerBaseX, IPageDataContext
 
     /// <summary>压缩数据库（回收空闲空间）。对SQLite执行VACUUM</summary>
     /// <param name="name">连接名</param>
-    /// <returns></returns>
+    /// <returns>压缩结果 JSON</returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost("/api/[area]/[controller]/compact")]
     public ActionResult Compact(String? name)
@@ -351,8 +351,8 @@ public class DbController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>备份数据库</summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
+    /// <param name="name">连接名；空则处理全部连接</param>
+    /// <returns>备份后返回数据库列表</returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
     public ActionResult Backup(String? name)
@@ -397,8 +397,8 @@ public class DbController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>备份并压缩数据库</summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
+    /// <param name="name">连接名；空则处理全部连接</param>
+    /// <returns>备份并压缩后返回数据库列表</returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
     public ActionResult BackupAndCompress(String? name)
@@ -421,8 +421,8 @@ public class DbController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>下载数据库备份</summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
+    /// <param name="name">连接名</param>
+    /// <returns>备份文件下载响应</returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
     public ActionResult Download(String name)

@@ -127,7 +127,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// </summary>
     /// <param name="isEnable">启用/禁用</param>
     /// <param name="reason">操作原因</param>
-    /// <returns></returns>
+    /// <returns>成功更新的行数</returns>
     protected virtual Int32 EnableOrDisableSelect(Boolean isEnable, String reason)
     {
         var count = 0;
@@ -157,7 +157,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="entity">实体对象</param>
     /// <param name="fieldName">字段名</param>
     /// <param name="value">数值</param>
-    /// <returns></returns>
+    /// <returns>字段值已变更并保存时返回 true</returns>
     protected virtual Boolean OnSetField(TEntity entity, String fieldName, Boolean value)
     {
         if (entity == null || entity[fieldName].ToBoolean() == value) return false;
@@ -172,13 +172,13 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
     #region 实体操作重载
     /// <summary>添加实体对象</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">待插入的实体</param>
+    /// <returns>受影响行数</returns>
     protected virtual Int32 OnInsert(TEntity entity) => entity.Insert();
 
     /// <summary>更新实体对象</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">待更新的实体</param>
+    /// <returns>受影响行数</returns>
     protected virtual Int32 OnUpdate(TEntity entity)
     {
         if (Request.HasFormContentType)
@@ -209,8 +209,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     }
 
     /// <summary>删除实体对象</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">待删除的实体</param>
+    /// <returns>受影响行数</returns>
     protected virtual Int32 OnDelete(TEntity entity) => entity.Delete();
     #endregion
 
@@ -243,7 +243,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="factory">实体工厂</param>
     /// <param name="list">新数据列表</param>
     /// <param name="context">导入上下文（含表头与字段）</param>
-    /// <returns></returns>
+    /// <returns>成功导入的行数</returns>
     protected virtual Int32 OnImport(IEntityFactory factory, IList<IEntity> list, ImportContext context)
     {
         if (list.Count == 0) return 0;
@@ -310,7 +310,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="stream">数据流。可能来自上传文件，也可能来自解压缩文件</param>
     /// <param name="factory">实体工厂。不一定是当前实体类</param>
     /// <param name="page">分页请求参数</param>
-    /// <returns></returns>
+    /// <returns>成功导入的行数</returns>
     protected virtual Int32 ImportExcel(String name, Stream stream, IEntityFactory factory, Pager page)
     {
         using var span = DefaultTracer.Instance?.NewSpan(nameof(ImportExcel), new { name, entity = factory?.EntityType.FullName });
@@ -428,7 +428,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="stream">数据流。可能来自上传文件，也可能来自解压缩文件</param>
     /// <param name="factory">实体工厂。不一定是当前实体类</param>
     /// <param name="page">分页请求参数</param>
-    /// <returns></returns>
+    /// <returns>成功导入的行数</returns>
     protected virtual Int32 ImportCsv(String name, Stream stream, IEntityFactory factory, Pager page)
     {
         using var span = DefaultTracer.Instance?.NewSpan(nameof(ImportCsv), new { name, entity = factory?.EntityType.FullName });
@@ -536,7 +536,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="stream">数据流。可能来自上传文件，也可能来自解压缩文件</param>
     /// <param name="factory">实体工厂。不一定是当前实体类</param>
     /// <param name="page">分页请求参数</param>
-    /// <returns></returns>
+    /// <returns>成功导入的行数</returns>
     protected virtual Int32 ImportJson(String name, Stream stream, IEntityFactory factory, Pager page)
     {
         using var span = DefaultTracer.Instance?.NewSpan(nameof(ImportJson), new { name, entity = factory?.EntityType.FullName });
@@ -608,7 +608,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="stream">数据流。可能来自上传文件，也可能来自解压缩文件</param>
     /// <param name="factory">实体工厂。不一定是当前实体类</param>
     /// <param name="page">分页请求参数</param>
-    /// <returns></returns>
+    /// <returns>成功导入的行数</returns>
     protected virtual Int32 ImportZip(String name, Stream stream, IEntityFactory factory, Pager page)
     {
         using var span = DefaultTracer.Instance?.NewSpan(nameof(ImportZip), new { name, entity = factory?.EntityType.FullName });
@@ -779,7 +779,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// XCode 的 DataScopeInterceptor 会把 IUserScope.UserId 映射到 User.ID，
     /// 使新建 User 实体带出当前登录用户的主键，进而被误判为编辑并可能覆盖现有数据。
     /// </remarks>
-    /// <returns></returns>
+    /// <returns>新的实体实例</returns>
     private TEntity CreateNewEntity()
     {
         var entity = Factory.Create(true) as TEntity;
@@ -808,7 +808,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
     /// <summary>将通过独立上传的临时附件绑定到已保存主记录。补写 Key/Title/Url 字段</summary>
     /// <param name="entity">主记录实体，需已保存并持有主键</param>
-    /// <returns></returns>
+    /// <returns>绑定附件后的异步任务</returns>
     protected virtual Task BindAttachments(TEntity entity)
     {
         var ids = GetAttachmentIds();
@@ -839,7 +839,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <summary>保存所有上传文件，并保存附件访问路径到实体对象的对应属性</summary>
     /// <param name="entity">实体对象</param>
     /// <param name="uploadPath">上传目录。为空时默认UploadPath配置</param>
-    /// <returns></returns>
+    /// <returns>已保存文件的可访问地址列表</returns>
     protected virtual async Task<IList<String>> SaveFiles(TEntity entity, String uploadPath = null)
     {
         var rs = new List<String>();
@@ -950,7 +950,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="att">附件实体</param>
     /// <param name="uploadPath">上传目录</param>
     /// <param name="file">上传文件</param>
-    /// <returns></returns>
+    /// <returns>文件保存后的异步任务</returns>
     protected virtual async Task OnFileSaved(TEntity entity, Attachment att, String uploadPath, IFormFile file)
     {
         // 广播指定附件在当前节点可用

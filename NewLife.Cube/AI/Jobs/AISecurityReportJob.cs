@@ -20,8 +20,8 @@ public class AISecurityReportJob : CubeJobBase
 
     #region 构造
     /// <summary>实例化</summary>
-    /// <param name="ai"></param>
-    /// <param name="tracer"></param>
+    /// <param name="ai">AI 服务，用于生成安全巡检报告</param>
+    /// <param name="tracer">链路追踪器</param>
     public AISecurityReportJob(IAIService ai, ITracer tracer)
     {
         _ai = ai;
@@ -31,8 +31,8 @@ public class AISecurityReportJob : CubeJobBase
 
     #region 方法
     /// <summary>执行</summary>
-    /// <param name="argument"></param>
-    /// <returns></returns>
+    /// <param name="argument">作业参数，当前未使用</param>
+    /// <returns>执行结果描述，写入作业日志</returns>
     public override async Task<String> Execute(String argument)
     {
         using var span = _tracer?.NewSpan(nameof(AISecurityReportJob));

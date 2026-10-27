@@ -23,7 +23,7 @@ public partial class EntityController<TEntity, TModel>
 
     /// <summary>删除数据。主键在路径中</summary>
     /// <param name="id">主键</param>
-    /// <returns></returns>
+    /// <returns>删除结果响应，失败时携带错误码与消息</returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("Delete {type}")]
     [HttpDelete("/api/[area]/[controller]/{id}")]
@@ -48,7 +48,7 @@ public partial class EntityController<TEntity, TModel>
 
     /// <summary>批量或按条件删除。ids 传选中主键（逗号分隔或重复参数，最多 <see cref="MaxBatchDelete"/> 个）；未传 ids 时按当前搜索条件删除全部匹配行</summary>
     /// <param name="ids">主键集合</param>
-    /// <returns></returns>
+    /// <returns>删除结果响应；Data 为受影响行数说明，失败时携带错误码与消息</returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("Delete {type} in bulk")]
     [HttpDelete("/api/[area]/[controller]")]
@@ -99,8 +99,8 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>添加数据</summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
+    /// <param name="model">提交的模型数据，字段与实体属性对应</param>
+    /// <returns>新增后的实体响应，校验失败时携带字段错误</returns>
     [DisplayName("Add {type}")]
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost("/api/[area]/[controller]")]
@@ -127,8 +127,8 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>添加数据</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">已通过校验、待写入数据库的实体</param>
+    /// <returns>新增结果响应</returns>
     [NonAction]
     protected virtual async Task<ApiResponse<TEntity>> ProcessInsert(TEntity entity)
     {
@@ -189,7 +189,7 @@ public partial class EntityController<TEntity, TModel>
     /// </remarks>
     /// <param name="id">主键</param>
     /// <param name="model">提交的模型</param>
-    /// <returns></returns>
+    /// <returns>更新后的实体响应；未提交字段保持原值</returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("Update {type}")]
     [HttpPut("/api/[area]/[controller]/{id}")]
@@ -275,7 +275,7 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>读取请求体中实际提交的顶层字段名。未启用缓冲或非 JSON 对象时返回 null</summary>
-    /// <returns></returns>
+    /// <returns>请求体中实际出现的顶层字段名集合；无法读取请求体时返回 null</returns>
     protected async Task<ISet<String>> GetSubmittedFieldsAsync()
     {
         var body = Request.Body;
@@ -304,8 +304,8 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>更新数据</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">已完成字段合并、待更新的实体</param>
+    /// <returns>更新结果响应</returns>
     [NonAction]
     protected virtual async Task<ApiResponse<TEntity>> ProcessUpdate(TEntity entity)
     {

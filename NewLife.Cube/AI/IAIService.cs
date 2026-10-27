@@ -12,7 +12,7 @@ public interface IAIService
     /// <param name="prompt">提示词</param>
     /// <param name="data">数据（JSON 或文本，可为空）</param>
     /// <param name="cancellationToken">取消令牌</param>
-    /// <returns></returns>
+    /// <returns>模型回复文本</returns>
     Task<String> ChatAsync(String prompt, String data, CancellationToken cancellationToken = default);
 
     /// <summary>系统健康诊断（流式输出）。逐块返回生成内容</summary>

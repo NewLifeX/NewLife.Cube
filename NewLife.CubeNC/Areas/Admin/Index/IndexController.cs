@@ -36,9 +36,9 @@ public class IndexController : ControllerBaseX, IPageDataContext
     private IndexController() => PageSetting.EnableNavbar = false;
 
     /// <summary>实例化</summary>
-    /// <param name="manageProvider"></param>
-    /// <param name="appLifetime"></param>
-    /// <param name="ai"></param>
+    /// <param name="manageProvider">管理器提供者，用于登录态与用户信息</param>
+    /// <param name="appLifetime">应用生命周期，重启动作使用</param>
+    /// <param name="ai">AI 服务，供系统诊断使用</param>
     /// <param name="widgetManager">工作台组件管理器</param>
     public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime, IAIService ai, WidgetManager widgetManager) : this()
     {
@@ -49,7 +49,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>首页</summary>
-    /// <returns></returns>
+    /// <returns>已登录时返回框架页，未登录时重定向到登录页</returns>
     [AllowAnonymous]
     public ActionResult Index()
     {
@@ -106,7 +106,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>工作台。聚合注册的工作台组件（Widget）渲染仪表盘首页，所有登录用户可访问，组件内按角色过滤</summary>
-    /// <returns></returns>
+    /// <returns>工作台视图</returns>
     [DisplayName("工作台")]
     // 工作台是登录后的首页，普通用户也需访问；组件内容由 WidgetManager 按角色过滤
     [EntityAuthorize]
@@ -146,7 +146,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
     /// <summary>保存工作台组件排序（按用户存 Parameter 表，分类 Widget.Layout 单行 JSON）</summary>
     /// <param name="order">组件名数组，按显示顺序</param>
-    /// <returns></returns>
+    /// <returns>保存结果 JSON</returns>
     [DisplayName("保存排序")]
     [EntityAuthorize]
     [HttpPost]
@@ -175,7 +175,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     /// <summary>隐藏或恢复工作台组件（用户级布局，恢复后回到原排序位置）</summary>
     /// <param name="name">组件名</param>
     /// <param name="hide">是否隐藏</param>
-    /// <returns></returns>
+    /// <returns>隐藏/恢复结果 JSON</returns>
     [DisplayName("隐藏组件")]
     [EntityAuthorize]
     [HttpPost]
@@ -191,7 +191,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>重置用户工作台布局为默认（删除布局配置，恢复出厂排序与显示）</summary>
-    /// <returns></returns>
+    /// <returns>重置结果 JSON</returns>
     [DisplayName("重置布局")]
     [EntityAuthorize]
     [HttpPost]
@@ -206,7 +206,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>监控数据。工作台性能曲线轮询接口，返回CPU/内存快照</summary>
-    /// <returns></returns>
+    /// <returns>CPU/内存快照 JSON</returns>
     [DisplayName("监控数据")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
@@ -234,8 +234,8 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>服务器信息</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+    /// <param name="id">子页标识：processmodules/assembly/session/cache/servervar，空则概览页</param>
+    /// <returns>服务器信息视图</returns>
     [DisplayName("服务器信息")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [Menu(0, false, Icon = "fa-home", LastUpdate = "20260827")]
@@ -290,7 +290,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
     #region AI 诊断
     /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告（SSE 流式输出）</summary>
-    /// <returns></returns>
+    /// <returns>SSE 流式响应，逐段输出诊断报告</returns>
     [DisplayName("AI 系统诊断")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
@@ -349,7 +349,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     #endregion
 
     /// <summary>获取当前应用程序的所有程序集，不包括系统程序集，仅限本目录</summary>
-    /// <returns></returns>
+    /// <returns>本目录下的应用程序集列表</returns>
     public static List<AssemblyX> GetMyAssemblies()
     {
         var list = new List<AssemblyX>();
@@ -387,7 +387,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>重启</summary>
-    /// <returns></returns>
+    /// <returns>重启结果</returns>
     [DisplayName("重启")]
     [EntityAuthorize((PermissionFlags)16)]
     public ActionResult Restart()
@@ -429,7 +429,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     /// <summary>
     /// 释放内存，参考之前的Runtime方法
     /// </summary>
-    /// <returns></returns>
+    /// <returns>释放内存结果</returns>
     [DisplayName("释放内存")]
     [EntityAuthorize((PermissionFlags)32)]
     public ActionResult MemoryFree()
@@ -456,7 +456,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     /// <summary>
     /// 获取菜单树
     /// </summary>
-    /// <returns></returns>
+    /// <returns>菜单树 JSON</returns>
     [EntityAuthorize]
     public ActionResult GetMenuTree(String module) => Ok(data: GetMenu(module));
 

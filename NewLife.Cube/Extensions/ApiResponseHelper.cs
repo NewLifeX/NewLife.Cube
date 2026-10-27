@@ -75,7 +75,10 @@ public static partial class ApiResponseHelper
     }
     /// <summary>内部错误</summary>
     public static ApiResponse<T> ToRemotingErrorApiResponse<T>(this T data, String errorMessage) => ToFailApiResponse(data, CubeCode.RemotingError, errorMessage);
-    /// <returns>强制登出</returns>
+    /// <summary>强制登出。返回指定错误码，前端据此清理登录态并跳转登录页</summary>
+    /// <param name="data">响应数据</param>
+    /// <param name="message">提示消息，空则使用默认的“请重新登录”</param>
+    /// <returns>登录态失效的错误响应</returns>
     public static ApiResponse<T> ToLogOffApiResponse<T>(this T data, String? message = null) => ToFailApiResponse(data, CubeCode.LogOff, message ?? L.T("Please sign in again"));
     /// <summary>内部错误</summary>
     public static ApiResponse<T> ToErrorApiResponse<T>(this T data, String errorMessage) => ToFailApiResponse(data, CubeCode.Exception, errorMessage);

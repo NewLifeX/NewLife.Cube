@@ -57,7 +57,7 @@ public class AiController : ControllerBaseX
 
     #region AI 对话
     /// <summary>AI 对话（全局统一端点）。按请求目标解析页面控制器能力，SSE 流式返回</summary>
-    /// <returns></returns>
+    /// <returns>SSE 流式响应，逐段输出助手回复与工具事件</returns>
     [DisplayName("AI chat")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpPost]
@@ -114,7 +114,7 @@ public class AiController : ControllerBaseX
 
     /// <summary>构建 AI 对话系统提示词（全局端点，无实体上下文）</summary>
     /// <param name="req">对话请求</param>
-    /// <returns></returns>
+    /// <returns>系统提示词文本</returns>
     private static String BuildChatSystemPrompt(AiChatRequest req)
     {
         var sysName = SysConfig.Current?.DisplayName;
@@ -355,7 +355,7 @@ public class AiController : ControllerBaseX
     #endregion
 
     /// <summary>浏览器操作结果回传。前端执行 run_js 脚本后回传结果，完成等待中的工具调用</summary>
-    /// <returns></returns>
+    /// <returns>处理结果 JSON</returns>
     [DisplayName("Browser operation result callback")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpPost]

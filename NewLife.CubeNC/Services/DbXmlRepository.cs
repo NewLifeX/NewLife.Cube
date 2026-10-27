@@ -14,7 +14,7 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
     private TimerX _timer;
 
     /// <summary>实例化</summary>
-    /// <param name="key"></param>
+    /// <param name="key">密钥存储键，对应参数表中该分类下的条目名</param>
     public DbXmlRepository(String key)
     {
         if (key.IsNullOrEmpty()) throw new ArgumentNullException(nameof(key));
@@ -27,7 +27,7 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
     }
 
     /// <summary>销毁</summary>
-    /// <param name="disposing"></param>
+    /// <param name="disposing">是否释放托管资源</param>
     protected override void Dispose(Boolean disposing)
     {
         base.Dispose(disposing);
@@ -36,11 +36,11 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
     }
 
     /// <summary>获取所有元素</summary>
-    /// <returns></returns>
+    /// <returns>数据库中全部密钥 XML 元素</returns>
     public IReadOnlyCollection<XElement> GetAllElements() => GetAllElementsCore().ToList().AsReadOnly();
 
     /// <summary>遍历元素</summary>
-    /// <returns></returns>
+    /// <returns>逐条读取的密钥 XML 元素序列</returns>
     private IEnumerable<XElement> GetAllElementsCore()
     {
         var list = Parameter.FindAllByUserID(0, _key);
@@ -52,8 +52,8 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
     }
 
     /// <summary>存储元素</summary>
-    /// <param name="element"></param>
-    /// <param name="friendlyName"></param>
+    /// <param name="element">待写入的密钥 XML 元素</param>
+    /// <param name="friendlyName">友好名称，用作参数表条目名，便于排查</param>
     public void StoreElement(XElement element, String friendlyName)
     {
         var p = Parameter.GetOrAdd(0, _key, friendlyName);
@@ -63,7 +63,7 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
     }
 
     /// <summary>自动删除已过期的key</summary>
-    /// <param name="state"></param>
+    /// <param name="state">定时器状态对象，未使用</param>
     private void TrimExpired(Object state)
     {
         var list = Parameter.FindAllByUserID(0, _key);
