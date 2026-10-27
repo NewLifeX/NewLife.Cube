@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterOutlet, RouterLink } from '@angular/router';
-import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
+import { NavigationEnd, Router, RouterOutlet, RouterLink } from '@angular/router';
+import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
@@ -11,6 +11,7 @@ import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 import { FormsModule } from '@angular/forms';
 import { AppService } from '../services/app.service';
 import { UserService } from '../services/user.service';
@@ -22,7 +23,7 @@ import { UserService } from '../services/user.service';
     CommonModule, RouterOutlet, RouterLink, FormsModule,
     NzLayoutModule, NzMenuModule, NzBreadCrumbModule,
     NzButtonModule, NzDropDownModule, NzAvatarModule,
-    NzSwitchModule, NzIconModule, NzDrawerModule,
+    NzSwitchModule, NzIconModule, NzDrawerModule, NzTagModule,
   ],
   template: `
     <nz-layout style="min-height: 100vh">
@@ -90,6 +91,21 @@ import { UserService } from '../services/user.service';
         </nz-header>
 
         <nz-content class="layout-content">
+          @if (tabs.length > 1) {
+            <div class="tab-strip">
+              @for (t of tabs; track t.id) {
+                <nz-tag
+                  [nzMode]="t.closable ? 'closeable' : 'default'"
+                  [nzColor]="t.id === activeTabId ? 'blue' : undefined"
+                  (click)="activateTab(t)"
+                  (nzOnClose)="closeTabAndNavigate(t.id)"
+                >
+                  {{ t.title }}
+                </nz-tag>
+              }
+              <button nz-button nzType="link" nzSize="small" (click)="closeAll()">关闭全部</button>
+            </div>
+          }
           <router-outlet />
         </nz-content>
       </nz-layout>
@@ -105,6 +121,13 @@ import { UserService } from '../services/user.service';
           padding: 8px;
         }
       }
+    .tab-strip {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
     `,
   ],
 })
@@ -115,6 +138,38 @@ export class LayoutComponent implements OnInit {
     private router: Router,
   ) {}
 
+  syncTab() {
+    const url = this.router.url.split('#')[0];
+    const path = url.split('?')[0];
+    const tab = createTab(path, url, path);
+    this.tabs = openTab(this.tabs, tab);
+    this.activeTabId = tab.id;
+  }
+
+  activateTab(tab: TabItem) {
+    if (tab.id === this.activeTabId) return;
+    void this.router.navigateByUrl(tab.fullPath);
+  }
+
+  closeTabAndNavigate(id: string) {
+    const result = closeTab(this.tabs, id, this.activeTabId);
+    this.tabs = result.tabs;
+    if (result.nextActiveId) {
+      this.activeTabId = result.nextActiveId;
+      const next = result.tabs.find((t) => t.id === result.nextActiveId);
+      if (next) void this.router.navigateByUrl(next.fullPath);
+    }
+  }
+
+  closeAll() {
+    this.tabs = closeAllTabs(this.tabs);
+    const home = this.tabs[0];
+    if (home) {
+      this.activeTabId = home.id;
+      void this.router.navigateByUrl(home.fullPath);
+    }
+  }
+
   /** 窄屏是否由本组件自动折叠，宽屏时据此恢复展开 */
   private autoCollapsed = false;
   /** 窄屏状态：使用抽屉菜单 */
@@ -122,7 +177,15 @@ export class LayoutComponent implements OnInit {
   /** 窄屏抽屉是否打开 */
   mobileOpen = false;
 
+  // --- 多标签页 ---
+  tabs: TabItem[] = [];
+  activeTabId = '';
+
   ngOnInit() {
+    this.syncTab();
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) this.syncTab();
+    });
     this.appService.fetchSiteConfig();
     if (!this.userService.isLoggedIn()) {
       this.userService.fetchUserInfo().then(() => {

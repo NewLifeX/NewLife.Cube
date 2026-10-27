@@ -63,6 +63,17 @@
 
       <!-- Content -->
       <t-content class="layout-content">
+        <div v-if="tabs.length > 1" class="tab-strip">
+          <t-tag
+            v-for="t in tabs"
+            :key="t.id"
+            :theme="t.id === activeTabId ? 'primary' : 'default'"
+            @click="activateTab(t)"
+          >
+            {{ t.title }}
+          </t-tag>
+          <t-button variant="text" size="small" @click="closeAll">关闭全部</t-button>
+        </div>
         <router-view />
       </t-content>
     </t-layout>
@@ -71,8 +82,8 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
+import { useRoute, useRouter } from 'vue-router';
+import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
 import { ViewListIcon, SunnyIcon, MoonIcon } from 'tdesign-icons-vue-next';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
@@ -81,7 +92,44 @@ import type { MenuItem } from '@newlifex/api-core';
 
 const appStore = useAppStore();
 const userStore = useUserStore();
+
+// --- 多标签页 ---
+const tabs = ref<TabItem[]>([]);
+const activeTabId = ref('');
+
+function syncTab() {
+  const tab = createTab(route.path, route.fullPath, (route.meta.title as string) || route.path);
+  tabs.value = openTab(tabs.value, tab);
+  activeTabId.value = tab.id;
+}
+
+function activateTab(tab: TabItem) {
+  if (tab.id === activeTabId.value) return;
+  void router.push(tab.fullPath);
+}
+
+function closeTabAndNavigate(id: string) {
+  const result = closeTab(tabs.value, id, activeTabId.value);
+  tabs.value = result.tabs;
+  if (result.nextActiveId) {
+    activeTabId.value = result.nextActiveId;
+    const next = tabs.value.find((t) => t.id === result.nextActiveId);
+    if (next) void router.push(next.fullPath);
+  }
+}
+
+function closeAll() {
+  tabs.value = closeAllTabs(tabs.value);
+  const home = tabs.value[0];
+  if (home) {
+    activeTabId.value = home.id;
+    void router.push(home.fullPath);
+  }
+}
+
+watch(() => route.fullPath, syncTab, { immediate: true });
 const router = useRouter();
+const route = useRoute();
 
 const userDropdown = [{ content: '退出登录', value: 'logout' }];
 
@@ -102,7 +150,9 @@ const mobileMenu = ref(false);
 let autoCollapsed = false;
 
 function syncResponsive() {
-  const narrow = shouldAutoCollapseSidebar(window.innerWidth);
+  
+
+const narrow = shouldAutoCollapseSidebar(window.innerWidth);
   isNarrow.value = narrow;
   if (narrow) {
     if (!appStore.collapsed) {
@@ -159,5 +209,13 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncResponsive));
   .layout-content {
     padding: 8px;
   }
+}
+
+.tab-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 </style>

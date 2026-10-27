@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
-import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
+import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
 import api from '@/api';
 import type { MenuItem as CubeMenuItem } from '@newlifex/api-core';
 
@@ -19,6 +19,43 @@ export default function Layout() {
 
   const [menus, setMenus] = useState<CubeMenuItem[]>([]);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // --- 多标签页 ---
+  const [tabs, setTabs] = useState<TabItem[]>([]);
+  const [activeTabId, setActiveTabId] = useState('');
+
+  useEffect(() => {
+    const tab = createTab(location.pathname, location.pathname + location.search, location.pathname);
+    setTabs((prev) => openTab(prev, tab));
+    setActiveTabId(tab.id);
+  }, [location.pathname, location.search]);
+
+  const activateTab = (tab: TabItem) => {
+    if (tab.id === activeTabId) return;
+    navigate(tab.fullPath);
+  };
+
+  const closeTabAndNavigate = (id: string) => {
+    setTabs((prev) => {
+      const result = closeTab(prev, id, activeTabId);
+      if (result.nextActiveId) {
+        setActiveTabId(result.nextActiveId);
+        const next = result.tabs.find((t) => t.id === result.nextActiveId);
+        if (next) navigate(next.fullPath);
+      }
+      return result.tabs;
+    });
+  };
+
+  const closeAll = () => {
+    const remaining = closeAllTabs(tabs);
+    setTabs(remaining);
+    const home = remaining[0];
+    if (home) {
+      setActiveTabId(home.id);
+      navigate(home.fullPath);
+    }
+  };
   const [isNarrow, setIsNarrow] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -132,6 +169,24 @@ export default function Layout() {
 
         {/* 内容 */}
         <main className="flex-1 overflow-auto p-2 md:p-4">
+          {tabs.length > 1 ? (
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              {tabs.map((t) => (
+                <span
+                  key={t.id}
+                  className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm ${
+                    t.id === activeTabId ? 'border-primary bg-primary text-primary-foreground' : 'bg-card'
+                  }`}
+                >
+                  <button type="button" onClick={() => activateTab(t)}>{t.title}</button>
+                  {t.closable ? (
+                    <button type="button" className="text-xs" onClick={() => closeTabAndNavigate(t.id)}>×</button>
+                  ) : null}
+                </span>
+              ))}
+              <Button variant="ghost" size="sm" onClick={closeAll}>关闭全部</Button>
+            </div>
+          ) : null}
           <Outlet />
         </main>
       </div>

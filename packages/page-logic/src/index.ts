@@ -649,6 +649,19 @@ export type { ListViewMode } from './list-chart';
 export { isBlankValue, validateRequiredFields } from './form';
 export type { FieldValidationError } from './form';
 
+// 多标签页（页签导航）
+export {
+  HOME_PATHS,
+  isHomePath,
+  buildTabId,
+  createTab,
+  openTab,
+  closeTab,
+  closeOtherTabs,
+  closeAllTabs,
+} from './tabs';
+export type { TabItem } from './tabs';
+
 // 工作台卡片布局（拖动排序 / 隐藏 / 持久化）
 export { mergeWidgetsWithLayout, buildWidgetLayout, moveWidget, createWidgetLayoutLoader } from './widget-layout';
 export type { WidgetLayout, WidgetLayoutMap, LayoutWidget, RankedWidgets } from './widget-layout';

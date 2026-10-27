@@ -57,6 +57,19 @@
 
       <!-- 内容区 -->
       <n-layout-content class="layout-content">
+        <div v-if="tabs.length > 1" class="tab-strip">
+          <n-tag
+            v-for="t in tabs"
+            :key="t.id"
+            :type="t.id === activeTabId ? 'success' : 'default'"
+            :bordered="t.id !== activeTabId"
+            closable
+            @click="activateTab(t)"
+          >
+            {{ t.title }}
+          </n-tag>
+          <n-button text size="tiny" @click="closeAll">关闭全部</n-button>
+        </div>
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <keep-alive>
@@ -72,7 +85,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
+import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import SidebarMenu from './SidebarMenu.vue';
@@ -82,6 +95,42 @@ const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
 const userStore = useUserStore();
+
+// --- 多标签页 ---
+const tabs = ref<TabItem[]>([]);
+const activeTabId = ref('');
+
+function syncTab() {
+  const tab = createTab(route.path, route.fullPath, (route.meta.title as string) || route.path);
+  tabs.value = openTab(tabs.value, tab);
+  activeTabId.value = tab.id;
+}
+
+function activateTab(tab: TabItem) {
+  if (tab.id === activeTabId.value) return;
+  void router.push(tab.fullPath);
+}
+
+function closeTabAndNavigate(id: string) {
+  const result = closeTab(tabs.value, id, activeTabId.value);
+  tabs.value = result.tabs;
+  if (result.nextActiveId) {
+    activeTabId.value = result.nextActiveId;
+    const next = tabs.value.find((t) => t.id === result.nextActiveId);
+    if (next) void router.push(next.fullPath);
+  }
+}
+
+function closeAll() {
+  tabs.value = closeAllTabs(tabs.value);
+  const home = tabs.value[0];
+  if (home) {
+    activeTabId.value = home.id;
+    void router.push(home.fullPath);
+  }
+}
+
+watch(() => route.fullPath, syncTab, { immediate: true });
 
 const breadcrumbs = computed(() => route.matched.filter((r) => r.meta?.title));
 
@@ -223,5 +272,13 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncResponsive));
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.tab-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 </style>

@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   AppBar, Box, Drawer, IconButton, List, ListItemButton, ListItemIcon,
   ListItemText, Toolbar, Typography, Menu, MenuItem, Avatar, Collapse,
-  Divider, Switch, FormControlLabel, Breadcrumbs, Link,
+  Divider, Switch, FormControlLabel, Breadcrumbs, Link, Chip, Button,
 } from '@mui/material';
 import {
   Menu as MenuIcon, ChevronLeft, ExpandLess, ExpandMore,
@@ -11,7 +11,7 @@ import {
 } from '@mui/icons-material';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
-import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
+import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
 import api from '@/api';
 import type { MenuItem as CubeMenuItem } from '@newlifex/api-core';
 
@@ -27,6 +27,43 @@ export default function Layout() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isNarrow, setIsNarrow] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // --- 多标签页 ---
+  const [tabs, setTabs] = useState<TabItem[]>([]);
+  const [activeTabId, setActiveTabId] = useState('');
+
+  useEffect(() => {
+    const tab = createTab(location.pathname, location.pathname + location.search, location.pathname);
+    setTabs((prev) => openTab(prev, tab));
+    setActiveTabId(tab.id);
+  }, [location.pathname, location.search]);
+
+  const activateTab = (tab: TabItem) => {
+    if (tab.id === activeTabId) return;
+    navigate(tab.fullPath);
+  };
+
+  const closeTabAndNavigate = (id: string) => {
+    setTabs((prev) => {
+      const result = closeTab(prev, id, activeTabId);
+      if (result.nextActiveId) {
+        setActiveTabId(result.nextActiveId);
+        const next = result.tabs.find((t) => t.id === result.nextActiveId);
+        if (next) navigate(next.fullPath);
+      }
+      return result.tabs;
+    });
+  };
+
+  const closeAll = () => {
+    const remaining = closeAllTabs(tabs);
+    setTabs(remaining);
+    const home = remaining[0];
+    if (home) {
+      setActiveTabId(home.id);
+      navigate(home.fullPath);
+    }
+  };
+
 
   // 检查登录
   useEffect(() => {
@@ -139,6 +176,21 @@ export default function Layout() {
         </AppBar>
 
         <Box sx={{ p: 2, flexGrow: 1, overflow: 'auto' }}>
+          {tabs.length > 1 ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+              {tabs.map((t) => (
+                <Chip
+                  key={t.id}
+                  label={t.title}
+                  color={t.id === activeTabId ? 'primary' : 'default'}
+                  variant={t.id === activeTabId ? 'filled' : 'outlined'}
+                  onClick={() => activateTab(t)}
+                  onDelete={t.closable ? () => closeTabAndNavigate(t.id) : undefined}
+                />
+              ))}
+              <Button size="small" onClick={closeAll}>关闭全部</Button>
+            </Box>
+          ) : null}
           <Outlet />
         </Box>
       </Box>

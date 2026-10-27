@@ -70,6 +70,11 @@ for (const skin of Object.keys(skins)) {
     expectReference(skin, 'moveWidget', '工作台未接入卡片拖动排序');
   });
 
+  test(`${skin}: 布局接入多标签页（SKIN-10）`, () => {
+    expectReference(skin, 'createTab', '布局未接入共享多标签页逻辑');
+    expectReference(skin, 'openTab', '布局未接入共享多标签页逻辑');
+  });
+
   test(`${skin}: 表单页按字段类型渲染并拦截必填（SKIN-6）`, () => {
     expectReference(skin, 'FieldInput', '未使用字段渲染组件 FieldInput');
     expectReference(skin, 'validateRequiredFields', '表单提交前未接入共享必填校验');

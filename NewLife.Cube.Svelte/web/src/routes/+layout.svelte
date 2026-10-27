@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { shouldAutoCollapseSidebar } from '@newlifex/page-logic';
+  import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
   import { collapsed, darkMode, siteConfig, siteTitle } from '$lib/stores/app';
   import { user, menus, isLoggedIn, displayName, fetchUserInfo, fetchMenus, logout } from '$lib/stores/user';
   import { getApi } from '$lib/api';
@@ -19,6 +19,42 @@
     page.url.pathname;
     mobileOpen = false;
   });
+
+  // --- 多标签页 ---
+  let tabs: TabItem[] = $state([]);
+  let activeTabId = $state('');
+
+  $effect(() => {
+    const path = page.url.pathname;
+    const search = page.url.search;
+    const tab = createTab(path, path + search, path);
+    tabs = openTab(tabs, tab);
+    activeTabId = tab.id;
+  });
+
+  function activateTab(tab: TabItem) {
+    if (tab.id === activeTabId) return;
+    goto(tab.fullPath);
+  }
+
+  function closeTabAndNavigate(id: string) {
+    const result = closeTab(tabs, id, activeTabId);
+    tabs = result.tabs;
+    if (result.nextActiveId) {
+      activeTabId = result.nextActiveId;
+      const next = result.tabs.find((t) => t.id === result.nextActiveId);
+      if (next) goto(next.fullPath);
+    }
+  }
+
+  function closeAll() {
+    tabs = closeAllTabs(tabs);
+    const home = tabs[0];
+    if (home) {
+      activeTabId = home.id;
+      goto(home.fullPath);
+    }
+  }
 
   onMount(async () => {
     try {
@@ -195,6 +231,22 @@
 
       <!-- Content -->
       <main class="flex-1 overflow-auto p-3 sm:p-6" style="background: var(--bg-secondary)">
+        {#if tabs.length > 1}
+          <div class="mb-3 flex flex-wrap items-center gap-2">
+            {#each tabs as t}
+              <span
+                class="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm"
+                style={t.id === activeTabId ? 'border-color: var(--primary); background: var(--primary); color: #fff' : 'border-color: var(--border)'}
+              >
+                <button type="button" onclick={() => activateTab(t)}>{t.title}</button>
+                {#if t.closable}
+                  <button type="button" class="text-xs" onclick={() => closeTabAndNavigate(t.id)}>×</button>
+                {/if}
+              </span>
+            {/each}
+            <button type="button" class="text-sm underline" onclick={closeAll}>关闭全部</button>
+          </div>
+        {/if}
         <slot />
       </main>
     </div>
