@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using NewLife;
 using NewLife.Log;
 
 namespace XUnitTest;
@@ -21,6 +23,16 @@ internal static class TestModuleInitializer
         catch
         {
             // 日志初始化失败不阻断测试
+        }
+
+        // 断言基于简体中文文案。固定运行时语言，避免无 LANG 的 CI 走英文源文兜底、与本地中文环境结果不一致
+        try
+        {
+            Localization.Culture = CultureInfo.GetCultureInfo("zh-CN");
+        }
+        catch
+        {
+            // 缺少区域性数据时保持环境默认
         }
     }
 }

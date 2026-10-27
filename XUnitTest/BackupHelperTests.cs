@@ -37,6 +37,7 @@ public class BackupHelperTests : IDisposable
     public void IsCompressedBackup_Variants()
     {
         var zip = CreateFile("db.zip");
+        var upper = CreateFile("db2.ZIP");
         var bak = CreateFile("db.bak");
 
         Assert.False(BackupHelper.IsCompressedBackup(null));
@@ -44,7 +45,8 @@ public class BackupHelperTests : IDisposable
         Assert.False(BackupHelper.IsCompressedBackup(Path.Combine(_dir, "missing.zip")));
         Assert.False(BackupHelper.IsCompressedBackup(bak));
         Assert.True(BackupHelper.IsCompressedBackup(zip));
-        Assert.True(BackupHelper.IsCompressedBackup(zip.ToUpperInvariant()));
+        // 扩展名判定忽略大小写；用真实存在的大写扩展名文件验证，兼容 Linux 大小写敏感路径
+        Assert.True(BackupHelper.IsCompressedBackup(upper));
     }
 
     [Fact(DisplayName = "获取备份文件路径：空值与不存在的文件返回 null")]
