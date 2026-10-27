@@ -808,13 +808,23 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                 try
                 {
                     var sw = Stopwatch.StartNew();
+                    var before = fact.FindCount();
                     using var fs = fi.OpenRead();
                     using var gs = new GZipStream(fs, CompressionMode.Decompress, true);
-                    var rs = dal.Restore(gs, fact.Table.DataTable, default);
+                    var read = dal.Restore(gs, fact.Table.DataTable, default);
+                    var written = (Int32)(fact.FindCount() - before);
                     sw.Stop();
 
-                    WriteLog(L.T("Restore"), true, L.T("Restore [{0}] ({1:n0} rows) succeeded.", fileName, rs));
-                    return rs;
+                    // dal.Restore 返回的是从备份包读取的行数，主键冲突时整批写入失败且异常被写入Actor吞掉，
+                    // 必须核对实际写入行数，避免“提示还原成功但一行都没写回”的静默失败
+                    if (read > 0 && written < read)
+                    {
+                        WriteLog(L.T("Restore"), false, L.T("Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.", fileName, written, read));
+                        return -1;
+                    }
+
+                    WriteLog(L.T("Restore"), true, L.T("Restore [{0}] ({1:n0} rows) succeeded.", fileName, written));
+                    return written;
                 }
                 catch (Exception ex)
                 {
@@ -824,7 +834,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             }, TaskCreationOptions.LongRunning);
 
             if (task.Wait(5_000))
-                return Json(0, L.T("Restore [{0}] ({1:n0} rows) succeeded.", fileName, task.Result));
+                return task.Result >= 0
+                    ? Json(0, L.T("Restore [{0}] ({1:n0} rows) succeeded.", fileName, task.Result))
+                    : Json(500, L.T("Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.", fileName));
             else
                 return Json(0, L.T("Restore [{0}] is running in the background...", fileName));
         }

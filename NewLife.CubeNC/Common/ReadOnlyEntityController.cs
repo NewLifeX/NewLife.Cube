@@ -776,13 +776,23 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                 try
                 {
                     var sw = Stopwatch.StartNew();
+                    var before = fact.FindCount();
                     using var fs = fi.OpenRead();
                     using var gs = new GZipStream(fs, CompressionMode.Decompress, true);
-                    var rs = dal.Restore(gs, fact.Table.DataTable, default);
+                    var read = dal.Restore(gs, fact.Table.DataTable, default);
+                    var written = (Int32)(fact.FindCount() - before);
                     sw.Stop();
 
-                    WriteLog(L.TLog("Restore"), true, $"Restored [{fileName}] ({rs:n0} rows) successfully!");
-                    return rs;
+                    // dal.Restore 返回的是从备份包读取的行数，主键冲突时整批写入失败且异常被写入Actor吞掉，
+                    // 必须核对实际写入行数，避免“提示还原成功但一行都没写回”的静默失败
+                    if (read > 0 && written < read)
+                    {
+                        WriteLog(L.TLog("Restore"), false, $"Only {written:n0} of {read:n0} rows were written back from [{fileName}] because the table already holds conflicting rows. Clear the table before restoring.");
+                        return -1;
+                    }
+
+                    WriteLog(L.TLog("Restore"), true, $"Restored [{fileName}] ({written:n0} rows) successfully!");
+                    return written;
                 }
                 catch (Exception ex)
                 {
@@ -792,7 +802,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             }, TaskCreationOptions.LongRunning);
 
             if (task.Wait(5_000))
-                return JsonRefresh($"Restored [{fileName}] ({task.Result:n0} rows) successfully!", 2);
+                return task.Result >= 0
+                    ? JsonRefresh($"Restored [{fileName}] ({task.Result:n0} rows) successfully!", 2)
+                    : Json(500, $"Restore of [{fileName}] failed because the table already holds conflicting rows. Clear the table before restoring.", 2);
             else
                 return Json(0, $"Restore of [{fileName}] is running in background...", 2);
         }

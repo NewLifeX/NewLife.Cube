@@ -68,6 +68,14 @@ public class BackupRestoreTests : IDisposable
 
         protected override void WriteLog(String action, Boolean success, String remark) { }
     }
+
+    /// <summary>仅用于“目标表非空”还原用例的控制器，使用独立备份文件名避免互相干扰</summary>
+    private class BusyRestoreController : EntityController<Parameter>
+    {
+        protected override Pager GetCachePager() => null!;
+
+        protected override void WriteLog(String action, Boolean success, String remark) { }
+    }
     #endregion
 
     #region 辅助
@@ -180,5 +188,34 @@ public class BackupRestoreTests : IDisposable
         var rs = ctrl.Restore();
 
         Assert.Equal(500, ReadJson(rs)["code"].ToInt());
+    }
+
+    [Fact(DisplayName = "还原_目标表已有冲突行时不谎报成功")]
+    public void Restore_NonEmptyTable_ReportsFailure()
+    {
+        // 备份/还原是整表操作，先清空参数表，避免已有主键与还原插入冲突
+        Parameter.Delete(Parameter._.ID > 0);
+        Assert.Equal(0, Parameter.FindCount());
+
+        var category = Unique("RstBusy");
+        var first = Parameter.GetOrAdd(_fx.LegacyUser.ID, category, "A", "1");
+        var second = Parameter.GetOrAdd(_fx.LegacyUser.ID, category, "B", "2");
+        Assert.True(first.ID > 0);
+        Assert.True(second.ID > 0);
+
+        var ctrl = Create<BusyRestoreController>();
+        Assert.Equal(0, ReadJson(ctrl.Backup())["code"].ToInt());
+
+        // 只删一行，另一行仍在表中；还原时主键冲突会导致整批写入失败
+        Assert.Equal(1, Parameter.Delete(Parameter._.ID == second.ID));
+        Assert.Equal(1, Parameter.FindCount());
+
+        var rs = ctrl.Restore();
+
+        // 不允许“提示还原成功但一行都没写回”的静默失败
+        var json = ReadJson(rs);
+        Assert.Equal(500, json["code"].ToInt());
+        Assert.Equal(1, Parameter.FindCount());
+        Assert.Null(Parameter.FindByKey(second.ID));
     }
 }
