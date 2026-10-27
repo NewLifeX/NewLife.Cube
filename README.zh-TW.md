@@ -110,7 +110,7 @@ app.Run();
 | --- | --- |
 | EntityController 腳手架 | 實體類 + 控制器 = CRUD / 統計 / 匯出 / 許可權 即刻可用；只讀列表用 `ReadOnlyEntityController`。 |
 | 靜態構造定製 | 通過控制器靜態建構子配置欄位、操作按鈕、關聯跳轉、統計、匯出。 |
-| 欄位後設資料介面 | `GetFields?kind=1..4`（列表 / 詳情 / 新增 / 編輯）驅動動態前端生成，無需硬編碼。 |
+| 欄位後設資料介面 | `meta`（頁面設定 + 列表 / 詳情 / 新增 / 編輯 / 搜尋欄位）驅動動態前端生成，無需硬編碼。 |
 | 選單樹 | `/Cube/MenuTree` 按許可權生成多級選單；傳統 MVC 介面使用 `/Admin/Index/GetMenuTree`。 |
 | 統一響應 | `ApiResponse` 統一包裝 code / data / page / stat。 |
 | 免部署 | 首次執行自動建立資料庫表結構與初始化資料，無需人工干涉。 |
@@ -127,7 +127,7 @@ app.Run();
 | --- | --- |
 | 欄位集合定製 | `ListFields.RemoveField` / `AddListField` 按控制器調整列、連結與開啟方式。 |
 | 修改日誌 | `LogOnChange = true` 為每次修改寫入審計記錄。 |
-| 前端動態欄位 | 前端呼叫 `/Cube/App/GetFields?kind=1` 獲取列表欄位定義，無需硬編碼。 |
+| 前端動態欄位 | 前端呼叫 `/Cube/App/meta` 獲取頁面後設資料與欄位定義，無需硬編碼。 |
 
 ```csharp
 public class AppController : EntityController<App, AppModel>
@@ -153,9 +153,9 @@ public class AppController : EntityController<App, AppModel>
 | --- | --- |
 | `/Auth/Login` | 登入並獲取 JWT Token（Header / Cookie / Query）。 |
 | `/Cube/MenuTree` | 按許可權生成選單樹。 |
-| `/{Area}/{Controller}/GetFields?kind=1..4` | 列表 / 詳情 / 新增 / 編輯表單的欄位後設資料。 |
+| `/{Area}/{Controller}/meta` | 列表 / 詳情 / 新增 / 編輯表單的欄位後設資料。 |
 | 主路由 + 動態引數 | 支援分頁、排序與條件拼裝查詢。 |
-| `Detail` / `Insert` / `Update` / `Delete` | 標準增刪改查動作。 |
+| `GET {id}` / `POST` / `PUT {id}` / `DELETE {id}` | RESTful 子資源式增刪改查；基底路徑批次刪除，另有 `charts` / `export` / `import` / `attachments` 子資源。 |
 | `stat` / `page` | 統計行與分頁資訊。 |
 
 </details>
@@ -376,7 +376,7 @@ https://github.com/NewLifeX/NewLife.CubeVue · https://github.com/NewLifeX/NewLi
 | 概念 | 說明 |
 | --- | --- |
 | EntityController | 通過靜態建構子配置欄位、操作按鈕、關聯跳轉、統計、匯出。 |
-| 欄位後設資料介面 | `GetFields?kind=List\|Detail\|AddForm\|EditForm` 驅動動態前端生成。 |
+| 欄位後設資料介面 | `meta`（頁面設定 + 列表 / 詳情 / 新增 / 編輯 / 搜尋欄位）驅動動態前端生成。 |
 | 選單樹 | `/Admin/Index/GetMenuTree` 根據許可權生成多級選單。 |
 | 許可權模型 | 使用者 -> 角色 -> 選單（Action 集合）。首個使用者搶管理員，`admin` 被停用。 |
 | ApiResponse | 標準響應包裝 code / data / page / stat。 |

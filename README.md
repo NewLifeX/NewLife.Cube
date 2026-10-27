@@ -153,7 +153,7 @@ public class AppController : EntityController<App, AppModel>
 | `/Cube/MenuTree` | Permission-aware menu tree. |
 | `/{Area}/{Controller}/meta` | Page metadata for list / detail / add form / edit form / search. |
 | Main route + dynamic parameters | Query with paging, sorting and condition composition. |
-| `Detail` / `Insert` / `Update` / `Delete` | Standard CRUD actions. |
+| `GET {id}` / `POST` / `PUT {id}` / `DELETE {id}` | RESTful CRUD sub-resources; batch delete on the base path, plus `charts` / `export` / `import` / `attachments`. |
 | `stat` / `page` | Statistics row and paging information. |
 
 </details>

@@ -10,7 +10,7 @@
     <PackageDescription>Cube MVC/Razor layer of the NewLife framework: ASP.NET Core MVC hosting, Razor view templates, user permission management, SSO sign-in, OAuth server, data export and runtime localization, validated with 10 billion rows in a single table. 魔方MVC/Razor兼容层：支持ASP.NET Core MVC传统开发模式，提供用户权限管理、Razor视图模板、SSO登录、OAuth服务端、数据导出与运行时多语言，单表100亿级数据验证。</PackageDescription>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
-    <VersionPrefix>6.15</VersionPrefix>
+    <VersionPrefix>6.16</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -36,7 +36,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>接入 Core 12 编译期多语言（API 公共消息 11 语、请求级语言识别、Vue 前端 11 语）；NativeAOT 冒烟 16 场景 JIT/AOT 双通；CI 增加多 OS/架构矩阵、TFM 守门与发布测试门禁；新增实体 CRUD 十场景 E2E；升级 NewLife.Core/XCode 等核心依赖</PackageReleaseNotes>
+    <PackageReleaseNotes>接入编译期词表并将运行时语言扩展到 31 种，API、MVC 视图与 Vue 前端全量本地化；API 标准端点收敛为 RESTful 子资源（meta、{id}、PUT、DELETE、charts/export/import/attachments），原 GetPage/GetFields 等端点下线；新增自描述 meta 与 page-logic 页面呈现配置，列表支持列宽对齐、树形、stat 汇总与批量启用禁用；CubeTable 组件与页面引擎落地，八个 SPA 皮肤补齐工作台真实数据、多标签页、卡片拖拽、窄屏抽屉与列表图表切换；安全防御内置威胁检测、自动封禁与可信代理学习，修复认证绕过、上传穿越、越权并加固 SSO；数据权限回归接口层，用户页非系统角色只读、部门按管理者过滤；新增账号注销扩展点、单设备登录踢旧设备与登录配置 v2；NativeAOT 冒烟 18 场景、多 OS 架构矩阵与 TFM 守门，升级 NewLife.Core 12.0、XCode 12.3、Remoting 4.0 等 2026-10-24 正式版依赖</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -58,7 +58,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.AI" Version="1.6.2026.1021-beta1738" />
+    <PackageReference Include="NewLife.AI" Version="1.7.2026.1024" />
     <PackageReference Include="NewLife.Core" Version="12.0.2026.1024" />
     <PackageReference Include="NewLife.IP" Version="2.6.2026.1024" />
     <PackageReference Include="NewLife.Office" Version="1.5.2026.1024" />

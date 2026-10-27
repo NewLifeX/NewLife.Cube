@@ -110,7 +110,7 @@ app.Run();
 | --- | --- |
 | EntityController 脚手架 | 实体类 + 控制器 = CRUD / 统计 / 导出 / 权限 即刻可用；只读列表用 `ReadOnlyEntityController`。 |
 | 静态构造定制 | 通过控制器静态构造器配置字段、操作按钮、关联跳转、统计、导出。 |
-| 字段元数据接口 | `GetFields?kind=1..4`（列表 / 详情 / 新增 / 编辑）驱动动态前端生成，无需硬编码。 |
+| 字段元数据接口 | `meta`（页面设置 + 列表 / 详情 / 新增 / 编辑 / 搜索字段）驱动动态前端生成，无需硬编码。 |
 | 菜单树 | `/Cube/MenuTree` 按权限生成多级菜单；传统 MVC 界面使用 `/Admin/Index/GetMenuTree`。 |
 | 统一响应 | `ApiResponse` 统一包装 code / data / page / stat。 |
 | 免部署 | 首次运行自动创建数据库表结构与初始化数据，无需人工干涉。 |
@@ -127,7 +127,7 @@ app.Run();
 | --- | --- |
 | 字段集合定制 | `ListFields.RemoveField` / `AddListField` 按控制器调整列、链接与打开方式。 |
 | 修改日志 | `LogOnChange = true` 为每次修改写入审计记录。 |
-| 前端动态字段 | 前端调用 `/Cube/App/GetFields?kind=1` 获取列表字段定义，无需硬编码。 |
+| 前端动态字段 | 前端调用 `/Cube/App/meta` 获取页面元数据与字段定义，无需硬编码。 |
 
 ```csharp
 public class AppController : EntityController<App, AppModel>
@@ -153,9 +153,9 @@ public class AppController : EntityController<App, AppModel>
 | --- | --- |
 | `/Auth/Login` | 登录并获取 JWT Token（Header / Cookie / Query）。 |
 | `/Cube/MenuTree` | 按权限生成菜单树。 |
-| `/{Area}/{Controller}/GetFields?kind=1..4` | 列表 / 详情 / 新增 / 编辑表单的字段元数据。 |
+| `/{Area}/{Controller}/meta` | 列表 / 详情 / 新增 / 编辑表单的字段元数据。 |
 | 主路由 + 动态参数 | 支持分页、排序与条件拼装查询。 |
-| `Detail` / `Insert` / `Update` / `Delete` | 标准增删改查动作。 |
+| `GET {id}` / `POST` / `PUT {id}` / `DELETE {id}` | RESTful 子资源式增删改查；基路径批量删除，另有 `charts` / `export` / `import` / `attachments` 子资源。 |
 | `stat` / `page` | 统计行与分页信息。 |
 
 </details>
@@ -376,7 +376,7 @@ https://github.com/NewLifeX/NewLife.CubeVue · https://github.com/NewLifeX/NewLi
 | 概念 | 说明 |
 | --- | --- |
 | EntityController | 通过静态构造器配置字段、操作按钮、关联跳转、统计、导出。 |
-| 字段元数据接口 | `GetFields?kind=List\|Detail\|AddForm\|EditForm` 驱动动态前端生成。 |
+| 字段元数据接口 | `meta`（页面设置 + 列表 / 详情 / 新增 / 编辑 / 搜索字段）驱动动态前端生成。 |
 | 菜单树 | `/Admin/Index/GetMenuTree` 根据权限生成多级菜单。 |
 | 权限模型 | 用户 -> 角色 -> 菜单（Action 集合）。首个用户抢管理员，`admin` 被禁用。 |
 | ApiResponse | 标准响应包装 code / data / page / stat。 |
