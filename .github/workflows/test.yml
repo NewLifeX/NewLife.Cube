@@ -418,6 +418,16 @@ jobs:
       run: pnpm --filter ./NewLife.Cube.Vue/web run type-check
     - name: Vue unit tests
       run: pnpm --filter ./NewLife.Cube.Vue/web run test:unit
+    - name: Skin unit tests (MUI / Vuetify)
+      run: |
+        pnpm --filter ./NewLife.Cube.MUI/web run test:unit
+        pnpm --filter ./NewLife.Cube.Vuetify/web run test:unit
+    - name: Use Node 22 for native TS test runner
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - name: Skin unit tests (Angular)
+      run: pnpm --filter ./NewLife.Cube.Angular/web run test:unit
 
   # OpenAPI 契约守门：漏写 [Http*] 动词的 action 会被内建生成器静默丢弃。
   openapi:
