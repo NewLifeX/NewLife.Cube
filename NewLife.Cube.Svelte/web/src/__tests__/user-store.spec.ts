@@ -17,8 +17,18 @@ import { displayName, getMenuPermission, menus, user } from '$lib/stores/user';
 describe('Svelte 用户 Store', () => {
   it('按路径解析菜单权限，未命中返回空对象', () => {
     menus.set([
-      { name: '系统', children: [{ name: '用户', url: '/Admin/User', permissions: { '2': '添加' } }] },
-      { name: '首页', url: '/Admin/Index', permissions: { '1': '查看' } },
+      {
+        id: 1,
+        name: '系统',
+        displayName: '系统',
+        parentID: 0,
+        url: '',
+        visible: true,
+        children: [
+          { id: 2, name: '用户', displayName: '用户', parentID: 1, url: '/Admin/User', visible: true, permissions: { '2': '添加' }, children: [] },
+        ],
+      },
+      { id: 3, name: '首页', displayName: '首页', parentID: 0, url: '/Admin/Index', visible: true, permissions: { '1': '查看' }, children: [] },
     ]);
 
     expect(getMenuPermission('/Admin/User')).toEqual({ '2': '添加' });

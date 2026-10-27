@@ -267,13 +267,14 @@ onUnmounted(stopMonitorPolling);
             </el-button>
             <el-button :loading="savingLayout" @click="resetLayoutChanges">{{ t('workbench.resetLayout') }}</el-button>
           </template>
-          <el-button :loading="loading" @click="reload">{{ t('grid.refresh') }}</el-button>
+          <el-button data-cy="workbench-refresh" :loading="loading" @click="reload">{{ t('grid.refresh') }}</el-button>
         </div>
       </section>
 
       <el-alert
         v-if="error"
         class="wb-alert"
+        data-cy="workbench-error"
         type="warning"
         :title="error"
         show-icon
@@ -303,6 +304,7 @@ onUnmounted(stopMonitorPolling);
       <el-alert
         v-if="layoutEditing"
         class="wb-alert"
+        data-cy="workbench-layout-hint"
         type="info"
         :title="t('workbench.dragHint')"
         show-icon

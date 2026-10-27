@@ -41,22 +41,23 @@ test.describe('Vue 工作台（真实数据）', () => {
   test('首页渲染 KPI 与内容卡，且不出现加载失败', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.locator('[data-cy="workbench"]')).toBeVisible();
-    await expect(page.locator('[data-cy="workbench-banner"]')).toBeVisible();
-    await expect(page.locator('[data-cy="workbench-kpis"] button').first()).toBeVisible();
-    await expect(page.locator('[data-cy="workbench-widget"]').first()).toBeVisible();
+    // 首次进入要拉 KPI/部件多个接口，冷启动数据库下放宽等待，避免误判为渲染失败
+    await expect(page.locator('[data-cy="workbench"]')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('[data-cy="workbench-banner"]')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('[data-cy="workbench-kpis"] button').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('[data-cy="workbench-widget"]').first()).toBeVisible({ timeout: 20000 });
     // 失败态由页面内的错误提示节点体现，语言无关
-    await expect(page.locator('.wb-alert')).toHaveCount(0);
+    await expect(page.locator('[data-cy="workbench-error"]')).toHaveCount(0);
   });
 
   test('点击刷新后工作台仍正常渲染', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('[data-cy="workbench-banner"]')).toBeVisible();
-    // 刷新按钮文案随界面语言变化，按容器定位
-    await page.locator('[data-cy="workbench-banner"] button').first().click();
+    await expect(page.locator('[data-cy="workbench-banner"]')).toBeVisible({ timeout: 20000 });
+    // 按稳定标记定位刷新按钮，避免按钮顺序或界面语言变化导致误点布局编辑
+    await page.locator('[data-cy="workbench-refresh"]').click();
 
-    await expect(page.locator('[data-cy="workbench-banner"]')).toBeVisible();
+    await expect(page.locator('[data-cy="workbench-banner"]')).toBeVisible({ timeout: 20000 });
     // 失败态由页面内的错误提示节点体现，语言无关
-    await expect(page.locator('.wb-alert')).toHaveCount(0);
+    await expect(page.locator('[data-cy="workbench-error"]')).toHaveCount(0);
   });
 });

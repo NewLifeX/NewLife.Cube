@@ -442,6 +442,92 @@ jobs:
     - name: Skin unit tests (Angular)
       run: pnpm --filter ./NewLife.Cube.Angular/web run test:unit
 
+  # Vue 端到端：真实 CubeDemo + SQLite 临时库 + Chromium，串行（单设备登录会互相踢下线）。
+  vue-e2e:
+    name: vue e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 9.15.0
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: pnpm
+    - name: Install
+      run: pnpm install --frozen-lockfile
+    - name: Build shared packages
+      run: pnpm build
+    - name: Build CubeDemo
+      run: dotnet build CubeDemo/CubeDemo.csproj -c Release --nologo
+    - name: Start CubeDemo (fresh SQLite)
+      run: |
+        cd Bin/CubeDemo
+        ASPNETCORE_URLS=http://localhost:7116 ASPNETCORE_ENVIRONMENT=Development nohup dotnet CubeDemo.dll > cube-demo.log 2>&1 &
+        for i in $(seq 1 60); do
+          if curl -sf -X POST http://localhost:7116/Auth/Login -H 'Content-Type: application/json' -d '{"username":"admin","password":"admin"}' > /tmp/login.json; then
+            echo "CubeDemo is up"; exit 0
+          fi
+          sleep 2
+        done
+        echo "CubeDemo failed to start"; cat cube-demo.log; exit 1
+    - name: Install Playwright browsers
+      run: pnpm --filter ./NewLife.Cube.Vue/web exec playwright install --with-deps chromium
+    - name: Vue e2e
+      env:
+        CI: 'true'
+        PLAYWRIGHT_API_URL: http://localhost:7116
+      run: pnpm --filter ./NewLife.Cube.Vue/web run test:e2e
+    - name: Upload e2e artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: vue-e2e
+        path: |
+          NewLife.Cube.Vue/web/playwright-report/**
+          NewLife.Cube.Vue/web/test-results/**
+          Bin/CubeDemo/cube-demo.log
+        if-no-files-found: ignore
+
+  # 八个 SPA 皮肤构建门禁：CI 原先只跑 Vue，其余皮肤的构建失败会静默漏过。
+  skins:
+    name: skins (${{ matrix.skin }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        skin: [NaiveUI, ArcoVue, Vuetify, TDesign, MUI, Shadcn, Angular, Svelte]
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 9.15.0
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: pnpm
+    - name: Install
+      run: pnpm install --frozen-lockfile
+    - name: Build shared packages
+      run: pnpm build
+    - name: Build skin
+      run: pnpm --filter ./NewLife.Cube.${{ matrix.skin }}/web run build
+    - name: Svelte type check
+      if: matrix.skin == 'Svelte'
+      run: pnpm --filter ./NewLife.Cube.Svelte/web run check
+
   # OpenAPI 契约守门：漏写 [Http*] 动词的 action 会被内建生成器静默丢弃。
   openapi:
     name: openapi contract
