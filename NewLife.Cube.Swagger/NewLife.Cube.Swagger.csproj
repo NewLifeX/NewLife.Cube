@@ -55,7 +55,8 @@
   </ItemGroup>
   <!-- .NET 内建 OpenAPI（AddOpenApi）：仅 net9.0+ 提供，且版本须与 .NET 及 Swashbuckle 的 Microsoft.OpenApi(2.x) 对齐；compile 资产随 ProjectReference 传递 -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
+    <!-- net9.0 必须用 9.0.x：10.x 源生成器依赖 Microsoft.OpenApi 2.x 的 IOpenApiOperationTransformer 等类型，net9.0 目标下编译失败 -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.21" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
