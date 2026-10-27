@@ -4,12 +4,12 @@ import {
   Box, Button, Card, CardContent, Checkbox, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions,
   IconButton, Menu, MenuItem as MuiMenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, TablePagination, TextField, Toolbar, Tooltip, Typography,
+  TableHead, TableRow, TablePagination, TextField, Toolbar, Tooltip, Typography, Alert,
 } from '@mui/material';
 import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon, ArrowDropDown } from '@mui/icons-material';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
-import { normalizeChartList, shouldDisposeCharts, toggleListView } from '@newlifex/page-logic';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
 import * as echarts from 'echarts';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -63,6 +63,7 @@ export default function DynamicPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, any>>({});
+  const [formError, setFormError] = useState('');
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailData, setDetailData] = useState<Record<string, any>>({});
 
@@ -152,11 +153,12 @@ export default function DynamicPage() {
   };
 
   // CRUD
-  const showAdd = () => { setIsEdit(false); setEditForm({}); setFormOpen(true); };
+  const showAdd = () => { setIsEdit(false); setEditForm({}); setFormError(''); setFormOpen(true); };
   const showEdit = async (row: Record<string, any>) => {
     const res = await api.page.getDetail(type, row[pkField]);
     setIsEdit(true);
     setEditForm({ ...(res.data as any) });
+    setFormError('');
     setFormOpen(true);
   };
   const showDetail = async (row: Record<string, any>) => {
@@ -165,6 +167,12 @@ export default function DynamicPage() {
     setDetailOpen(true);
   };
   const handleSubmit = async () => {
+    const invalid = validateRequiredFields(formFields, editForm);
+    if (invalid.length) {
+      setFormError(invalid.map((e) => e.message).join('；'));
+      return;
+    }
+    setFormError('');
     if (isEdit) {
       await api.page.update(type, editForm);
     } else {
@@ -349,6 +357,7 @@ export default function DynamicPage() {
       <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{isEdit ? '编辑' : '新增'}</DialogTitle>
         <DialogContent>
+          {formError ? <Alert severity="error" sx={{ mt: 1 }}>{formError}</Alert> : null}
           <Stack spacing={2} sx={{ mt: 1 }}>
             {formFields.map((f) => (
               <FieldInput

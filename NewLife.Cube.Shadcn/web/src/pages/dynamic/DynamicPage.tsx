@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { Auth } from '@newlifex/api-core';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
-import { normalizeChartList, toggleListView } from '@newlifex/page-logic';
+import { normalizeChartList, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
 import * as echarts from 'echarts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,6 +66,7 @@ export default function DynamicPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, any>>({});
+  const [formError, setFormError] = useState('');
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailData, setDetailData] = useState<Record<string, any>>({});
 
@@ -150,11 +151,12 @@ export default function DynamicPage() {
   };
 
   // CRUD
-  const showAdd = () => { setIsEdit(false); setEditForm({}); setFormOpen(true); };
+  const showAdd = () => { setIsEdit(false); setEditForm({}); setFormError(''); setFormOpen(true); };
   const showEdit = async (row: Record<string, any>) => {
     const res = await api.page.getDetail(type, row[pkField]);
     setIsEdit(true);
     setEditForm({ ...(res.data as any) });
+    setFormError('');
     setFormOpen(true);
   };
   const showDetail = async (row: Record<string, any>) => {
@@ -163,6 +165,12 @@ export default function DynamicPage() {
     setDetailOpen(true);
   };
   const handleSubmit = async () => {
+    const invalid = validateRequiredFields(formFields, editForm);
+    if (invalid.length) {
+      setFormError(invalid.map((e) => e.message).join('；'));
+      return;
+    }
+    setFormError('');
     if (isEdit) await api.page.update(type, editForm);
     else await api.page.add(type, editForm);
     setFormOpen(false);
@@ -351,6 +359,9 @@ export default function DynamicPage() {
             <DialogTitle>{isEdit ? '编辑' : '新增'}</DialogTitle>
             <DialogDescription>{isEdit ? '修改记录信息' : '填写新记录信息'}</DialogDescription>
           </DialogHeader>
+          {formError ? (
+            <div role="alert" className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">{formError}</div>
+          ) : null}
           <div className="space-y-4 py-2">
             {formFields.map((f) => (
               <FieldInput key={f.field.name} mapping={f} value={editForm[f.field.name] ?? ''} onChange={(v) => setEditForm((prev) => ({ ...prev, [f.field.name]: v }))} />

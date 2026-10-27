@@ -6,6 +6,7 @@
   import FieldInput from '$lib/components/FieldInput.svelte';
   import { Auth, type DataField } from '@newlifex/api-core';
   import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
+  import { validateRequiredFields } from '@newlifex/page-logic';
   import * as echarts from 'echarts';
 
   const exportOptions = [
@@ -65,6 +66,7 @@
   let showDeleteConfirm = $state(false);
   let deleteTargetId = $state<number | null>(null);
   let formData: Record<string, any> = $state({});
+  let formError = $state('');
   let detailData: Record<string, any> = $state({});
   let isEdit = $state(false);
 
@@ -151,6 +153,7 @@
   // 创建
   function handleAdd() {
     formData = {};
+    formError = '';
     isEdit = false;
     showForm = true;
   }
@@ -160,6 +163,7 @@
     try {
       const res = await getApi().page.getDetail(typePath, id);
       formData = res?.data ? { ...res.data } : {};
+      formError = '';
       isEdit = true;
       showForm = true;
     } catch { /* ignore */ }
@@ -176,6 +180,13 @@
 
   // 保存
   async function handleSave() {
+    // 表单键为字段名的小驼峰形式，校验时按同一口径取值
+    const invalid = validateRequiredFields(editFields as any, formData, toCamelCase);
+    if (invalid.length) {
+      formError = invalid.map((e) => e.message).join('；');
+      return;
+    }
+    formError = '';
     try {
       if (isEdit) {
         await getApi().page.update(typePath, formData);
@@ -379,6 +390,9 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onclick={(e) => { if (e.target === e.currentTarget) showForm = false; }}>
     <div class="card w-full max-w-lg max-h-[80vh] overflow-auto m-4">
       <h3 class="text-lg font-bold mb-4">{isEdit ? '编辑' : '新增'}</h3>
+      {#if formError}
+        <div role="alert" class="mb-3 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-600">{formError}</div>
+      {/if}
       <div class="space-y-4">
         {#each editFields as f}
           <div>

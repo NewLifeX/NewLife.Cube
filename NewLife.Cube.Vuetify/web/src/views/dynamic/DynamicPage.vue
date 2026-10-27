@@ -91,6 +91,7 @@
       <v-card>
         <v-card-title>{{ isEdit ? '编辑' : '新增' }}</v-card-title>
         <v-card-text>
+          <v-alert v-if="formError" type="error" density="compact" class="mb-3">{{ formError }}</v-alert>
           <v-form>
             <v-row dense>
               <v-col v-for="field in formFields" :key="field.name" cols="12">
@@ -148,7 +149,7 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, m
 import { useRoute } from 'vue-router';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
-import { normalizeChartList, shouldDisposeCharts, toggleListView } from '@newlifex/page-logic';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
 import * as echarts from 'echarts';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -198,6 +199,7 @@ const searchForm = reactive<Record<string, any>>({});
 const formDialogVisible = ref(false);
 const isEdit = ref(false);
 const formData = reactive<Record<string, any>>({});
+const formError = ref('');
 const submitLoading = ref(false);
 
 // 详情弹窗
@@ -308,10 +310,16 @@ function onChartResize() {
 function handleSearch() { page.value = 1; loadData(); }
 function handleReset() { Object.keys(searchForm).forEach((k) => delete searchForm[k]); page.value = 1; loadData(); }
 
-function handleAdd() { isEdit.value = false; Object.keys(formData).forEach((k) => delete formData[k]); formDialogVisible.value = true; }
-function handleEdit(row: Record<string, any>) { isEdit.value = true; Object.keys(formData).forEach((k) => delete formData[k]); Object.assign(formData, row); formDialogVisible.value = true; }
+function handleAdd() { isEdit.value = false; Object.keys(formData).forEach((k) => delete formData[k]); formError.value = ''; formDialogVisible.value = true; }
+function handleEdit(row: Record<string, any>) { isEdit.value = true; Object.keys(formData).forEach((k) => delete formData[k]); Object.assign(formData, row); formError.value = ''; formDialogVisible.value = true; }
 
 async function handleFormSubmit() {
+  const invalid = validateRequiredFields(formFields.value as any, formData);
+  if (invalid.length) {
+    formError.value = invalid.map((e) => e.message).join('；');
+    return;
+  }
+  formError.value = '';
   submitLoading.value = true;
   try {
     if (isEdit.value) await cubeApi.page.update(typePath.value, formData);

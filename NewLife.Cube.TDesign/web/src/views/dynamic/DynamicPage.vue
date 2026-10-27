@@ -51,6 +51,7 @@
           <FieldInput :field="f" v-model="formData[toCamelCase(f.name)]" />
         </t-form-item>
       </t-form>
+      <t-alert v-if="formError" theme="error" :message="formError" style="margin-top: 12px" />
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px">
         <t-button variant="outline" @click="showForm = false">取消</t-button>
         <t-button theme="primary" @click="handleSave">保存</t-button>
@@ -82,7 +83,7 @@ import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
-import { normalizeChartList, shouldDisposeCharts, toggleListView } from '@newlifex/page-logic';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
 import { Button as TButton } from 'tdesign-vue-next';
 import * as echarts from 'echarts';
 
@@ -123,6 +124,7 @@ const statData = ref<Record<string, unknown> | null>(null);
 
 // Dialog
 const showForm = ref(false);
+const formError = ref('');
 const showDetail = ref(false);
 const showDeleteConfirm = ref(false);
 const deleteTargetId = ref<number | null>(null);
@@ -255,13 +257,14 @@ function onChartResize() {
 function handleSearch() { pageIndex.value = 1; loadData(); }
 
 // CRUD
-function handleAdd() { formData.value = {}; isEdit.value = false; showForm.value = true; }
+function handleAdd() { formData.value = {}; isEdit.value = false; formError.value = ''; showForm.value = true; }
 
 async function handleEditById(id: number) {
   try {
     const res = await api.page.getDetail(typePath.value, id);
     formData.value = res?.data ? { ...res.data } : {};
     isEdit.value = true;
+    formError.value = '';
     showForm.value = true;
   } catch { /* ignore */ }
 }
@@ -275,6 +278,13 @@ async function handleDetail(id: number) {
 }
 
 async function handleSave() {
+  // 表单键为字段名的小驼峰形式，校验时按同一口径取值
+  const invalid = validateRequiredFields(editFields.value as any, formData.value, toCamelCase);
+  if (invalid.length) {
+    formError.value = invalid.map((e) => e.message).join('；');
+    return;
+  }
+  formError.value = '';
   try {
     if (isEdit.value) await api.page.update(typePath.value, formData.value);
     else await api.page.add(typePath.value, formData.value);

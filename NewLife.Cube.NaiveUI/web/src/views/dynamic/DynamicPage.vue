@@ -108,7 +108,7 @@ import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type Da
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
-import { normalizeChartList, shouldDisposeCharts, toggleListView } from '@newlifex/page-logic';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
 import * as echarts from 'echarts';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -347,6 +347,11 @@ async function showEdit(row: Record<string, any>) {
 
 async function handleSubmit() {
   try {
+    const invalid = validateRequiredFields(formFields.value as any, editForm.value);
+    if (invalid.length) {
+      message.error(invalid.map((e) => e.message).join('；'));
+      return;
+    }
     await editFormRef.value?.validate();
   } catch {
     return false;

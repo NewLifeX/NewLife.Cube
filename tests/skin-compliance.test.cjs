@@ -68,8 +68,9 @@ for (const skin of Object.keys(skins)) {
     expectReference(skin, 'createWorkbenchLoader', '工作台未接入共享数据加载器');
   });
 
-  test(`${skin}: 表单页按字段类型渲染（SKIN-6）`, () => {
+  test(`${skin}: 表单页按字段类型渲染并拦截必填（SKIN-6）`, () => {
     expectReference(skin, 'FieldInput', '未使用字段渲染组件 FieldInput');
+    expectReference(skin, 'validateRequiredFields', '表单提交前未接入共享必填校验');
   });
 }
 

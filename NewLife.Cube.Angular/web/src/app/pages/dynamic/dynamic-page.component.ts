@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -19,7 +20,7 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
-import { normalizeChartList, toggleListView } from '@newlifex/page-logic';
+import { normalizeChartList, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
 import { ApiService } from '../../services/api.service';
 import { UserService } from '../../services/user.service';
 import { FieldInputComponent } from '../../components/field-input.component';
@@ -29,7 +30,7 @@ import * as echarts from 'echarts';
   selector: 'app-dynamic-page',
   standalone: true,
   imports: [
-    CommonModule, FormsModule,
+    CommonModule, FormsModule, NzAlertModule,
     NzTableModule, NzButtonModule, NzCardModule, NzFormModule,
     NzModalModule, NzDescriptionsModule, NzPopconfirmModule,
     NzUploadModule, NzSpaceModule, NzIconModule, NzDividerModule,
@@ -175,6 +176,9 @@ import * as echarts from 'echarts';
     <!-- 新增/编辑弹窗 -->
     <nz-modal [(nzVisible)]="formVisible" [nzTitle]="isEdit ? '编辑' : '新增'" nzWidth="640" (nzOnOk)="handleFormSubmit()" [nzOkLoading]="submitLoading">
       <ng-container *nzModalContent>
+        @if (formError) {
+          <nz-alert nzType="error" [nzMessage]="formError" nzShowIcon style="margin-bottom: 12px" />
+        }
         <form nz-form nzLayout="vertical">
           @for (field of formFields; track field.name) {
             <nz-form-item>
@@ -229,6 +233,7 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
   isEdit = false;
   formData: Record<string, any> = {};
   submitLoading = false;
+  formError = '';
 
   detailVisible = false;
   detailData: Record<string, any> = {};
@@ -421,16 +426,24 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
   handleAdd() {
     this.isEdit = false;
     this.formData = {};
+    this.formError = '';
     this.formVisible = true;
   }
 
   handleEdit(row: Record<string, any>) {
     this.isEdit = true;
     this.formData = { ...row };
+    this.formError = '';
     this.formVisible = true;
   }
 
   async handleFormSubmit() {
+    const invalid = validateRequiredFields(this.formFields, this.formData);
+    if (invalid.length) {
+      this.formError = invalid.map((e) => e.message).join('；');
+      return;
+    }
+    this.formError = '';
     this.submitLoading = true;
     try {
       if (this.isEdit) {

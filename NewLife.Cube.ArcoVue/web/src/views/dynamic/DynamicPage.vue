@@ -98,6 +98,7 @@
 
     <!-- 新增/编辑弹窗 -->
     <a-modal v-model:visible="formVisible" :title="isEdit ? '编辑' : '新增'" :width="640" @ok="handleFormSubmit" :ok-loading="submitLoading">
+      <a-alert v-if="formError" type="error" :title="formError" show-icon style="margin-bottom: 12px" />
       <a-form :model="formData" layout="vertical">
         <a-form-item v-for="field in formFields" :key="field.name" :label="field.displayName || field.name" :required="!!field.required">
           <FieldInput :field="field" :value="formData[field.name]" @update:value="(v: any) => (formData[field.name] = v)" />
@@ -123,7 +124,7 @@ import { Message } from '@arco-design/web-vue';
 import { IconSearch, IconPlus, IconDelete, IconDown } from '@arco-design/web-vue/es/icon';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
-import { normalizeChartList, shouldDisposeCharts, toggleListView } from '@newlifex/page-logic';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
 import * as echarts from 'echarts';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -168,6 +169,7 @@ const searchForm = reactive<Record<string, any>>({});
 const formVisible = ref(false);
 const isEdit = ref(false);
 const formData = reactive<Record<string, any>>({});
+const formError = ref('');
 const submitLoading = ref(false);
 
 // 详情弹窗
@@ -274,10 +276,16 @@ function onSelectionChange(keys: (string | number)[]) { selectedKeys.value = key
 function handleSearch() { pagination.current = 1; loadData(); }
 function handleReset() { Object.keys(searchForm).forEach((k) => delete searchForm[k]); pagination.current = 1; loadData(); }
 
-function handleAdd() { isEdit.value = false; Object.keys(formData).forEach((k) => delete formData[k]); formVisible.value = true; }
-function handleEdit(row: Record<string, any>) { isEdit.value = true; Object.keys(formData).forEach((k) => delete formData[k]); Object.assign(formData, row); formVisible.value = true; }
+function handleAdd() { isEdit.value = false; Object.keys(formData).forEach((k) => delete formData[k]); formError.value = ''; formVisible.value = true; }
+function handleEdit(row: Record<string, any>) { isEdit.value = true; Object.keys(formData).forEach((k) => delete formData[k]); Object.assign(formData, row); formError.value = ''; formVisible.value = true; }
 
 async function handleFormSubmit() {
+  const invalid = validateRequiredFields(formFields.value as any, formData);
+  if (invalid.length) {
+    formError.value = invalid.map((e) => e.message).join('；');
+    return;
+  }
+  formError.value = '';
   submitLoading.value = true;
   try {
     if (isEdit.value) await cubeApi.page.update(typePath.value, formData);
