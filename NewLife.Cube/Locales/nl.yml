@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Back-up [{0}] wordt op de achtergrond uitgevoerd..."
 "Backup file [{0}] not found.": "Back-upbestand [{0}] niet gevonden."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Herstel [{0}] ({1:n0} rijen) geslaagd."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Herstel [{0}] heeft slechts {1:n0} van {2:n0} rijen geschreven omdat de tabel al conflicterende rijen bevat. Maak de tabel leeg voordat u herstelt."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Herstel [{0}] is mislukt omdat de tabel al conflicterende rijen bevat. Maak de tabel leeg voordat u herstelt."
 "Restore [{0}] is running in the background...": "Herstel [{0}] wordt op de achtergrond uitgevoerd..."
 "Illegal data access [{0}]": "Onrechtmatige gegevenstoegang [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Tenantcontext ontbreekt; opvragen van {0} is niet toegestaan."

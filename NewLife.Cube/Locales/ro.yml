@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Backupul [{0}] rulează în fundal..."
 "Backup file [{0}] not found.": "Fișierul de backup [{0}] nu a fost găsit."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Restaurarea [{0}] ({1:n0} rânduri) a reușit."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Restaurarea [{0}] a scris doar {1:n0} din {2:n0} rânduri, deoarece tabelul conține deja rânduri în conflict. Goliți tabelul înainte de restaurare."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Restaurarea [{0}] a eșuat, deoarece tabelul conține deja rânduri în conflict. Goliți tabelul înainte de restaurare."
 "Restore [{0}] is running in the background...": "Restaurarea [{0}] rulează în fundal..."
 "Illegal data access [{0}]": "Acces ilegal la date [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Lipsește contextul chiriașului; interogarea {0} nu este permisă."

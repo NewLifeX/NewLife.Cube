@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Yedek [{0}] arka planda çalışıyor..."
 "Backup file [{0}] not found.": "Yedek dosyası [{0}] bulunamadı."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Geri yükleme [{0}] ({1:n0} satır) başarılı."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Geri yükleme [{0}], tabloda zaten çakışan satırlar olduğu için {2:n0} satırın yalnızca {1:n0} tanesini yazdı. Geri yüklemeden önce tabloyu temizleyin."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Geri yükleme [{0}], tabloda zaten çakışan satırlar olduğu için başarısız oldu. Geri yüklemeden önce tabloyu temizleyin."
 "Restore [{0}] is running in the background...": "Geri yükleme [{0}] arka planda çalışıyor..."
 "Illegal data access [{0}]": "Yetkisiz veri erişimi [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Kiracı bağlamı eksik; {0} sorgulanamaz."

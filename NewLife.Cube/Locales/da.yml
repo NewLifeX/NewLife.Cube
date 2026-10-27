@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Sikkerhedskopi [{0}] kører i baggrunden..."
 "Backup file [{0}] not found.": "Sikkerhedskopifilen [{0}] blev ikke fundet."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Gendannelse [{0}] ({1:n0} rækker) lykkedes."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Gendannelse [{0}] skrev kun {1:n0} af {2:n0} rækker, fordi tabellen allerede indeholder konfliktende rækker. Ryd tabellen før gendannelse."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Gendannelse [{0}] mislykkedes, fordi tabellen allerede indeholder konfliktende rækker. Ryd tabellen før gendannelse."
 "Restore [{0}] is running in the background...": "Gendannelse [{0}] kører i baggrunden..."
 "Illegal data access [{0}]": "Ulovenlig dataadgang [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Tenantkontekst mangler; forespørgsel på {0} er ikke tilladt."

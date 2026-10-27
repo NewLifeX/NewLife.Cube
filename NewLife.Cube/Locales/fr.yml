@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "La sauvegarde [{0}] s'exécute en arrière-plan..."
 "Backup file [{0}] not found.": "Fichier de sauvegarde [{0}] introuvable."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Restauration [{0}] ({1:n0} lignes) réussie."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "La restauration [{0}] n'a écrit que {1:n0} lignes sur {2:n0}, car la table contient déjà des lignes en conflit. Videz la table avant de restaurer."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "La restauration [{0}] a échoué, car la table contient déjà des lignes en conflit. Videz la table avant de restaurer."
 "Restore [{0}] is running in the background...": "La restauration [{0}] s'exécute en arrière-plan..."
 "Illegal data access [{0}]": "Accès illégal aux données [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Le contexte du locataire est manquant ; l'interrogation de {0} est interdite."

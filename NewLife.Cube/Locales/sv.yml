@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Säkerhetskopiering [{0}] körs i bakgrunden..."
 "Backup file [{0}] not found.": "Säkerhetskopieringsfilen [{0}] hittades inte."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Återställning [{0}] ({1:n0} rader) lyckades."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Återställning [{0}] skrev endast {1:n0} av {2:n0} rader eftersom tabellen redan innehåller motstridiga rader. Töm tabellen innan återställning."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Återställning [{0}] misslyckades eftersom tabellen redan innehåller motstridiga rader. Töm tabellen innan återställning."
 "Restore [{0}] is running in the background...": "Återställning [{0}] körs i bakgrunden..."
 "Illegal data access [{0}]": "Otillåten dataåtkomst [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Klientkontexten saknas; fråga mot {0} är inte tillåten."

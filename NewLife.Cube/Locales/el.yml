@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Το αντίγραφο ασφαλείας [{0}] εκτελείται στο παρασκήνιο..."
 "Backup file [{0}] not found.": "Το αρχείο αντιγράφου ασφαλείας [{0}] δεν βρέθηκε."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Η επαναφορά [{0}] ({1:n0} γραμμές) πέτυχε."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Η επαναφορά [{0}] έγραψε μόνο {1:n0} από {2:n0} γραμμές, επειδή ο πίνακας περιέχει ήδη συγκρουόμενες γραμμές. Αδειάστε τον πίνακα πριν την επαναφορά."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Η επαναφορά [{0}] απέτυχε, επειδή ο πίνακας περιέχει ήδη συγκρουόμενες γραμμές. Αδειάστε τον πίνακα πριν την επαναφορά."
 "Restore [{0}] is running in the background...": "Η επαναφορά [{0}] εκτελείται στο παρασκήνιο..."
 "Illegal data access [{0}]": "Παράνομη πρόσβαση δεδομένων [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Λείπει το περιβάλλον ενοικιαστή· δεν επιτρέπεται ερώτημα στο {0}."

@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "백업 [{0}]이(가) 백그라운드에서 실행 중입니다..."
 "Backup file [{0}] not found.": "백업 파일 [{0}]을(를) 찾을 수 없습니다."
 "Restore [{0}] ({1:n0} rows) succeeded.": "복원 [{0}] ({1:n0}행) 완료되었습니다."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "복원 [{0}]이(가) {2:n0}행 중 {1:n0}행만 기록했습니다. 테이블에 이미 충돌하는 데이터가 있습니다. 복원하기 전에 테이블을 비우십시오."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "복원 [{0}]이(가) 실패했습니다. 테이블에 이미 충돌하는 데이터가 있습니다. 복원하기 전에 테이블을 비우십시오."
 "Restore [{0}] is running in the background...": "복원 [{0}]이(가) 백그라운드에서 실행 중입니다..."
 "Illegal data access [{0}]": "잘못된 데이터 액세스 [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "테넌트 컨텍스트가 없어 {0} 조회가 허용되지 않습니다."

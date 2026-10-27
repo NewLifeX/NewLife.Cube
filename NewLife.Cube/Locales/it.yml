@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Backup [{0}] in esecuzione in background..."
 "Backup file [{0}] not found.": "File di backup [{0}] non trovato."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Ripristino [{0}] ({1:n0} righe) riuscito."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Il ripristino [{0}] ha scritto solo {1:n0} di {2:n0} righe perché la tabella contiene già righe in conflitto. Svuotare la tabella prima di ripristinare."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Il ripristino [{0}] non è riuscito perché la tabella contiene già righe in conflitto. Svuotare la tabella prima di ripristinare."
 "Restore [{0}] is running in the background...": "Ripristino [{0}] in esecuzione in background..."
 "Illegal data access [{0}]": "Accesso ai dati non consentito [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Contesto tenant mancante; la query su {0} non è consentita."

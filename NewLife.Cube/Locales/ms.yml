@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Sandaran [{0}] sedang berjalan di latar belakang..."
 "Backup file [{0}] not found.": "Fail sandaran [{0}] tidak ditemui."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Pemulihan [{0}] ({1:n0} baris) berjaya."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Pemulihan [{0}] hanya menulis {1:n0} daripada {2:n0} baris kerana jadual sudah mengandungi baris bercanggah. Kosongkan jadual sebelum memulihkan."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Pemulihan [{0}] gagal kerana jadual sudah mengandungi baris bercanggah. Kosongkan jadual sebelum memulihkan."
 "Restore [{0}] is running in the background...": "Pemulihan [{0}] sedang berjalan di latar belakang..."
 "Illegal data access [{0}]": "Akses data tidak sah [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Konteks penyewa tiada; pertanyaan {0} tidak dibenarkan."

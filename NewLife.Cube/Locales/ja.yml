@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "バックアップ[{0}]をバックグラウンドで実行中です..."
 "Backup file [{0}] not found.": "バックアップ ファイル[{0}]が見つかりません。"
 "Restore [{0}] ({1:n0} rows) succeeded.": "復元[{0}]（{1:n0}行）が成功しました。"
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "復元[{0}]は{2:n0}行のうち{1:n0}行のみ書き込みました。テーブルに競合するデータが既に存在します。復元する前にテーブルをクリアしてください。"
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "復元[{0}]は失敗しました。テーブルに競合するデータが既に存在します。復元する前にテーブルをクリアしてください。"
 "Restore [{0}] is running in the background...": "復元[{0}]をバックグラウンドで実行中です..."
 "Illegal data access [{0}]": "不正なデータ アクセス [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "テナント コンテキストがないため、{0} のクエリは許可されません。"

@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Záloha [{0}] probíhá na pozadí..."
 "Backup file [{0}] not found.": "Soubor zálohy [{0}] nebyl nalezen."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Obnovení [{0}] ({1:n0} řádků) bylo úspěšné."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Obnovení [{0}] zapsalo pouze {1:n0} z {2:n0} řádků, protože tabulka již obsahuje konfliktní řádky. Před obnovením tabulku vyprázdněte."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Obnovení [{0}] selhalo, protože tabulka již obsahuje konfliktní řádky. Před obnovením tabulku vyprázdněte."
 "Restore [{0}] is running in the background...": "Obnovení [{0}] probíhá na pozadí..."
 "Illegal data access [{0}]": "Neoprávněný přístup k datům [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Chybí kontext tenanta; dotaz na {0} není povolen."

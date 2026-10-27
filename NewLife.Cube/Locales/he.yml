@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "הגיבוי [{0}] פועל ברקע..."
 "Backup file [{0}] not found.": "קובץ הגיבוי [{0}] לא נמצא."
 "Restore [{0}] ({1:n0} rows) succeeded.": "השחזור [{0}] ({1:n0} שורות) הצליח."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "השחזור [{0}] כתב רק {1:n0} מתוך {2:n0} שורות מכיוון שהטבלה כבר מכילה שורות מתנגשות. רוקן את הטבלה לפני השחזור."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "השחזור [{0}] נכשל מכיוון שהטבלה כבר מכילה שורות מתנגשות. רוקן את הטבלה לפני השחזור."
 "Restore [{0}] is running in the background...": "השחזור [{0}] פועל ברקע..."
 "Illegal data access [{0}]": "גישה לא חוקית לנתונים [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "חסר הקשר דייר; שאילתה על {0} אסורה."

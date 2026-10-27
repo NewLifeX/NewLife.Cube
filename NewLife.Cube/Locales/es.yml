@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "La copia de seguridad [{0}] se está ejecutando en segundo plano..."
 "Backup file [{0}] not found.": "No se encontró el archivo de copia de seguridad [{0}]."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Restauración [{0}] ({1:n0} filas) completada."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "La restauración [{0}] solo escribió {1:n0} de {2:n0} filas porque la tabla ya contiene filas en conflicto. Vacíe la tabla antes de restaurar."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "La restauración [{0}] falló porque la tabla ya contiene filas en conflicto. Vacíe la tabla antes de restaurar."
 "Restore [{0}] is running in the background...": "La restauración [{0}] se está ejecutando en segundo plano..."
 "Illegal data access [{0}]": "Acceso ilegal a datos [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Falta el contexto de inquilino; no se permite consultar {0}."

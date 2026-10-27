@@ -31,6 +31,8 @@
 "Backup [{0}] is running in the background...": "Резервне копіювання [{0}] виконується у фоновому режимі..."
 "Backup file [{0}] not found.": "Файл резервної копії [{0}] не знайдено."
 "Restore [{0}] ({1:n0} rows) succeeded.": "Відновлення [{0}] ({1:n0} рядків) виконано успішно."
+"Restore [{0}] wrote only {1:n0} of {2:n0} rows because the table already holds conflicting rows. Clear the table before restoring.": "Відновлення [{0}] записало лише {1:n0} з {2:n0} рядків, оскільки в таблиці вже є конфліктні рядки. Очистіть таблицю перед відновленням."
+"Restore [{0}] failed because the table already holds conflicting rows. Clear the table before restoring.": "Відновлення [{0}] не вдалося, оскільки в таблиці вже є конфліктні рядки. Очистіть таблицю перед відновленням."
 "Restore [{0}] is running in the background...": "Відновлення [{0}] виконується у фоновому режимі..."
 "Illegal data access [{0}]": "Незаконний доступ до даних [{0}]"
 "Tenant context is missing; querying {0} is not allowed.": "Відсутній контекст клієнта; запит до {0} не дозволено."
