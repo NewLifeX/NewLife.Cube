@@ -648,3 +648,7 @@ export type { ListViewMode } from './list-chart';
 // 表单必填校验
 export { isBlankValue, validateRequiredFields } from './form';
 export type { FieldValidationError } from './form';
+
+// 工作台卡片布局（拖动排序 / 隐藏 / 持久化）
+export { mergeWidgetsWithLayout, buildWidgetLayout, moveWidget, createWidgetLayoutLoader } from './widget-layout';
+export type { WidgetLayout, WidgetLayoutMap, LayoutWidget, RankedWidgets } from './widget-layout';

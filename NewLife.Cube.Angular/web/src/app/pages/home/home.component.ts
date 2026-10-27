@@ -15,9 +15,14 @@ import {
   appendMonitorPoint,
   buildMonitorChart,
   buildWorkbenchView,
+  buildWidgetLayout,
+  createWidgetLayoutLoader,
   createWorkbenchLoader,
+  mergeWidgetsWithLayout,
+  moveWidget,
   MONITOR_POLL_INTERVAL,
   type MonitorPoint,
+  type WidgetLayoutMap,
   type WorkbenchData,
   type WorkbenchView,
   type WorkbenchWidgetView,
@@ -54,11 +59,35 @@ const PROFILE_LABELS = ['登录次数', '最后登录', '登录地址', '注册�
             <h2>{{ greeting }}，{{ view?.displayName || '-' }}</h2>
             <p class="banner-sub">{{ today }}@if (view?.roleText) { · {{ view!.roleText }} }</p>
           </div>
-          <button nz-button [nzLoading]="loading" (click)="reload()">刷新</button>
+          <div class="layout-actions">
+            @if (!layoutEditing) {
+              <button nz-button (click)="startLayoutEdit()">编辑布局</button>
+            } @else {
+              <button nz-button [nzLoading]="savingLayout" (click)="saveLayoutChanges()">保存</button>
+              <button nz-button [nzLoading]="savingLayout" (click)="resetLayoutChanges()">重置</button>
+              <button nz-button nzType="text" (click)="cancelLayoutEdit()">完成</button>
+            }
+            <button nz-button [nzLoading]="loading" (click)="reload()">刷新</button>
+          </div>
         </div>
 
         @if (error) {
           <nz-alert nzType="warning" [nzMessage]="error" nzShowIcon style="margin-bottom: 16px"></nz-alert>
+        }
+
+        @if (layoutTip) {
+          <nz-alert nzType="info" [nzMessage]="layoutTip" nzShowIcon style="margin-bottom: 16px"></nz-alert>
+        }
+
+        @if (layoutEditing && hiddenWidgets.length) {
+          <div style="margin-bottom: 16px">
+            <p class="banner-sub">已隐藏的卡片</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              @for (widget of hiddenWidgets; track widget.name) {
+                <button nz-button nzSize="small" (click)="restoreWidget(widget.name)">{{ widget.title }}（点击恢复）</button>
+              }
+            </div>
+          </div>
         }
 
         @if (view?.kpis?.length) {
@@ -76,11 +105,25 @@ const PROFILE_LABELS = ['登录次数', '最后登录', '登录地址', '注册�
           </div>
         }
 
-        @if (view?.widgets?.length) {
+        @if (visibleWidgets.length) {
           <div nz-row [nzGutter]="16">
-            @for (widget of view!.widgets; track widget.name) {
-              <div nz-col [nzXs]="24" [nzMd]="widget.cols">
-                <nz-card [nzTitle]="widget.title" [attr.data-widget]="widget.name">
+            @for (widget of visibleWidgets; track widget.name) {
+              <div
+                nz-col
+                [nzXs]="24"
+                [nzMd]="widget.cols"
+                [attr.draggable]="layoutEditing"
+                (dragstart)="onDragStart(widget.name)"
+                (dragover)="$event.preventDefault()"
+                (drop)="onDropOn(widget.name)"
+              >
+                <nz-card [attr.data-widget]="widget.name">
+                  <div class="widget-header">
+                    <span>{{ widget.title }}</span>
+                    @if (layoutEditing) {
+                      <button nz-button nzType="text" nzSize="small" (click)="hideWidget(widget.name)">隐藏</button>
+                    }
+                  </div>
                   <ng-container *ngTemplateOutlet="widgetBody; context: { $implicit: widget }"></ng-container>
                 </nz-card>
               </div>
@@ -215,7 +258,9 @@ const PROFILE_LABELS = ['登录次数', '最后登录', '登录地址', '注册�
       .kpi {
         height: 100%;
       }
-      .kpi-trend {
+      .layout-actions { display: flex; gap: 8px; }
+    .widget-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .kpi-trend {
         margin: 4px 0 0;
         color: rgba(0, 0, 0, 0.45);
         font-size: 12px;
@@ -301,7 +346,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   });
   greeting = this.resolveGreeting();
 
+  // --- 卡片布局：拖动排序 / 隐藏 / 持久化 ---
+  layout: WidgetLayoutMap = {};
+  visibleWidgets: WorkbenchWidgetView[] = [];
+  hiddenWidgets: WorkbenchWidgetView[] = [];
+  layoutEditing = false;
+  savingLayout = false;
+  layoutTip = '';
+  private draggingName = '';
+
   private loader;
+  private layoutLoader;
   private timer: ReturnType<typeof setInterval> | null = null;
   private polling = false;
 
@@ -310,6 +365,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private router: Router,
   ) {
     this.loader = createWorkbenchLoader(this.apiService.api);
+    this.layoutLoader = createWidgetLayoutLoader(this.apiService.api);
   }
 
   ngOnInit(): void {
@@ -327,6 +383,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       const result = await this.loader.load();
       if (result.data) {
         this.view = buildWorkbenchView(result.data as WorkbenchData);
+        if (!this.layoutEditing) {
+          this.layout = await this.layoutLoader.load();
+          this.applyLayout(this.view.widgets);
+        }
         this.syncPolling();
       } else {
         this.error = result.error || '工作台加载失败';
@@ -340,6 +400,79 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   async reload(): Promise<void> {
     await this.load();
+  }
+
+  applyLayout(widgets: WorkbenchWidgetView[]): void {
+    const merged = mergeWidgetsWithLayout(widgets, this.layout);
+    this.visibleWidgets = merged.visible;
+    this.hiddenWidgets = merged.hidden;
+  }
+
+  startLayoutEdit(): void {
+    this.layoutEditing = true;
+    this.layoutTip = '拖动卡片调整顺序，点击隐藏按钮可隐藏卡片';
+  }
+
+  cancelLayoutEdit(): void {
+    this.layoutEditing = false;
+    this.layoutTip = '';
+    if (this.view) this.applyLayout(this.view.widgets);
+  }
+
+  onDragStart(name: string): void {
+    this.draggingName = name;
+  }
+
+  onDropOn(target: string): void {
+    if (!this.layoutEditing || !this.draggingName) return;
+    this.visibleWidgets = moveWidget(this.visibleWidgets, this.draggingName, target);
+    this.draggingName = '';
+  }
+
+  hideWidget(name: string): void {
+    const index = this.visibleWidgets.findIndex((item) => item.name === name);
+    if (index < 0) return;
+    const [widget] = this.visibleWidgets.splice(index, 1);
+    this.visibleWidgets = [...this.visibleWidgets];
+    this.hiddenWidgets = [...this.hiddenWidgets, widget];
+  }
+
+  restoreWidget(name: string): void {
+    const index = this.hiddenWidgets.findIndex((item) => item.name === name);
+    if (index < 0) return;
+    const [widget] = this.hiddenWidgets.splice(index, 1);
+    this.hiddenWidgets = [...this.hiddenWidgets];
+    this.visibleWidgets = [...this.visibleWidgets, widget];
+  }
+
+  async saveLayoutChanges(): Promise<void> {
+    this.savingLayout = true;
+    try {
+      const map = buildWidgetLayout(this.visibleWidgets, this.hiddenWidgets);
+      if (await this.layoutLoader.save(map)) {
+        this.layout = map;
+        this.layoutTip = '布局已保存';
+      } else {
+        this.layoutTip = '布局保存失败';
+      }
+    } finally {
+      this.savingLayout = false;
+    }
+  }
+
+  async resetLayoutChanges(): Promise<void> {
+    this.savingLayout = true;
+    try {
+      if (await this.layoutLoader.reset()) {
+        this.layout = {};
+        this.layoutTip = '布局已重置';
+        if (this.view) this.applyLayout(this.view.widgets);
+      } else {
+        this.layoutTip = '布局重置失败';
+      }
+    } finally {
+      this.savingLayout = false;
+    }
   }
 
   openKpi(url?: string): void {

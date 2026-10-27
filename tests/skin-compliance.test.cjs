@@ -64,8 +64,10 @@ for (const skin of Object.keys(skins)) {
     expectReference(skin, 'resolveColumnAlign', '列表页未接入共享列对齐解析');
   });
 
-  test(`${skin}: 工作台接真实聚合数据（SKIN-8）`, () => {
+  test(`${skin}: 工作台接真实聚合数据并支持卡片布局（SKIN-8/13）`, () => {
     expectReference(skin, 'createWorkbenchLoader', '工作台未接入共享数据加载器');
+    expectReference(skin, 'createWidgetLayoutLoader', '工作台未接入卡片布局持久化');
+    expectReference(skin, 'moveWidget', '工作台未接入卡片拖动排序');
   });
 
   test(`${skin}: 表单页按字段类型渲染并拦截必填（SKIN-6）`, () => {

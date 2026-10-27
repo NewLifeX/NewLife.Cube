@@ -17,7 +17,31 @@
             {{ today }}<span v-if="view?.roleText"> · {{ view.roleText }}</span>
           </div>
         </div>
-        <v-btn :loading="loading" variant="tonal" prepend-icon="mdi-refresh" @click="reload">刷新</v-btn>
+        <div class="d-flex ga-2">
+          <v-btn v-if="!layoutEditing" variant="tonal" prepend-icon="mdi-view-dashboard-edit" @click="startLayoutEdit">编辑布局</v-btn>
+          <template v-else>
+            <v-btn variant="tonal" :loading="savingLayout" prepend-icon="mdi-content-save" @click="saveLayoutChanges">保存</v-btn>
+            <v-btn variant="tonal" :loading="savingLayout" prepend-icon="mdi-backup-restore" @click="resetLayoutChanges">重置</v-btn>
+            <v-btn variant="text" @click="cancelLayoutEdit">完成</v-btn>
+          </template>
+          <v-btn :loading="loading" variant="tonal" prepend-icon="mdi-refresh" @click="reload">刷新</v-btn>
+        </div>
+      </div>
+
+      <v-alert v-if="layoutTip" type="info" variant="tonal" density="compact" class="mb-4">{{ layoutTip }}</v-alert>
+
+      <div v-if="layoutEditing && hiddenWidgets.length" class="mb-4">
+        <div class="text-body-2 text-medium-emphasis mb-2">已隐藏的卡片</div>
+        <div class="d-flex flex-wrap ga-2">
+          <v-chip
+            v-for="widget in hiddenWidgets"
+            :key="widget.name"
+            prepend-icon="mdi-eye-outline"
+            @click="restoreWidget(widget.name)"
+          >
+            {{ widget.title }}（点击恢复）
+          </v-chip>
+        </div>
       </div>
 
       <v-alert v-if="error" type="warning" variant="tonal" density="compact" class="mb-4">{{ error }}</v-alert>
@@ -34,10 +58,30 @@
         </v-col>
       </v-row>
 
-      <v-row v-if="view?.widgets.length">
-        <v-col v-for="widget in view.widgets" :key="widget.name" cols="12" :md="widget.cols">
+      <v-row v-if="visibleWidgets.length">
+        <v-col
+          v-for="widget in visibleWidgets"
+          :key="widget.name"
+          cols="12"
+          :md="widget.cols"
+          :draggable="layoutEditing"
+          @dragstart="onDragStart(widget.name)"
+          @dragover.prevent
+          @drop="onDropOn(widget.name)"
+        >
           <v-card class="widget" :data-widget="widget.name">
-            <v-card-title class="text-subtitle-1">{{ widget.title }}</v-card-title>
+            <v-card-title class="d-flex align-center text-subtitle-1">
+              <span>{{ widget.title }}</span>
+              <v-spacer />
+              <v-btn
+                v-if="layoutEditing"
+                icon="mdi-eye-off-outline"
+                size="small"
+                variant="text"
+                title="隐藏卡片"
+                @click="hideWidget(widget.name)"
+              />
+            </v-card-title>
             <v-card-text>
               <!-- 监控曲线 -->
               <template v-if="widget.kind === 'monitor'">
@@ -148,20 +192,37 @@ import {
   appendMonitorPoint,
   buildMonitorChart,
   buildWorkbenchView,
+  buildWidgetLayout,
+  createWidgetLayoutLoader,
   createWorkbenchLoader,
+  mergeWidgetsWithLayout,
+  moveWidget,
   MONITOR_POLL_INTERVAL,
   type MonitorPoint,
+  type WidgetLayoutMap,
   type WorkbenchData,
+  type WorkbenchWidgetView,
 } from '@newlifex/page-logic';
 import api from '@/api';
 
 const router = useRouter();
 const loader = createWorkbenchLoader(api);
+const layoutLoader = createWidgetLayoutLoader(api);
 
 const raw = ref<WorkbenchData | null>(null);
 const loading = ref(false);
 const error = ref('');
 const monitorPoints = ref<MonitorPoint[]>([]);
+
+// --- 卡片布局：拖动排序 / 隐藏 / 持久化 ---
+const layout = ref<WidgetLayoutMap>({});
+const visibleWidgets = ref<WorkbenchWidgetView[]>([]);
+const hiddenWidgets = ref<WorkbenchWidgetView[]>([]);
+const layoutEditing = ref(false);
+const layoutDirty = ref(false);
+const savingLayout = ref(false);
+const draggingName = ref('');
+const layoutTip = ref('');
 let timer: ReturnType<typeof setInterval> | null = null;
 let polling = false;
 
@@ -188,8 +249,13 @@ async function load(): Promise<void> {
   error.value = '';
   try {
     const result = await loader.load();
-    if (result.data) raw.value = result.data;
-    else error.value = result.error || '工作台加载失败';
+    if (result.data) {
+      raw.value = result.data;
+      if (!layoutEditing.value) {
+        layout.value = await layoutLoader.load();
+        applyLayout(buildWorkbenchView(result.data).widgets);
+      }
+    } else error.value = result.error || '工作台加载失败';
   } catch (ex) {
     error.value = ex instanceof Error ? ex.message : String(ex);
   } finally {
@@ -225,6 +291,85 @@ async function reload(): Promise<void> {
   await load();
   if (view.value?.hasChartWidget) startPolling();
   else stopPolling();
+}
+
+// --- 卡片布局 ---
+function applyLayout(widgets: WorkbenchWidgetView[]): void {
+  const merged = mergeWidgetsWithLayout(widgets, layout.value);
+  visibleWidgets.value = merged.visible;
+  hiddenWidgets.value = merged.hidden;
+}
+
+function startLayoutEdit(): void {
+  layoutEditing.value = true;
+  layoutDirty.value = false;
+  layoutTip.value = '拖动卡片调整顺序，点击眼睛图标可隐藏卡片';
+}
+
+function cancelLayoutEdit(): void {
+  layoutEditing.value = false;
+  layoutDirty.value = false;
+  layoutTip.value = '';
+  if (view.value) applyLayout(view.value.widgets);
+}
+
+function onDragStart(name: string): void {
+  draggingName.value = name;
+}
+
+function onDropOn(target: string): void {
+  if (!layoutEditing.value || !draggingName.value) return;
+  visibleWidgets.value = moveWidget(visibleWidgets.value, draggingName.value, target);
+  draggingName.value = '';
+  layoutDirty.value = true;
+}
+
+function hideWidget(name: string): void {
+  const index = visibleWidgets.value.findIndex((item) => item.name === name);
+  if (index < 0) return;
+  const [widget] = visibleWidgets.value.splice(index, 1);
+  hiddenWidgets.value.push(widget);
+  layoutDirty.value = true;
+}
+
+function restoreWidget(name: string): void {
+  const index = hiddenWidgets.value.findIndex((item) => item.name === name);
+  if (index < 0) return;
+  const [widget] = hiddenWidgets.value.splice(index, 1);
+  visibleWidgets.value.push(widget);
+  layoutDirty.value = true;
+}
+
+async function saveLayoutChanges(): Promise<void> {
+  savingLayout.value = true;
+  try {
+    const map = buildWidgetLayout(visibleWidgets.value, hiddenWidgets.value);
+    if (await layoutLoader.save(map)) {
+      layout.value = map;
+      layoutDirty.value = false;
+      layoutTip.value = '布局已保存';
+    } else {
+      layoutTip.value = '布局保存失败';
+    }
+  } finally {
+    savingLayout.value = false;
+  }
+}
+
+async function resetLayoutChanges(): Promise<void> {
+  savingLayout.value = true;
+  try {
+    if (await layoutLoader.reset()) {
+      layout.value = {};
+      layoutDirty.value = false;
+      layoutTip.value = '布局已重置';
+      if (view.value) applyLayout(view.value.widgets);
+    } else {
+      layoutTip.value = '布局重置失败';
+    }
+  } finally {
+    savingLayout.value = false;
+  }
 }
 
 function openKpi(url?: string): void {
@@ -318,5 +463,12 @@ onBeforeUnmount(stopPolling);
 
 .legend-mem::before {
   background: #2e7d32;
+}
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 </style>

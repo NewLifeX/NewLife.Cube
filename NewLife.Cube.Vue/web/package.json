@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@newlifex/api-core": "workspace:*",
+    "@newlifex/page-logic": "workspace:*",
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^13.0.0",
     "@wangeditor/editor": "^5.1.23",

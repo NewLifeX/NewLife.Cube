@@ -5,10 +5,16 @@
     appendMonitorPoint,
     buildMonitorChart,
     buildWorkbenchView,
+    buildWidgetLayout,
+    createWidgetLayoutLoader,
     createWorkbenchLoader,
+    mergeWidgetsWithLayout,
+    moveWidget,
     MONITOR_POLL_INTERVAL,
     type MonitorPoint,
+    type WidgetLayoutMap,
     type WorkbenchData,
+    type WorkbenchWidgetView,
   } from '@newlifex/page-logic';
   import { getApi } from '$lib/api';
   import { siteTitle } from '$lib/stores/app';
@@ -33,11 +39,21 @@
   }
 
   const loader = createWorkbenchLoader(getApi());
+  const layoutLoader = createWidgetLayoutLoader(getApi());
 
   let raw: WorkbenchData | null = null;
   let loading = false;
   let error = '';
   let monitorPoints: MonitorPoint[] = [];
+
+  // --- 卡片布局：拖动排序 / 隐藏 / 持久化 ---
+  let layout: WidgetLayoutMap = {};
+  let visibleWidgets: WorkbenchWidgetView[] = [];
+  let hiddenWidgets: WorkbenchWidgetView[] = [];
+  let layoutEditing = false;
+  let savingLayout = false;
+  let layoutTip = '';
+  let draggingName = '';
   let timer: ReturnType<typeof setInterval> | null = null;
   let polling = false;
 
@@ -60,6 +76,75 @@
     return '晚上好';
   }
 
+  function applyLayout(widgets: WorkbenchWidgetView[]) {
+    const merged = mergeWidgetsWithLayout(widgets, layout);
+    visibleWidgets = merged.visible;
+    hiddenWidgets = merged.hidden;
+  }
+
+  function startLayoutEdit() {
+    layoutEditing = true;
+    layoutTip = '拖动卡片调整顺序，点击隐藏按钮可隐藏卡片';
+  }
+
+  function cancelLayoutEdit() {
+    layoutEditing = false;
+    layoutTip = '';
+    if (view) applyLayout(view.widgets);
+  }
+
+  function onDropOn(target: string) {
+    if (!layoutEditing || !draggingName) return;
+    visibleWidgets = moveWidget(visibleWidgets, draggingName, target);
+    draggingName = '';
+  }
+
+  function hideWidget(name: string) {
+    const index = visibleWidgets.findIndex((item) => item.name === name);
+    if (index < 0) return;
+    const [widget] = visibleWidgets.splice(index, 1);
+    visibleWidgets = [...visibleWidgets];
+    hiddenWidgets = [...hiddenWidgets, widget];
+  }
+
+  function restoreWidget(name: string) {
+    const index = hiddenWidgets.findIndex((item) => item.name === name);
+    if (index < 0) return;
+    const [widget] = hiddenWidgets.splice(index, 1);
+    hiddenWidgets = [...hiddenWidgets];
+    visibleWidgets = [...visibleWidgets, widget];
+  }
+
+  async function saveLayoutChanges() {
+    savingLayout = true;
+    try {
+      const map = buildWidgetLayout(visibleWidgets, hiddenWidgets);
+      if (await layoutLoader.save(map)) {
+        layout = map;
+        layoutTip = '布局已保存';
+      } else {
+        layoutTip = '布局保存失败';
+      }
+    } finally {
+      savingLayout = false;
+    }
+  }
+
+  async function resetLayoutChanges() {
+    savingLayout = true;
+    try {
+      if (await layoutLoader.reset()) {
+        layout = {};
+        layoutTip = '布局已重置';
+        if (view) applyLayout(view.widgets);
+      } else {
+        layoutTip = '布局重置失败';
+      }
+    } finally {
+      savingLayout = false;
+    }
+  }
+
   async function load() {
     loading = true;
     error = '';
@@ -67,6 +152,10 @@
       const result = await loader.load();
       if (result.data) {
         raw = result.data;
+        if (!layoutEditing) {
+          layout = await layoutLoader.load();
+          applyLayout(buildWorkbenchView(result.data).widgets);
+        }
         syncPolling();
       } else {
         error = result.error || '工作台加载失败';
@@ -134,10 +223,36 @@
         {today}{view?.roleText ? ` · ${view.roleText}` : ''}
       </p>
     </div>
-    <button class="rounded border px-3 py-1.5 text-sm" style="border-color: var(--border)" disabled={loading} onclick={load}>
-      刷新
-    </button>
+    <div class="flex gap-2">
+      {#if layoutEditing}
+        <button class="rounded border px-3 py-1.5 text-sm" style="border-color: var(--border)" disabled={savingLayout} onclick={saveLayoutChanges}>保存</button>
+        <button class="rounded border px-3 py-1.5 text-sm" style="border-color: var(--border)" disabled={savingLayout} onclick={resetLayoutChanges}>重置</button>
+        <button class="rounded px-3 py-1.5 text-sm" onclick={cancelLayoutEdit}>完成</button>
+      {:else}
+        <button class="rounded border px-3 py-1.5 text-sm" style="border-color: var(--border)" onclick={startLayoutEdit}>编辑布局</button>
+      {/if}
+      <button class="rounded border px-3 py-1.5 text-sm" style="border-color: var(--border)" disabled={loading} onclick={load}>
+        刷新
+      </button>
+    </div>
   </div>
+
+  {#if layoutTip}
+    <p class="mb-4 rounded border p-3 text-sm" style="border-color: #3b82f6; color: #1d4ed8">{layoutTip}</p>
+  {/if}
+
+  {#if layoutEditing && hiddenWidgets.length}
+    <div class="mb-4">
+      <p class="mb-2 text-sm" style="color: var(--text-secondary)">已隐藏的卡片</p>
+      <div class="flex flex-wrap gap-2">
+        {#each hiddenWidgets as widget}
+          <button class="rounded-full border px-3 py-1 text-sm" style="border-color: var(--border)" onclick={() => restoreWidget(widget.name)}>
+            {widget.title}（点击恢复）
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
 
   {#if error}
     <p class="mb-4 rounded border p-3 text-sm" style="border-color: #f59e0b; color: #b45309">{error}</p>
@@ -162,11 +277,24 @@
     </div>
   {/if}
 
-  {#if view?.widgets.length}
+  {#if visibleWidgets.length}
     <div class="grid grid-cols-12 gap-4">
-      {#each view.widgets as widget}
-        <div class="card col-span-12 p-4" style="grid-column: span {widget.cols} / span {widget.cols}" data-widget={widget.name}>
-          <h3 class="mb-3 text-base font-semibold">{widget.title}</h3>
+      {#each visibleWidgets as widget}
+        <div
+          class="card col-span-12 p-4"
+          style="grid-column: span {widget.cols} / span {widget.cols}"
+          data-widget={widget.name}
+          draggable={layoutEditing}
+          ondragstart={() => (draggingName = widget.name)}
+          ondragover={(e) => e.preventDefault()}
+          ondrop={() => onDropOn(widget.name)}
+        >
+          <div class="mb-3 flex items-center gap-2">
+            <h3 class="text-base font-semibold">{widget.title}</h3>
+            {#if layoutEditing}
+              <button class="ml-auto text-sm underline" onclick={() => hideWidget(widget.name)}>隐藏</button>
+            {/if}
+          </div>
 
           {#if widget.kind === 'monitor'}
             {#if monitorPoints.length}

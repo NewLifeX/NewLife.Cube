@@ -6,9 +6,14 @@ import {
   appendMonitorPoint,
   buildMonitorChart,
   buildWorkbenchView,
+  buildWidgetLayout,
+  createWidgetLayoutLoader,
   createWorkbenchLoader,
+  mergeWidgetsWithLayout,
+  moveWidget,
   MONITOR_POLL_INTERVAL,
   type MonitorPoint,
+  type WidgetLayoutMap,
   type WorkbenchData,
   type WorkbenchWidgetView,
 } from '@newlifex/page-logic';
@@ -66,10 +71,20 @@ function MonitorCardBody({ points }: { points: MonitorPoint[] }) {
 export default function Home() {
   const navigate = useNavigate();
   const loader = useMemo(() => createWorkbenchLoader(api), []);
+  const layoutLoader = useMemo(() => createWidgetLayoutLoader(api), []);
   const [raw, setRaw] = useState<WorkbenchData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [monitorPoints, setMonitorPoints] = useState<MonitorPoint[]>([]);
+
+  // --- 卡片布局：拖动排序 / 隐藏 / 持久化 ---
+  const [layout, setLayout] = useState<WidgetLayoutMap>({});
+  const [visibleWidgets, setVisibleWidgets] = useState<WorkbenchWidgetView[]>([]);
+  const [hiddenWidgets, setHiddenWidgets] = useState<WorkbenchWidgetView[]>([]);
+  const [layoutEditing, setLayoutEditing] = useState(false);
+  const [savingLayout, setSavingLayout] = useState(false);
+  const [layoutTip, setLayoutTip] = useState('');
+  const draggingRef = useRef('');
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollingRef = useRef(false);
 
@@ -80,14 +95,87 @@ export default function Home() {
     setError('');
     try {
       const result = await loader.load();
-      if (result.data) setRaw(result.data);
-      else setError(result.error || '工作台加载失败');
+      if (result.data) {
+        setRaw(result.data);
+        const map = await layoutLoader.load();
+        setLayout(map);
+        const merged = mergeWidgetsWithLayout(buildWorkbenchView(result.data).widgets, map);
+        setVisibleWidgets(merged.visible);
+        setHiddenWidgets(merged.hidden);
+      } else setError(result.error || '工作台加载失败');
     } catch (ex) {
       setError(ex instanceof Error ? ex.message : String(ex));
     } finally {
       setLoading(false);
     }
-  }, [loader]);
+  }, [loader, layoutLoader]);
+
+  const applyLayout = useCallback((map: WidgetLayoutMap, widgets = view?.widgets ?? []) => {
+    const merged = mergeWidgetsWithLayout(widgets, map);
+    setVisibleWidgets(merged.visible);
+    setHiddenWidgets(merged.hidden);
+  }, [view]);
+
+  const startLayoutEdit = () => {
+    setLayoutEditing(true);
+    setLayoutTip('拖动卡片调整顺序，点击隐藏按钮可隐藏卡片');
+  };
+
+  const cancelLayoutEdit = () => {
+    setLayoutEditing(false);
+    setLayoutTip('');
+    applyLayout(layout);
+  };
+
+  const onDropOn = (target: string) => {
+    if (!layoutEditing || !draggingRef.current) return;
+    setVisibleWidgets((list) => moveWidget(list, draggingRef.current, target));
+    draggingRef.current = '';
+  };
+
+  const hideWidget = (name: string) => {
+    setVisibleWidgets((list) => {
+      const target = list.find((item) => item.name === name);
+      if (!target) return list;
+      setHiddenWidgets((hidden) => [...hidden, target]);
+      return list.filter((item) => item.name !== name);
+    });
+  };
+
+  const restoreWidget = (name: string) => {
+    setHiddenWidgets((hidden) => {
+      const target = hidden.find((item) => item.name === name);
+      if (!target) return hidden;
+      setVisibleWidgets((list) => [...list, target]);
+      return hidden.filter((item) => item.name !== name);
+    });
+  };
+
+  const saveLayoutChanges = async () => {
+    setSavingLayout(true);
+    try {
+      const map = buildWidgetLayout(visibleWidgets, hiddenWidgets);
+      if (await layoutLoader.save(map)) {
+        setLayout(map);
+        setLayoutTip('布局已保存');
+      } else setLayoutTip('布局保存失败');
+    } finally {
+      setSavingLayout(false);
+    }
+  };
+
+  const resetLayoutChanges = async () => {
+    setSavingLayout(true);
+    try {
+      if (await layoutLoader.reset()) {
+        setLayout({});
+        setLayoutTip('布局已重置');
+        applyLayout({});
+      } else setLayoutTip('布局重置失败');
+    } finally {
+      setSavingLayout(false);
+    }
+  };
 
   const pollMonitor = useCallback(async () => {
     if (pollingRef.current) return;
@@ -158,10 +246,43 @@ export default function Home() {
             {view?.roleText ? ` · ${view.roleText}` : ''}
           </p>
         </div>
-        <Button variant="outline" disabled={loading} onClick={() => void load()}>
-          刷新
-        </Button>
+        <div className="flex gap-2">
+          {layoutEditing ? (
+            <>
+              <Button variant="outline" disabled={savingLayout} onClick={() => void saveLayoutChanges()}>保存</Button>
+              <Button variant="outline" disabled={savingLayout} onClick={() => void resetLayoutChanges()}>重置</Button>
+              <Button variant="ghost" onClick={cancelLayoutEdit}>完成</Button>
+            </>
+          ) : (
+            <Button variant="outline" onClick={startLayoutEdit}>编辑布局</Button>
+          )}
+          <Button variant="outline" disabled={loading} onClick={() => void load()}>
+            刷新
+          </Button>
+        </div>
       </div>
+
+      {layoutTip ? (
+        <p className="mb-4 rounded-md border border-blue-300 bg-blue-50 p-3 text-sm text-blue-800">{layoutTip}</p>
+      ) : null}
+
+      {layoutEditing && hiddenWidgets.length ? (
+        <div className="mb-4">
+          <p className="mb-2 text-sm text-muted-foreground">已隐藏的卡片</p>
+          <div className="flex flex-wrap gap-2">
+            {hiddenWidgets.map((widget) => (
+              <button
+                key={widget.name}
+                type="button"
+                className="rounded-full border px-3 py-1 text-sm hover:bg-muted"
+                onClick={() => restoreWidget(widget.name)}
+              >
+                {widget.title}（点击恢复）
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {error ? (
         <p className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">{error}</p>
@@ -185,16 +306,25 @@ export default function Home() {
         </div>
       ) : null}
 
-      {view?.widgets.length ? (
+      {visibleWidgets.length ? (
         <div className="grid grid-cols-12 gap-4">
-          {view.widgets.map((widget) => (
+          {visibleWidgets.map((widget) => (
             <div
               key={widget.name}
               className="col-span-12 rounded-lg border bg-card p-4"
               data-widget={widget.name}
               style={{ gridColumn: `span ${widget.cols} / span ${widget.cols}` }}
+              draggable={layoutEditing}
+              onDragStart={() => { draggingRef.current = widget.name; }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => onDropOn(widget.name)}
             >
-              <h2 className="mb-3 text-base font-semibold">{widget.title}</h2>
+              <div className="mb-3 flex items-center gap-2">
+                <h2 className="text-base font-semibold">{widget.title}</h2>
+                {layoutEditing ? (
+                  <button type="button" className="ml-auto text-sm underline" onClick={() => hideWidget(widget.name)}>隐藏</button>
+                ) : null}
+              </div>
               <WidgetContent widget={widget} monitorPoints={monitorPoints} onNavigate={(url) => navigate(url)} />
             </div>
           ))}

@@ -479,6 +479,9 @@ importers:
       '@newlifex/api-core':
         specifier: workspace:*
         version: link:../../packages/api-core
+      '@newlifex/page-logic':
+        specifier: workspace:*
+        version: link:../../packages/page-logic
       '@vueuse/core':
         specifier: ^13.0.0
         version: 13.9.0(vue@3.5.32(typescript@5.8.3))
