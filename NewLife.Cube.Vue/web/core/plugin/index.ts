@@ -5,28 +5,6 @@ import fs from 'fs';
 import type { MicroAppConfig } from '../microAppRouter';
 
 /**
- * 递归遍历对象，找出所有值为 BUILD_ 开头的配置项
- * 返回扁平化的路径数组，如 ["request.baseUrl"]
- */
-function findBuildConfigKeys(obj: unknown, prefix = ''): Array<{ path: string; value: string; }> {
-  const results: Array<{ path: string; value: string; }> = [];
-
-  if (obj && typeof obj === 'object') {
-    for (const [key, value] of Object.entries(obj)) {
-      const currentPath = prefix ? `${prefix}.${key}` : key;
-
-      if (typeof value === 'string' && value.startsWith('BUILD_')) {
-        results.push({ path: currentPath, value });
-      } else if (value && typeof value === 'object' && !Array.isArray(value)) {
-        results.push(...findBuildConfigKeys(value, currentPath));
-      }
-    }
-  }
-
-  return results;
-}
-
-/**
  * 将 BUILD_ 配置项生成为内联脚本代码
  * 格式: let cubeConfig = window._CUBE_CONFIG_ || (window._CUBE_CONFIG_={});
  */
@@ -71,8 +49,6 @@ export default function vitePluginCubeFront() {
 
   /** 配置信息 */
   let config: ResolvedConfig & { routes: ConfigRoute[]; };
-  /** 包含路由信息的字符串代码 */
-  let routesStr: string | undefined;
   /** 生产配置内容（用于 transformIndexHtml 提取 BUILD_ 配置） */
   let productionConfigContent: string | undefined;
 
@@ -208,7 +184,7 @@ export default function vitePluginCubeFront() {
 
                 if (pkgName.startsWith('@')) {
                   // @scope/name/path 格式：用正则匹配 @scope/name 作为包名
-                  const match = pkgName.match(/^@[^\/]+\/[^\/]+/);
+                  const match = pkgName.match(/^@[^/]+\/[^/]+/);
                   if (!match) {
                     // 只有 @scope，没有 name，如 @newlifex（无效的包名）
                     throw new Error(
@@ -266,7 +242,7 @@ export default function vitePluginCubeFront() {
 const microAppConfigs = ${JSON.stringify(microAppConfigsStrList)}
 export default microAppConfigs
 `;
-          code = code.replace(/"(\(\)\s+=>\s+import\([^\)]+\))"/g, '$1'); // 去掉属性名的引号
+          code = code.replace(/"(\(\)\s+=>\s+import\([^)]+\))"/g, '$1'); // 去掉属性名的引号
           return code;
         } catch (error) {
           console.error('Failed to load microAppConfig.json', error);
@@ -384,17 +360,7 @@ export default { configData, currentEnv };
 // ─── 工具函数（模块顶层，供插件复用）──────────────────────────────────────
 
 /**
- * 根据当前 configFile 路径推断子应用的 views 目录。
- *
- * 约定：子应用的 vite.config.ts 位于 `<monorepo>/apps/<appName>/` 目录下，
- * 其 views 视图目录为 `<monorepo>/apps/<appName>/src/views/`。
- *
- * @param configFile  Vite 解析后的 config.configFile（绝对路径）
- * @param root        Vite 解析后的 config.root（monorepo 根目录）
- * @returns 子应用 views 目录的绝对路径，若无法推断则返回 null
- */
-/**
- * 解析所有子应用 views 目录（复数版本，遍历 resolveAppViewsDir 结果）
+ * 解析所有子应用 views 目录。
  * 当前支持单应用场景，返回所有应用的 views 目录。
  */
 function resolveAppViewsDirs(configFile: string | undefined, root: string): string[] {
@@ -428,47 +394,6 @@ function resolveAppViewsDirs(configFile: string | undefined, root: string): stri
   return dirs;
 }
 
-/**
- * 根据当前 configFile 路径推断子应用的 views 目录。
- *
- * 支持两种项目结构：
- *   1. 子项目模式：vite.config.ts 位于 `<monorepo>/apps/<appName>/` 目录下，
- *      views 目录为 `<monorepo>/apps/<appName>/src/views/`
- *   2. 单体模式：vite.config.ts 位于项目根目录，apps/ 是子目录，
- *      views 目录为 `<root>/apps/<appName>/src/views/`
- *      遍历所有 apps/ 子目录统一收集。
- *
- * @param configFile  Vite 解析后的 config.configFile（绝对路径）
- * @param root        Vite 解析后的 config.root（monorepo 根目录）
- * @returns 子应用 views 目录的绝对路径，若无法推断则返回 null
- */
-function resolveAppViewsDir(configFile: string | undefined, root: string): string | null {
-  if (!configFile) return null;
-  const configDir = path.dirname(configFile);
-  // 判断 vite.config.ts 是否位于 apps/<xxx>/ 目录（子项目模式）
-  const rel = path.relative(root, configDir);
-  // rel 在 Windows: "apps\cube-admin" / POSIX: "apps/cube-admin"
-  const parts = rel.split(path.sep);
-  if (parts.length >= 2 && parts[0] === 'apps') {
-    return path.join(configDir, 'src', 'views');
-  }
-  // 单体模式：vite.config.ts 在根目录，apps/ 是子目录
-  // 扫描 root/apps/<appName>/src/views/ 下所有子目录
-  const appsDir = path.join(root, 'apps');
-  if (fs.existsSync(appsDir)) {
-    const appNames = fs.readdirSync(appsDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name);
-    // 遍历所有子应用，返回首个存在的 views 目录
-    for (const appName of appNames) {
-      const viewsDir = path.join(appsDir, appName, 'src', 'views');
-      if (fs.existsSync(viewsDir)) {
-        return viewsDir;
-      }
-    }
-  }
-  return null;
-}
 
 /**
  * 递归扫描 views 目录，收集符合 Section 命名约定的 Vue 文件。

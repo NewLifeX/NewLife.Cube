@@ -58,16 +58,11 @@ import {
   type InjectionKey,
   type RenderFunction,
   type VNode,
-  h,
-  inject,
   markRaw,
-  provide,
   reactive,
-  ref,
   computed,
   type Ref,
   defineAsyncComponent,
-  nextTick,
 } from 'vue';
 /* 从 types/forms 引入 FormColumnConfig 替代 src/ 下的 ColumnConfig，
    消除 core/ 对 src/ 的跨层依赖，同时剪裁为仅包含弹窗实际使用的字段 */
@@ -282,7 +277,7 @@ export interface ModalItem<P = Record<string, unknown>> {
 }
 
 /** 弹窗实例（openModal 返回值） */
-export interface ModalInstance<P = Record<string, unknown>> {
+export interface ModalInstance<_P = Record<string, unknown>> {
   /** 弹窗唯一标识 */
   id: ModalId;
   /** 弹窗类型 */
@@ -505,7 +500,7 @@ function openModal<P extends Record<string, unknown> = Record<string, unknown>>(
 
   // 表单模式：初始化表单数据
   if ('config' in options && options.config) {
-    item.formData = reactive({ ...(options.modelValue ?? {}) }) as unknown as Record<string, unknown>;
+    item.formData = reactive({ ...options.modelValue }) as unknown as Record<string, unknown>;
   }
 
   // 添加到弹窗列表

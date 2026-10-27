@@ -19,7 +19,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const webRoot = path.resolve(scriptDir, '..');
 
 // ---- 1. Element Plus token 列表（相对路径导入，不硬编码） ----
 const ELEMENT_TOKENS_FILE = path.join(scriptDir, 'element-tokens.json');
@@ -127,7 +126,7 @@ function processFile(full) {
   if (ignore.some((p) => p.test(full))) return;
   const text = fs.readFileSync(full, 'utf8');
   const rel = path.relative(root, full);
-  const isVue = /\.vue$/.test(full);
+  const isVue = full.endsWith(".vue");
   const isStyleFile = /\.(css|scss)$/.test(full);
   // .vue 仅在 <style> 块内检查硬编码颜色，避免误伤 <script> 里的注释 / 类型联合 / 字符串字面量（如 'blue'）
   let inStyle = false;

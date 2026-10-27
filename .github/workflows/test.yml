@@ -420,6 +420,8 @@ jobs:
       run: pnpm run test:skins
     - name: Vue type check
       run: pnpm --filter ./NewLife.Cube.Vue/web run type-check
+    - name: Vue lint
+      run: pnpm --filter ./NewLife.Cube.Vue/web run lint
     - name: Vue unit tests
       run: pnpm --filter ./NewLife.Cube.Vue/web run test:unit
     - name: Skin unit tests (MUI / Vuetify)

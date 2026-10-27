@@ -73,7 +73,7 @@ const apiPrefix = computed(() => routeToApiPrefix(route.path));
 const isEdit = computed(() => !!(route.query.id || route.query.id?.toString() === '0'));
 
 // 未传入 fields 时启动自动模式
-const auto = computed(() => !!!props.fields);
+const auto = computed(() => !props.fields);
 
 const internalModelValue = ref<Record<string, unknown>>({});
 const internalFields = ref<FieldMeta[]>([]);

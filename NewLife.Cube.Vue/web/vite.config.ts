@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
@@ -12,7 +11,7 @@ import cubeFront from './core/plugin/index'; // This is the plugin we want to bu
 import { CodeInspectorPlugin } from 'code-inspector-plugin';
 
 // https://vite.dev/config/
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(() => {
   // Check an environment variable to determine the build target
   if (process.env.BUILD_TARGET === 'plugin') {
     return {

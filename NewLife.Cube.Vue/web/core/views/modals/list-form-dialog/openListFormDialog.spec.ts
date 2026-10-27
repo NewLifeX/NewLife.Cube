@@ -12,7 +12,6 @@
  * 运行：pnpm test:unit core/views/modals/list-form-dialog/openListFormDialog.spec.ts
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ElMessage } from 'element-plus';
 import { openListFormDialog } from './openListFormDialog';
 import type { FieldMeta } from '../../../types/field';
 
@@ -139,7 +138,7 @@ describe('openListFormDialog', () => {
   it('API 请求失败 → onConfirm 返回 false（阻止弹窗关闭）', async () => {
     requestMock.mockRejectedValue(new Error('Network Error'));
 
-    const promise = openListFormDialog({
+    openListFormDialog({
       title: '失败测试',
       fields: FIELDS,
       apiPrefix: '/api/test',

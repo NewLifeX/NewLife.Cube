@@ -6,7 +6,6 @@ import { useMenuStore } from '../stores/menu';
 import { getAccessToken } from '../utils/token';
 import { getUrlHashToken } from '../utils/token';
 import { registerMenuRoutes } from '../utils/menuRoutes';
-import { normalizeMenuUrl, type RouteNamingStyle } from '../utils/url';
 import { getConfig } from '../configure';
 import { addFrameworkRoute, bindRoutePriority } from './routeOverride';
 
