@@ -414,6 +414,10 @@ jobs:
       run: pnpm install --frozen-lockfile
     - name: Build shared packages
       run: pnpm build
+    - name: Shared package unit tests
+      run: pnpm run test:packages
+    - name: Skin integration contract tests
+      run: pnpm run test:skins
     - name: Vue type check
       run: pnpm --filter ./NewLife.Cube.Vue/web run type-check
     - name: Vue unit tests

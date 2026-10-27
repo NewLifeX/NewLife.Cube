@@ -32,6 +32,8 @@
     "dev:svelte": "pnpm --filter ./NewLife.Cube.Svelte/web dev",
     "dev:tdesign": "pnpm --filter ./NewLife.Cube.TDesign/web dev",
     "test:unit": "pnpm --filter ./NewLife.Cube.Vue/web run test:unit",
+    "test:skins": "node --test \"tests/**/*.test.cjs\"",
+    "test:packages": "pnpm --filter ./packages/* test",
     "test:e2e": "pnpm --filter ./NewLife.Cube.Vue/web run test:e2e",
     "test:e2e:dev": "pnpm --filter ./NewLife.Cube.Vue/web run test:e2e:dev",
     "test:component": "pnpm --filter ./NewLife.Cube.Vue/web run test:component",
