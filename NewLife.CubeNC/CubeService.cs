@@ -116,11 +116,16 @@ public static class CubeService
             .AllowCredentials()
             .SetIsOriginAllowed(hostname => true)));
         else if (!set.CorsOrigins.IsNullOrEmpty())
-            services.AddCors(options => options.AddPolicy("cube_cors", builder => builder
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials()
-            .WithOrigins(set.CorsOrigins)));
+        {
+            // 支持逗号/分号分隔的多个来源，逐项放行。整串作为一个来源会导致多来源配置永远匹配不上
+            var origins = set.CorsOrigins.Split(",", ";").Select(e => e.Trim()).Where(e => e.Length > 0).ToArray();
+            if (origins.Length > 0)
+                services.AddCors(options => options.AddPolicy("cube_cors", builder => builder
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials()
+                .WithOrigins(origins)));
+        }
 
         services.Configure<MvcOptions>(options =>
         {
