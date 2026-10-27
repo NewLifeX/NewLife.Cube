@@ -108,6 +108,7 @@ import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type Da
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
+import { normalizeChartList, shouldDisposeCharts, toggleListView } from '@newlifex/page-logic';
 import * as echarts from 'echarts';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -423,12 +424,12 @@ async function handleImport({ file }: UploadCustomRequestOptions) {
 const viewMode = ref<'table' | 'chart'>('table');
 
 function toggleView() {
-  viewMode.value = viewMode.value === 'table' ? 'chart' : 'table';
+  viewMode.value = toggleListView(viewMode.value);
 }
 
 // 离开图表视图时释放实例，避免隐藏容器尺寸为 0 导致图表错位
 watch(viewMode, (mode) => {
-  if (mode === 'chart') return;
+  if (!shouldDisposeCharts(mode)) return;
   for (const inst of chartInstances.value) {
     inst?.dispose();
   }
@@ -438,11 +439,7 @@ watch(viewMode, (mode) => {
 async function loadChartData() {
   try {
     const res = await api.page.getChartData(props.type);
-    if (Array.isArray(res.data) && res.data.length > 0) {
-      chartList.value = res.data;
-    } else {
-      chartList.value = [];
-    }
+    chartList.value = normalizeChartList(res.data);
   } catch {
     chartList.value = [];
   }

@@ -19,6 +19,7 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
+import { normalizeChartList, toggleListView } from '@newlifex/page-logic';
 import { ApiService } from '../../services/api.service';
 import { UserService } from '../../services/user.service';
 import { FieldInputComponent } from '../../components/field-input.component';
@@ -257,7 +258,7 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /** 切换表格/图表视图。回到表格时释放图表实例，避免隐藏容器尺寸为 0 */
   toggleView() {
-    this.viewMode = this.viewMode === 'table' ? 'chart' : 'table';
+    this.viewMode = toggleListView(this.viewMode);
     if (this.viewMode === 'table') this.disposeCharts();
   }
 
@@ -347,7 +348,7 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
   async loadChartData() {
     try {
       const res = await this.api.page.getChartData(this.typePath);
-      this.chartList = Array.isArray(res.data) && res.data.length > 0 ? res.data : [];
+      this.chartList = normalizeChartList(res.data);
       this.chartsInitialized = false;
     } catch {
       this.chartList = [];

@@ -640,3 +640,7 @@ export type {
 
 // 响应式布局判定
 export { MOBILE_BREAKPOINT, shouldAutoCollapseSidebar } from './layout';
+
+// 列表页表格 / 图表视图切换
+export { toggleListView, shouldDisposeCharts, normalizeChartList } from './list-chart';
+export type { ListViewMode } from './list-chart';

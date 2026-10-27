@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { Auth } from '@newlifex/api-core';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
+import { normalizeChartList, toggleListView } from '@newlifex/page-logic';
 import * as echarts from 'echarts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -104,7 +105,7 @@ export default function DynamicPage() {
   const loadChartData = useCallback(async () => {
     try {
       const res = await api.page.getChartData(type);
-      setChartList(Array.isArray(res.data) && res.data.length > 0 ? res.data : []);
+      setChartList(normalizeChartList(res.data));
     } catch {
       setChartList([]);
     }
@@ -241,7 +242,7 @@ export default function DynamicPage() {
           </Button>
         )}
         <div className="flex-1" />
-        <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === 'table' ? 'chart' : 'table')}>
+        <Button variant="outline" size="sm" onClick={() => setViewMode(toggleListView(viewMode))}>
           {viewMode === 'table' ? '图表' : '表格'}
         </Button>
         <Button variant="ghost" size="icon" onClick={() => loadData()}><RefreshCw className="h-4 w-4" /></Button>

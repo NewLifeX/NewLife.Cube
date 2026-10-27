@@ -123,6 +123,7 @@ import { Message } from '@arco-design/web-vue';
 import { IconSearch, IconPlus, IconDelete, IconDown } from '@arco-design/web-vue/es/icon';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
+import { normalizeChartList, shouldDisposeCharts, toggleListView } from '@newlifex/page-logic';
 import * as echarts from 'echarts';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -181,12 +182,12 @@ const chartInstances = ref<any[]>([]);
 const viewMode = ref<'table' | 'chart'>('table');
 
 function toggleView() {
-  viewMode.value = viewMode.value === 'table' ? 'chart' : 'table';
+  viewMode.value = toggleListView(viewMode.value);
 }
 
 // 离开图表视图时释放实例，避免隐藏容器尺寸为 0 导致图表错位
 watch(viewMode, (mode) => {
-  if (mode === 'chart') return;
+  if (!shouldDisposeCharts(mode)) return;
   for (const inst of chartInstances.value) {
     inst?.dispose();
   }
@@ -247,7 +248,7 @@ async function loadData() {
 async function loadChartData() {
   try {
     const res = await cubeApi.page.getChartData(typePath.value);
-    chartList.value = Array.isArray(res.data) && res.data.length > 0 ? res.data : [];
+    chartList.value = normalizeChartList(res.data);
   } catch {
     chartList.value = [];
   }

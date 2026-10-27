@@ -9,6 +9,7 @@ import {
 import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon, ArrowDropDown } from '@mui/icons-material';
 import { Auth, type DataField } from '@newlifex/api-core';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
+import { normalizeChartList, shouldDisposeCharts, toggleListView } from '@newlifex/page-logic';
 import * as echarts from 'echarts';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -109,7 +110,7 @@ export default function DynamicPage() {
   const loadChartData = useCallback(async () => {
     try {
       const res = await api.page.getChartData(type);
-      setChartList(Array.isArray(res.data) && res.data.length > 0 ? res.data : []);
+      setChartList(normalizeChartList(res.data));
     } catch {
       setChartList([]);
     }
@@ -264,7 +265,7 @@ export default function DynamicPage() {
           </Button>
         )}
         <Box flexGrow={1} />
-        <Button variant="outlined" size="small" sx={{ mr: 1 }} onClick={() => setViewMode(viewMode === 'table' ? 'chart' : 'table')}>
+        <Button variant="outlined" size="small" sx={{ mr: 1 }} onClick={() => setViewMode(toggleListView(viewMode))}>
           {viewMode === 'table' ? '图表' : '表格'}
         </Button>
         <IconButton onClick={() => loadData()}><Refresh /></IconButton>
