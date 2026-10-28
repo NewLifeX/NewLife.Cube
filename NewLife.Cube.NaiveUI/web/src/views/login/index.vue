@@ -88,8 +88,8 @@
         <n-button text type="primary" @click="router.push('/register')">立即注册</n-button>
       </div>
 
-      <!-- 忘记密码 -->
-      <div class="forgot-link">
+      <!-- 忘记密码：重置密码依赖短信/邮件通道，两个通道都关时无意义，不展示入口 -->
+      <div v-if="loginConfig?.login?.sms || loginConfig?.login?.mail" class="forgot-link">
         <n-button text type="primary" @click="router.push('/forgot-password')">忘记密码？</n-button>
       </div>
 

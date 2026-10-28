@@ -44,9 +44,11 @@ import { resolveRegisterModes, resolveRegisterTenant } from '../../utils/registe
             }
           </div>
         }
-        <div style="text-align: center; margin-top: 8px;">
-          <button nz-button nzType="link" (click)="goForgotPassword()">忘记密码？</button>
-        </div>
+        @if (forgotEnabled) {
+          <div style="text-align: center; margin-top: 8px;">
+            <button nz-button nzType="link" (click)="goForgotPassword()">忘记密码？</button>
+          </div>
+        }
         @if (registerEnabled) {
           <div style="text-align: center; margin-top: 16px; color: rgba(0, 0, 0, 0.45);">
             还没有账号？
@@ -64,6 +66,8 @@ export class LoginComponent implements OnInit {
   oauthProviders: OAuthProvider[] = [];
   /** 后端是否开放注册 */
   registerEnabled = false;
+  /** 是否展示「忘记密码」入口：重置密码依赖短信/邮件通道，两个通道都关时无意义 */
+  forgotEnabled = false;
   /** 租户查询参数 */
   private tenant: { appId?: string; tenantCode?: string } = {};
 
@@ -81,6 +85,7 @@ export class LoginComponent implements OnInit {
       const res = await this.api.user.getLoginConfig(this.tenant.tenantCode);
       if (res.data?.oauth) this.oauthProviders = res.data.oauth;
       this.registerEnabled = resolveRegisterModes(res.data?.register).length > 0;
+      this.forgotEnabled = res.data?.login?.sms === true || res.data?.login?.mail === true;
     } catch {
       // 登录页配置加载失败不阻塞密码登录
     }

@@ -91,11 +91,19 @@ for (const skin of chartSkins) {
   });
 }
 
-/** 已提供找回密码的皮肤（Vue 与 Svelte 暂缺，按配置不阻塞） */
-const forgotPasswordSkins = ['NaiveUI', 'ArcoVue', 'TDesign', 'Shadcn', 'Vuetify', 'MUI', 'Angular'];
+/** 已提供找回密码的皮肤（八个 SPA 均已接入；冻结的 MVC 主题不参与对照） */
+const forgotPasswordSkins = ['NaiveUI', 'ArcoVue', 'TDesign', 'Shadcn', 'Vuetify', 'MUI', 'Svelte', 'Angular'];
 
 for (const skin of forgotPasswordSkins) {
   test(`${skin}: 找回密码入口与路由已接入（SKIN-3）`, () => {
     expectReference(skin, 'forgot-password', '未找到找回密码页面或路由');
   });
 }
+
+// Vue 参考皮肤不在 skins 表内（它是框架本体，契约项与 SPA 皮肤不同），单独校验
+test('Vue: 找回密码入口与路由已接入（SKIN-3）', () => {
+  const files = readSkinSources('NewLife.Cube.Vue/web/core');
+  const hit = files.some((f) => f.text.includes('/forgot-password'));
+
+  assert.ok(hit, '未找到找回密码页面或路由');
+});

@@ -36,7 +36,7 @@
         </v-card-text>
       </template>
 
-      <v-card-text class="text-center pt-0 pb-0">
+      <v-card-text v-if="forgotEnabled" class="text-center pt-0 pb-0">
         <v-btn variant="text" color="primary" @click="router.push('/forgot-password')">忘记密码？</v-btn>
       </v-card-text>
 
@@ -63,12 +63,15 @@ const form = reactive({ username: '', password: '' });
 const loading = ref(false);
 const oauthProviders = ref<OAuthProvider[]>([]);
 const registerEnabled = ref(false);
+/** 是否展示「忘记密码」入口：重置密码依赖短信/邮件通道，两个通道都关时无意义 */
+const forgotEnabled = ref(false);
 
 onMounted(async () => {
   try {
     const res = await cubeApi.user.getLoginConfig();
     oauthProviders.value = res.data?.oauth ?? [];
     registerEnabled.value = res.data?.register?.enabled === true;
+    forgotEnabled.value = res.data?.login?.sms === true || res.data?.login?.mail === true;
   } catch {
     // 配置加载失败不影响密码登录，注册入口保持隐藏
   }

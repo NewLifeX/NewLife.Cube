@@ -20,6 +20,8 @@ export default function Login() {
   const [config, setConfig] = useState<LoginConfig | null>(null);
   const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
   const registerEnabled = config?.register?.enabled === true;
+  /** 是否展示「忘记密码」入口：重置密码依赖短信/邮件通道，两个通道都关时无意义 */
+  const forgotEnabled = config?.login?.sms === true || config?.login?.mail === true;
   const oauthProviders = config?.oauth ?? [];
   const tenantCode = params.get('tenant') ?? params.get('tenantCode') ?? params.get('code') ?? undefined;
 
@@ -96,9 +98,11 @@ export default function Login() {
             </>
           ) : null}
 
-          <Box textAlign="center" mt={1}>
-            <Button size="small" onClick={() => navigate('/forgot-password')}>忘记密码？</Button>
-          </Box>
+          {forgotEnabled ? (
+            <Box textAlign="center" mt={1}>
+              <Button size="small" onClick={() => navigate('/forgot-password')}>忘记密码？</Button>
+            </Box>
+          ) : null}
 
           {registerEnabled ? (
             <Box textAlign="center" mt={2}>

@@ -107,6 +107,8 @@ export default function Login() {
   const showMail = !!config?.login?.mail;
   const oauthProviders = config?.oauth ?? [];
   const allowRegister = config?.register?.enabled === true;
+  /** 是否展示「忘记密码」入口：重置密码依赖短信/邮件通道，两个通道都关时无意义 */
+  const forgotEnabled = config?.login?.sms === true || config?.login?.mail === true;
 
   const hasTabs = (showPassword ? 1 : 0) + (showSms ? 1 : 0) + (showMail ? 1 : 0) > 1;
 
@@ -258,10 +260,12 @@ export default function Login() {
           </p>
         )}
 
-        {/* 忘记密码入口 */}
-        <p className="mt-2 text-center text-sm">
-          <button className="text-primary underline-offset-4 hover:underline" onClick={() => navigate('/forgot-password')}>忘记密码？</button>
-        </p>
+        {/* 忘记密码入口（依赖短信/邮件通道） */}
+        {forgotEnabled ? (
+          <p className="mt-2 text-center text-sm">
+            <button className="text-primary underline-offset-4 hover:underline" onClick={() => navigate('/forgot-password')}>忘记密码？</button>
+          </p>
+        ) : null}
 
         {/* 版权信息 */}
         {(siteConfig?.copyright || siteConfig?.registration) && (
