@@ -30,10 +30,17 @@ test.describe('动态页（/meta 驱动）', () => {
     const row = page.locator('.el-table__body tr').first();
     await expect(row).toBeVisible({ timeout: 15000 });
 
-    // 行内除内置查看/编辑/删除外还有一个自定义动作，文案随语言变化，按位置取最后一个
-    const actions = row.locator('.el-table__cell:last-child button');
-    expect(await actions.count()).toBeGreaterThan(1);
-    await actions.last().click();
+    // 行内除内置查看/编辑/删除外还有一个自定义动作，文案随语言变化，按位置取最后一个。
+    // 操作列超过 3 个时前 3 个直显、其余收进「更多」下拉，需先展开再点最后一项。
+    const cell = row.locator('.ctg-actions');
+    expect(await cell.locator('button').count()).toBeGreaterThan(1);
+    if (await cell.locator('.ctg-more').count()) {
+      await cell.locator('.ctg-more button').click();
+      // 每行都挂了「更多」下拉，只有刚展开的那个可见，故按可见性取
+      await page.locator('.el-dropdown-menu__item:visible').last().click();
+    } else {
+      await cell.locator('button').last().click();
+    }
 
     const dialog = page.locator('.el-dialog');
     await expect(dialog).toBeVisible({ timeout: 15000 });
