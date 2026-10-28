@@ -4,8 +4,10 @@ using Microsoft.Net.Http.Headers;
 using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Models;
 using NewLife.Log;
 using NewLife.Model;
+using NewLife.Remoting;
 using NewLife.Web;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
@@ -683,24 +685,36 @@ public static class ManagerProviderHelper
     // IssueTokenAndRefreshToken 已迁移至 IssueLoginToken，旧名不再保留
 
     /// <summary>刷新令牌</summary>
-    /// <param name="context"></param>
-    /// <param name="user"></param>
-    /// <param name="refresh_token"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
+    /// <remarks>
+    /// 安全要求：刷新令牌必须属于请求用户本人，且用户处于启用状态、令牌记录未被吊销且未过期。
+    /// 任一条件不满足均视为令牌泄漏或跨账号接管尝试，统一按登出（CubeCode.LogOff）拒绝，不颁发新令牌。
+    /// </remarks>
+    /// <param name="context">HTTP 上下文</param>
+    /// <param name="user">按请求用户名解析出的用户</param>
+    /// <param name="refresh_token">刷新令牌</param>
+    /// <returns>新的访问令牌与刷新令牌</returns>
+    /// <exception cref="ApiException">令牌无效、已吊销、已过期，或与请求用户不匹配</exception>
     public static IToken RefreshToken(this HttpContext context, IManageUser user, String refresh_token)
     {
         var set = CubeSetting.Current;
-        var result = DecodeRefreshToken(refresh_token, out var username, out var expire);
-        if (!result) throw new Exception(L.T("Failed to refresh the token: {0}", refresh_token));
+        var result = DecodeRefreshToken(refresh_token, out var username, out _);
+        if (!result) throw new ApiException(CubeCode.LogOff.ToInt(), L.T("Failed to refresh the token: {0}", refresh_token));
+
+        // 令牌内用户名必须与请求用户一致，防止用自己的刷新令牌 + 他人用户名换取他人访问令牌（账号接管）
+        if (user == null || !user.Name.EqualIgnoreCase(username))
+            throw new ApiException(CubeCode.LogOff.ToInt(), L.T("The refresh token does not match the requested user."));
+
+        // 用户必须启用
+        if (!user.Enable) throw new ApiException(CubeCode.LogOff.ToInt(), L.T("The user has been disabled."));
+
+        // 刷新令牌必须仍然有效：存在、未吊销、未过期，否则视为重放
+        var oldUt = UserToken.FindByToken(refresh_token);
+        if (oldUt == null || !oldUt.Enable || oldUt.Expire <= DateTime.Now)
+            throw new ApiException(CubeCode.LogOff.ToInt(), L.T("refresh_token has expired; please sign in again."));
 
         // 吊销旧令牌，实现令牌旋转
-        var oldUt = UserToken.FindByToken(refresh_token);
-        if (oldUt != null)
-        {
-            oldUt.Enable = false;
-            oldUt.Update();
-        }
+        oldUt.Enable = false;
+        oldUt.Update();
 
         return context.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
     }

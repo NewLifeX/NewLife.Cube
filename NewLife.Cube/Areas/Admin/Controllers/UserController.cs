@@ -400,7 +400,8 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
 
         var tokens = HttpContext.RefreshToken(user, refreshToken);
 
-        return Json(0, "ok", new { Token = tokens.AccessToken, RefreshToken = tokens.RefreshToken, tokens.ExpireIn });
+        // 同时返回新旧两套字段名，兼容既有客户端（CON-02）
+        return Json(0, "ok", new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken, expireIn = tokens.ExpireIn, Token = tokens.AccessToken });
     }
 
     /// <summary>注销</summary>

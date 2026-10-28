@@ -18,4 +18,7 @@ public class LoginTokenModel : TokenModel
 
     /// <summary>获取验证码的接口地址，前端用于刷新验证码</summary>
     public String CaptchaUrl { get; set; }
+
+    /// <summary>二步验证临时令牌。设备开启 MFA 时随业务码 <see cref="CubeCode.MfaRequired"/> 返回，凭它调用 /Mfa/Verify 完成登录</summary>
+    public String MfaToken { get; set; }
 }

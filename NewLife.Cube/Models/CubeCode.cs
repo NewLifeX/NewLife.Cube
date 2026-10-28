@@ -45,4 +45,9 @@ public enum CubeCode
     /// <remarks>data 返回 { captchaRequired, captchaId, image, captchaUrl }，前端据此展示验证码输入</remarks>
     [Description("Captcha required")]
     CaptchaRequired = -6,
+
+    /// <summary>需要二步验证：账号密码正确但用户已开启 MFA</summary>
+    /// <remarks>data 返回 { mfaToken }，前端指引用户输入 TOTP 后调用 /Mfa/Verify 完成登录。旧版仅用 message="mfa_required:{token}" 传递，保留兼容</remarks>
+    [Description("MFA required")]
+    MfaRequired = -7,
 }

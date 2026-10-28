@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
@@ -10,6 +11,7 @@ using NewLife.Cube.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
+using NewLife.Security;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -65,9 +67,12 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
                 return res.ToFailApiResponse(CubeCode.CaptchaRequired, loginResult.Message);
             }
 
-            // MFA 拦截：账密通过但需要二步验证
+            // MFA 拦截：账密通过但需要二步验证。返回专用业务码 + data.mfaToken（CON-04），message 保留旧格式兼容既有客户端
             if (loginResult != null && !loginResult.MfaToken.IsNullOrEmpty())
-                return res.ToFailApiResponse($"mfa_required:{loginResult.MfaToken}");
+            {
+                res.MfaToken = loginResult.MfaToken;
+                return res.ToFailApiResponse(CubeCode.MfaRequired, $"mfa_required:{loginResult.MfaToken}");
+            }
             if (loginResult?.Data == null || loginResult.Data.AccessToken.IsNullOrEmpty())
                 return res.ToFailApiResponse(loginResult?.Message);
 
@@ -109,20 +114,24 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     {
         var userName = model.UserName;
         var refreshToken = model.RefreshToken;
+        if (userName.IsNullOrEmpty() || refreshToken.IsNullOrEmpty())
+            return Json(CubeCode.LogOff.ToInt(), L.T("Username and refresh token are required."));
 
-        // 令牌轮换：旧令牌使用后加入黑名单，防止同一刷新令牌被重复使用（重放攻击/令牌泄漏检测）
-        var blacklistKey = $"RefreshBlacklist:{refreshToken?.GetHashCode()}";
-        if (!refreshToken.IsNullOrEmpty() && _cache.ContainsKey(blacklistKey))
-            return Json(-1, L.T("refresh_token has expired; please sign in again."));
+        // 令牌轮换：旧令牌使用后加入黑名单，防止同一刷新令牌被重复使用（重放攻击/令牌泄漏检测）。
+        // 黑名单键取 SHA-256 指纹而非 String.GetHashCode，避免哈希碰撞与 .NET 随机化导致跨进程失效
+        var blacklistKey = $"RefreshBlacklist:{Encoding.UTF8.GetBytes(refreshToken).SHA256().ToHex()}";
+        if (_cache.ContainsKey(blacklistKey))
+            return Json(CubeCode.LogOff.ToInt(), L.T("refresh_token has expired; please sign in again."));
 
+        // RefreshToken 扩展内部校验令牌归属用户、用户启用、令牌未吊销未过期，任一不满足即抛 ApiException(LogOff)
         var user = ManageProvider.Provider.FindByName(userName);
         var tokens = HttpContext.RefreshToken(user, refreshToken);
 
         // 旧刷新令牌加入黑名单，TTL 匹配刷新令牌有效期（7天）
-        if (!refreshToken.IsNullOrEmpty())
-            _cache.Set(blacklistKey, 1, 7 * 24 * 3600);
+        _cache.Set(blacklistKey, 1, 7 * 24 * 3600);
 
-        return Json(0, "ok", new { Token = tokens.AccessToken, RefreshToken = tokens.RefreshToken, tokens.ExpireIn });
+        // 同时返回新旧两套字段名，兼容既有客户端（CON-02）
+        return Json(0, "ok", new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken, expireIn = tokens.ExpireIn, Token = tokens.AccessToken });
     }
 
     /// <summary>获取图片验证码</summary>
