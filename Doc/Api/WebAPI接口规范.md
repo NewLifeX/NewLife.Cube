@@ -297,7 +297,7 @@ HTTP 403  { "code": 403, "message": "用户 admin 访问资源 [Student/Delete] 
   - `upload`：选择文件后以 `multipart` 提交到 `{base}/{action}`，文件字段名 `file`，其余 `include` 字段随表单一并提交；`accept` 限定文件类型。
   - `custom`：由前端已注册的同名渲染器处理；未注册时前端忽略该按钮并告警一次。
 - 权限：`toolbar` 由服务端按当前用户过滤；新增/编辑/删除/批量按钮由前端按 `menuId + requiredPermissions + UserInfo.permission` 过滤。`requiresSelection` 的按钮在未选中数据时禁用。
-- 响应带 `ETag` / `Cache-Control: private, no-cache`，并按用户、租户、语言区分；`api-core` 的 `getPage` 按页面缓存展开结果。
+- 响应带 `ETag` / `Cache-Control: private, no-cache`，并按用户、租户、语言区分；`@newlifex/cube` 的 `getPage` 按页面缓存展开结果。
 - 字段对象结构见《第6章 字段元数据》；`view` / `props` 为渲染器名与扩展属性透传。
 
 ---
