@@ -48,6 +48,6 @@ app.MapControllers();
 //app.UseVue(builder.Environment);
 // app.UseArcoVue(builder.Environment);
 
-app.RegisterService("CubeDemo", null, builder.Environment.EnvironmentName, "/cube/info");
+app.RegisterService("CubeDemo", null, builder.Environment.EnvironmentName, "/cube/health");
 
 app.Run();

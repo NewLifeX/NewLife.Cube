@@ -197,13 +197,31 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     #region 服务器信息
     private static readonly String _OS = Environment.OSVersion + "";
 
-    /// <summary>服务器信息，用户健康检测</summary>
+    /// <summary>健康检测。匿名可访问的最小信息，供探针与负载均衡器使用，不暴露服务器指纹</summary>
+    /// <param name="state">状态信息。可选，原样回显用于校验请求链路</param>
+    /// <returns>仅包含 status/time/state</returns>
+    [AllowAnonymous]
+    [HttpGet]
+    public ActionResult Health(String state = null)
+    {
+        var rs = new
+        {
+            status = "ok",
+            time = DateTime.Now,
+            state,
+        };
+
+        return Json(0, null, rs);
+    }
+
+    /// <summary>服务器信息。仅系统管理员可访问，避免匿名泄露操作系统、端口与版本指纹</summary>
     /// <param name="state">状态信息。可选，用于回显校验</param>
     /// <returns></returns>
-    [AllowAnonymous]
     [HttpGet]
     public ActionResult Info(String state = null)
     {
+        if (!IsSystemAdmin()) return Json(403, L.T("Only system administrators can view server information."));
+
         var asmx = AssemblyX.Entry;
         var conn = HttpContext.Connection;
         var remote = conn.RemoteIpAddress;
@@ -227,15 +245,23 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         return Json(0, null, rs);
     }
+
+    private static Boolean IsSystemAdmin()
+    {
+        var user = ManageProvider.User;
+        return user != null && user.Roles.Any(e => e.IsSystem);
+    }
     #endregion
 
     #region 接口信息
-    /// <summary>获取所有接口信息</summary>
-    /// <returns></returns>
-    [AllowAnonymous]
+    /// <summary>获取所有接口信息。需登录且系统管理员，并开启 CubeSetting.EnableApiExplorer</summary>
+    /// <returns>接口清单，不含参数类型名</returns>
     [HttpGet]
     public ActionResult Apis()
     {
+        if (!CubeSetting.Current.EnableApiExplorer) return Json(404, L.T("The API explorer is disabled."));
+        if (!IsSystemAdmin()) return Json(403, L.T("Only system administrators can view the API list."));
+
         var set = new List<EndpointDataSource>();
         var eps = new List<String>();
         foreach (var item in _sources)
@@ -244,18 +270,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
             {
                 set.Add(item);
 
-                //eps.AddRange(item.Endpoints);
                 foreach (var elm in item.Endpoints)
                 {
-                    var area = elm.Metadata.GetMetadata<AreaAttribute>();
-                    var disp = elm.Metadata.GetMetadata<DisplayNameAttribute>();
                     var desc = elm.Metadata.GetMetadata<ControllerActionDescriptor>();
                     var post = elm.Metadata.GetMetadata<HttpPostAttribute>();
                     if (desc == null) continue;
-
-                    //var name = area == null ?
-                    //    $"{desc.ControllerName}/{desc.ActionName}" :
-                    //    $"{area?.RouteValue}/{desc.ControllerName}/{desc.ActionName}";
 
                     var sb = new StringBuilder();
                     sb.Append(post != null ? "POST " : "GET ");
@@ -263,7 +282,8 @@ public class CubeController(PageService pageService, TokenService tokenService, 
                     sb.Append("/");
                     sb.Append(desc.ActionName);
                     sb.Append("(");
-                    sb.Append(desc.MethodInfo.GetParameters().Join(",", pi => $"{pi.ParameterType.Name} {pi.Name}"));
+                    // 只输出参数名，不输出类型名，避免泄露内部实体与类型结构
+                    sb.Append(desc.MethodInfo.GetParameters().Join(",", pi => pi.Name));
                     sb.Append(")");
 
                     var name = sb.ToString();
@@ -517,36 +537,49 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     #endregion
 
     #region 页面配置
-    /// <summary>查询一批Code的数据源</summary>
-    /// <param name="codes"></param>
-    /// <returns></returns>
-    [AllowAnonymous]
+    /// <summary>查询一批Code的数据源。需登录，仅接受已加载程序集中的枚举类型</summary>
+    /// <param name="codes">枚举类型全名，逗号分隔，最多 20 个</param>
+    /// <returns>按 code 分组的选项字典</returns>
     [HttpGet]
     public ActionResult Lookup(String codes)
     {
+        if (codes.IsNullOrEmpty()) return Json(CubeCode.ParamError.ToInt(), L.T("codes is required."));
+        if (codes.Length > 2000) return Json(CubeCode.ParamError.ToInt(), L.T("codes is too long."));
+
+        var names = codes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (names.Length > MaxLookupCodes) return Json(CubeCode.ParamError.ToInt(), L.T("Too many codes; at most {0} are allowed.", MaxLookupCodes));
+
         var source = new Dictionary<String, Object>();
-        foreach (var code in codes.Split(","))
+        foreach (var code in names)
         {
-            var type = code.GetTypeEx();
+            // 只从已加载程序集索引枚举类型，避免 Type.GetType 按程序集限定名加载任意程序集
+            var type = LovRegistry.FindEnumType(code);
             if (type != null && type.IsEnum)
-            {
-                var ns = Enum.GetNames(type);
-                var vs = Enum.GetValues(type);
-                var list = new Dictionary<String, Object>[ns.Length];
-                for (var i = 0; i < ns.Length; i++)
-                {
-                    list[i] = new Dictionary<String, Object>
-                    {
-                        ["Label"] = ns[i],
-                        ["Value"] = vs.GetValue(i),
-                    };
-                }
-                source.Add(code, list);
-            }
+                source[code] = GetEnumOptions(code, type);
         }
 
         return Json(0, null, source);
     }
+
+    private const Int32 MaxLookupCodes = 20;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, Dictionary<String, Object>[]> _enumOptions = new();
+
+    private static Dictionary<String, Object>[] GetEnumOptions(String code, Type type) => _enumOptions.GetOrAdd(type, t =>
+    {
+        var ns = Enum.GetNames(t);
+        var vs = Enum.GetValues(t);
+        var list = new Dictionary<String, Object>[ns.Length];
+        for (var i = 0; i < ns.Length; i++)
+        {
+            list[i] = new Dictionary<String, Object>
+            {
+                ["Label"] = ns[i],
+                ["Value"] = vs.GetValue(i),
+            };
+        }
+
+        return list;
+    });
 
     ///// <summary>
     ///// 保存字典参数到后台

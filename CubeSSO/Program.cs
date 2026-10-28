@@ -30,6 +30,6 @@ app.UseAuthorization();
 //app.MapControllerRoute(name: "default", pattern: "{controller=Index}/{action=Index}/{id?}");
 //app.MapControllerRoute(name: "default2", pattern: "{area=Admin}/{controller=Index}/{action=Index}/{id?}");
 
-app.RegisterService("SSO", null, builder.Environment.EnvironmentName, "/cube/info");
+app.RegisterService("SSO", null, builder.Environment.EnvironmentName, "/cube/health");
 
 app.Run();

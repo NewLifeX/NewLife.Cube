@@ -315,6 +315,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("User login")]
     public String OwnerOnlyAttachmentCategories { get; set; }
 
+    /// <summary>接口浏览器。开启后系统管理员可访问 /Cube/Apis 查看路由清单，默认false，避免生产环境暴露攻击面</summary>
+    [Description("API explorer. When enabled, system administrators can list routes via /Cube/Apis, default false to avoid exposing the attack surface in production")]
+    [Category("Security")]
+    public Boolean EnableApiExplorer { get; set; } = false;
+
+    /// <summary>上传与导入文件体积上限（MB）。附件上传与数据导入共用同一阈值，0 表示不限制，默认20</summary>
+    [Description("Upload and import size limit in MB, shared by attachments and data import; 0 disables the limit, default 20")]
+    [Category("Security")]
+    public Int32 UploadMaxSize { get; set; } = 20;
+
     /// <summary>SSO跨域重定向白名单。登录后允许携带JWT Token重定向的目标域名，逗号分隔，支持通配符前缀*.company.com。留空=仅允许同站重定向，拒绝所有跨域跳转以防止凭据泄露</summary>
     [Description("SSO redirect allowlist. Domains allowed to receive the JWT after sign-in, comma-separated with wildcard prefixes such as *.company.com. Empty allows the same site only; other origins are rejected and sent back to the home page")]
     [Category("User login")]
