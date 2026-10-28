@@ -410,6 +410,11 @@ public partial class EntityController<TEntity, TModel>
     {
         if (file == null || file.Length <= 0) throw new ArgumentNullException(nameof(file), L.T("No file was uploaded."));
 
+        // 体积上限：防止超大文件导入耗尽内存（0 表示不限制）
+        var maxMb = CubeSetting.Current.UploadMaxSize;
+        if (maxMb > 0 && file.Length > maxMb * 1024L * 1024L)
+            return Json(Models.CubeCode.ParamError.ToInt(), L.T("The file size must not exceed {0} MB.", maxMb));
+
         WriteLog(nameof(Import), true, L.T("Start importing file [{0}], size [{1:n0}] bytes, type [{2}].", file.FileName, file.Length, file.ContentType));
 
         var factory = Factory;

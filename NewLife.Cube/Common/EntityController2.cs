@@ -733,6 +733,14 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             return false;
         }
 
+        // 体积上限：防止超大文件耗尽内存与磁盘（0 表示不限制）
+        var maxMb = CubeSetting.Current.UploadMaxSize;
+        if (maxMb > 0 && file.Length > maxMb * 1024L * 1024L)
+        {
+            error = L.T("The file size must not exceed {0} MB.", maxMb);
+            return false;
+        }
+
         error = null;
         return true;
     }

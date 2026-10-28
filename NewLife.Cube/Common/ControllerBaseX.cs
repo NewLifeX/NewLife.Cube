@@ -231,7 +231,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             data = null;
         }
 
-        Object rs = new { code, message, data };
+        Object rs = new { code, message, data, traceId = DefaultSpan.Current?.TraceId };
         if (extend != null)
         {
             var dic = rs.ToDictionary();

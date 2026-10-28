@@ -110,6 +110,9 @@ public class ImportControllerTests
         public Int32 TestImportCsv(String name, Stream stream) => ImportCsv(name, stream, Factory, null!);
 
         public Int32 TestImportJson(String name, Stream stream) => ImportJson(name, stream, Factory, null!);
+
+        /// <summary>暴露受保护的上传校验，供体积与类型校验用例使用</summary>
+        public Boolean TestValidateUpload(IFormFile file, out String error) => ValidateUploadFile(file, out error);
     }
 
     /// <summary>参数导入控制器。直接使用字典参数实体落库</summary>
@@ -278,6 +281,60 @@ public class ImportControllerTests
         var file = ToFormFile(ms, "data.csv");
 
         Assert.Throws<ArgumentNullException>(() => ctrl.Import(file));
+    }
+
+    [Fact(DisplayName = "导入动作_超过体积上限被拒绝")]
+    public void Import_OversizeFile_Rejected()
+    {
+        var prev = CubeSetting.Current.UploadMaxSize;
+        CubeSetting.Current.UploadMaxSize = 20;
+        try
+        {
+            var ctrl = CreateController();
+            using var ms = ToStream("Name\r\n张三\r\n");
+            var file = new FormFile(ms, 0, 21L * 1024 * 1024, "file", "data.csv") { Headers = new HeaderDictionary() };
+
+            var rs = ctrl.Import(file);
+
+            var result = Assert.IsType<ContentResult>(rs);
+            var json = new JsonParser(result.Content!).Decode() as IDictionary<String, Object>;
+            Assert.NotNull(json);
+            Assert.Equal(CubeCode.ParamError.ToInt(), json!["code"].ToInt());
+            Assert.Empty(ctrl.Captured);
+        }
+        finally
+        {
+            CubeSetting.Current.UploadMaxSize = prev;
+        }
+    }
+
+    [Fact(DisplayName = "附件上传_危险扩展名与超大文件被拒绝")]
+    public void ValidateUpload_RejectsDangerousExtensionAndOversize()
+    {
+        var prev = CubeSetting.Current.UploadMaxSize;
+        CubeSetting.Current.UploadMaxSize = 20;
+        try
+        {
+            var ctrl = CreateController();
+
+            using var ms1 = ToStream("x");
+            var exe = ToFormFile(ms1, "payload.exe");
+            Assert.False(ctrl.TestValidateUpload(exe, out var error1));
+            Assert.False(error1.IsNullOrEmpty());
+
+            using var ms2 = ToStream("x");
+            var big = new FormFile(ms2, 0, 21L * 1024 * 1024, "file", "data.csv") { Headers = new HeaderDictionary() };
+            Assert.False(ctrl.TestValidateUpload(big, out var error2));
+            Assert.Contains("MB", error2);
+
+            using var ms3 = ToStream("x");
+            var ok = ToFormFile(ms3, "data.csv");
+            Assert.True(ctrl.TestValidateUpload(ok, out _));
+        }
+        finally
+        {
+            CubeSetting.Current.UploadMaxSize = prev;
+        }
     }
     #endregion
 

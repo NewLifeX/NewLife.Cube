@@ -121,11 +121,14 @@ public class SiteConfigModel
         var siteDefault = CubeLocalization.NormalizeCulture(NewLife.Setting.Current?.Language) ?? "en-US";
         var current = CubeLocalization.NormalizeCulture(CultureInfo.CurrentUICulture.Name) ?? siteDefault;
 
+        // 站点配置了受支持的界面语言即全站锁定，前端据此隐藏语言切换入口
+        var locked = CubeLocalization.GetForcedLanguage() != null;
+
         return new SiteLanguageModel
         {
             Current = current,
             Default = siteDefault,
-            Locked = false,
+            Locked = locked,
             Options = Localization.GetLanguages(),
         };
     }

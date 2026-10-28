@@ -1,6 +1,8 @@
 namespace NewLife.Cube.Enums;
 
 /// <summary>统一认证分类，适用于登录与注册接口的 category 字段</summary>
+/// <remarks>JSON 读写采用字符串（可同时读取原有数字，保证旧客户端兼容），与前端约定的 "" / password / mobile / mail / oauth 保持一致</remarks>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum AuthCategory
 {
     /// <summary>账号密码（默认）</summary>

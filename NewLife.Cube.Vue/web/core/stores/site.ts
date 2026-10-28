@@ -17,6 +17,16 @@ export const useSiteStore = defineStore('site', () => {
   let pending: Promise<SiteConfig | null> | null = null;
 
   /**
+   * 将站点名称写入浏览器标题
+   * 站点名称为服务端配置的品牌名，标题随站点配置与服务端设置保持一致，避免各皮肤自行硬编码
+   * @param title 站点名称，为空时保持原样
+   */
+  function applyTitle(title?: string) {
+    if (typeof document === 'undefined') return;
+    if (title) document.title = title;
+  }
+
+  /**
    * 加载站点配置
    * @param tenant 租户标识（编号/编码/名称），为空时由服务端按当前上下文解析
    * @param force 强制重新请求，忽略已有缓存
@@ -33,6 +43,7 @@ export const useSiteStore = defineStore('site', () => {
         if (res?.code === 0 && res.data) {
           config.value = res.data;
           loadedTenant.value = tenant;
+          applyTitle(res.data.name);
         }
         return config.value;
       })
