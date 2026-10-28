@@ -55,7 +55,7 @@ export interface CubeColumnView {
   isKey: boolean;
 }
 
-/** `#row-actions` 插槽作用域（整列替换，不参与自适应与收起；要追加动作请用 `extraRowActions`） */
+/** `#row-actions` 插槽作用域（整列替换；动作数与按钮宽度参与列宽自适应和「更多」收起） */
 export interface CubeRowActionsSlotProps {
   row: Record<string, unknown>;
   index: number;
@@ -107,7 +107,7 @@ export interface CubeSectionSlotProps {
 /**
  * 行操作项（内置 查看/编辑/删除 + 业务页经 `extraRowActions` 追加的动作）。
  *
- * 数据驱动而不是插槽自由堆按钮，才能参与「列宽自适应 + 超过 4 个收进更多」
+ * 数据驱动而不是插槽自由堆按钮，才能参与「列宽自适应 + 超过 3 个收进更多」
  * 的布局（`layoutRowActions` / `splitRowActions`）。
  */
 export interface CubeRowAction {
@@ -161,7 +161,7 @@ export interface CubeGridFlags {
   indexColumn?: boolean;
   rowActions?: boolean;
   doubleClickEdit?: boolean;
-  /** 操作列宽：不传按行动作数自适应（见 `layoutRowActions`），传了以页面意图为准 */
+  /** 操作列宽：不传按行动作数自适应（见 `layoutRowActions`），传了只作下限（实测更宽时以实测为准） */
   actionWidth?: number;
 }
 

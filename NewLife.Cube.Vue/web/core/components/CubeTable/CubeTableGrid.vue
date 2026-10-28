@@ -22,10 +22,14 @@
  *   - `#empty`：空态替换。
  * 未声明的属性（`row-key`、`stripe`、`size` 等）透传给内部 `el-table`。
  *
- * 操作列宽度按行动作数自适应（`layoutRowActions`）：显式传 `actionWidth` 则覆盖；
- * 单行动作超过 4 个时只露前 3 个，第 4 个位置是「更多」下拉，后加的操作一律收进去。
+ * 操作列宽度按行自适应（`layoutRowActions` / `layoutMeasuredActions`）：
+ * - 内置动作（查看/编辑/删除 + `extraRowActions`）按个数估算；
+ * - `#row-actions` 插槽由页面自定义按钮（纯文字 / 文字+图标 / 纯图标），宽度只能量：
+ *   本组件在隐藏探针里渲染「动作最多的那一行」的动作，量出每个按钮与「更多」的真实宽度后再定列宽。
+ * 两者同一收起规则：≤3 个全部直显；>3 个只直显前 3 个，第 4 个位置是「更多」下拉。
+ * 页面显式传 `actionWidth` 只作**下限**——写小了也不会把按钮裁成省略号。
  */
-import { computed, useSlots } from 'vue';
+import { computed, nextTick, onMounted, ref, shallowRef, useSlots, watch, type VNode } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
@@ -45,15 +49,20 @@ import {
   isExpandableCell,
   linkTemplateHasValue,
   isOverflowTooltipCell,
+  layoutMeasuredActions,
   layoutRowActions,
-  MAX_VISIBLE_ACTIONS,
+  MAX_DIRECT_ACTIONS,
   resolveGridFlags,
   splitRowActions,
   statCellText,
+  type RowActionLayout,
 } from './cubeTable.logic';
+import { toActionNodes } from './slotActions';
 import { useCubeTableLov } from './useCubeTableLov';
 import { usePagePermissions } from '../../composables/usePagePermissions';
 import { resolveFieldRenderer } from '../../engine/fieldRenderers';
+import CubeTableSlotActions from './CubeTableSlotActions.vue';
+import RenderVNodes from './RenderVNodes';
 import type { CubeEngineContext } from '../../engine/types';
 import type { CubeColumnView, CubeRowAction, CubeTableActions } from './types';
 
@@ -76,7 +85,7 @@ const props = withDefaults(
     indexColumn?: boolean;
     rowActions?: boolean;
     doubleClickEdit?: boolean;
-    /** 操作列宽：不传按行动作数自适应 */
+    /** 操作列宽：不传按行自适应；传了只作下限（实测更宽时以实测为准） */
     actionWidth?: number;
     /** 操作列追加动作：排在内置 查看/编辑/删除 之后，一起参与自适应与「更多」收起 */
     extraRowActions?: CubeRowAction[];
@@ -215,14 +224,84 @@ const actionLayout = computed(() => {
   );
   const actions = widest.length ? widest : builtinRowActions.value;
 
+  // 收起时前 3 个直显，第 4 个位置是「更多」；labels 长度需与单元数对齐才能按文案估宽
   const labels =
-    actions.length > MAX_VISIBLE_ACTIONS
-      ? [...actions.slice(0, MAX_VISIBLE_ACTIONS - 1).map((action) => action.label), t('grid.more')]
+    actions.length > MAX_DIRECT_ACTIONS
+      ? [...actions.slice(0, MAX_DIRECT_ACTIONS).map((action) => action.label), t('grid.more')]
       : actions.map((action) => action.label);
 
   return layoutRowActions(actions.length, labels);
 });
-const resolvedActionWidth = computed(() => props.actionWidth ?? actionLayout.value.width);
+const resolvedActionWidth = computed(() => Math.max(props.actionWidth ?? 0, adaptiveActionWidth.value));
+
+/** 页面是否用 `#row-actions` 整列替换了操作按钮 */
+const hasActionSlot = computed(() => Boolean(slots['row-actions']));
+
+/** 取某行的插槽动作节点；每次调用都会重新执行插槽函数（同一个 vnode 不能挂两处） */
+function actionNodesOf(row: Record<string, unknown>, index: number): VNode[] {
+  const slot = slots['row-actions'];
+  return slot ? toActionNodes(slot({ row, index, ctx: props.ctx })) : [];
+}
+
+/** 隐藏探针节点（动作最多的那一行，只用于量宽，不上屏） */
+const probeNodes = shallowRef<VNode[]>([]);
+/** 各操作实测宽度（px）；空数组表示尚未量到 */
+const probeWidths = ref<number[]>([]);
+/** 「更多」按钮实测宽度 */
+const moreWidth = ref(0);
+const probeRef = ref<HTMLElement | null>(null);
+
+/**
+ * 数据或插槽变了就重算探针节点，并清掉旧宽度（避免拿上一页的按钮宽度定列宽）。
+ *
+ * 取「动作最多的那一行」而不是首行：行级 `v-if` 很常见（待接单的行多一个「接单」），
+ * 只量首行会把其他行的按钮裁掉。这里只调插槽函数比个数，不上屏。
+ */
+function syncProbe() {
+  probeWidths.value = [];
+  moreWidth.value = 0;
+  if (!hasActionSlot.value) {
+    probeNodes.value = [];
+    return;
+  }
+  let widest: VNode[] = [];
+  rows.value.forEach((row, index) => {
+    const nodes = actionNodesOf(row, index);
+    if (nodes.length > widest.length) widest = nodes;
+  });
+  probeNodes.value = widest;
+}
+
+// 列表整体换了（翻页 / 重新取数）就重量：行数或行内容变了都可能带出新的动作组合
+watch([() => rows.value, hasActionSlot], syncProbe, { immediate: true });
+
+async function measureProbe() {
+  await nextTick();
+  const host = probeRef.value;
+  if (!host) return;
+  const items = Array.from(host.querySelectorAll<HTMLElement>('.ctg-probe-item'));
+  const count = probeNodes.value.length;
+  if (!count || items.length < count) return;
+  const widths = items.map((el) => Math.round(el.getBoundingClientRect().width));
+  const measured = widths.slice(0, count);
+  // jsdom / 尚未上屏时量不到布局：保留空值回落估算，绝不能把列宽量成 0
+  if (measured.some((w) => w <= 0)) return;
+  probeWidths.value = measured;
+  moreWidth.value = widths.length > count ? widths[count] : 0;
+}
+
+onMounted(() => void measureProbe());
+watch(probeNodes, () => void measureProbe(), { flush: 'post' });
+
+/** 插槽动作的布局：量到宽度按实测；首帧 / jsdom 按节点数估算 */
+const slotLayout = computed<RowActionLayout | null>(() => {
+  if (!hasActionSlot.value) return null;
+  return probeWidths.value.length
+    ? layoutMeasuredActions(probeWidths.value, moreWidth.value)
+    : layoutRowActions(probeNodes.value.length);
+});
+
+const adaptiveActionWidth = computed(() => slotLayout.value?.width ?? actionLayout.value.width);
 
 /** 单行拆成「直接按钮」与「收进更多」两段（按行判定，不足 4 个不硬塞空的「更多」） */
 const splitOf = (row: Record<string, unknown>) => splitRowActions(rowActionsOf(row));
@@ -399,8 +478,9 @@ function summaryMethod({ columns: tableColumns }: { columns: Array<{ property?: 
     </template>
 
     <el-table-column v-if="flags.rowActions" :label="t('common.actions')" :width="resolvedActionWidth" fixed="right" align="center">
-      <template v-if="$slots['row-actions']" #default="scope">
-        <slot name="row-actions" :row="scope.row" :index="scope.$index" />
+      <!-- 页面整列替换：只直显前 3 个，其余进「更多」；列宽由上面的探针实测撑开 -->
+      <template v-if="hasActionSlot" #default="scope">
+        <CubeTableSlotActions :nodes="actionNodesOf(scope.row, scope.$index)" />
       </template>
       <template v-else #default="scope">
         <!-- 单一元素根：el-table-column 会用空行对象试渲染一次本插槽做列注册，
@@ -443,6 +523,17 @@ function summaryMethod({ columns: tableColumns }: { columns: Array<{ property?: 
       </template>
     </el-table-column>
   </el-table>
+
+  <!-- 插槽动作的隐藏探针：渲染动作最多那一行的每个操作 + 一个「更多」样本，只为量真实宽度；
+       visibility:hidden 仍参与布局，且不上屏、不进无障碍树、不影响横向滚动 -->
+  <div v-if="hasActionSlot" ref="probeRef" class="ctg-probe" aria-hidden="true">
+    <span v-for="(node, index) in probeNodes" :key="index" class="ctg-probe-item">
+      <RenderVNodes :nodes="[node]" />
+    </span>
+    <span v-if="probeNodes.length > MAX_DIRECT_ACTIONS" class="ctg-probe-item">
+      <el-button link type="primary">更多<el-icon><ArrowDown /></el-icon></el-button>
+    </span>
+  </div>
 </template>
 
 <style scoped>
@@ -496,5 +587,18 @@ function summaryMethod({ columns: tableColumns }: { columns: Array<{ property?: 
 /* 「更多」与直接按钮同排：下拉是行内元素，去掉它自带的基线偏移 */
 .ctg-more {
   vertical-align: middle;
+}
+/* 插槽动作的探针：移到视口上方量宽，不参与页面布局 */
+.ctg-probe {
+  position: absolute;
+  top: -9999px;
+  left: 0;
+  display: flex;
+  gap: 8px;
+  visibility: hidden;
+  pointer-events: none;
+}
+.ctg-probe-item {
+  display: inline-flex;
 }
 </style>

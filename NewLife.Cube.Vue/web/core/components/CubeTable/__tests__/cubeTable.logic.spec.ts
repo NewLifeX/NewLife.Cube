@@ -42,6 +42,7 @@ import {
   dialogShapeFor,
   isExpandableCell,
   isOverflowTooltipCell,
+  layoutMeasuredActions,
   layoutRowActions,
   normalizeMulti,
   resolveGridFlags,
@@ -302,13 +303,14 @@ describe('CubeTable/logic 工具栏与表格开关', () => {  it('应该默认�
 describe('CubeTable/logic 操作列自适应与收起', () => {
   it.each([
     [1, false, 80],
+    [2, false, 144],
     [3, false, 208],
-    [4, false, 272],
-  ])('应该按个数撑宽且不收起 当动作数为 %i 时', (count, folded, width) => {
+    [4, true, 272],
+  ])('应该按个数撑宽并标收起 当动作数为 %i 时', (count, folded, width) => {
     expect(layoutRowActions(count)).toEqual({ folded, width });
   });
 
-  it('应该按 4 个单元封顶宽度并标收起 当动作数超过 4 时', () => {
+  it('应该按 3 个直显 + 1 个「更多」封顶宽度 当动作数超过 3 时', () => {
     // 5 个和 8 个同宽：后加的动作一律进「更多」，不再撑宽列
     expect(layoutRowActions(5)).toEqual({ folded: true, width: 272 });
     expect(layoutRowActions(8).width).toBe(layoutRowActions(5).width);
@@ -332,14 +334,45 @@ describe('CubeTable/logic 操作列自适应与收起', () => {
     expect(layoutRowActions(0).width).toBe(80);
   });
 
-  it('应该最多 4 个全部直接显示 当未超过收起阈值时', () => {
-    const items = ['a', 'b', 'c', 'd'];
+  it('应该最多 3 个全部直接显示 当未超过收起阈值时', () => {
+    const items = ['a', 'b', 'c'];
     expect(splitRowActions(items)).toEqual({ direct: items, overflow: [] });
+  });
+
+  it('应该前 3 个直接显示、其余收进更多 当有 4 个动作时', () => {
+    const items = ['a', 'b', 'c', 'd'];
+    expect(splitRowActions(items)).toEqual({ direct: ['a', 'b', 'c'], overflow: ['d'] });
   });
 
   it('应该前 3 个直接显示、其余收进更多 当有 5 个动作时', () => {
     const items = ['a', 'b', 'c', 'd', 'e'];
     expect(splitRowActions(items)).toEqual({ direct: ['a', 'b', 'c'], overflow: ['d', 'e'] });
+  });
+});
+
+describe('CubeTable/logic 按实测宽度定操作列宽', () => {
+  it('应该用实测按钮宽度加内边距与间距 当量到两个按钮时', () => {
+    // 24 padding + 4 frame + 58 + 8 gap + 58
+    expect(layoutMeasuredActions([58, 58])).toEqual({ folded: false, width: 152 });
+  });
+
+  it('应该把实测宽度向上取整并加一个像素余量 当按钮宽度带小数时', () => {
+    expect(layoutMeasuredActions([57.4]).width).toBe(86);
+  });
+
+  it('应该按 3 直显 + 实测的「更多」宽度封顶 当量到超过 3 个动作时', () => {
+    // 4 个按钮只直显前 3 个，第 4 个位置换成实测 66px 的「更多」
+    expect(layoutMeasuredActions([58, 58, 58, 58], 66)).toEqual({ folded: true, width: 292 });
+  });
+
+  it('应该按估算宽度补「更多」 当未量到「更多」时', () => {
+    expect(layoutMeasuredActions([58, 58, 58, 58])).toEqual({ folded: true, width: 282 });
+  });
+
+  it('应该回落到按个数估算 当宽度全都量不到时', () => {
+    // jsdom 里 getBoundingClientRect 恒为 0：不能把列宽定成 0
+    expect(layoutMeasuredActions([0, 0])).toEqual(layoutRowActions(2));
+    expect(layoutMeasuredActions([])).toEqual(layoutRowActions(0));
   });
 });
 

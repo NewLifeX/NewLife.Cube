@@ -1037,7 +1037,10 @@ export function resolveGridFlags(
 }
 
 /** 操作列最多直接显示的动作数：超出即收起，第 4 个位置让给「更多」下拉 */
-export const MAX_VISIBLE_ACTIONS = 4;
+export const MAX_DIRECT_ACTIONS = 3;
+
+/** @deprecated 语义已收窄为「直接显示上限」（3 个），新代码用 `MAX_DIRECT_ACTIONS` */
+export const MAX_VISIBLE_ACTIONS = MAX_DIRECT_ACTIONS;
 
 /** 单个行操作按钮的估算宽度（link 样式：图标 + 两字文本） */
 const ACTION_BUTTON_WIDTH = 56;
@@ -1047,6 +1050,9 @@ const ACTION_ICON_EXTRA = 34;
 
 /** 操作列单元格左右内边距的估算合计 */
 const ACTION_CELL_PADDING = 24;
+
+/** 列宽与 `.cell` 实际宽度的固定差（边框占位）+ 2px 取整余量 */
+const ACTION_CELL_FRAME = 4;
 
 /** 按钮间留白（el-button 默认 margin-left 口径） */
 const ACTION_BUTTON_GAP = 8;
@@ -1074,15 +1080,17 @@ export function estimateActionWidth(label: string): number {
 }
 
 /**
- * 按行动作数计算操作列布局：
- * ≤4 个全部直接显示、列宽随个数增长；>4 个只露前 3 个 + 「更多」下拉，
+ * 按行动作数计算操作列布局（数据驱动动作的估算口径）：
+ * ≤3 个全部直接显示、列宽随个数增长；>3 个只露前 3 个 + 「更多」下拉，
  * 列宽按 4 个单元封顶（后续新加的动作一律进「更多」，不再撑宽列）。
  *
  * @param count 单行动作数
  * @param labels 直接显示的按钮文案（按显示顺序，可含「更多」）；缺省按固定单元宽估算
  */
 export function layoutRowActions(count: number, labels?: string[]): RowActionLayout {
-  const unitCount = Math.max(Math.min(count, MAX_VISIBLE_ACTIONS), 1);
+  const folded = count > MAX_DIRECT_ACTIONS;
+  // 收起时占用「3 个直显 + 更多」共 4 个单元宽，不能只按直显个数算，否则少了「更多」的位置
+  const unitCount = Math.max(folded ? MAX_DIRECT_ACTIONS + 1 : count, 1);
   const width =
     labels && labels.length >= unitCount
       ? ACTION_CELL_PADDING +
@@ -1090,7 +1098,30 @@ export function layoutRowActions(count: number, labels?: string[]): RowActionLay
         (unitCount - 1) * ACTION_BUTTON_GAP
       : ACTION_CELL_PADDING + unitCount * ACTION_BUTTON_WIDTH + (unitCount - 1) * ACTION_BUTTON_GAP;
 
-  return { folded: count > MAX_VISIBLE_ACTIONS, width };
+  return { folded, width };
+}
+
+/**
+ * 按「每个操作实测宽度」计算操作列布局（`#row-actions` 插槽口径）。
+ *
+ * 插槽里的按钮由页面自定义（纯文字 / 文字+图标 / 纯图标），宽度无法用 56px 常量估，
+ * 只能量。收起规则与 `layoutRowActions` 同一套：≤3 个全部直显；>3 个只直显前 3 个，
+ * 其余进「更多」，列宽按「3 个直显 + 更多」封顶。
+ *
+ * @param widths 各操作实测宽度（px，按渲染顺序；量不到的项会被剔除）
+ * @param moreWidth 「更多」按钮实测宽度；量不到时按单按钮常量兜底
+ * @returns 是否收起与建议列宽（已含单元格内边距与边框差）
+ */
+export function layoutMeasuredActions(widths: number[], moreWidth = ACTION_BUTTON_WIDTH): RowActionLayout {
+  const measured = widths.filter((w) => Number.isFinite(w) && w > 0);
+  // 一个都没量到（首帧 / jsdom）→ 回到按个数估算，列宽不能退化成 0
+  if (!measured.length) return layoutRowActions(widths.length);
+
+  const folded = measured.length > MAX_DIRECT_ACTIONS;
+  const direct = folded ? measured.slice(0, MAX_DIRECT_ACTIONS) : measured;
+  const units = folded ? [...direct, moreWidth > 0 ? moreWidth : ACTION_BUTTON_WIDTH] : direct;
+  const content = units.reduce((sum, w) => sum + w, 0) + ACTION_BUTTON_GAP * Math.max(units.length - 1, 0);
+  return { folded, width: Math.ceil(ACTION_CELL_PADDING + ACTION_CELL_FRAME + content) };
 }
 
 /**
@@ -1100,9 +1131,8 @@ export function layoutRowActions(count: number, labels?: string[]): RowActionLay
  * 撑过，也直接全显、不给这一行硬塞一个空的「更多」。
  */
 export function splitRowActions<T>(actions: T[]): { direct: T[]; overflow: T[] } {
-  if (actions.length <= MAX_VISIBLE_ACTIONS) return { direct: actions, overflow: [] };
-  const cut = MAX_VISIBLE_ACTIONS - 1;
-  return { direct: actions.slice(0, cut), overflow: actions.slice(cut) };
+  if (actions.length <= MAX_DIRECT_ACTIONS) return { direct: actions, overflow: [] };
+  return { direct: actions.slice(0, MAX_DIRECT_ACTIONS), overflow: actions.slice(MAX_DIRECT_ACTIONS) };
 }
 /** 工具栏按钮的主键字段名（来自元数据 `primaryKey`，缺省 `id`） */
 export function toolbarKeyField(fields: FieldMeta[]): string {
