@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { SiteConfig } from '@newlifex/api-core';
+import type { SiteConfig } from '@newlifex/cube';
 
 export const useAppStore = defineStore('app', () => {
   const collapsed = ref(false);

@@ -265,7 +265,7 @@ const ctx = useCubeEngine({
 | 项 | 现状 | 需要动的东西 |
 | --- | --- | --- |
 | 旧 Section 组件下线 | `ListSearchBar` / `ListToolbar` / `ListTableContent` / `ListPagination` / `ListPageFooter` 已 0 引用（实测：全仓含 MES 前端 `import` 命中数为 0），但文件与 `useSections` 的对应键仍在 | 方案 §7 P6：确认外部项目没有直接 import 这些路径后删除；`ListPageHeader` 保留（默认页与参数页在用） |
-| `@newlifex/page-logic` | 未接入。该包已有 `loadFields/loadData/add/remove/deleteSelect` 全家桶，但 `cube-vue` 目前零引用 | 引擎数据层收敛到一处，属架构决策，不该由组件层单方向定 |
+| `@newlifex/cube` | 未接入。该包已有 `loadFields/loadData/add/remove/deleteSelect` 全家桶，但 `cube-vue` 目前零引用 | 引擎数据层收敛到一处，属架构决策，不该由组件层单方向定 |
 | 组件目录登记 | `docs/reference/component-catalog.md` 未加条目 | `add-component.md` 第 6 步要求登记；纯文档，留待评审后一并加 |
 | 回流 SmartMES | MES 侧 `ListPage` 未改，仍用自身组件 | 待 Cube 侧单独验证通过后再定接入方式 |
 

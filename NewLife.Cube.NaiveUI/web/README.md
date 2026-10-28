@@ -30,7 +30,7 @@ pnpm build
 ```
 web/
 ├── src/
-│   ├── api/          # API 调用层（复用 @newlifex/api-core）
+│   ├── api/          # API 调用层（复用 @newlifex/cube）
 │   ├── components/   # 公共组件
 │   ├── layouts/      # 布局组件
 │   ├── router/       # 路由配置

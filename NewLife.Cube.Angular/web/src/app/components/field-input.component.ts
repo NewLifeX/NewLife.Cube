@@ -6,8 +6,8 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
-import type { DataField } from '@newlifex/api-core';
-import { resolveWidget } from '@newlifex/field-mapping';
+import type { DataField } from '@newlifex/cube';
+import { resolveWidget } from '@newlifex/cube';
 
 interface SelectOption {
   value: string;

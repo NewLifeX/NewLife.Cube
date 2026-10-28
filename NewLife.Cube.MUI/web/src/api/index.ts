@@ -1,5 +1,5 @@
-import { createCubeApi } from '@newlifex/api-core';
-import type { CubeApi } from '@newlifex/api-core';
+import { createCubeApi } from '@newlifex/cube';
+import type { CubeApi } from '@newlifex/cube';
 
 export const api: CubeApi = createCubeApi({
   baseURL: import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL ?? ''),

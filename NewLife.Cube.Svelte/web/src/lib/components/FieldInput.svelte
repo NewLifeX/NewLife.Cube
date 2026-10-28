@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { DataField } from '@newlifex/api-core';
-  import { resolveWidget } from '@newlifex/field-mapping';
+  import type { DataField } from '@newlifex/cube';
+  import { resolveWidget } from '@newlifex/cube';
 
   interface Props {
     field: DataField;

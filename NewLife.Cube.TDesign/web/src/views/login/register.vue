@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { AuthCategory } from '@newlifex/api-core';
+import type { AuthCategory } from '@newlifex/cube';
 import { api } from '@/api';
 
 const router = useRouter();

@@ -198,7 +198,7 @@ public class AppController : EntityController<App, AppModel>
 | Custom themes | Implement `IModule` like `MetronicModule` and mount it in the use phase. |
 | View overrides | A `.cshtml` with the same path in a child project overrides the parent. |
 | Localization | 11 runtime languages for API messages, request-level culture detection and an 11-language Vue front-end. |
-| New-generation skins | pnpm workspace with shared packages `@newlifex/api-core` (API / token / types) and `@newlifex/field-mapping` (field metadata -> controls). `NewLife.Cube.Vue` is the official skin; the eight SPA skins live in this repo as reference implementations and are not published to NuGet — build their `web` project with pnpm, then reference the .NET project. React lives in the separate CubeAntd repository. |
+| New-generation skins | pnpm workspace with the shared package `@newlifex/cube` (API / token / types, field metadata -> controls). `NewLife.Cube.Vue` is the official skin; the eight SPA skins live in this repo as reference implementations and are not published to NuGet — build their `web` project with pnpm, then reference the .NET project. React lives in the separate CubeAntd repository. |
 
 | Skin project | Framework | UI library | Dev port |
 |---------------|-----------|------------|----------|

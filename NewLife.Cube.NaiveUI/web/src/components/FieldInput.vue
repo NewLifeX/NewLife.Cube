@@ -14,7 +14,7 @@ import {
   NUpload,
   NButton,
 } from 'naive-ui';
-import type { FieldMapping } from '@newlifex/field-mapping';
+import type { FieldMapping } from '@newlifex/cube';
 
 const props = defineProps<{
   value: any;

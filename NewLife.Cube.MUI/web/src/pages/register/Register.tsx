@@ -16,8 +16,8 @@ import {
   Typography,
   type AlertColor,
 } from '@mui/material';
-import { AuthLogic } from '@newlifex/auth-logic';
-import type { LoginConfig } from '@newlifex/api-core';
+import { AuthLogic } from '@newlifex/cube';
+import type { LoginConfig } from '@newlifex/cube';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';
 import {

@@ -11,9 +11,9 @@ import {
 } from '@mui/icons-material';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
-import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
+import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/cube';
 import api from '@/api';
-import type { MenuItem as CubeMenuItem } from '@newlifex/api-core';
+import type { MenuItem as CubeMenuItem } from '@newlifex/cube';
 
 const DRAWER_WIDTH = 240;
 

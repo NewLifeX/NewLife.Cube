@@ -81,9 +81,9 @@ import { SearchIcon, ChevronDownIcon } from 'tdesign-icons-vue-next';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
-import { Auth, type DataField } from '@newlifex/api-core';
-import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
-import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
+import { Auth, type DataField } from '@newlifex/cube';
+import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import { Button as TButton } from 'tdesign-vue-next';
 import * as echarts from 'echarts';
 

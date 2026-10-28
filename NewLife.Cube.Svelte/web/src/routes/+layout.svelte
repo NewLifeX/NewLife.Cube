@@ -2,11 +2,11 @@
   import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
+  import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/cube';
   import { collapsed, darkMode, siteConfig, siteTitle } from '$lib/stores/app';
   import { user, menus, isLoggedIn, displayName, fetchUserInfo, fetchMenus, logout } from '$lib/stores/user';
   import { getApi } from '$lib/api';
-  import type { MenuItem } from '@newlifex/api-core';
+  import type { MenuItem } from '@newlifex/cube';
   import '../app.css';
 
   let openKeys: Record<string, boolean> = $state({});

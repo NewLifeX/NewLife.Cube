@@ -3,7 +3,7 @@ import {
   TextField, Switch, Select, MenuItem, FormControl, FormControlLabel,
   InputLabel, type TextFieldProps,
 } from '@mui/material';
-import type { FieldMapping } from '@newlifex/field-mapping';
+import type { FieldMapping } from '@newlifex/cube';
 
 interface FieldInputProps {
   mapping: FieldMapping;

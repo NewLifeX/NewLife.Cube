@@ -177,8 +177,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { LoginConfig } from '@newlifex/api-core';
-import { AuthLogic } from '@newlifex/auth-logic';
+import type { LoginConfig } from '@newlifex/cube';
+import { AuthLogic } from '@newlifex/cube';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 import {

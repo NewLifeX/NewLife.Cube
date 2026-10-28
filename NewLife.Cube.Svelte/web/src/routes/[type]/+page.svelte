@@ -4,9 +4,9 @@
   import { getApi } from '$lib/api';
   import { getMenuPermission } from '$lib/stores/user';
   import FieldInput from '$lib/components/FieldInput.svelte';
-  import { Auth, type DataField } from '@newlifex/api-core';
-  import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
-  import { validateRequiredFields } from '@newlifex/page-logic';
+  import { Auth, type DataField } from '@newlifex/cube';
+  import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
+  import { validateRequiredFields } from '@newlifex/cube';
   import * as echarts from 'echarts';
 
   const exportOptions = [

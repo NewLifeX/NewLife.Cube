@@ -3,9 +3,9 @@ import { useLocation } from 'react-router-dom';
 import {
   Plus, Trash2, Download, Upload, Search, RefreshCw, Eye, Pencil, ChevronDown,
 } from 'lucide-react';
-import { Auth } from '@newlifex/api-core';
-import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
-import { normalizeChartList, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
+import { Auth } from '@newlifex/cube';
+import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/cube';
+import { normalizeChartList, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

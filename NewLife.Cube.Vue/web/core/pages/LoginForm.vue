@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue';
 import { usePasswordRules } from '../composables/usePasswordRules';
-import type { LoginConfig } from '@newlifex/api-core';
+import type { LoginConfig } from '@newlifex/cube';
 
 const { t } = useI18n();
 

@@ -198,7 +198,7 @@ public class AppController : EntityController<App, AppModel>
 | 自定義主題 | 仿照 `MetronicModule` 實現 IModule 並在 Use 階段掛載。 |
 | 檢視覆寫 | 子專案同路徑同名 `.cshtml` 覆蓋父級。 |
 | 多語言 | 11 種執行時語言用於介面訊息，按請求識別區域，並提供 11 語言 Vue 前端。 |
-| 新一代皮膚包 | 基於 pnpm workspace + 公共模組 `@newlifex/api-core`（統一 API / Token / 型別）和 `@newlifex/field-mapping`（欄位後設資料 → 控制元件對映），8 套皮膚開箱即用，NuGet 引包即得完整前端。 |
+| 新一代皮膚包 | 基於 pnpm workspace + 公共模組 `@newlifex/cube`（統一 API / Token / 型別、欄位後設資料 → 控制元件對映），8 套皮膚開箱即用，NuGet 引包即得完整前端。 |
 
 | NuGet 包 | 框架 | UI 庫 | 開發埠 |
 |---------|------|-------|---------|

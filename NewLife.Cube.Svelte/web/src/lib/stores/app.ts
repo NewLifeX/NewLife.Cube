@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import type { SiteConfig } from '@newlifex/api-core';
+import type { SiteConfig } from '@newlifex/cube';
 
 export const collapsed = writable(false);
 export const darkMode = writable(false);

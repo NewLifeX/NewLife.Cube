@@ -1,0 +1,183 @@
+/**
+ * 列表页 Pinia 适配器
+ *
+ * 将 PageLogic 桥接为 Pinia composable，供 Vue 系皮肤使用。
+ *
+ * @example
+ * ```ts
+ * import { usePageLogic } from '@newlifex/cube/pinia';
+ * const page = usePageLogic(api, '/Admin/User');
+ * await page.loadFields();
+ * await page.loadData();
+ * ```
+ */
+
+import { ref, reactive, type Ref } from 'vue';
+import type { CubeApi, ApiResponse, PageSetting, EntityMeta, ToolbarItem } from '../api';
+import { PageLogic, type PagePreset, type Pagination } from './index';
+import type { FieldMapping } from '../field';
+
+export interface PiniaPageLogic {
+  listFields: Ref<FieldMapping[]>;
+  searchFields: Ref<FieldMapping[]>;
+  addFields: Ref<FieldMapping[]>;
+  editFields: Ref<FieldMapping[]>;
+  detailFields: Ref<FieldMapping[]>;
+  pkField: Ref<string>;
+  tableData: Ref<Record<string, unknown>[]>;
+  statData: Ref<Record<string, unknown> | null>;
+  pagination: Pagination;
+  chartList: Ref<unknown[]>;
+  loading: Ref<boolean>;
+  formLoading: Ref<boolean>;
+  pageSetting: Ref<PageSetting | null>;
+  /** 实体标识（meta.entity） */
+  entity: Ref<EntityMeta | null>;
+  /** 工具栏自定义按钮（meta.toolbar） */
+  toolbar: Ref<ToolbarItem[]>;
+  /** 页面 UI 扩展（meta.ui） */
+  ui: Ref<Record<string, unknown>>;
+  /** 页面呈现配置 */
+  preset: Ref<PagePreset | null>;
+  canAdd: Ref<boolean>;
+  canEdit: Ref<boolean>;
+  canDelete: Ref<boolean>;
+  canExport: Ref<boolean>;
+  canImport: Ref<boolean>;
+  /** 是否可用开发功能（高级菜单 备份/还原/备份导出/清空数据表）。开发模式 && 系统管理员 */
+  canDevelop: Ref<boolean>;
+
+  loadFields: () => Promise<void>;
+  loadData: (searchParams?: Record<string, unknown>) => Promise<void>;
+  setPagination: (page: number, pageSize?: number) => void;
+  add: (data: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
+  update: (data: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
+  remove: (id: number | string) => Promise<ApiResponse<unknown>>;
+  deleteSelect: (keys: (number | string)[]) => Promise<ApiResponse<unknown>>;
+  deleteAll: () => Promise<ApiResponse<unknown>>;
+  getDetail: <T = Record<string, unknown>>(id: number | string) => Promise<T>;
+  getExportUrl: (format: string) => string;
+  importFile: (file: File) => Promise<ApiResponse<unknown>>;
+  uploadFile: (file: File, category?: string) => Promise<ApiResponse<Record<string, unknown>>>;
+  loadChart: () => Promise<unknown[]>;
+}
+
+/**
+ * 创建 Pinia/Vue composable 风格的 PageLogic
+ *
+ * @param api - CubeApi 实例
+ * @param type - 路径前缀，如 `/Admin/User`
+ * @param defaultPageSize - 默认每页大小
+ * @param menuPermissions - 来自 auth-logic 的菜单权限映射，用于推断 canAdd/canEdit 等
+ * @param userPermission - 当前用户权限串（`menuId#flag`）；提供时优先按 menuId + requiredPermissions 判定
+ * @param isSystemAdmin - 是否系统管理员（动作权限直通）
+ */
+export function usePageLogic(
+  api: CubeApi,
+  type: string,
+  defaultPageSize = 20,
+  menuPermissions?: Record<string, string>,
+  userPermission?: string,
+  isSystemAdmin?: boolean,
+): PiniaPageLogic {
+  const listFields = ref<FieldMapping[]>([]);
+  const searchFields = ref<FieldMapping[]>([]);
+  const addFields = ref<FieldMapping[]>([]);
+  const editFields = ref<FieldMapping[]>([]);
+  const detailFields = ref<FieldMapping[]>([]);
+  const pkField = ref('id');
+  const tableData = ref<Record<string, unknown>[]>([]);
+  const statData = ref<Record<string, unknown> | null>(null);
+  const pagination = reactive<Pagination>({ pageIndex: 1, pageSize: defaultPageSize, totalCount: 0 });
+  const chartList = ref<unknown[]>([]);
+  const loading = ref(false);
+  const formLoading = ref(false);
+  const pageSetting = ref<PageSetting | null>(null);
+  const entity = ref<EntityMeta | null>(null);
+  const toolbar = ref<ToolbarItem[]>([]);
+  const ui = ref<Record<string, unknown>>({});
+  const preset = ref<PagePreset | null>(null);
+  const canAdd = ref(true);
+  const canEdit = ref(true);
+  const canDelete = ref(true);
+  const canExport = ref(true);
+  const canImport = ref(true);
+  const canDevelop = ref(false);
+
+  const logic = new PageLogic({
+    api,
+    update: (partial) => {
+      if (partial.listFields !== undefined) listFields.value = partial.listFields;
+      if (partial.searchFields !== undefined) searchFields.value = partial.searchFields;
+      if (partial.addFields !== undefined) addFields.value = partial.addFields;
+      if (partial.editFields !== undefined) editFields.value = partial.editFields;
+      if (partial.detailFields !== undefined) detailFields.value = partial.detailFields;
+      if (partial.pkField !== undefined) pkField.value = partial.pkField;
+      if (partial.tableData !== undefined) tableData.value = partial.tableData;
+      if (partial.statData !== undefined) statData.value = partial.statData;
+      if (partial.pagination !== undefined) Object.assign(pagination, partial.pagination);
+      if (partial.chartList !== undefined) chartList.value = partial.chartList;
+      if (partial.loading !== undefined) loading.value = partial.loading;
+      if (partial.formLoading !== undefined) formLoading.value = partial.formLoading;
+      if (partial.pageSetting !== undefined) pageSetting.value = partial.pageSetting;
+      if (partial.entity !== undefined) entity.value = partial.entity;
+      if (partial.toolbar !== undefined) toolbar.value = partial.toolbar;
+      if (partial.ui !== undefined) ui.value = partial.ui;
+      if (partial.preset !== undefined) preset.value = partial.preset;
+      if (partial.canAdd !== undefined) canAdd.value = partial.canAdd;
+      if (partial.canEdit !== undefined) canEdit.value = partial.canEdit;
+      if (partial.canDelete !== undefined) canDelete.value = partial.canDelete;
+      if (partial.canExport !== undefined) canExport.value = partial.canExport;
+      if (partial.canImport !== undefined) canImport.value = partial.canImport;
+      if (partial.canDevelop !== undefined) canDevelop.value = partial.canDevelop;
+    },
+    defaultPageSize,
+    menuPermissions,
+    userPermission,
+    isSystemAdmin,
+  });
+
+  return {
+    listFields,
+    searchFields,
+    addFields,
+    editFields,
+    detailFields,
+    pkField,
+    tableData,
+    statData,
+    pagination,
+    chartList,
+    loading,
+    formLoading,
+    pageSetting,
+    entity,
+    toolbar,
+    ui,
+    preset,
+    canAdd,
+    canEdit,
+    canDelete,
+    canExport,
+    canImport,
+    canDevelop,
+
+    loadFields: () => logic.loadFields(type),
+    loadData: (searchParams) => logic.loadData(type, searchParams),
+    setPagination: (page, pageSize) => {
+      logic.setPagination(page, pageSize);
+      pagination.pageIndex = page;
+      if (pageSize !== undefined) pagination.pageSize = pageSize;
+    },
+    add: (data) => logic.add(type, data),
+    update: (data) => logic.update_(type, data),
+    remove: (id) => logic.remove(type, id),
+    deleteSelect: (keys) => logic.deleteSelect(type, keys),
+    deleteAll: () => logic.deleteAll(type),
+    getDetail: (id) => logic.getDetail(type, id),
+    getExportUrl: (format) => logic.getExportUrl(type, format),
+    importFile: (file) => logic.importFile(type, file),
+    uploadFile: (file, category) => logic.uploadFile(type, file, category ? { title: category } : undefined),
+    loadChart: () => logic.loadChart(type),
+  };
+}

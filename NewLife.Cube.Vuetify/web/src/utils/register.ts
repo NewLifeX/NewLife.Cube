@@ -1,4 +1,4 @@
-import type { LoginConfig, RegisterModel } from '@newlifex/api-core';
+import type { LoginConfig, RegisterModel } from '@newlifex/cube';
 
 type RegisterAbility = NonNullable<LoginConfig['register']>;
 type SecurityConfig = NonNullable<LoginConfig['security']>;
@@ -34,7 +34,7 @@ export interface RegisterConfig {
   security?: SecurityConfig;
 }
 
-/** 注册请求载荷。在 @newlifex/api-core 的 RegisterModel 基础上补充图片验证码 */
+/** 注册请求载荷。在 @newlifex/cube 的 RegisterModel 基础上补充图片验证码 */
 export interface RegisterPayload extends RegisterModel {
   captchaId?: string;
   captchaCode?: string;

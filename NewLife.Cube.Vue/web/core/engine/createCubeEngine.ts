@@ -23,7 +23,7 @@
  *   1. 更新走 `PUT {type}`、删除走 `DELETE {type}?id=` —— 后端
  *      `NewLife.Cube/Common/EntityController.cs:201` 与 `:24` 都是集合路由，
  *      草案的路径式 `{type}/{id}` 命中不到路由（405）。`core/views/index.vue:266-268`
- *      的注释与 `@newlifex/api-core` 的 `page.remove`（api.ts:324）都是既有佐证。
+ *      的注释与 `@newlifex/cube` 的 `page.remove`（api.ts:324）都是既有佐证。
  *   2. 分页参数由引擎自己带：`pageIndex`（1-based）+ `pageSize` 每次请求现取当前页码，
  *      不依赖调用方回传 —— 草案的 transport 把合并进来的分页参数丢了，
  *      表现是「翻页后请求仍是第 1 页」。
@@ -192,7 +192,7 @@ export function createCubeEngine(
   /**
    * 列表状态由引擎自持（不再经 `DataSet`）：
    * `dataKey='data'` / `totalCountKey='page.totalCount'` 是 Cube 分页回包的既有形状，
-   * 与 `@newlifex/api-core` 的 `PageResult` 对齐。
+   * 与 `@newlifex/cube` 的 `PageResult` 对齐。
    */
   const listRows = ref<Record<string, unknown>[]>([]);
   const totalRef = ref(0);

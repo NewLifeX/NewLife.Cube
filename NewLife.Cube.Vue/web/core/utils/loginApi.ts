@@ -2,7 +2,7 @@
  * 登录页 API 封装（兼容层）
  *
  * 本文件仅作为皮肤兼容壳：保留原有导出函数名与签名，供 LoginPage / ActivatePage /
- * ProfileSecurity 等业务页零改动调用；实际请求全部委托 @newlifex/api-core 的
+ * ProfileSecurity 等业务页零改动调用；实际请求全部委托 @newlifex/cube 的
  * user 认证 API（注册 / 发码 / 验证码 / 激活 / 验证联系方式等），不重复实现基础库已有功能。
  *
  * 基础库已下沉的能力（不再在此处实现）：
@@ -10,15 +10,15 @@
  * - 登录结果字段归一化（access_token / Token → accessToken）由 api-core 响应拦截器统一处理
  *   （LOGIN_RESULT_PATHS 含 /Auth/Login、/Auth/Register、/Auth/Refresh 等），皮肤无需重复归一化。
  *
- * 类型定义复用 @newlifex/api-core 的 LoginConfig、SiteConfig、LoginResult、ApiResponse 等。
+ * 类型定义复用 @newlifex/cube 的 LoginConfig、SiteConfig、LoginResult、ApiResponse 等。
  *
  * 注意：基础库的响应拦截器会在 code !== 0/200 时自动弹出错误提示并抛异常，
  * 业务调用方在 catch 中处理失败即可（无需自行弹错，避免重复提示）。
  */
 import { user, site } from './request';
-import type { ApiResponse, LoginConfig, LoginResult, RegisterModel, SiteConfig, VerifyStatus } from '@newlifex/api-core';
+import type { ApiResponse, LoginConfig, LoginResult, RegisterModel, SiteConfig, VerifyStatus } from '@newlifex/cube';
 
-// ── API 函数（全部委托 @newlifex/api-core 的 user 认证 API） ─────────
+// ── API 函数（全部委托 @newlifex/cube 的 user 认证 API） ─────────
 
 /**
  * 获取登录配置
@@ -51,7 +51,7 @@ export async function fetchSiteConfig(tenant?: string): Promise<ApiResponse<Site
 /**
  * 密码登录
  *
- * @deprecated 通用登录逻辑已下沉到 @newlifex/api-core（user.loginWithPassword，皮肤共用），
+ * @deprecated 通用登录逻辑已下沉到 @newlifex/cube（user.loginWithPassword，皮肤共用），
  * 本函数仅保留骨架兼容旧调用方式，勿再在核心逻辑处使用。新代码请直接调
  * cubeApi.user.loginWithPassword(username, password, { captchaId, captchaCode, remember })。
  *

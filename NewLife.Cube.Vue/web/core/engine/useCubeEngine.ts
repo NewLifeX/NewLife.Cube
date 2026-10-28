@@ -60,7 +60,7 @@ interface CubeApiSurface {
 }
 
 /**
- * 构造默认依赖：元数据 / 详情 / 批量删除 / 导入走 `cubeApi.page`（`@newlifex/api-core` 统一实现），
+ * 构造默认依赖：元数据 / 详情 / 批量删除 / 导入走 `cubeApi.page`（`@newlifex/cube` 统一实现），
  * 文件流与列表读写走 `request`。
  *
  * 两处解包口径（`docs/standards/api-contract.md`）：

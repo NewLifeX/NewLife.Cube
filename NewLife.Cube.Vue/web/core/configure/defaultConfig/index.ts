@@ -22,7 +22,7 @@ export const defaultConfig: CubeFrontConfig = {
         url: '/Cube/MenuTree',
       };
     },
-    // 字段映射对齐 @newlifex/api-core MenuItem（/Cube/MenuTree 返回结构，camelCase）
+    // 字段映射对齐 @newlifex/cube MenuItem（/Cube/MenuTree 返回结构，camelCase）
     isMenuTree: true,
     dataKey: 'data',
     idField: 'id',

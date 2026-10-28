@@ -1,6 +1,6 @@
-import { getMenuPermission as resolveMenuPermission } from '@newlifex/page-utils';
+import { getMenuPermission as resolveMenuPermission } from '@newlifex/cube';
 import { Injectable, signal, computed } from '@angular/core';
-import type { UserInfo, MenuItem } from '@newlifex/api-core';
+import type { UserInfo, MenuItem } from '@newlifex/cube';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })

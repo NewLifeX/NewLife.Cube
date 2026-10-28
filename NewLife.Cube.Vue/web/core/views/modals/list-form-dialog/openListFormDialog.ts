@@ -32,7 +32,7 @@ import request from '@newlifex/cube-vue/core/utils/request';
 // cubeApi 是 useCubeApi 的默认导出（内部已在配置层完成实例化与错误处理挂载）
 import cubeApi from '@newlifex/cube-vue/core/composables/useCubeApi';
 // ApiError = 后端返回 code != 0 的业务错误（api-core 已统一提示），用于区分网络/HTTP 错误
-import { ApiError } from '@newlifex/api-core';
+import { ApiError } from '@newlifex/cube';
 import { ElMessage } from 'element-plus';
 import i18n from '../../../i18n';
 import ListFormDialog from './ListFormDialog.vue';

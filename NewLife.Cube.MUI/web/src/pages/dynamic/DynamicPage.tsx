@@ -7,9 +7,9 @@ import {
   TableHead, TableRow, TablePagination, TextField, Toolbar, Tooltip, Typography, Alert,
 } from '@mui/material';
 import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon, ArrowDropDown } from '@mui/icons-material';
-import { Auth, type DataField } from '@newlifex/api-core';
-import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
-import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
+import { Auth, type DataField } from '@newlifex/cube';
+import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/cube';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';

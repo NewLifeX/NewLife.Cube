@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
-import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
+import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/cube';
 import api from '@/api';
-import type { MenuItem as CubeMenuItem } from '@newlifex/api-core';
+import type { MenuItem as CubeMenuItem } from '@newlifex/cube';
 
 export default function Layout() {
   const navigate = useNavigate();

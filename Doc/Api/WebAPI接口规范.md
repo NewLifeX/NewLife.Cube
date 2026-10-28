@@ -249,7 +249,7 @@ HTTP 403  { "code": 403, "message": "用户 admin 访问资源 [Student/Delete] 
 
 ## 36.10 页面元数据（meta）
 
-`GET /api/{area}/{controller}/meta`（登录即可；公开页需在子类重写并标注 `[AllowAnonymous]`）。响应为**视图自描述**：`list / form / add / detail / search` 各自直接输出字段数组，消费端零合并；`@newlifex/api-core` 的 `getPage` 会展开为 `setting + list/addForm/editForm/detail/search + toolbar`，各皮肤调用方式不变。
+`GET /api/{area}/{controller}/meta`（登录即可；公开页需在子类重写并标注 `[AllowAnonymous]`）。响应为**视图自描述**：`list / form / add / detail / search` 各自直接输出字段数组，消费端零合并；`@newlifex/cube` 的 `getPage` 会展开为 `setting + list/addForm/editForm/detail/search + toolbar`，各皮肤调用方式不变。
 
 ```json
 {

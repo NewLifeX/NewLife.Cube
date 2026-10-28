@@ -28,8 +28,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { DataField } from '@newlifex/api-core';
-import { resolveWidget } from '@newlifex/field-mapping';
+import type { DataField } from '@newlifex/cube';
+import { resolveWidget } from '@newlifex/cube';
 
 const props = defineProps<{ field: DataField; modelValue: any }>();
 const emit = defineEmits<{ 'update:modelValue': [v: any] }>();

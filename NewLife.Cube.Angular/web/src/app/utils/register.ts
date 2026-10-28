@@ -3,12 +3,12 @@
  *
  * 逻辑复制自 `NewLife.Cube.Vuetify/web/src/utils/register.ts`（SKIN-7a）与
  * `NewLife.Cube.MUI/web/src/utils/register.ts`（SKIN-7b），与 UI 框架无关。
- * 抽取评估：该文件可以平移到 `@newlifex/auth-logic`，但共享包以 dist 产物对外发布且 dist
+ * 抽取评估：该文件可以平移到 `@newlifex/cube`，但共享包以 dist 产物对外发布且 dist
  * 不入库，抽取会同时改动共享包与 Vuetify/MUI 的引用/测试链路，超出本次 Angular 单皮肤范围，
  * 因此先按皮肤内复制处理，待后续统一迁移（见 `Doc/UI设计/皮肤现状审计.md`）。
  */
 
-import type { LoginConfig, RegisterModel } from '@newlifex/api-core';
+import type { LoginConfig, RegisterModel } from '@newlifex/cube';
 
 type RegisterAbility = NonNullable<LoginConfig['register']>;
 type SecurityConfig = NonNullable<LoginConfig['security']>;
@@ -44,7 +44,7 @@ export interface RegisterConfig {
   security?: SecurityConfig;
 }
 
-/** 注册请求载荷。在 @newlifex/api-core 的 RegisterModel 基础上补充图片验证码 */
+/** 注册请求载荷。在 @newlifex/cube 的 RegisterModel 基础上补充图片验证码 */
 export interface RegisterPayload extends RegisterModel {
   captchaId?: string;
   captchaCode?: string;

@@ -15,7 +15,7 @@
     type WidgetLayoutMap,
     type WorkbenchData,
     type WorkbenchWidgetView,
-  } from '@newlifex/page-logic';
+  } from '@newlifex/cube';
   import { getApi } from '$lib/api';
   import { siteTitle } from '$lib/stores/app';
   import { displayName } from '$lib/stores/user';

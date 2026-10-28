@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import ElementPlus from 'element-plus';
 import LoginForm from '../pages/LoginForm.vue';
 import i18n from '../i18n';
-import type { LoginConfig } from '@newlifex/api-core';
+import type { LoginConfig } from '@newlifex/cube';
 
 /** 错误文案跟随 locale，断言用词条拼期望值 */
 const ruleError = (rule: string): string => i18n.global.t('register.passwordRule', { rule });

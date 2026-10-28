@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import api from '@/api';
-import type { AuthCategory, LoginConfig } from '@newlifex/api-core';
+import type { AuthCategory, LoginConfig } from '@newlifex/cube';
 
 export default function Register() {
   const navigate = useNavigate();

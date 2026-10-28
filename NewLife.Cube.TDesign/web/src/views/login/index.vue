@@ -119,7 +119,7 @@ import { UserIcon, LockOnIcon } from 'tdesign-icons-vue-next';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import { api } from '@/api';
-import type { LoginConfig } from '@newlifex/api-core';
+import type { LoginConfig } from '@newlifex/cube';
 
 const appStore = useAppStore();
 const userStore = useUserStore();

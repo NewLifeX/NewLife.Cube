@@ -23,7 +23,7 @@ const { fakeApi } = vi.hoisted(() => {
 vi.mock('@/api', () => ({ default: fakeApi, api: fakeApi }));
 
 import { useUserStore } from '@/stores/user';
-import type { MenuItem } from '@newlifex/api-core';
+import type { MenuItem } from '@newlifex/cube';
 
 const menus: MenuItem[] = [
   {

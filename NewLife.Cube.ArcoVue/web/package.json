@@ -14,11 +14,7 @@
     "vue-router": "^4.5.0",
     "pinia": "^3.0.0",
     "@arco-design/web-vue": "^2.56.0",
-    "@newlifex/api-core": "workspace:*",
-    "@newlifex/field-mapping": "workspace:*",
-    "@newlifex/page-utils": "workspace:*",
-    "@newlifex/auth-logic": "workspace:*",
-    "@newlifex/page-logic": "workspace:*",
+    "@newlifex/cube": "workspace:*",
     "echarts": "^5.6.0"
   },
   "devDependencies": {

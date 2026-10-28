@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import { resolveWidget } from '@newlifex/field-mapping';
+import { resolveWidget } from '@newlifex/cube';
 const props = defineProps();
 const emit = defineEmits();
 const wt = computed(() => resolveWidget(props.field).widget);

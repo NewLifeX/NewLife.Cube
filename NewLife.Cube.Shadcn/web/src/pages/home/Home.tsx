@@ -16,7 +16,7 @@ import {
   type WidgetLayoutMap,
   type WorkbenchData,
   type WorkbenchWidgetView,
-} from '@newlifex/page-logic';
+} from '@newlifex/cube';
 import api from '@/api';
 
 /** 个人信息卡行标签，顺序与共享视图模型一致 */

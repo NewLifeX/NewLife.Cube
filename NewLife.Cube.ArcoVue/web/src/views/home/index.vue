@@ -170,7 +170,7 @@ import {
   type WidgetLayoutMap,
   type WorkbenchData,
   type WorkbenchWidgetView,
-} from '@newlifex/page-logic';
+} from '@newlifex/cube';
 import api from '@/api';
 
 const router = useRouter();

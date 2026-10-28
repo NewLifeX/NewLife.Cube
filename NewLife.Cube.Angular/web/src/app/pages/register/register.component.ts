@@ -10,8 +10,8 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
-import type { LoginConfig } from '@newlifex/api-core';
-import { AuthLogic } from '@newlifex/auth-logic';
+import type { LoginConfig } from '@newlifex/cube';
+import { AuthLogic } from '@newlifex/cube';
 import { ApiService } from '../../services/api.service';
 import { UserService } from '../../services/user.service';
 import {

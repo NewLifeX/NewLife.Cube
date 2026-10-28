@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { OAuthProvider } from '@newlifex/api-core';
+import type { OAuthProvider } from '@newlifex/cube';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 

@@ -83,12 +83,12 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/page-logic';
+import { closeAllTabs, closeTab, createTab, openTab, shouldAutoCollapseSidebar, type TabItem } from '@newlifex/cube';
 import { ViewListIcon, SunnyIcon, MoonIcon } from 'tdesign-icons-vue-next';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import { api } from '@/api';
-import type { MenuItem } from '@newlifex/api-core';
+import type { MenuItem } from '@newlifex/cube';
 
 const appStore = useAppStore();
 const userStore = useUserStore();

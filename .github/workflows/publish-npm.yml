@@ -34,7 +34,7 @@ jobs:
       run: pnpm install --frozen-lockfile
 
     - name: Test
-      run: pnpm -r --filter @newlifex/api-core --filter @newlifex/field-mapping test
+      run: pnpm -r --filter @newlifex/cube test
 
     - name: Compute dist-tag
       id: npm-tag

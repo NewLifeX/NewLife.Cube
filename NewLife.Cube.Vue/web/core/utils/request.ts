@@ -1,7 +1,7 @@
 /**
  * HTTP请求工具
  *
- * 底层复用 @newlifex/api-core 的 createCubeApi（内部 createApiClient），非 UI 的请求逻辑（host 拼接、
+ * 底层复用 @newlifex/cube 的 createCubeApi（内部 createApiClient），非 UI 的请求逻辑（host 拼接、
  * /api 前缀补全、Token 头注入、附加请求头、withCredentials、content-type 透传、traceId、204 处理、
  * 错误分类归一化、响应钩子 responseInterceptor）已全部迁移至 api-core，所有皮肤共享。
  *
@@ -19,7 +19,7 @@
  * 对外导出（request / cubeAxios / client / user / menu / page / config / tokenManager / toReLogin）
  * 保持兼容，业务文件无需改动。useCubeApi 复用本实例，不再单独创建 createCubeApi。
  */
-import { createCubeApi, type TokenStorage, type ResponseErrorInfo } from '@newlifex/api-core';
+import { createCubeApi, type TokenStorage, type ResponseErrorInfo } from '@newlifex/cube';
 import { getCurrentLanguage } from '../i18n';
 import type { AxiosInstance, AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
@@ -193,7 +193,7 @@ function showErrorNotification(info: ResponseErrorInfo) {
 let fieldErrorShown = false;
 const cubeConfig = getConfig();
 
-// 创建统一的魔方 API 客户端（底层来自 @newlifex/api-core 的 createCubeApi）
+// 创建统一的魔方 API 客户端（底层来自 @newlifex/cube 的 createCubeApi）
 // 内部派生两个客户端：entityClient(=client) 走 baseURL(API_HOST)；serviceClient(去掉 /api 前缀) 供 user/menu/config 使用。
 // unwrapResponse:false：createRequest 封装(page/user/menu/config)返回统一业务体 ApiResponse，调用方只需访问 res.data。
 // cube-vue 仅以回调接线 UI 行为（弹窗 / 401 跳转）与配置（附加头 / 请求钩子 / 响应钩子），其余下沉至 api-core。

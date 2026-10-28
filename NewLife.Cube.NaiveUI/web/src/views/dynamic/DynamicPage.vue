@@ -106,9 +106,9 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, markRaw, h, watch, type Ref } from 'vue';
 import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type DataTableCreateSummary, type FormInst, type PaginationProps, type UploadCustomRequestOptions } from 'naive-ui';
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
-import { Auth, type DataField } from '@newlifex/api-core';
-import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/field-mapping';
-import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
+import { Auth, type DataField } from '@newlifex/cube';
+import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/cube';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';

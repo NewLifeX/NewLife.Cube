@@ -11,11 +11,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "@newlifex/api-core": "workspace:*",
-    "@newlifex/field-mapping": "workspace:*",
-    "@newlifex/page-utils": "workspace:*",
-    "@newlifex/auth-logic": "workspace:*",
-    "@newlifex/page-logic": "workspace:*",
+    "@newlifex/cube": "workspace:*",
     "echarts": "^5.6.0"
   },
   "devDependencies": {

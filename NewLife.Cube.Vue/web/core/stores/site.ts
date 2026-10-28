@@ -6,7 +6,7 @@
  */
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import type { SiteConfig } from '@newlifex/api-core';
+import type { SiteConfig } from '@newlifex/cube';
 import { site } from '../utils/request';
 
 export const useSiteStore = defineStore('site', () => {

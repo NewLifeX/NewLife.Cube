@@ -31,7 +31,7 @@ pnpm build
 ```
 web/
 ├── src/
-│   ├── api/          # API 调用层（复用 @newlifex/api-core）
+│   ├── api/          # API 调用层（复用 @newlifex/cube）
 │   ├── components/   # 组件
 │   ├── layouts/      # 布局组件
 │   ├── plugins/      # Vuetify 插件配置

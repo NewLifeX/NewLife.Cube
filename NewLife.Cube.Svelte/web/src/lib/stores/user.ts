@@ -1,7 +1,7 @@
 import { writable, derived, get } from 'svelte/store';
 import { getApi } from '$lib/api';
-import type { MenuItem } from '@newlifex/api-core';
-import { getMenuPermission as resolveMenuPermission } from '@newlifex/page-utils';
+import type { MenuItem } from '@newlifex/cube';
+import { getMenuPermission as resolveMenuPermission } from '@newlifex/cube';
 
 interface UserInfo {
   displayName?: string;

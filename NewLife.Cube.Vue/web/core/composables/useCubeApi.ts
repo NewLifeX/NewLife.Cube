@@ -17,11 +17,11 @@
  * ```
  */
 import { client, user, menu, page, config, tokenManager } from '../utils/request';
-import type { ApiResponse, PageParams } from '@newlifex/api-core';
+import type { ApiResponse, PageParams } from '@newlifex/cube';
 import type { AxiosResponse } from 'axios';
 
 // ── 全局 API 客户端实例 ──────────────────────────────────────────────
-// 复用 request.ts 的统一 createCubeApi 实例（底层 @newlifex/api-core），此处不再单独创建第二份实例。
+// 复用 request.ts 的统一 createCubeApi 实例（底层 @newlifex/cube），此处不再单独创建第二份实例。
 // createCubeApi 初始化（baseURL、tokenStorage、附加头、401 跳转、onFieldError/onBusinessError/onResponseError）
 // 已全部合并到 request.ts；本文件仅组装为 cubeApi 对外形态 { client, tokenManager, user, menu, page, config }，
 // 避免两份 client 与 tokenStorage 造成解包语义与 Token 分叉。

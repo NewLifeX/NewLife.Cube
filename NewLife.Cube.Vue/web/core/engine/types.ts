@@ -15,7 +15,7 @@
  *      `[HttpDelete("/api/[area]/[controller]")]`（L24，id 走 QueryString）。
  *      草案 §4.2 的 `PUT {type}/{id}`、`DELETE {type}/{id}` 命中不到路由，返回 405
  *      （`core/views/index.vue:266-268` 的注释就是当初踩坑后写的，
- *      `@newlifex/api-core` 的 `page.remove` 亦为 `params:{id}`，见 api.ts:324-325）。
+ *      `@newlifex/cube` 的 `page.remove` 亦为 `params:{id}`，见 api.ts:324-325）。
  *   2. 必填判定不新增 `FieldMeta.required`：`core/utils/fieldControl.ts:214-218`
  *      的 `isRequiredField()` 已是全项目唯一口径（由 nullable/primaryKey/控件类型推导），
  *      引擎不再往共享契约里加同义字段，避免出现两套「必填」。

@@ -147,9 +147,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, markRaw } from 'vue';
 import { useRoute } from 'vue-router';
-import { Auth, type DataField } from '@newlifex/api-core';
-import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/field-mapping';
-import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/page-logic';
+import { Auth, type DataField } from '@newlifex/cube';
+import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';

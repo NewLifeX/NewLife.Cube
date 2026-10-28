@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import type { UserInfo, MenuItem } from '@newlifex/api-core';
-import { getMenuPermission } from '@newlifex/page-utils';
+import type { UserInfo, MenuItem } from '@newlifex/cube';
+import { getMenuPermission } from '@newlifex/cube';
 import api from '@/api';
 
 export const useUserStore = defineStore('user', {
