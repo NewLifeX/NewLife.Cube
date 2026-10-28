@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using NewLife.Common;
+using NewLife.Cube.Services;
 using NewLife.Reflection;
 using XCode.Membership;
 
@@ -63,6 +64,8 @@ public class SiteConfigModel
     private readonly CubeSetting _set;
     private readonly SysConfig _sys;
     private readonly ITenant _tenant;
+    private readonly TenantSiteOptions _options;
+    private readonly String _language;
 
     /// <summary>实例化站点配置</summary>
     /// <param name="tenant">当前租户，为 null 时返回站点级配置</param>
@@ -71,16 +74,18 @@ public class SiteConfigModel
         _set = CubeSetting.Current;
         _sys = SysConfig.Current;
         _tenant = tenant;
+        _options = TenantSiteOptionsStore.Load(tenant?.Code);
 
         Language = BuildLanguage();
+        _language = Language.Current;
         Features = new(_set);
     }
 
-    /// <summary>站点名称。租户级名称优先，回退到全局显示名</summary>
-    public String Name => !_tenant?.Name.IsNullOrEmpty() == true ? _tenant.Name : _sys.DisplayName;
+    /// <summary>站点名称。按语言的租户覆盖优先，其次租户名称，最后回退全局显示名</summary>
+    public String Name => Pick(_options?.Names) ?? (!_tenant?.Name.IsNullOrEmpty() == true ? _tenant.Name : _sys.DisplayName);
 
-    /// <summary>站点 Logo。租户级 Logo 优先，回退到登录页 Logo 配置；留空时由前端使用内置默认</summary>
-    public String Logo => !_tenant?.Logo.IsNullOrEmpty() == true ? _tenant.Logo : _set.LoginLogo;
+    /// <summary>站点 Logo。按语言的租户覆盖优先，其次租户 Logo，最后回退登录页 Logo 配置；留空时由前端使用内置默认</summary>
+    public String Logo => Pick(_options?.Logos) ?? (!_tenant?.Logo.IsNullOrEmpty() == true ? _tenant.Logo : _set.LoginLogo);
 
     /// <summary>登录页背景图。留空时由前端使用内置默认</summary>
     public String LoginBackground => _set.LoginBackground;
@@ -116,20 +121,49 @@ public class SiteConfigModel
     /// <summary>功能开关</summary>
     public SiteFeaturesModel Features { get; }
 
-    private static SiteLanguageModel BuildLanguage()
+    /// <summary>按当前语言取租户配置的品牌覆盖值</summary>
+    /// <param name="map">语言到取值的映射。键按受支持语言归一化后比对，如 zh-Hans 与 zh-CN 视为同一语言</param>
+    /// <returns>命中的值；未配置返回 null</returns>
+    private String Pick(IDictionary<String, String> map)
     {
-        var siteDefault = CubeLocalization.NormalizeCulture(NewLife.Setting.Current?.Language) ?? "en-US";
+        if (map == null || map.Count == 0 || _language.IsNullOrEmpty()) return null;
+
+        foreach (var item in map)
+        {
+            if (item.Value.IsNullOrEmpty()) continue;
+            if (CubeLocalization.NormalizeCulture(item.Key).EqualIgnoreCase(_language)) return item.Value;
+        }
+
+        return null;
+    }
+
+    private SiteLanguageModel BuildLanguage()
+    {
+        // 合并优先级：租户默认语言 → 站点默认语言 → 英文
+        var siteDefault = CubeLocalization.NormalizeCulture(_options?.DefaultLanguage)
+            ?? CubeLocalization.NormalizeCulture(NewLife.Setting.Current?.Language)
+            ?? "en-US";
         var current = CubeLocalization.NormalizeCulture(CultureInfo.CurrentUICulture.Name) ?? siteDefault;
+
+        // 租户允许语言白名单：为空不限制；当前语言不在白名单内时回退租户默认语言
+        var allowed = _options?.Languages
+            ?.Select(e => CubeLocalization.NormalizeCulture(e))
+            .Where(e => !e.IsNullOrEmpty())
+            .ToArray() ?? [];
+        if (allowed.Length > 0 && !allowed.Contains(current, StringComparer.OrdinalIgnoreCase)) current = siteDefault;
 
         // 站点配置了受支持的界面语言即全站锁定，前端据此隐藏语言切换入口
         var locked = CubeLocalization.GetForcedLanguage() != null;
+
+        var options = Localization.GetLanguages();
+        if (allowed.Length > 0) options = options.Where(e => allowed.Contains(e.Name, StringComparer.OrdinalIgnoreCase)).ToList();
 
         return new SiteLanguageModel
         {
             Current = current,
             Default = siteDefault,
             Locked = locked,
-            Options = Localization.GetLanguages(),
+            Options = options,
         };
     }
 }
