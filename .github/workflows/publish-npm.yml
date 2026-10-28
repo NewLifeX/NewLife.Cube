@@ -27,11 +27,15 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
         registry-url: https://registry.npmjs.org
 
     - name: Install
       run: pnpm install --frozen-lockfile
+
+    # 单测直接 require ../dist/index.cjs，dist 不入库，必须显式构建，不依赖 pretest 隐式行为
+    - name: Build
+      run: pnpm -r --filter @newlifex/cube build
 
     - name: Test
       run: pnpm -r --filter @newlifex/cube test
@@ -49,7 +53,13 @@ jobs:
       if: steps.npm-tag.outputs.dist-tag == 'beta'
       run: node scripts/set-beta-version.mjs
 
-    # 发 npmjs.org：@newlifex scope 需 NPM_TOKEN（仓库 Secrets）
+    # 先验证 token：无效时在这里明确报错，而不是被打包发布步骤的长日志掩盖
+    - name: Verify npm token
+      run: npm whoami --registry https://registry.npmjs.org
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    # 发 npmjs.org：@newlifex scope 需 NPM_TOKEN（组织 Secrets，需 Automation 类型以跳过 2FA）
     - name: Publish to npmjs.org
       run: pnpm -r --filter './packages/*' publish --no-git-checks --tag ${{ steps.npm-tag.outputs.dist-tag }}
       env:
