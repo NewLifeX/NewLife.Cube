@@ -36,6 +36,16 @@ const routes: ConfigRoute[] = [
     component: () => import('../pages/ActivatePage.vue'),
   },
   {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    meta: {
+      ...titleOf('forgot.title'),
+      auth: false,
+      layout: false,
+    },
+    component: () => import('../pages/ForgotPasswordPage.vue'),
+  },
+  {
     path: '/profile/security',
     name: 'profile-security',
     meta: {

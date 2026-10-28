@@ -119,6 +119,11 @@
             @submit="handleLogin"
           />
 
+          <!-- 忘记密码入口：走验证码重置，仅当站点开启短信/邮件通道时展示 -->
+          <div v-if="showPasswordForm && showForgotPassword" class="forgot-row">
+            <a class="forgot-link" data-cy="forgot-entry" @click="goForgotPassword">{{ t('login.forgotPassword') }}</a>
+          </div>
+
           <!-- 未激活账号：重发激活入口 -->
           <div v-if="notActivated" class="resend-row">
             <span class="resend-text">{{ t('login.notActivated') }}</span>
@@ -240,6 +245,16 @@ const notActivatedAccount = ref<string>('');
 // ── 计算属性 ────────────────────────────────────────────────────────
 /** 是否显示密码表单 */
 const showPasswordForm = computed<boolean>(() => loginConfig.value?.login?.password === true);
+
+/**
+ * 是否展示「忘记密码」入口
+ *
+ * 重置密码依赖通知通道，与后端约定一致：短信或邮件通道至少有一个开启才展示；
+ * 两个都关时即便展示也无法收码，反而增加无效入口。
+ */
+const showForgotPassword = computed<boolean>(
+  () => loginConfig.value?.login?.sms === true || loginConfig.value?.login?.mail === true,
+);
 
 /** 是否允许注册（显示注册 Tab） */
 const showRegister = computed<boolean>(() => loginConfig.value?.register?.enabled === true);
@@ -481,6 +496,15 @@ async function resendPending(): Promise<void> {
   if (targets.length === 0) return;
   const account = targets[0];
   await doResend(detectChannel(account), account);
+}
+
+/**
+ * 前往忘记密码页（验证码重置，走匿名接口）
+ *
+ * 重置成功后由找回密码页自行跳回登录页，这里不额外记录状态。
+ */
+function goForgotPassword(): void {
+  router.push('/forgot-password');
 }
 
 /** 调用重发激活接口 */
@@ -1112,6 +1136,23 @@ onUnmounted(() => {
 }
 
 .resend-link:hover {
+  text-decoration: underline;
+}
+
+/* ==================== 忘记密码 ==================== */
+.forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.forgot-link {
+  color: var(--el-color-primary);
+  cursor: pointer;
+}
+
+.forgot-link:hover {
   text-decoration: underline;
 }
 

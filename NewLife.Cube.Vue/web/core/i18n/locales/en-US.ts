@@ -1447,4 +1447,18 @@ export default {
   'workbench.hiddenCards': 'Hidden cards',
   'workbench.noHiddenCards': 'No hidden cards',
   'workbench.dragHint': 'Drag cards to reorder; restore hidden cards below',
+
+  // Forgot password
+  'login.forgotPassword': 'Forgot password?',
+  'forgot.title': 'Reset password',
+  'forgot.hint': 'Enter your mobile number or email and we will send you a verification code.',
+  'forgot.username': 'Mobile or email',
+  'forgot.usernamePlaceholder': 'Enter your mobile number or email',
+  'forgot.channelSms': 'SMS',
+  'forgot.channelMail': 'Email',
+  'forgot.enterUsername': 'Please enter your mobile number or email',
+  'forgot.submit': 'Reset password',
+  'forgot.success': 'Password reset. Please sign in with the new password.',
+  'forgot.failed': 'Failed to reset the password, please try again later',
+  'forgot.prev': 'Previous step',
 };

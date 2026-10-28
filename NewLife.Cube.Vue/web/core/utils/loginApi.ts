@@ -16,7 +16,7 @@
  * 业务调用方在 catch 中处理失败即可（无需自行弹错，避免重复提示）。
  */
 import { user, site } from './request';
-import type { ApiResponse, LoginConfig, LoginResult, RegisterModel, SiteConfig, VerifyStatus } from '@newlifex/cube';
+import type { ApiResponse, LoginConfig, LoginResult, RegisterModel, ResetPasswordModel, SiteConfig, VerifyStatus } from '@newlifex/cube';
 
 // ── API 函数（全部委托 @newlifex/cube 的 user 认证 API） ─────────
 
@@ -165,4 +165,17 @@ export async function verifyContact(
   code: string,
 ): Promise<ApiResponse<VerifyStatus>> {
   return user.verifyContact({ channel, account, code });
+}
+
+/**
+ * 通过验证码重置密码（忘记密码流程）
+ *
+ * 委托 user.resetPassword 调用 POST /Auth/ResetPassword；新密码由 @newlifex/cube
+ * 先 GET /Auth/Challenge 取公钥加密后提交（服务端禁止明文密码时必需），Challenge 不可达时降级明文。
+ *
+ * @param data 重置参数（手机号或邮箱 / 验证码 / 新密码 / 确认密码）
+ * @returns 重置结果，code 为 0 表示成功
+ */
+export async function resetPassword(data: ResetPasswordModel): Promise<ApiResponse<boolean>> {
+  return user.resetPassword(data);
 }

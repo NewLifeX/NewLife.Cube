@@ -1307,4 +1307,18 @@ export default {
   'common.noData': 'Keine Daten',
   'security.enterPassword': 'Neues Passwort eingeben',
   'security.changePasswordHint': 'Ändern Sie das Passwort für die Anmeldung',
+
+  // Passwort vergessen
+  'login.forgotPassword': 'Passwort vergessen?',
+  'forgot.title': 'Passwort zurücksetzen',
+  'forgot.hint': 'Geben Sie Ihre Mobilnummer oder E-Mail ein, wir senden Ihnen einen Bestätigungscode.',
+  'forgot.username': 'Mobilnummer oder E-Mail',
+  'forgot.usernamePlaceholder': 'Mobilnummer oder E-Mail eingeben',
+  'forgot.channelSms': 'SMS',
+  'forgot.channelMail': 'E-Mail',
+  'forgot.enterUsername': 'Bitte geben Sie Ihre Mobilnummer oder E-Mail ein',
+  'forgot.submit': 'Passwort zurücksetzen',
+  'forgot.success': 'Passwort zurückgesetzt. Bitte melden Sie sich mit dem neuen Passwort an.',
+  'forgot.failed': 'Zurücksetzen des Passworts fehlgeschlagen, bitte später erneut versuchen',
+  'forgot.prev': 'Zurück',
 };

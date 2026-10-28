@@ -1426,4 +1426,18 @@ export default {
   'workbench.hiddenCards': '隱藏的卡片',
   'workbench.noHiddenCards': '沒有被隱藏的卡片',
   'workbench.dragHint': '拖曳卡片可調整順序，隱藏的卡片可從下方恢復',
+
+  // 找回密碼
+  'login.forgotPassword': '忘記密碼？',
+  'forgot.title': '找回密碼',
+  'forgot.hint': '輸入手機號或電子郵件，我們將傳送驗證碼用於重設密碼',
+  'forgot.username': '手機號或電子郵件',
+  'forgot.usernamePlaceholder': '請輸入手機號或電子郵件',
+  'forgot.channelSms': '簡訊',
+  'forgot.channelMail': '電子郵件',
+  'forgot.enterUsername': '請輸入手機號或電子郵件',
+  'forgot.submit': '重設密碼',
+  'forgot.success': '密碼已重設，請使用新密碼登入',
+  'forgot.failed': '重設密碼失敗，請稍後重試',
+  'forgot.prev': '上一步',
 };

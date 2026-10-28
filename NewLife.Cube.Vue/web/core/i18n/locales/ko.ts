@@ -1428,4 +1428,18 @@ export default {
   'common.noData': '데이터 없음',
   'security.enterPassword': '새 비밀번호를 입력하세요',
   'security.changePasswordHint': '로그인에 사용하는 비밀번호를 변경합니다',
+
+  // 비밀번호 찾기
+  'login.forgotPassword': '비밀번호를 잊으셨나요?',
+  'forgot.title': '비밀번호 재설정',
+  'forgot.hint': '휴대폰 번호 또는 이메일을 입력하면 인증 코드를 보내 드립니다.',
+  'forgot.username': '휴대폰 번호 또는 이메일',
+  'forgot.usernamePlaceholder': '휴대폰 번호 또는 이메일을 입력하세요',
+  'forgot.channelSms': 'SMS',
+  'forgot.channelMail': '이메일',
+  'forgot.enterUsername': '휴대폰 번호 또는 이메일을 입력하세요',
+  'forgot.submit': '비밀번호 재설정',
+  'forgot.success': '비밀번호가 재설정되었습니다. 새 비밀번호로 로그인하세요.',
+  'forgot.failed': '비밀번호 재설정에 실패했습니다. 잠시 후 다시 시도하세요',
+  'forgot.prev': '이전 단계',
 };

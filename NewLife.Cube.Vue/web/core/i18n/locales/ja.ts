@@ -1307,4 +1307,18 @@ export default {
   'common.noData': 'データなし',
   'security.enterPassword': '新しいパスワードを入力してください',
   'security.changePasswordHint': 'サインインに使用するパスワードを変更します',
+
+  // パスワードをお忘れの場合
+  'login.forgotPassword': 'パスワードをお忘れですか？',
+  'forgot.title': 'パスワードの再設定',
+  'forgot.hint': '携帯番号またはメールアドレスを入力してください。確認コードをお送りします。',
+  'forgot.username': '携帯番号またはメールアドレス',
+  'forgot.usernamePlaceholder': '携帯番号またはメールアドレスを入力してください',
+  'forgot.channelSms': 'SMS',
+  'forgot.channelMail': 'メール',
+  'forgot.enterUsername': '携帯番号またはメールアドレスを入力してください',
+  'forgot.submit': 'パスワードを再設定',
+  'forgot.success': 'パスワードを再設定しました。新しいパスワードでサインインしてください。',
+  'forgot.failed': 'パスワードの再設定に失敗しました。しばらくしてから再試行してください',
+  'forgot.prev': '前のステップ',
 };

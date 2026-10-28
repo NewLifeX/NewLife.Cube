@@ -1307,4 +1307,18 @@ export default {
   'common.noData': 'Нет данных',
   'security.enterPassword': 'Введите новый пароль',
   'security.changePasswordHint': 'Измените пароль для входа',
+
+  // Забыли пароль
+  'login.forgotPassword': 'Забыли пароль?',
+  'forgot.title': 'Сброс пароля',
+  'forgot.hint': 'Укажите номер телефона или адрес электронной почты, мы отправим код подтверждения.',
+  'forgot.username': 'Телефон или электронная почта',
+  'forgot.usernamePlaceholder': 'Введите номер телефона или электронную почту',
+  'forgot.channelSms': 'SMS',
+  'forgot.channelMail': 'Электронная почта',
+  'forgot.enterUsername': 'Введите номер телефона или электронную почту',
+  'forgot.submit': 'Сбросить пароль',
+  'forgot.success': 'Пароль сброшен. Войдите с новым паролем.',
+  'forgot.failed': 'Не удалось сбросить пароль, повторите попытку позже',
+  'forgot.prev': 'Предыдущий шаг',
 };

@@ -1470,4 +1470,18 @@ export default {
   'common.noData': 'Sin datos',
   'security.enterPassword': 'Introduzca la nueva contraseña',
   'security.changePasswordHint': 'Cambie la contraseña usada para iniciar sesión',
+
+  // Contraseña olvidada
+  'login.forgotPassword': '¿Olvidó su contraseña?',
+  'forgot.title': 'Restablecer contraseña',
+  'forgot.hint': 'Introduzca su número de móvil o correo electrónico y le enviaremos un código de verificación.',
+  'forgot.username': 'Móvil o correo',
+  'forgot.usernamePlaceholder': 'Introduzca su móvil o correo electrónico',
+  'forgot.channelSms': 'SMS',
+  'forgot.channelMail': 'Correo',
+  'forgot.enterUsername': 'Introduzca su número de móvil o correo electrónico',
+  'forgot.submit': 'Restablecer contraseña',
+  'forgot.success': 'Contraseña restablecida. Inicie sesión con la nueva contraseña.',
+  'forgot.failed': 'No se pudo restablecer la contraseña, inténtelo más tarde',
+  'forgot.prev': 'Paso anterior',
 };

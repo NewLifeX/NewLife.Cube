@@ -1307,4 +1307,18 @@ export default {
   'common.noData': 'Sem dados',
   'security.enterPassword': 'Digite a nova senha',
   'security.changePasswordHint': 'Altere a senha usada para entrar',
+
+  // Senha esquecida
+  'login.forgotPassword': 'Esqueceu a senha?',
+  'forgot.title': 'Redefinir senha',
+  'forgot.hint': 'Informe seu celular ou e-mail e enviaremos um código de verificação.',
+  'forgot.username': 'Celular ou e-mail',
+  'forgot.usernamePlaceholder': 'Informe seu celular ou e-mail',
+  'forgot.channelSms': 'SMS',
+  'forgot.channelMail': 'E-mail',
+  'forgot.enterUsername': 'Informe seu celular ou e-mail',
+  'forgot.submit': 'Redefinir senha',
+  'forgot.success': 'Senha redefinida. Entre com a nova senha.',
+  'forgot.failed': 'Falha ao redefinir a senha, tente novamente mais tarde',
+  'forgot.prev': 'Etapa anterior',
 };

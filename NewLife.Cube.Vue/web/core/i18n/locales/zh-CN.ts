@@ -1438,4 +1438,18 @@ export default {
   'workbench.hiddenCards': '隐藏的卡片',
   'workbench.noHiddenCards': '没有被隐藏的卡片',
   'workbench.dragHint': '拖动卡片可调整顺序，隐藏的卡片可从下方恢复',
+
+  // 找回密码
+  'login.forgotPassword': '忘记密码？',
+  'forgot.title': '找回密码',
+  'forgot.hint': '输入手机号或邮箱，我们将发送验证码用于重置密码',
+  'forgot.username': '手机号或邮箱',
+  'forgot.usernamePlaceholder': '请输入手机号或邮箱',
+  'forgot.channelSms': '短信',
+  'forgot.channelMail': '邮箱',
+  'forgot.enterUsername': '请输入手机号或邮箱',
+  'forgot.submit': '重置密码',
+  'forgot.success': '密码已重置，请使用新密码登录',
+  'forgot.failed': '重置密码失败，请稍后重试',
+  'forgot.prev': '上一步',
 };

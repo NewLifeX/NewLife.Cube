@@ -1460,4 +1460,18 @@ export default {
   'common.noData': 'Aucune donnée',
   'security.enterPassword': 'Saisissez le nouveau mot de passe',
   'security.changePasswordHint': 'Modifier le mot de passe utilisé pour se connecter',
+
+  // Mot de passe oublié
+  'login.forgotPassword': 'Mot de passe oublié ?',
+  'forgot.title': 'Réinitialiser le mot de passe',
+  'forgot.hint': 'Saisissez votre numéro de mobile ou votre e-mail, nous vous enverrons un code de vérification.',
+  'forgot.username': 'Mobile ou e-mail',
+  'forgot.usernamePlaceholder': 'Saisissez votre numéro de mobile ou votre e-mail',
+  'forgot.channelSms': 'SMS',
+  'forgot.channelMail': 'E-mail',
+  'forgot.enterUsername': 'Veuillez saisir votre numéro de mobile ou votre e-mail',
+  'forgot.submit': 'Réinitialiser le mot de passe',
+  'forgot.success': 'Mot de passe réinitialisé. Connectez-vous avec le nouveau mot de passe.',
+  'forgot.failed': 'Échec de la réinitialisation du mot de passe, veuillez réessayer plus tard',
+  'forgot.prev': 'Étape précédente',
 };

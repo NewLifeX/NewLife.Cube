@@ -1382,4 +1382,18 @@ export default {
   'common.noData': 'لا توجد بيانات',
   'security.enterPassword': 'أدخل كلمة المرور الجديدة',
   'security.changePasswordHint': 'تغيير كلمة المرور المستخدمة لتسجيل الدخول',
+
+  // نسيت كلمة المرور
+  'login.forgotPassword': 'هل نسيت كلمة المرور؟',
+  'forgot.title': 'إعادة تعيين كلمة المرور',
+  'forgot.hint': 'أدخل رقم الجوال أو البريد الإلكتروني وسنرسل لك رمز التحقق.',
+  'forgot.username': 'رقم الجوال أو البريد الإلكتروني',
+  'forgot.usernamePlaceholder': 'أدخل رقم الجوال أو البريد الإلكتروني',
+  'forgot.channelSms': 'رسالة نصية',
+  'forgot.channelMail': 'البريد الإلكتروني',
+  'forgot.enterUsername': 'يرجى إدخال رقم الجوال أو البريد الإلكتروني',
+  'forgot.submit': 'إعادة تعيين كلمة المرور',
+  'forgot.success': 'تمت إعادة تعيين كلمة المرور. يرجى تسجيل الدخول بكلمة المرور الجديدة.',
+  'forgot.failed': 'فشلت إعادة تعيين كلمة المرور، يرجى المحاولة لاحقًا',
+  'forgot.prev': 'الخطوة السابقة',
 };
