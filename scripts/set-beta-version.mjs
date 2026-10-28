@@ -1,7 +1,7 @@
 // 发布脚本：为 packages/ 下所有 @newlifex/* 公共包设置 -beta.<时间戳> 预发布版本
 // 用法：node scripts/set-beta-version.mjs
-// 说明：5 个公共包锁步发布，统一去掉已有预发布后缀后追加 -beta.YYYYMMDDHHMMSS，
-//       供 CI 在 master 分支触发时调用（publish-npm.yml）。
+// 说明：扫描 packages/* 逐个处理（当前只有单包 @newlifex/cube），统一去掉已有预发布后缀后
+//       追加 -beta.YYYYMMDDHHMMSS，供 CI 在 master 分支触发时调用（publish-npm.yml）。
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
