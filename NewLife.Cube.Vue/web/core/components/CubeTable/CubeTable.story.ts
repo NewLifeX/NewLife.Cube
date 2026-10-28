@@ -40,6 +40,11 @@ const META: CubePageMeta = {
     { name: 'Count', displayName: '数量', typeName: 'Int32' },
     { name: 'Enable', displayName: '启用', typeName: 'Boolean' },
     { name: 'Created', displayName: '创建时间', typeName: 'DateTime' },
+    // 关键字查询项必须是显式声明：引擎在元数据就绪后按 `kind: 'keyword'` 决定要不要发 q，
+    // 不声明则首查后 keywordEnabled 变为 false，回车与「搜索」按钮都静默丢掉关键字。
+    // 它不进 searchFields（normalizePageMeta 单独抽走），不会在搜索栏多出一个条件格；
+    // 放末尾是因为 OneFilter 变体用 searchLimit 截断长度来造「只有一个条件」。
+    { name: 'Q', kind: 'keyword', displayName: '关键字', typeName: 'String' },
   ],
   addForm: [
     { name: 'Name', displayName: '名称', typeName: 'String', length: 50, nullable: false },

@@ -57,10 +57,12 @@ test('默认态-完整列表页五段结构', async ({ page }) => {
   // 值集列翻成标签（不是码值）、布尔列是开关、日期列已格式化、空值给占位
   const firstRow = table(page).locator('.el-table__row').first();
   await expect(firstRow).toContainText('注塑机 A');
-  // Status=1 → 「启用」必须出现在这一行（只写 toContainText 会被同名列头混过去）
-  await expect(firstRow).toContainText('启用');
-  await expect(table(page).locator('.el-table__row').nth(1)).toContainText('禁用');
-  await expect(table(page).locator('.el-table__row').nth(2)).toContainText('草稿');
+  // Status=1 → 值集标签 Enabled 必须出现在这一行（只写 toContainText 会被同名列头混过去）
+  // 断言取英文标签：ct/mocks/lovStore.ts 的值集桩是 Draft/Enabled/Disabled，
+  // 显示标签而非码值 '1' 才证明「码值→标签」这条翻译链路真的走了。
+  await expect(firstRow).toContainText('Enabled');
+  await expect(table(page).locator('.el-table__row').nth(1)).toContainText('Disabled');
+  await expect(table(page).locator('.el-table__row').nth(2)).toContainText('Draft');
   await expect(firstRow).toContainText('2026-10-19 08:30:00');
   await expect(firstRow).toContainText('2026-10-18');
   await expect(firstRow).toContainText('—');
@@ -75,7 +77,7 @@ test('默认态-完整列表页五段结构', async ({ page }) => {
 test('只读态-写入口全部消失', async ({ page }) => {
   await openStory(page, 'CubeTable/ReadOnly');
 
-  await expect(table(page).getByRole('button', { name: '添加' })).toHaveCount(0);
+  await expect(table(page).getByRole('button', { name: '新增' })).toHaveCount(0);
   await expect(table(page).getByRole('button', { name: /批量删除/ })).toHaveCount(0);
   await expect(table(page).getByRole('button', { name: '导入' })).toHaveCount(0);
   await expect(table(page).locator('.el-table__row').first().getByRole('button', { name: '删除' })).toHaveCount(0);
@@ -89,7 +91,7 @@ test('空态-暂无数据且操作栏仍在', async ({ page }) => {
 
   await expect(table(page)).toContainText('暂无数据');
   await expect(table(page).locator('.el-table__row')).toHaveCount(0);
-  await expect(table(page).getByRole('button', { name: '添加' })).toBeVisible();
+  await expect(table(page).getByRole('button', { name: '新增' })).toBeVisible();
   await expect(table(page)).toHaveScreenshot();
 });
 

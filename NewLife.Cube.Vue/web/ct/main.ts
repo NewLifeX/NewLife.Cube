@@ -1,7 +1,13 @@
 import { createApp, h, reactive, type App } from 'vue';
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
+import i18n, { setLanguage } from '../core/i18n';
 import { stories } from './stories';
+
+// 组件内部用 `useI18n()` 取文案（如 CubeTable 的按钮与表头），未安装会在 setup 抛
+// 「Need to install with `app.use` function」→ 整页白屏、CT 全部超时。
+// 语言固定中文：基线是按中文文案生成的，跟随浏览器语言会让同一份基线在英文环境变红。
+setLanguage('zh-CN');
 
 const registry = new Map<string, { component: unknown; props?: Record<string, unknown> }>();
 for (const s of stories) registry.set(s.id, s);
@@ -41,6 +47,7 @@ function unmountCurrent() {
     render: () => h(s.component as never, currentProps as never),
   });
   currentApp.use(ElementPlus);
+  currentApp.use(i18n);
   currentApp.mount(mountEl);
 };
 
