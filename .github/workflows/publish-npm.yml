@@ -59,7 +59,7 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-    # 发 npmjs.org：@newlifex scope 需 NPM_TOKEN（组织 Secrets，需 Automation 类型以跳过 2FA）
+    # 发 npmjs.org：@newlifex scope 需 NPM_TOKEN（granular token 且勾选 Bypass 2FA，否则 403）
     - name: Publish to npmjs.org
       run: pnpm -r --filter './packages/*' publish --no-git-checks --tag ${{ steps.npm-tag.outputs.dist-tag }}
       env:
