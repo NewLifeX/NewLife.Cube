@@ -78,11 +78,12 @@ internal static class PageMetaBuilder
             var masterField = list.FirstOrDefault(e => String.Equals(e.TryGetValue("name", out var n) ? n as String : null, masterTime.Name, StringComparison.OrdinalIgnoreCase));
             if (masterField != null && masterField.TryGetValue("displayName", out var dn)) displayName = dn as String;
 
-            // MasterTime 可能是雪花主键（DataScale=time），此时主键显示名（如“编号”）不适合当时间区间标题，
-            // 改用创建时间/更新时间的显示名，避免搜索区出现“编号”这样的日期标签
+            // MasterTime 可能是雪花主键（DataScale=time）：主键显示名（如“编号”）不适合当区间标题，
+            // 且时间过滤实际由实体的创建/更新时间承担（控制器从 dtStart 换算雪花区间），
+            // 因此借用该时间字段的显示名，并把它从搜索项里摘掉，避免搜索区出现两个含义相同的时间区间
             if (masterTime.Type != typeof(DateTime))
             {
-                if (TryGetDisplayName(list, "CreateTime", out var timeName) || TryGetDisplayName(list, "UpdateTime", out timeName))
+                if (TryRemoveTimeField(list, "CreateTime", out var timeName) || TryRemoveTimeField(list, "UpdateTime", out timeName))
                     displayName = timeName;
                 else
                 {
@@ -109,22 +110,22 @@ internal static class PageMetaBuilder
         return list;
     }
 
-    /// <summary>从字段输出列表中读取指定字段的显示名</summary>
-    /// <param name="list">已构建的字段输出列表</param>
+    /// <summary>从字段输出列表中摘除指定字段，并取出其显示名</summary>
+    /// <param name="list">已构建的字段输出列表（就地修改）</param>
     /// <param name="name">字段名</param>
-    /// <param name="displayName">显示名</param>
-    /// <returns>是否取到非空显示名</returns>
-    private static Boolean TryGetDisplayName(List<IDictionary<String, Object>> list, String name, out String displayName)
+    /// <param name="displayName">被摘除字段的显示名，可能为空</param>
+    /// <returns>是否找到并摘除</returns>
+    private static Boolean TryRemoveTimeField(List<IDictionary<String, Object>> list, String name, out String displayName)
     {
         displayName = null;
-        var field = list.FirstOrDefault(e => String.Equals(e.TryGetValue("name", out var n) ? n as String : null, name, StringComparison.OrdinalIgnoreCase));
-        if (field != null && field.TryGetValue("displayName", out var dn) && dn is String str && !str.IsNullOrEmpty())
-        {
-            displayName = str;
-            return true;
-        }
 
-        return false;
+        var index = list.FindIndex(e => String.Equals(e.TryGetValue("name", out var n) ? n as String : null, name, StringComparison.OrdinalIgnoreCase));
+        if (index < 0) return false;
+
+        if (list[index].TryGetValue("displayName", out var dn) && dn is String str) displayName = str;
+        list.RemoveAt(index);
+
+        return true;
     }
 
     /// <summary>构建实体标识块</summary>

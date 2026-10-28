@@ -63,6 +63,34 @@ public class PageMetaBuilderTests
         Assert.DoesNotContain(items, e => e.TryGetValue("name", out var name) && (String)name == master.Name);
     }
 
+    [Fact(DisplayName = "主时间字段为雪花主键时借用创建时间显示名并去掉重复区间项")]
+    public void BuildSearch_SnowflakeMasterTime_RemovesDuplicatedTimeField()
+    {
+        var factory = XCode.Membership.Log.Meta.Factory;
+        var master = factory.MasterTime;
+        // 日志表主键是雪花编号（DataScale=time），类型不是 DateTime，才会走借用时间字段的分支
+        Assert.NotNull(master);
+        Assert.NotEqual(typeof(DateTime), master!.Type);
+
+        var search = new List<DataField>
+        {
+            Search("Q", "关键字"),
+            Search("CreateTime", "创建时间"),
+            Search("Category", "类别"),
+        };
+
+        var items = PageMetaBuilder.BuildSearch(search, factory);
+
+        // 创建时间自身的查询项被摘掉，搜索区只留一个时间区间，标题借用创建时间
+        Assert.DoesNotContain(items, e => e.TryGetValue("name", out var name) && (String)name == "CreateTime");
+        var ranges = items.Where(e => e.TryGetValue("kind", out var kind) && (String)kind == "range").ToList();
+        var range = Assert.Single(ranges);
+        Assert.Equal("dtStart", range["name"]);
+        Assert.Equal("dtEnd", range["end"]);
+        Assert.Equal(master.Name, range["field"]);
+        Assert.Equal("创建时间", range["displayName"]);
+    }
+
     [Fact(DisplayName = "不传实体工厂时不生成时间区间 对应 EnableTimeRange=false")]
     public void BuildSearch_DisableTimeRange_OmitsRange()
     {
