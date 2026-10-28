@@ -261,7 +261,7 @@ test('行为-行内编辑先取详情再回显', async ({ page }) => {
   await expect(dialog.locator('input').first()).not.toHaveValue('');
 });
 
-test('行为-操作列超过 4 个动作收进更多', async ({ page }) => {
+test('行为-操作列超过 3 个动作收进更多', async ({ page }) => {
   await openStory(page, 'CubeTable/RowActions');
 
   const firstRow = table(page).locator('.el-table__row').first();
@@ -283,6 +283,80 @@ test('行为-操作列超过 4 个动作收进更多', async ({ page }) => {
   await expect(popper).toHaveScreenshot();
   await menu.filter({ hasText: '复制' }).click();
   await expect(page.locator('.el-dialog')).toContainText('新增');
+});
+
+/** 操作列单元格的横向溢出量：>0 就是被 el-table 的 `.cell` 省略号吃掉了 */
+async function actionCellOverflow(page: import('@playwright/test').Page, row = 0) {
+  const cell = table(page).locator('.el-table__row').nth(row).locator('td').last().locator('.cell');
+  return cell.evaluate((el) => el.scrollWidth - el.clientWidth);
+}
+
+/** 「操作」列表头宽度（fixed="right" 后仍是同一个表头行） */
+async function actionColumnWidth(page: import('@playwright/test').Page) {
+  return table(page)
+    .locator('thead th')
+    .last()
+    .evaluate((el) => Math.round(el.getBoundingClientRect().width));
+}
+
+test('插槽动作-文字+图标：前 3 个直显，第 4 个进更多且回调可用', async ({ page }) => {
+  await openStory(page, 'CubeTable/RowActionsSlotTextIcon');
+
+  const firstRow = table(page).locator('.el-table__row').first();
+  await expect(firstRow.getByRole('button', { name: '查看' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '编辑' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '复制' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '更多' })).toBeVisible();
+  // 第 4 个不铺在行里
+  await expect(firstRow.getByRole('button', { name: '归档' })).toHaveCount(0);
+  // 实测宽度定列宽：内容不被裁成省略号
+  expect(await actionCellOverflow(page)).toBeLessThanOrEqual(0);
+  await expect(table(page)).toHaveScreenshot();
+
+  await firstRow.getByRole('button', { name: '更多' }).click();
+  const popper = page.locator('.el-dropdown__popper:visible');
+  await expect(popper.getByRole('button', { name: '归档' })).toBeVisible();
+  await expect(popper).toHaveScreenshot();
+  // 下拉项是原按钮本体：点它仍走页面自己的回调（借新增弹窗作证）
+  await popper.getByRole('button', { name: '归档' }).click();
+  await expect(page.locator('.el-dialog')).toContainText('新增');
+});
+
+test('插槽动作-纯文字：显式 actionWidth 150 只作下限，实测更宽则撑开', async ({ page }) => {
+  await openStory(page, 'CubeTable/RowActionsSlotText');
+
+  // 复刻「规则配置」页：页面写死 150，列宽必须被撑到装得下 3 个文字按钮 + 「更多」
+  const width = await actionColumnWidth(page);
+  expect(width).toBeGreaterThan(150);
+  expect(await actionCellOverflow(page)).toBeLessThanOrEqual(0);
+
+  const firstRow = table(page).locator('.el-table__row').first();
+  await expect(firstRow.getByRole('button', { name: '编辑' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '停用' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '删除' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '更多' })).toBeVisible();
+  await expect(table(page)).toHaveScreenshot();
+
+  await firstRow.getByRole('button', { name: '更多' }).click();
+  await expect(page.locator('.el-dropdown__popper:visible').getByRole('button', { name: '归档' })).toBeVisible();
+});
+
+test('插槽动作-纯图标：无文字也能量宽，5 个收 2 个', async ({ page }) => {
+  await openStory(page, 'CubeTable/RowActionsSlotIcon');
+
+  const firstRow = table(page).locator('.el-table__row').first();
+  await expect(firstRow.getByRole('button', { name: '查看' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '编辑' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '复制' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '更多' })).toBeVisible();
+  expect(await actionCellOverflow(page)).toBeLessThanOrEqual(0);
+  await expect(table(page)).toHaveScreenshot();
+
+  await firstRow.getByRole('button', { name: '更多' }).click();
+  const popper = page.locator('.el-dropdown__popper:visible');
+  await expect(popper.locator('.el-dropdown-menu__item')).toHaveCount(2);
+  await expect(popper.getByRole('button', { name: '归档' })).toBeVisible();
+  await expect(popper.getByRole('button', { name: '停用' })).toBeVisible();
 });
 
 test('滚动模型-表格填满宿主视口且只有表体内滚，展开筛选自适应', async ({ page }) => {

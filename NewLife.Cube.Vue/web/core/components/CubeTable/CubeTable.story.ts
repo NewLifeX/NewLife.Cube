@@ -9,8 +9,9 @@
  * 深度代理会把 ctx 里的 `Ref` 自动解包（`ctx.list` 变成数组本体），
  * 组件里 `ctx.list.value` 就读成 undefined —— 表现是「一截图就白屏」。
  */
-import { markRaw } from 'vue';
-import { Cpu, VideoPlay, Warning } from '@element-plus/icons-vue';
+import { defineComponent, h, markRaw, type VNodeChild } from 'vue';
+import { ElButton } from 'element-plus';
+import { Cpu, DocumentCopy, Edit, FolderAdd, SwitchButton, VideoPlay, View, Warning } from '@element-plus/icons-vue';
 import CubeTable from './CubeTable.vue';
 import { createCubeEngine } from '../../engine/createCubeEngine';
 import type { CubeEngineContext, CubeEngineDeps, CubePageMeta } from '../../engine/types';
@@ -227,6 +228,63 @@ const ROW_EXTRA_ACTIONS: CubeRowAction[] = [
   { key: 'archive', label: '归档', onClick: () => undefined },
 ];
 
+/**
+ * 插槽动作变体的薄包装：gallery 只把 props 交给 story 组件，插槽只能在 `h()` 里挂。
+ *
+ * 三种按钮形态（文字+图标 / 纯文字 / 纯图标）共用这一个工厂：差异全在 `actions` 里，
+ * 由页面自己写按钮——正是 `#row-actions` 在业务页里的真实用法。
+ *
+ * @param actions 插槽体：返回本行的操作按钮（4 个以上即触发「更多」收起）
+ * @param grid 表格区开关（纯文字变体用它复刻规则配置页的 `actionWidth: 150`）
+ */
+function slotActionsStory(
+  actions: (ctx: CubeEngineContext) => VNodeChild[],
+  grid?: Record<string, unknown>,
+) {
+  return defineComponent({
+    name: 'CubeTableSlotActionsStory',
+    props: { context: { type: Object, required: true } },
+    setup(props) {
+      return () =>
+        h(CubeTable as never, { context: props.context, grid } as never, {
+          'row-actions': () => actions(props.context as CubeEngineContext),
+        });
+    },
+  });
+}
+
+/** 形态一：文字 + 图标 —— 第 4 个「归档」进「更多」，点它会真的打开新增弹窗 */
+const slotTextIcon = slotActionsStory((ctx) => [
+  h(ElButton, { link: true, type: 'primary', icon: View }, () => '查看'),
+  h(ElButton, { link: true, type: 'primary', icon: Edit }, () => '编辑'),
+  h(ElButton, { link: true, type: 'primary', icon: DocumentCopy }, () => '复制'),
+  h(ElButton, { link: true, type: 'danger', icon: FolderAdd, onClick: () => ctx.openCreate() }, () => '归档'),
+]);
+
+/**
+ * 形态二：纯文字（复刻「规则配置」页）：按钮只写文字，页面又显式给了 `actionWidth: 150`。
+ * 150 对 3 个文字按钮 + 「更多」明显不够，正是要靠实测把列撑开的那条路径。
+ */
+const slotText = slotActionsStory(
+  (ctx) => [
+    h(ElButton, { link: true, type: 'primary' }, () => '编辑'),
+    h(ElButton, { link: true, type: 'primary' }, () => '停用'),
+    h(ElButton, { link: true, type: 'primary' }, () => '删除'),
+    h(ElButton, { link: true, type: 'danger', onClick: () => ctx.openCreate() }, () => '归档'),
+  ],
+  // 与规则配置页同参：不勾选、显式 150；150 现在只作下限
+  { selection: false, actionWidth: 150 },
+);
+
+/** 形态三：纯图标 —— 按钮无文字，宽度只能量；5 个动作有 2 个进「更多」 */
+const slotIcon = slotActionsStory((ctx) => [
+  h(ElButton, { link: true, type: 'primary', icon: View, title: '查看', 'aria-label': '查看' }),
+  h(ElButton, { link: true, type: 'primary', icon: Edit, title: '编辑', 'aria-label': '编辑' }),
+  h(ElButton, { link: true, type: 'primary', icon: DocumentCopy, title: '复制', 'aria-label': '复制' }),
+  h(ElButton, { link: true, type: 'danger', icon: FolderAdd, title: '归档', 'aria-label': '归档', onClick: () => ctx.openCreate() }),
+  h(ElButton, { link: true, type: 'warning', icon: SwitchButton, title: '停用', 'aria-label': '停用' }),
+]);
+
 export const stories = [
   // 测试状态：操作栏 + 一体式搜索栏（收起）+ 主面板（表格 + 分页）；3 行数据、6 个搜索条件但未展开
   { id: 'CubeTable/Default', component: CubeTable, props: { context: engine() } },
@@ -249,6 +307,15 @@ export const stories = [
   // 测试状态：新增弹窗已打开 —— 字段控件与必填星号、底部「取消/保存」
   { id: 'CubeTable/FormDialog', component: CubeTable, props: { context: engine({ openDialog: true }) } },
 
-  // 测试状态：操作列 5 个动作 —— 列宽按 4 单元封顶，后 2 个收进「更多」下拉
+  // 测试状态：操作列 5 个动作 —— 列宽按 3 直显 + 1 个「更多」封顶，后 2 个收进下拉
   { id: 'CubeTable/RowActions', component: CubeTable, props: { context: rowActionsCtx, extraRowActions: ROW_EXTRA_ACTIONS } },
+
+  // 测试状态：外部插槽动作 · 文字+图标 —— 4 个动作，前 3 个直显、「归档」进「更多」
+  { id: 'CubeTable/RowActionsSlotTextIcon', component: slotTextIcon, props: { context: engine() } },
+
+  // 测试状态：外部插槽动作 · 纯文字（规则配置页同款）—— 显式 actionWidth 150，实测更宽则撑开
+  { id: 'CubeTable/RowActionsSlotText', component: slotText, props: { context: engine() } },
+
+  // 测试状态：外部插槽动作 · 纯图标 —— 5 个动作，后 2 个进「更多」
+  { id: 'CubeTable/RowActionsSlotIcon', component: slotIcon, props: { context: engine() } },
 ];

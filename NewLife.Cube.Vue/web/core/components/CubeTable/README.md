@@ -114,7 +114,7 @@ const ctx = useCubeEngine({
 | `table` | `{ ctx, data, loading }` | `CubeTableGrid` | 整块换掉表格（卡片视图等） |
 | `default` | `{ visibleColumns, resetColumnVisibility }` | 按元数据生成列 | **业务自写列**，写了它生成列即让位 |
 | `col-<字段名>` | `{ row, column, value, index }` | 内置按控件渲染 | 单列单元格替换，如 `#col-Status` |
-| `row-actions` | `{ row, index, ctx }` | 查看 / 编辑 / 删除 | 操作列按钮整列替换（不参与自适应；要加动作用 `extraRowActions`） |
+| `row-actions` | `{ row, index, ctx }` | 查看 / 编辑 / 删除 | 操作列按钮整列替换；按钮形态随意（文字 / 文字+图标 / 纯图标），列宽按实测按钮宽度自适应，超过 3 个收进「更多」 |
 | `empty` | — | 「暂无数据」/失败原因 | 空态替换 |
 | `footer` | `{ ctx, total, page, pageSize }` | `CubeTablePagination` | 整块换掉分页栏 |
 | `footer-extra` | `{ ctx }` | 无 | 在「共 N 条」旁追加（如已选条数） |
@@ -143,12 +143,19 @@ const ctx = useCubeEngine({
 
 ## 操作列：宽度自适应与「更多」收起
 
-操作列宽度按单行动作数自适应（`layoutRowActions`），旧固定 168px 会把「删除」裁成只剩图标：
+操作列宽度按单行动作自适应，旧固定 168px 会把「删除」裁成只剩图标：
 
-- ≤4 个动作全部直接显示，列宽逐个增长（3 个即默认列表的 查看/编辑/删除 → 208px）；
-- **超过 4 个**只露前 3 个，第 4 个位置是「更多」下拉，后加的动作一律收进下拉、不再撑宽列（按 4 单元封顶）；
+- **≤3 个**动作全部直接显示，列宽逐个增长（3 个即默认列表的 查看/编辑/删除 → 208px）；
+- **超过 3 个**只露前 3 个，第 4 个位置是「更多」下拉，后加的动作一律收进下拉、不再撑宽列；
 - 列宽取当前页各行动作数的最大值；行级 `visible(row)` 藏了动作的那一行不足 4 个时直接全显，不硬塞空的「更多」；
-- 页面显式传 `grid.actionWidth` 则覆盖自适应。
+- 页面显式传 `grid.actionWidth` **只作下限**：实测更宽就以实测为准，写小了也不会把按钮裁成省略号。
+
+两种动作来源走同一套收起规则，区别只在宽度怎么来：
+
+| 动作来源 | 宽度 |
+| --- | --- |
+| `extraRowActions`（数据驱动） | `layoutRowActions` 按个数估算（`24 + n×56 + (n-1)×8`） |
+| `#row-actions` 插槽（页面自写按钮） | `layoutMeasuredActions` 按实测：隐藏探针渲染首行按钮与「更多」，量出真实宽度再定列宽 |
 
 业务页加行操作用数据驱动的 `extraRowActions`（而不是整列替换），后续新加的动作自动参与上述布局：
 
@@ -159,6 +166,31 @@ const ctx = useCubeEngine({
     visible: (row) => row.Enable === true },
 ]" />
 ```
+
+### 插槽动作（页面自写按钮）
+
+按钮是页面自己写的，框架不知道它多宽（`text` 与 `link` 按钮、带不带图标、图标+文字都不一样），
+所以在 `el-table` 之后渲染一层**隐藏探针**（`.ctg-probe`，`visibility:hidden` 仍参与布局）：
+
+1. 用**动作最多的那一行**调插槽函数（行级 `v-if` 很常见，只量首行会把其他行的按钮裁掉），把每个操作节点摊平成「一个节点 = 一个操作」（`slotActions`）；
+2. 量出每个按钮的真实宽度，有第 4 个动作时连「更多」样例一起量；
+3. `layoutMeasuredActions(宽度数组, 更多宽度)` 得出列宽（`padding 24 + frame 4 + 按钮宽度和 + gap×间隔`）；
+4. **量不到宽度**（jsdom、首帧未上屏、列表为空）时回落到按个数估算，列宽不会退化成 0。
+
+页面代码不用改：`actionWidth` 写小了会被实测撑开，`el-button` 默认的 `margin-left` 也已在
+`.ctg-actions` 里清掉（间距统一由 `gap: 8px` 提供，否则两个按钮的间距会比预期多 12px、刚好顶爆列宽）。
+
+```vue
+<CubeTable :grid="{ actionWidth: 150 }">
+  <template #row-actions="{ row }">
+    <el-button text type="primary" @click="edit(row)">编辑</el-button>
+    <el-button text @click="toggle(row)">{{ row.Status ? '停用' : '启用' }}</el-button>
+  </template>
+</CubeTable>
+```
+
+画廊里三种形态各有变体可对照：`CubeTable/RowActionsSlotTextIcon`、
+`CubeTable/RowActionsSlotText`（规则配置页同款，显式 150）、`CubeTable/RowActionsSlotIcon`。
 
 ---
 
@@ -273,13 +305,16 @@ const ctx = useCubeEngine({
 
 ## CT（组件视觉回归）
 
-`CubeTable.story.ts` 定义 8 个变体，`CubeTable.ct.spec.ts` 共 16 条用例（9 条带像素基线 + 7 条纯行为）：
+`CubeTable.story.ts` 定义 11 个变体，`CubeTable.ct.spec.ts` 共 19 条用例（12 条带像素基线、共 15 张，7 条纯行为）：
 `Default`（五段结构 + 全控件形态一屏）、`ReadOnly`、`Empty`、`LoadFail`、`Metrics`（指标行）、
-`OneFilter`（只有一个条件时的搜索栏）、`FormDialog`、`RowActions`（操作列 5 个动作：前 3 + 「更多」，
-含展开下拉点选真实触发回调的行为断言）。
+`OneFilter`（只有一个条件时的搜索栏）、`FormDialog`、`RowActions`（内置动作 5 个：前 3 + 「更多」，
+含展开下拉点选真实触发回调的行为断言）、`RowActionsSlotTextIcon` / `RowActionsSlotText` /
+`RowActionsSlotIcon`（外部插槽的三种按钮形态：文字+图标 / 纯文字带 `actionWidth:150` / 纯图标，
+均断言列宽容得下、超过 3 个收「更多」、下拉项点选仍走原回调）。
 story 用内存版 `deps` 构造上下文，**不依赖后端**；基线目录 `*-snapshots/` 已在 `.gitignore` 内（各机自产）。
 
-首次生成基线用 `--update-snapshots=missing`（`pnpm test:ct:update <过滤词>` 会把过滤词当成 mode 参数报错）。
+首次生成基线用 `--update-snapshots=missing`（`pnpm test:ct:update <过滤词>` 会把过滤词当成 mode 参数报错）；
+不加 `=missing` 是**全量重写**模式，只在确认旧基线确实该整体更新时才用。
 
 为了能在 gallery 里跑起来，动过两个既有文件，都不改任何组件行为：
 
@@ -321,5 +356,5 @@ pnpm run test:ct          # 之后做像素比对
 | `__tests__/CubeTableColumnSetting.spec.ts` | 列清单、未记录视为显示、按记录取消勾选、set/reset 事件 |
 | `__tests__/CubeTablePagination.spec.ts` | 「共 N 条」与单位、`prev,pager,next,jumper` 布局、每页条数独立下拉、档位默认与覆盖 |
 | `__tests__/CubeTable.spec.ts` | 五段自上而下顺序、上下文三级解析优先级、区块开关、每个插槽的替换/追加边界、自写列转发、设置列持久化、失败就地说明、导出下载落地 |
-| `CubeTable.ct.spec.ts` + `CubeTable.story.ts` | 八个变体的像素基线与行为：勾选→批量删除带条数并弹确认、关键字回车走 `q`、重置回全量、设置列隐藏并落 localStorage、换每页条数回第 1 页、行内删除取消不动数据、编辑先取详情、操作列超 4 个收「更多」并点选触发、滚动模型（矮视口下验证页面不滚、分页在视口内、只有表体内滚、展开筛选面板变矮） |
+| `CubeTable.ct.spec.ts` + `CubeTable.story.ts` | 十一个变体的像素基线与行为：勾选→批量删除带条数并弹确认、关键字回车走 `q`、重置回全量、设置列隐藏并落 localStorage、换每页条数回第 1 页、行内删除取消不动数据、编辑先取详情、操作列超 3 个收「更多」并点选触发、插槽动作三种形态（文字+图标 / 纯文字 / 纯图标）的实测列宽与收起、滚动模型（矮视口下验证页面不滚、分页在视口内、只有表体内滚、展开筛选面板变矮） |
 
