@@ -100,6 +100,7 @@
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
     <Compile Include="..\NewLife.Cube\Common\ToolbarBuilder.cs" Link="Common\ToolbarBuilder.cs" />
     <Compile Include="..\NewLife.Cube\Attributes\ToolbarButtonAttribute.cs" Link="Attributes\ToolbarButtonAttribute.cs" />
+    <Compile Include="..\NewLife.Cube\Attributes\IdempotentAttribute.cs" Link="Attributes\IdempotentAttribute.cs" />
     <Compile Include="..\NewLife.Cube\ViewModels\ToolbarItem.cs" Link="ViewModels\ToolbarItem.cs" />
     <Compile Include="..\NewLife.Cube\ViewModels\ToolbarCollection.cs" Link="ViewModels\ToolbarCollection.cs" />
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController2.cs" Link="Common\ReadOnlyEntityController2.cs" />

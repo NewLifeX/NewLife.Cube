@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Collections;
+using NewLife.Cube.Attributes;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Models;
 using NewLife.Cube.ViewModels;
@@ -752,6 +753,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <returns>附件编号、文件路径、MIME 类型</returns>
     [HttpPost("/api/[area]/[controller]/attachments")]
     [EntityAuthorize(PermissionFlags.Insert, PermissionFlags.Update)]
+    [Idempotent]
     public virtual async Task<ActionResult> Attachments(IFormFile file, String id = null, String title = null)
     {
         if (!ValidateUploadFile(file, out var error))

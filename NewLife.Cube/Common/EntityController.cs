@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Attributes;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
@@ -406,6 +407,7 @@ public partial class EntityController<TEntity, TModel>
     [HttpPost("/api/[area]/[controller]/import")]
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("Import Excel/Csv/Json/Zip")]
+    [Idempotent]
     public virtual IActionResult Import(IFormFile file)
     {
         if (file == null || file.Length <= 0) throw new ArgumentNullException(nameof(file), L.T("No file was uploaded."));
