@@ -97,9 +97,9 @@
         <span>还没有账号？</span>
         <t-link theme="primary" @click="router.push('/register')">立即注册</t-link>
       </div>
-      <!-- 忘记密码 -->
-      <div class="forgot-link">
-        <t-link theme="primary" @click="router.push('/forgot-password')">...忘记密码？</t-link>
+      <!-- 忘记密码：重置密码依赖短信/邮件通道，两个通道都关时无意义，不展示入口 -->
+      <div v-if="loginConfig?.login?.sms || loginConfig?.login?.mail" class="forgot-link">
+        <t-link theme="primary" @click="router.push('/forgot-password')">忘记密码？</t-link>
       </div>
       <!-- 版权信息 -->
       <div v-if="appStore.siteConfig?.copyright || appStore.siteConfig?.registration" class="login-footer">

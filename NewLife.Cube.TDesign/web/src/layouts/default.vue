@@ -5,7 +5,7 @@
       <div style="height: 56px; display: flex; align-items: center; padding: 0 16px; font-weight: bold; font-size: 16px; color: var(--td-text-color-primary)">
         <span v-if="!appStore.collapsed">{{ appStore.siteTitle }}</span>
       </div>
-      <t-menu :collapsed="appStore.collapsed" :value="$route.path" @change="(v: string) => $router.push(v)" expandMutex>
+      <t-menu :collapsed="appStore.collapsed" :value="route.path" @change="(v: string) => router.push(v)" expandMutex>
         <template v-for="item in userStore.menus" :key="item.name">
           <t-submenu v-if="item.children?.length" :value="item.url || item.name" :title="item.displayName || item.name">
             <t-menu-item v-for="child in item.children" :key="child.name" :value="buildUrl(child)">
@@ -21,7 +21,7 @@
 
     <!-- Sidebar（窄屏抽屉） -->
     <t-drawer v-model:visible="mobileMenu" placement="left" size="232px" :footer="false" :header="appStore.siteTitle">
-      <t-menu :value="$route.path" @change="(v: string) => $router.push(v)" expandMutex>
+      <t-menu :value="route.path" @change="(v: string) => router.push(v)" expandMutex>
         <template v-for="item in userStore.menus" :key="item.name">
           <t-submenu v-if="item.children?.length" :value="item.url || item.name" :title="item.displayName || item.name">
             <t-menu-item v-for="child in item.children" :key="child.name" :value="buildUrl(child)">
@@ -44,7 +44,7 @@
 
         <t-breadcrumb style="margin-left: 12px">
           <t-breadcrumb-item to="/">首页</t-breadcrumb-item>
-          <t-breadcrumb-item v-if="$route.path !== '/'">{{ $route.path }}</t-breadcrumb-item>
+          <t-breadcrumb-item v-if="route.path !== '/'">{{ route.path }}</t-breadcrumb-item>
         </t-breadcrumb>
 
         <div style="flex: 1" />
