@@ -22,6 +22,13 @@
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    // @vue/tsconfig 基线把 lib 锁在 ES2020，而框架已在用 Array.prototype.at 等 ES2022 内置方法；
+    // 这里显式覆盖为 ES2022，与构建目标（vite build.target）保持一致，避免类型库落后于运行环境。
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "types": [
       "element-plus/global"
     ],

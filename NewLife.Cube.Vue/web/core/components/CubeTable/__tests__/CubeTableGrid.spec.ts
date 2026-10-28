@@ -320,6 +320,33 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     expect(wrapper.text()).not.toContain('编辑');
   });
 
+  it('应该让插槽动作也收起并撑开列宽 当插槽给 4 个按钮时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
+    const wrapper = await mountGrid(ctx, {
+      slots: { 'row-actions': '<button>甲</button><button>乙</button><button>丙</button><button>丁</button>' },
+    });
+    // 只看单元格里的动作（隐藏探针也会渲染全部 4 个，不能拿整棵树的文本断言）
+    const cell = wrapper.findAll('.ctg-actions')[0];
+    expect(cell.text()).toContain('甲');
+    expect(cell.text()).toContain('丙');
+    expect(cell.text()).toContain('更多');
+    expect(cell.text()).not.toContain('丁');
+    // jsdom 量不到宽度 → 回落到按个数估算（3 直显 + 1 个「更多」= 4 单元）
+    expect(actionWidthOf(wrapper)).toBe(272);
+  });
+
+  it('应该按动作最多的那一行量宽 当各行动作数不同时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }, { Name: 'b' }] });
+    const wrapper = await mountGrid(ctx, {
+      slots: {
+        // 首行只有「丁」，第二行才有 3 个：列宽要按第二行算，不能拿首行定死
+        'row-actions':
+          '<button v-if="row.Name === \'b\'">甲</button><button v-if="row.Name === \'b\'">乙</button><button v-if="row.Name === \'b\'">丙</button><button v-else>丁</button>',
+      },
+    });
+    expect(actionWidthOf(wrapper)).toBe(208);
+  });
+
   it('应该按动作文案自适应列宽 当未显式指定 actionWidth 时', async () => {
     // 内置三键（查看/编辑/删除）按中文文案估算出 220（旧固定 168 会把「删除」裁成只剩图标，
     // 而固定 56/单元又放不下英文的 Delete / 德文的 Löschen）
@@ -327,21 +354,24 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     expect(actionWidthOf(await mountGrid(ctx))).toBe(220);
   });
 
-  it('应该让页面显式列宽优先于自适应 当传入 actionWidth 时', async () => {
+  it('应该让页面显式列宽当作下限 当传入更宽的 actionWidth 时', async () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
     const wrapper = await mountGrid(ctx, { props: { actionWidth: 300 } });
     expect(actionWidthOf(wrapper)).toBe(300);
   });
 
-  it('应该把追加动作排在删除之后并撑宽列 当 extraRowActions 给 1 个时', async () => {
+  it('应该把追加动作排进「更多」并撑宽列 当内置三键再加 1 个动作时', async () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
     const extra = { key: 'dispatch', label: '派工', onClick: vi.fn() };
     const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
-    expect(wrapper.text()).toContain('派工');
+    // 4 个动作已超过直显上限：内置三键铺在行里，派工进「更多」
+    expect(wrapper.text()).not.toContain('派工');
+    expect(wrapper.text()).toContain('更多');
+    // 列宽按「3 个直显 + 更多」的文案估算：4 × 60 + 3 × 8 + 24 = 288
     expect(actionWidthOf(wrapper)).toBe(288);
   });
 
-  it('应该只露前 3 个加更多 当单行动作超过 4 个时', async () => {
+  it('应该只露前 3 个加更多 当单行动作超过 3 个时', async () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
     const dispatch = { key: 'dispatch', label: '派工', onClick: vi.fn() };
     const suspend = { key: 'suspend', label: '停用', onClick: vi.fn() };
@@ -363,16 +393,27 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }, { Name: 'b' }] });
     const extra = { key: 'dispatch', label: '派工', onClick: vi.fn(), visible: (row: Record<string, unknown>) => row.Name === 'a' };
     const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
-    // a 行有、b 行没有：两行合计只出现一次
-    expect(wrapper.text().match(/派工/g)?.length).toBe(1);
+    // a 行 4 个动作 → 有「更多」；b 行只剩内置 3 个 → 不硬塞空的「更多」
+    expect(wrapper.findAll('.ctg-more')).toHaveLength(1);
+    expect(wrapper.text()).not.toContain('派工');
   });
 
   it('应该给禁用行的追加动作置灰而不是隐藏 当 disabled 返回 true 时', async () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
-    const extra = { key: 'dispatch', label: '派工', onClick: vi.fn(), disabled: () => true };
+    // 条目文本带唯一后缀：EP 的 popper 是常驻 DOM 的（未展开也在），
+    // 用上一条用例的「派工」查会拿到上一份残留
+    const extra = { key: 'dispatch', label: '派工-禁用', onClick: vi.fn(), disabled: () => true };
     const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
-    const button = wrapper.findAll('button').find((b) => b.text().includes('派工'));
-    expect(button?.attributes('disabled')).toBeDefined();
+    // 收进「更多」后仍保留 disabled：展开下拉，条目要是置灰态而不是消失
+    const dropdown = wrapper.findComponent({ name: 'ElDropdown' });
+    dropdown.vm.handleOpen();
+    await nextTick();
+    await nextTick();
+    const items = Array.from(document.body.querySelectorAll('.el-dropdown-menu__item'));
+    const dispatch = items.find((el) => el.textContent?.includes('派工-禁用'));
+    expect(dispatch).toBeTruthy();
+    expect(dispatch!.classList.contains('is-disabled')).toBe(true);
+    dropdown.vm.handleClose();
   });
 
   it('应该让按字段名的插槽覆盖该列内置渲染 当业务页写了 col-Name 时', async () => {
