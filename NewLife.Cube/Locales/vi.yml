@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "Giới hạn kích thước tải lên (MB); 0 nghĩa là không giới hạn"
 "The file size must not exceed {0} MB.": "Kích thước tệp không được vượt quá {0} MB."
 "MFA required": "Cần MFA"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Mã trạng thái giao thức. Đặt 401/403/404/409/429/500 khi lỗi; mặc định tắt"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "Giới hạn tần suất theo IP cho đăng nhập, mã, tra cứu và trang; mặc định bật"

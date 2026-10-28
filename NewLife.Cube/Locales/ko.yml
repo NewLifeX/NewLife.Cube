@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "업로드 크기 제한(MB). 0은 무제한"
 "The file size must not exceed {0} MB.": "파일 크기는 {0} MB를 초과할 수 없습니다."
 "MFA required": "MFA가 필요합니다"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "프로토콜 상태 코드. 실패 시 401/403/404/409/429/500을 설정합니다. 기본값은 꺼짐"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "로그인, 코드, 조회, 사이트에 대한 IP별 속도 제한. 기본값은 켜짐"

@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "Limită de dimensiune la încărcare în MB; 0 înseamnă nelimitat"
 "The file size must not exceed {0} MB.": "Dimensiunea fișierului nu trebuie să depășească {0} MB."
 "MFA required": "MFA necesar"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Coduri de stare ale protocolului. Setează 401/403/404/409/429/500 la erori; dezactivat implicit"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "Limită pe IP pentru autentificare, cod, căutare și site; activată implicit"

@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "Opplastingsgrense i MB; 0 betyr ubegrenset"
 "The file size must not exceed {0} MB.": "Filstørrelsen må ikke overstige {0} MB."
 "MFA required": "MFA påkrevd"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protokollstatuskoder. Setter 401/403/404/409/429/500 ved feil; av som standard"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "Hastighetsgrense per IP for innlogging, kode, oppslag og nettsted; på som standard"

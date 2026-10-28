@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "Обмеження розміру завантаження в МБ; 0 означає без обмежень"
 "The file size must not exceed {0} MB.": "Розмір файлу не повинен перевищувати {0} МБ."
 "MFA required": "Потрібен MFA"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Коди стану протоколу. Встановлює 401/403/404/409/429/500 при помилках; вимкнено за замовчуванням"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "Обмеження на IP для входу, коду, пошуку та сайту; увімкнено за замовчуванням"

@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "Uploadlimiet in MB; 0 betekent onbeperkt"
 "The file size must not exceed {0} MB.": "De bestandsgrootte mag niet groter zijn dan {0} MB."
 "MFA required": "MFA vereist"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protocolstatuscodes. Zet 401/403/404/409/429/500 bij fouten; standaard uit"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "Snelheidslimiet per IP voor inloggen, code, opzoeken en site; standaard aan"

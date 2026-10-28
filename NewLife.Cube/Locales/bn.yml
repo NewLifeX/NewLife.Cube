@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "আপলোড আকার সীমা (MB); 0 মানে সীমাহীন"
 "The file size must not exceed {0} MB.": "ফাইলের আকার {0} MB এর বেশি হওয়া উচিত নয়।"
 "MFA required": "MFA প্রয়োজন"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "প্রোটোকল স্ট্যাটাস কোড। ব্যর্থতায় 401/403/404/409/429/500 সেট করে; ডিফল্টভাবে বন্ধ"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "সাইন-ইন, কোড, লুকআপ ও সাইটের জন্য প্রতি IP হার সীমা; ডিফল্টভাবে চালু"

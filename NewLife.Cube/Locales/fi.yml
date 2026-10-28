@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "Latauksen kokoraja megatavuina; 0 tarkoittaa rajoittamatonta"
 "The file size must not exceed {0} MB.": "Tiedoston koko ei saa ylittää {0} Mt."
 "MFA required": "MFA vaaditaan"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protokollan tilakoodit. Asettaa 401/403/404/409/429/500 virheissä; oletuksena pois"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "Nopeusraja IP-kohtaisesti kirjautumiselle, koodille, haulle ja sivustolle; oletuksena päällä"

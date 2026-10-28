@@ -2129,3 +2129,5 @@
 "Upload size limit in MB; 0 means unlimited": "Limite de taille d'envoi en Mo ; 0 signifie illimité"
 "The file size must not exceed {0} MB.": "La taille du fichier ne doit pas dépasser {0} Mo."
 "MFA required": "MFA requis"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Codes de statut du protocole. Applique 401/403/404/409/429/500 en cas d'échec ; désactivé par défaut"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "Limitation par IP pour la connexion, le code, la recherche et le site ; activée par défaut"

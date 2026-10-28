@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Areas.Cube.Controllers;
+using NewLife.Cube.Attributes;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Membership;
 using NewLife.Cube.Models;
@@ -168,6 +169,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     /// <returns>站点配置</returns>
     [AllowAnonymous]
     [HttpGet]
+    [RateLimit]
     public ActionResult Site(String tenant = null)
     {
         var model = new SiteConfigModel(ResolveTenant(tenant));
@@ -541,6 +543,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     /// <param name="codes">枚举类型全名，逗号分隔，最多 20 个</param>
     /// <returns>按 code 分组的选项字典</returns>
     [HttpGet]
+    [RateLimit]
     public ActionResult Lookup(String codes)
     {
         if (codes.IsNullOrEmpty()) return Json(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter"));

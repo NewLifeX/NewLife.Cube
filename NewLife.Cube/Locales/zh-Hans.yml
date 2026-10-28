@@ -1501,3 +1501,5 @@
 "Upload size limit in MB; 0 means unlimited": "上传体积上限（MB），0 表示不限制"
 "The file size must not exceed {0} MB.": "文件大小不得超过 {0} MB。"
 "MFA required": "需要二步验证"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "协议层状态码。失败时同时写入 401/403/404/409/429/500，默认关闭"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "接口限流。按 IP 限制登录、发码、字典与站点接口频率，默认开启"

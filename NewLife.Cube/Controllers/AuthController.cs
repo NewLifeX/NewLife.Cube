@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Attributes;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
@@ -45,6 +46,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     /// <returns>访问令牌和刷新令牌；需要图形验证码时返回 code=-6（CubeCode.CaptchaRequired）及 captchaId/image</returns>
     [HttpPost]
     [AllowAnonymous]
+    [RateLimit]
     public ApiResponse<LoginTokenModel> Login(LoginModel model)
     {
         var res = new LoginTokenModel();
@@ -91,6 +93,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     /// <returns>验证码记录ID</returns>
     [HttpPost]
     [AllowAnonymous]
+    [RateLimit(Limit = 10)]
     public async Task<ApiResponse<Int64>> SendCode(VerifyCodeModel model)
     {
         try
@@ -110,6 +113,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     /// <returns>新的访问令牌和刷新令牌</returns>
     [HttpPost]
     [AllowAnonymous]
+    [RateLimit]
     public ActionResult Refresh(RefreshTokenModel model)
     {
         var userName = model.UserName;

@@ -2111,3 +2111,5 @@
 "Upload size limit in MB; 0 means unlimited": "上傳大小上限（MB），0 表示不限制"
 "The file size must not exceed {0} MB.": "檔案大小不得超過 {0} MB。"
 "MFA required": "需要二步驗證"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "協定層狀態碼。失敗時同時寫入 401/403/404/409/429/500，預設關閉"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "介面限流。依 IP 限制登入、發碼、字典與站點介面頻率，預設開啟"

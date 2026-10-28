@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "מגבלת גודל העלאה ב-MB; 0 פירושו ללא הגבלה"
 "The file size must not exceed {0} MB.": "גודל הקובץ לא יעלה על {0} MB."
 "MFA required": "נדרש אימות דו-שלבי"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "קודי מצב פרוטוקול. קובע 401/403/404/409/429/500 בשגיאות; כבוי כברירת מחדל"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "הגבלת קצב לפי IP לכניסה, קוד, חיפוש ואתר; מופעל כברירת מחדל"

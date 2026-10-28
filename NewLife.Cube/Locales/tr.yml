@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "Yükleme boyutu sınırı (MB); 0 sınırsız demektir"
 "The file size must not exceed {0} MB.": "Dosya boyutu {0} MB'ı aşmamalıdır."
 "MFA required": "MFA gerekli"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protokol durum kodları. Hatalarda 401/403/404/409/429/500 ayarlar; varsayılan olarak kapalı"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "Giriş, kod, arama ve site için IP başına hız sınırı; varsayılan olarak açık"

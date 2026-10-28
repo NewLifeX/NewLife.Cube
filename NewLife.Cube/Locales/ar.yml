@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "حد حجم الرفع بالميغابايت؛ 0 يعني بلا حد"
 "The file size must not exceed {0} MB.": "يجب ألا يتجاوز حجم الملف {0} ميغابايت."
 "MFA required": "مطلوب مصادقة ثنائية"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "رموز حالة البروتوكول. يضبط 401/403/404/409/429/500 عند الفشل؛ معطل افتراضيًا"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "حد معدل لكل IP لتسجيل الدخول والرمز والبحث والموقع؛ مفعل افتراضيًا"

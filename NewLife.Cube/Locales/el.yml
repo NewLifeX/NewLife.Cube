@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "Όριο μεγέθους μεταφόρτωσης σε MB· 0 σημαίνει χωρίς όριο"
 "The file size must not exceed {0} MB.": "Το μέγεθος αρχείου δεν πρέπει να υπερβαίνει τα {0} MB."
 "MFA required": "Απαιτείται MFA"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Κωδικοί κατάστασης πρωτοκόλλου. Ορίζει 401/403/404/409/429/500 σε σφάλματα· απενεργοποιημένο από προεπιλογή"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "Όριο ανά IP για σύνδεση, κωδικό, αναζήτηση και ιστότοπο· ενεργό από προεπιλογή"

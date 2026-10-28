@@ -160,24 +160,26 @@ public class ControllerBaseX : ControllerBase, IActionFilter
                     {
                         Content = OnJsonSerialize(response),
                         ContentType = "application/json",
-                        StatusCode = 200
+                        StatusCode = GetHttpStatusCode(response.Code)
                     };
                 }
                 else
                 {
-                    var rs = new { code = obj.StatusCode ?? 0, data = obj.Value, traceId };
+                    // 与 Json() 统一响应包保持同一字段集：code/message/data/traceId
+                    var code = obj.StatusCode ?? 0;
+                    var rs = new { code, message = (String)null, data = obj.Value, traceId };
                     context.Result = new ContentResult
                     {
                         Content = OnJsonSerialize(rs),
                         ContentType = "application/json",
-                        StatusCode = 200
+                        StatusCode = GetHttpStatusCode(code),
                     };
                 }
             }
             else if (context.Result is EmptyResult && !HttpContext.Response.HasStarted)
             {
                 // SSE 等流式响应已开始（Headers 只读）后不能再转 JsonResult，保持原样以完整结束流
-                context.Result = new JsonResult(new { code = 0, data = new { }, traceId });
+                context.Result = new JsonResult(new { code = 0, message = (String)null, data = new { }, traceId });
             }
         }
         else if (context.Exception != null && !context.ExceptionHandled && !HttpContext.Response.HasStarted)
@@ -196,7 +198,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
                 message = ex.Message;
             }
 
-            context.Result = new JsonResult(new { code, message, traceId });
+            context.Result = new JsonResult(new { code, message, traceId }) { StatusCode = GetHttpStatusCode(code) };
 
             context.ExceptionHandled = true;
 
@@ -242,7 +244,30 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         var json = OnJsonSerialize(rs);
         DefaultSpan.Current?.AppendTag(json);
 
-        return Content(json, "application/json", Encoding.UTF8);
+        return new ContentResult
+        {
+            Content = json,
+            ContentType = "application/json; charset=utf-8",
+            StatusCode = GetHttpStatusCode(code),
+        };
+    }
+
+    /// <summary>由业务码取得协议层 HTTP 状态码</summary>
+    /// <remarks>
+    /// 仅在开启 <see cref="CubeSetting.EnableHttpStatusCodes"/> 时生效，用于让网关/监控识别 401/403/404/409/422/429/500；
+    /// 其余业务码（0 与负数）保持 200，业务判错仍以响应体 code 为准。
+    /// </remarks>
+    /// <param name="code">业务返回码</param>
+    /// <returns>HTTP 状态码，200 表示不改变</returns>
+    protected static Int32 GetHttpStatusCode(Int32 code)
+    {
+        if (!CubeSetting.Current.EnableHttpStatusCodes) return 200;
+
+        return code switch
+        {
+            401 or 403 or 404 or 409 or 422 or 429 or 500 => code,
+            _ => 200,
+        };
     }
 
     /// <summary>Json序列化。默认使用FastJson</summary>

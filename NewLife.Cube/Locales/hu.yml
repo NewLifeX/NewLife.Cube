@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "Feltöltési mérethatár MB-ban; 0 jelentése korlátlan"
 "The file size must not exceed {0} MB.": "A fájlméret nem haladhatja meg a(z) {0} MB-ot."
 "MFA required": "MFA szükséges"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protokoll állapotkódok. Hibáknál 401/403/404/409/429/500; alapértelmezés szerint ki"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "IP-nkénti sebességkorlát bejelentkezéshez, kódhoz, kereséshez és oldalhoz; alapértelmezés szerint be"

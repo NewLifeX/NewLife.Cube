@@ -774,6 +774,7 @@ public class SsoController : ControllerBaseX
     [HttpGet]
     public virtual ActionResult UserInfo(String access_token)
     {
+        access_token = HttpContext.ResolveAccessToken(access_token);
         if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
 
         IManageUser user = null;
@@ -842,6 +843,7 @@ public class SsoController : ControllerBaseX
     {
         try
         {
+            access_token = HttpContext.ResolveAccessToken(access_token);
             if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
 
             var prv = ManageProvider.Provider;
@@ -888,6 +890,7 @@ public class SsoController : ControllerBaseX
     [HttpGet]
     public ActionResult Verify(String access_token, String redirect_uri)
     {
+        access_token = HttpContext.ResolveAccessToken(access_token);
         if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
 
         var prv = ManageProvider.Provider;

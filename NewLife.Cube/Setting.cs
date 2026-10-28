@@ -305,6 +305,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("Security")]
     public Int32 UploadMaxSize { get; set; } = 20;
 
+    /// <summary>协议层 HTTP 状态码。开启后业务失败仍返回 200 + code，而 401/403/404/409/422/429/500 同时写入对应 HTTP 状态码，便于网关限流与监控；默认关闭保持全 200</summary>
+    [Description("Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default")]
+    [Category("Security")]
+    public Boolean EnableHttpStatusCodes { get; set; } = false;
+
+    /// <summary>接口限流。开启后登录、发码、字典与站点等接口按 IP 做固定窗口计数，超限返回 429，默认开启</summary>
+    [Description("Rate limit per IP for sign-in, code, lookup and site; default on")]
+    [Category("Security")]
+    public Boolean EnableRateLimit { get; set; } = true;
+
     /// <summary>SSO跨域重定向白名单。登录后允许携带JWT Token重定向的目标域名，逗号分隔，支持通配符前缀*.company.com。留空=仅允许同站重定向，拒绝所有跨域跳转以防止凭据泄露</summary>
     [Description("SSO redirect allowlist. Domains allowed to receive the JWT after sign-in, comma-separated with wildcard prefixes such as *.company.com. Empty allows the same site only; other origins are rejected and sent back to the home page")]
     [Category("User login")]

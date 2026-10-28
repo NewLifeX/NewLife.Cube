@@ -684,6 +684,28 @@ public static class ManagerProviderHelper
 
     // IssueTokenAndRefreshToken 已迁移至 IssueLoginToken，旧名不再保留
 
+    /// <summary>从请求头中获取令牌</summary>
+    /// <param name="context">HTTP 上下文</param>
+    /// <param name="queryToken">查询串中的令牌（已弃用，仅作兼容）</param>
+    /// <returns>解析出的令牌</returns>
+    /// <remarks>
+    /// 优先读取 <c>Authorization: Bearer</c>；仅当头缺失时才回退到查询串，并输出 Warning 头与日志。
+    /// 查询串令牌会进入访问日志、代理日志、Referer 与浏览器历史，OAuth 2.0 Security BCP 明确不建议。
+    /// </remarks>
+    public static String ResolveAccessToken(this HttpContext context, String queryToken)
+    {
+        var header = (context.Request.Headers["Authorization"] + "").TrimPrefix("Bearer ").Trim();
+        if (!header.IsNullOrEmpty()) return header;
+
+        if (!queryToken.IsNullOrEmpty())
+        {
+            context.Response.Headers["Warning"] = "299 - \"access_token in query string is deprecated; use Authorization: Bearer\"";
+            XTrace.WriteLine($"Deprecated access_token in query string: {context.Request.Path}");
+        }
+
+        return queryToken;
+    }
+
     /// <summary>刷新令牌</summary>
     /// <remarks>
     /// 安全要求：刷新令牌必须属于请求用户本人，且用户处于启用状态、令牌记录未被吊销且未过期。

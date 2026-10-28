@@ -1521,3 +1521,5 @@
 "Upload size limit in MB; 0 means unlimited": "محدودیت اندازه بارگذاری به مگابایت؛ 0 یعنی نامحدود"
 "The file size must not exceed {0} MB.": "اندازه فایل نباید از {0} مگابایت بیشتر شود."
 "MFA required": "احراز هویت دو مرحله‌ای لازم است"
+"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "کدهای وضعیت پروتکل. در خطاها 401/403/404/409/429/500 را تنظیم می‌کند؛ به‌طور پیش‌فرض خاموش است"
+"Rate limit per IP for sign-in, code, lookup and site; default on": "محدودیت نرخ بر اساس IP برای ورود، کد، جستجو و سایت؛ به‌طور پیش‌فرض روشن است"
