@@ -78,6 +78,9 @@ export default defineConfig(() => {
         },
       },
       build: {
+        // esbuild 只转译语法、不 polyfill 内置方法；框架已使用 Array.prototype.at 等 ES2022 API，
+        // 目标低于 es2022 会在旧内核上运行期报错，故与 tsconfig 的 lib 一同对齐到 es2022
+        target: 'es2022',
         sourcemap: true, // Generates source maps for better debugging
         outDir: '../wwwroot',
         emptyOutDir: true,

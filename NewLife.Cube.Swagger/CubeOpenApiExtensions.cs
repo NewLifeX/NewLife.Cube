@@ -35,7 +35,7 @@ public static class CubeOpenApiExtensions
             var group = name!;
             // 具名文档 + 重写 ShouldInclude：把该区域组的端点纳入本文档。
             // （不重写则：魔方 descriptor 级组名的端点会被内建默认 v1 剔除、又进不了朴素具名文档 → 两头落空。）
-            // 大小写不敏感：框架会把文档名/组归一小写（文件 MindHub.Api_test.json、title | test）。
+            // 大小写不敏感：框架会把文档名/组归一小写（文件 Example.Api_test.json、title | example）。
             services.AddOpenApi(group, options =>
                 options.ShouldInclude = desc => string.Equals(desc.GroupName, group, StringComparison.OrdinalIgnoreCase));
         }
