@@ -531,7 +531,7 @@ function summaryMethod({ columns: tableColumns }: { columns: Array<{ property?: 
       <RenderVNodes :nodes="[node]" />
     </span>
     <span v-if="probeNodes.length > MAX_DIRECT_ACTIONS" class="ctg-probe-item">
-      <el-button link type="primary">更多<el-icon><ArrowDown /></el-icon></el-button>
+        <el-button link type="primary">{{ t('grid.more') }}<el-icon><ArrowDown /></el-icon></el-button>
     </span>
   </div>
 </template>

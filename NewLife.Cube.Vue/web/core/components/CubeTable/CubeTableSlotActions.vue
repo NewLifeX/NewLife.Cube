@@ -9,6 +9,7 @@
  * 下拉项就是原按钮本体（不是文本克隆），点击仍走页面自己的回调。
  */
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ArrowDown } from '@element-plus/icons-vue';
 import RenderVNodes from './RenderVNodes';
 import { splitRowActions } from './cubeTable.logic';
@@ -19,6 +20,8 @@ const props = defineProps<{
   nodes: VNode[];
 }>();
 
+const { t } = useI18n();
+
 const parts = computed(() => splitRowActions(props.nodes));
 </script>
 
@@ -27,7 +30,7 @@ const parts = computed(() => splitRowActions(props.nodes));
     <RenderVNodes v-for="(node, index) in parts.direct" :key="index" :nodes="[node]" />
     <el-dropdown v-if="parts.overflow.length" trigger="click" class="ctg-more">
       <el-button link type="primary">
-        更多<el-icon><ArrowDown /></el-icon>
+        {{ t('grid.more') }}<el-icon><ArrowDown /></el-icon>
       </el-button>
       <template #dropdown>
         <el-dropdown-menu>
