@@ -7,7 +7,11 @@ export default defineConfig({
     vue(),
     AutoImport({ imports: ['vue', 'vue-router', 'pinia'] }),
   ],
-  resolve: { alias: { '@': '/src' } },
+  resolve: {
+    alias: { '@': '/src' },
+    // 同 vitest.config.ts：保证 pinia / vue 只有一份实例，否则共享包里的 store 拿不到活动 Pinia
+    dedupe: ['vue', 'vue-router', 'pinia'],
+  },
   build: { outDir: '../wwwroot', emptyOutDir: true },
   server: {
     port: 5187,

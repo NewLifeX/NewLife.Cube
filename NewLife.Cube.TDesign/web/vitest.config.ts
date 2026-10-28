@@ -12,6 +12,10 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+    // 共享包 @newlifex/cube/pinia 与皮肤各自的 node_modules 下会解析出两份 pinia 实例，
+    // setActivePinia 只对其中一份生效，store 取不到活动 Pinia（报 “no active Pinia”），
+    // 因此强制 vue / vue-router / pinia 去重到同一份。
+    dedupe: ['vue', 'vue-router', 'pinia'],
   },
   test: {
     environment: 'node',
