@@ -92,6 +92,49 @@ export async function passwordLoginWithChallenge(
 }
 
 /**
+ * 重置密码通用业务逻辑（忘记密码流程，皮肤无关）
+ *
+ * 后端在「禁止明文密码传输」（`CubeSetting.AllowPlainPassword=false`）时要求携带 challengeId，
+ * 因此这里与密码登录采用同一策略：先 GET /Auth/Challenge 取公钥，加密新密码与确认密码后带 challengeId 提交；
+ * Challenge 接口不可达 / 公钥为空 / 加密失败时降级为明文传输（后端允许明文时仍可用）。
+ *
+ * @param reset 发起重置请求的 callback（皮肤注入：user.resetPassword 的底层请求）
+ * @param getChallenge 获取 RSA 挑战的 callback（皮肤注入：user.getChallenge）
+ * @param data 重置参数（手机号或邮箱 / 验证码 / 新密码 / 确认密码）
+ * @returns 重置结果 ApiResponse（成功时 data 为 true）
+ */
+export async function resetPasswordWithChallenge(
+  reset: (data: ResetPasswordModel) => Promise<ApiResponse<boolean>>,
+  getChallenge: () => Promise<ApiResponse<ChallengeResult>>,
+  data: ResetPasswordModel,
+): Promise<ApiResponse<boolean>> {
+  let newPassword = data.newPassword;
+  let confirmPassword = data.confirmPassword;
+  let challengeId: string | undefined;
+  try {
+    const challenge = (await getChallenge()).data;
+    if (challenge?.publicKey) {
+      newPassword = await encryptPassword(data.newPassword, challenge.publicKey);
+      // 两次输入须用同一公钥加密，后端解密后再比对一致性
+      if (data.confirmPassword) confirmPassword = await encryptPassword(data.confirmPassword, challenge.publicKey);
+      challengeId = challenge.challengeId;
+    }
+  } catch {
+    // Challenge 接口不可达 / 公钥为空 / 加密失败：降级为明文传输
+    newPassword = data.newPassword;
+    confirmPassword = data.confirmPassword;
+    challengeId = undefined;
+  }
+
+  return reset({
+    ...data,
+    newPassword,
+    confirmPassword,
+    ...(challengeId ? { challengeId } : {}),
+  });
+}
+
+/**
  * 用户认证相关 API
  *
  * 新版使用 /Auth/* 路径，由 AuthController 提供
@@ -213,9 +256,14 @@ export function createUserApi(request: RequestFn) {
      *
      * 先调用 sendCode({ channel, username, action: 'reset' }) 发送验证码，
      * 再调用本接口提交验证码 + 新密码完成重置。
+     * 内部先 GET /Auth/Challenge 取公钥加密新密码（服务端禁止明文密码时必需），不可达时降级明文。
      */
     resetPassword: (data: ResetPasswordModel) =>
-      request<boolean>({ url: '/Auth/ResetPassword', method: 'post', data }),
+      resetPasswordWithChallenge(
+        (payload) => request<boolean>({ url: '/Auth/ResetPassword', method: 'post', data: payload }),
+        () => request<ChallengeResult>({ url: '/Auth/Challenge', method: 'get' }),
+        data,
+      ),
 
     /**
      * 邮箱激活链接直达。激活邮件中的链接指向 {ActivateUrl}?token=&account=，前端 /activate 页解析后调用
