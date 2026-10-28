@@ -1517,3 +1517,7 @@
 "City": "Kaupunki"
 "District": "Piirikunta"
 "Town": "Kunta"
+"API explorer. Allow system administrators to list routes; off by default": "API-selain. Sallii järjestelmänvalvojien luetella reitit; oletuksena pois"
+"Upload size limit in MB; 0 means unlimited": "Latauksen kokoraja megatavuina; 0 tarkoittaa rajoittamatonta"
+"The file size must not exceed {0} MB.": "Tiedoston koko ei saa ylittää {0} Mt."
+"MFA required": "MFA vaaditaan"

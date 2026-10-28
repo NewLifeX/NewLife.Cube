@@ -1517,3 +1517,7 @@
 "City": "शहर"
 "District": "जिला"
 "Town": "कस्बा"
+"API explorer. Allow system administrators to list routes; off by default": "API एक्सप्लोरर. सिस्टम प्रशासकों को रूट सूचीबद्ध करने की अनुमति देता है; डिफ़ॉल्ट रूप से बंद"
+"Upload size limit in MB; 0 means unlimited": "अपलोड आकार सीमा (MB); 0 का अर्थ असीमित है"
+"The file size must not exceed {0} MB.": "फ़ाइल आकार {0} MB से अधिक नहीं होना चाहिए।"
+"MFA required": "MFA आवश्यक है"

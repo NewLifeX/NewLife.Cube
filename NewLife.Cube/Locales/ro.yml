@@ -1517,3 +1517,7 @@
 "City": "Oraș"
 "District": "District"
 "Town": "Comună"
+"API explorer. Allow system administrators to list routes; off by default": "Explorator API. Permite administratorilor de sistem să listeze rutele; dezactivat implicit"
+"Upload size limit in MB; 0 means unlimited": "Limită de dimensiune la încărcare în MB; 0 înseamnă nelimitat"
+"The file size must not exceed {0} MB.": "Dimensiunea fișierului nu trebuie să depășească {0} MB."
+"MFA required": "MFA necesar"

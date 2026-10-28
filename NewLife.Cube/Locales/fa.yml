@@ -1517,3 +1517,7 @@
 "City": "شهر"
 "District": "شهرستان"
 "Town": "بخش"
+"API explorer. Allow system administrators to list routes; off by default": "کاوشگر API. به مدیران سیستم اجازه می‌دهد مسیرها را فهرست کنند؛ به‌طور پیش‌فرض خاموش است"
+"Upload size limit in MB; 0 means unlimited": "محدودیت اندازه بارگذاری به مگابایت؛ 0 یعنی نامحدود"
+"The file size must not exceed {0} MB.": "اندازه فایل نباید از {0} مگابایت بیشتر شود."
+"MFA required": "احراز هویت دو مرحله‌ای لازم است"

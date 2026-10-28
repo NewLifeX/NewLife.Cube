@@ -1517,3 +1517,7 @@
 "City": "시"
 "District": "구"
 "Town": "읍면"
+"API explorer. Allow system administrators to list routes; off by default": "API 탐색기. 시스템 관리자가 경로 목록을 볼 수 있도록 허용합니다. 기본값은 꺼짐"
+"Upload size limit in MB; 0 means unlimited": "업로드 크기 제한(MB). 0은 무제한"
+"The file size must not exceed {0} MB.": "파일 크기는 {0} MB를 초과할 수 없습니다."
+"MFA required": "MFA가 필요합니다"

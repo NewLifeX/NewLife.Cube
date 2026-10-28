@@ -1517,3 +1517,7 @@
 "City": "Stad"
 "District": "District"
 "Town": "Gemeente"
+"API explorer. Allow system administrators to list routes; off by default": "API-verkenner. Staat systeembeheerders toe routes te tonen; standaard uit"
+"Upload size limit in MB; 0 means unlimited": "Uploadlimiet in MB; 0 betekent onbeperkt"
+"The file size must not exceed {0} MB.": "De bestandsgrootte mag niet groter zijn dan {0} MB."
+"MFA required": "MFA vereist"

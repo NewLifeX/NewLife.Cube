@@ -1517,3 +1517,7 @@
 "City": "Bandar"
 "District": "Daerah"
 "Town": "Pekan"
+"API explorer. Allow system administrators to list routes; off by default": "Penjelajah API. Membenarkan pentadbir sistem menyenaraikan laluan; dimatikan secara lalai"
+"Upload size limit in MB; 0 means unlimited": "Had saiz muat naik dalam MB; 0 bermaksud tanpa had"
+"The file size must not exceed {0} MB.": "Saiz fail tidak boleh melebihi {0} MB."
+"MFA required": "MFA diperlukan"

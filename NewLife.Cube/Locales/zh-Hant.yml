@@ -2107,3 +2107,7 @@
 "藤萝紫": "藤蘿紫"
 "樱花粉": "櫻花粉"
 "石墨黑": "石墨黑"
+"API explorer. Allow system administrators to list routes; off by default": "介面瀏覽器。允許系統管理員查看路由清單，預設關閉"
+"Upload size limit in MB; 0 means unlimited": "上傳大小上限（MB），0 表示不限制"
+"The file size must not exceed {0} MB.": "檔案大小不得超過 {0} MB。"
+"MFA required": "需要二步驗證"

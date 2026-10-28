@@ -1517,3 +1517,7 @@
 "City": "Stad"
 "District": "Distrikt"
 "Town": "Kommun"
+"API explorer. Allow system administrators to list routes; off by default": "API-utforskaren. Låter systemadministratörer lista rutter; av som standard"
+"Upload size limit in MB; 0 means unlimited": "Uppladdningsgräns i MB; 0 betyder obegränsat"
+"The file size must not exceed {0} MB.": "Filstorleken får inte överstiga {0} MB."
+"MFA required": "MFA krävs"

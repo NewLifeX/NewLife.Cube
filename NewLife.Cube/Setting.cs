@@ -296,12 +296,12 @@ public class CubeSetting : Config<CubeSetting>
     public String OwnerOnlyAttachmentCategories { get; set; }
 
     /// <summary>接口浏览器。开启后系统管理员可访问 /Cube/Apis 查看路由清单，默认false，避免生产环境暴露攻击面</summary>
-    [Description("API explorer. When enabled, system administrators can list routes via /Cube/Apis, default false to avoid exposing the attack surface in production")]
+    [Description("API explorer. Allow system administrators to list routes; off by default")]
     [Category("Security")]
     public Boolean EnableApiExplorer { get; set; } = false;
 
     /// <summary>上传与导入文件体积上限（MB）。附件上传与数据导入共用同一阈值，0 表示不限制，默认20</summary>
-    [Description("Upload and import size limit in MB, shared by attachments and data import; 0 disables the limit, default 20")]
+    [Description("Upload size limit in MB; 0 means unlimited")]
     [Category("Security")]
     public Int32 UploadMaxSize { get; set; } = 20;
 

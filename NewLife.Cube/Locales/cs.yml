@@ -1517,3 +1517,7 @@
 "City": "Město"
 "District": "Okres"
 "Town": "Obec"
+"API explorer. Allow system administrators to list routes; off by default": "Průzkumník API. Umožňuje správcům systému zobrazit trasy; ve výchozím nastavení vypnuto"
+"Upload size limit in MB; 0 means unlimited": "Limit velikosti nahrávání v MB; 0 znamená bez omezení"
+"The file size must not exceed {0} MB.": "Velikost souboru nesmí překročit {0} MB."
+"MFA required": "Vyžadováno MFA"

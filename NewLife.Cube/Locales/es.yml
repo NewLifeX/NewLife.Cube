@@ -1517,3 +1517,7 @@
 "City": "Ciudad"
 "District": "Distrito"
 "Town": "Municipio"
+"API explorer. Allow system administrators to list routes; off by default": "Explorador de API. Permite a los administradores del sistema listar rutas; desactivado por defecto"
+"Upload size limit in MB; 0 means unlimited": "Límite de tamaño de carga en MB; 0 significa ilimitado"
+"The file size must not exceed {0} MB.": "El tamaño del archivo no debe superar {0} MB."
+"MFA required": "Se requiere MFA"

@@ -1517,3 +1517,7 @@
 "City": "Kota"
 "District": "Kabupaten"
 "Town": "Kecamatan"
+"API explorer. Allow system administrators to list routes; off by default": "Penjelajah API. Mengizinkan administrator sistem membuat daftar rute; nonaktif secara default"
+"Upload size limit in MB; 0 means unlimited": "Batas ukuran unggahan dalam MB; 0 berarti tanpa batas"
+"The file size must not exceed {0} MB.": "Ukuran file tidak boleh melebihi {0} MB."
+"MFA required": "MFA diperlukan"

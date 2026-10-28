@@ -1517,3 +1517,7 @@
 "City": "Thành phố"
 "District": "Quận"
 "Town": "Thị trấn"
+"API explorer. Allow system administrators to list routes; off by default": "Trình khám phá API. Cho phép quản trị viên hệ thống liệt kê các tuyến; mặc định tắt"
+"Upload size limit in MB; 0 means unlimited": "Giới hạn kích thước tải lên (MB); 0 nghĩa là không giới hạn"
+"The file size must not exceed {0} MB.": "Kích thước tệp không được vượt quá {0} MB."
+"MFA required": "Cần MFA"

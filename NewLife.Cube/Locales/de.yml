@@ -2114,3 +2114,7 @@
 "藤萝紫": "Glyzinienviolett"
 "樱花粉": "Kirschrosa"
 "石墨黑": "Graphitschwarz"
+"API explorer. Allow system administrators to list routes; off by default": "API-Explorer. Erlaubt Systemadministratoren das Auflisten von Routen; standardmäßig aus"
+"Upload size limit in MB; 0 means unlimited": "Upload-Größenlimit in MB; 0 bedeutet unbegrenzt"
+"The file size must not exceed {0} MB.": "Die Dateigröße darf {0} MB nicht überschreiten."
+"MFA required": "MFA erforderlich"

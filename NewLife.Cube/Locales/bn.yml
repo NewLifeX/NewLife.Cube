@@ -1517,3 +1517,7 @@
 "City": "শহর"
 "District": "জেলা"
 "Town": "শহরতলি"
+"API explorer. Allow system administrators to list routes; off by default": "API এক্সপ্লোরার। সিস্টেম প্রশাসকদের রুট তালিকা দেখার অনুমতি দেয়; ডিফল্টভাবে বন্ধ"
+"Upload size limit in MB; 0 means unlimited": "আপলোড আকার সীমা (MB); 0 মানে সীমাহীন"
+"The file size must not exceed {0} MB.": "ফাইলের আকার {0} MB এর বেশি হওয়া উচিত নয়।"
+"MFA required": "MFA প্রয়োজন"

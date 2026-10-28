@@ -1517,3 +1517,7 @@
 "City": "Πόλη"
 "District": "Περιοχή"
 "Town": "Δήμος"
+"API explorer. Allow system administrators to list routes; off by default": "Εξερευνητής API. Επιτρέπει στους διαχειριστές συστήματος να βλέπουν τις διαδρομές· απενεργοποιημένο από προεπιλογή"
+"Upload size limit in MB; 0 means unlimited": "Όριο μεγέθους μεταφόρτωσης σε MB· 0 σημαίνει χωρίς όριο"
+"The file size must not exceed {0} MB.": "Το μέγεθος αρχείου δεν πρέπει να υπερβαίνει τα {0} MB."
+"MFA required": "Απαιτείται MFA"

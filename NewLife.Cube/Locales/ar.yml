@@ -1517,3 +1517,7 @@
 "City": "مدينة"
 "District": "منطقة"
 "Town": "بلدة"
+"API explorer. Allow system administrators to list routes; off by default": "مستكشف API. يسمح لمسؤولي النظام بسرد المسارات؛ معطل افتراضيًا"
+"Upload size limit in MB; 0 means unlimited": "حد حجم الرفع بالميغابايت؛ 0 يعني بلا حد"
+"The file size must not exceed {0} MB.": "يجب ألا يتجاوز حجم الملف {0} ميغابايت."
+"MFA required": "مطلوب مصادقة ثنائية"

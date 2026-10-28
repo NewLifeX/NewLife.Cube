@@ -1517,3 +1517,7 @@
 "City": "Város"
 "District": "Kerület"
 "Town": "Község"
+"API explorer. Allow system administrators to list routes; off by default": "API-felfedező. Lehetővé teszi a rendszergazdák számára az útvonalak listázását; alapértelmezés szerint ki"
+"Upload size limit in MB; 0 means unlimited": "Feltöltési mérethatár MB-ban; 0 jelentése korlátlan"
+"The file size must not exceed {0} MB.": "A fájlméret nem haladhatja meg a(z) {0} MB-ot."
+"MFA required": "MFA szükséges"

@@ -602,3 +602,7 @@
 "藤萝紫": "Wisteria Purple"
 "樱花粉": "Cherry Pink"
 "石墨黑": "Graphite Black"
+"API explorer. Allow system administrators to list routes; off by default": "API explorer. Allow system administrators to list routes; off by default"
+"Upload size limit in MB; 0 means unlimited": "Upload size limit in MB; 0 means unlimited"
+"The file size must not exceed {0} MB.": "The file size must not exceed {0} MB."
+"MFA required": "MFA required"

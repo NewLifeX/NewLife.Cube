@@ -1517,3 +1517,7 @@
 "City": "עיר"
 "District": "נפה"
 "Town": "עיירה"
+"API explorer. Allow system administrators to list routes; off by default": "סייר API. מאפשר למנהלי מערכת להציג רשימת נתיבים; כבוי כברירת מחדל"
+"Upload size limit in MB; 0 means unlimited": "מגבלת גודל העלאה ב-MB; 0 פירושו ללא הגבלה"
+"The file size must not exceed {0} MB.": "גודל הקובץ לא יעלה על {0} MB."
+"MFA required": "נדרש אימות דו-שלבי"

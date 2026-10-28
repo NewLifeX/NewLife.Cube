@@ -1517,3 +1517,7 @@
 "City": "เมือง"
 "District": "อำเภอ"
 "Town": "ตำบล"
+"API explorer. Allow system administrators to list routes; off by default": "ตัวสำรวจ API อนุญาตให้ผู้ดูแลระบบแสดงรายการเส้นทาง ปิดโดยค่าเริ่มต้น"
+"Upload size limit in MB; 0 means unlimited": "ขีดจำกัดขนาดอัปโหลด (MB) 0 หมายถึงไม่จำกัด"
+"The file size must not exceed {0} MB.": "ขนาดไฟล์ต้องไม่เกิน {0} MB"
+"MFA required": "ต้องใช้ MFA"

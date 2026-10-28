@@ -1517,3 +1517,7 @@
 "City": "Місто"
 "District": "Район"
 "Town": "Селище"
+"API explorer. Allow system administrators to list routes; off by default": "Огляд API. Дозволяє системним адміністраторам переглядати маршрути; вимкнено за замовчуванням"
+"Upload size limit in MB; 0 means unlimited": "Обмеження розміру завантаження в МБ; 0 означає без обмежень"
+"The file size must not exceed {0} MB.": "Розмір файлу не повинен перевищувати {0} МБ."
+"MFA required": "Потрібен MFA"
