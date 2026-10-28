@@ -44,7 +44,9 @@ public class RateLimitAttribute : ActionFilterAttribute
         var key = $"RateLimit:{action}:{ip}:{bucket}";
 
         var count = cache.Cache.Increment(key, 1);
-        if (count == 1) cache.Cache.SetExpire(key, TimeSpan.FromSeconds(window + 5));
+        // 必须每次重设过期：Increment 内部用 Set(key,value) 会按默认过期（通常为永不过期）重写，
+        // 若不重设，窗口过期后计数仍会累加，最终导致该 IP 永久 429
+        cache.Cache.SetExpire(key, TimeSpan.FromSeconds(window + 5));
 
         if (count <= Limit) return;
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using NewLife.Caching;
+using NewLife.Cube;
 using NewLife.Cube.Attributes;
 using NewLife.Cube.Tests.Membership;
 using Xunit;
@@ -27,11 +28,12 @@ public class IdempotencyTests
         _services = sc.BuildServiceProvider();
     }
 
-    private ActionContext CreateActionContext(String? idempotencyKey)
+    private ActionContext CreateActionContext(String? idempotencyKey, Int32? responseCode = null)
     {
         var http = new DefaultHttpContext { RequestServices = _services };
         http.Request.Path = "/api/admin/user/import";
         if (!idempotencyKey.IsNullOrEmpty()) http.Request.Headers["Idempotency-Key"] = idempotencyKey;
+        if (responseCode != null) http.Items[ControllerBaseX.ResponseCodeKey] = responseCode.Value;
 
         return new ActionContext(http, new RouteData(), new ActionDescriptor());
     }
@@ -46,7 +48,7 @@ public class IdempotencyTests
         attr.OnActionExecuting(first);
         Assert.Null(first.Result);
 
-        var executed = new ActionExecutedContext(CreateActionContext(key), [], null)
+        var executed = new ActionExecutedContext(CreateActionContext(key, 0), [], null)
         {
             Result = new ContentResult { Content = "{\"code\":0,\"data\":1}", StatusCode = 200 },
         };
@@ -58,6 +60,23 @@ public class IdempotencyTests
         var replay = Assert.IsType<ContentResult>(second.Result);
         Assert.Equal(200, replay.StatusCode);
         Assert.Contains("\"code\":0", replay.Content);
+    }
+
+    [Fact(DisplayName = "幂等_失败结果不缓存，允许修正后重试")]
+    public void FailureResult_NotCached()
+    {
+        var attr = new IdempotentAttribute();
+        var key = Guid.NewGuid().ToString("N");
+
+        var executed = new ActionExecutedContext(CreateActionContext(key, 500), [], null)
+        {
+            Result = new ContentResult { Content = "{\"code\":500}", StatusCode = 200 },
+        };
+        attr.OnActionExecuted(executed);
+
+        var next = new ActionExecutingContext(CreateActionContext(key), [], new Dictionary<String, Object>(), null);
+        attr.OnActionExecuting(next);
+        Assert.Null(next.Result);
     }
 
     [Fact(DisplayName = "幂等_未携带键时不缓存与不复用")]

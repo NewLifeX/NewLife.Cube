@@ -44,6 +44,9 @@ public class IdempotentAttribute : ActionFilterAttribute
         if (context.Result is not ContentResult result) return;
         if (result.Content.IsNullOrEmpty() || result.StatusCode is not (null or 200)) return;
 
+        // 仅缓存成功响应：失败结果（如导入异常）应允许客户端修正后重试，不能被重放固定下来
+        if (context.HttpContext.Items[ControllerBaseX.ResponseCodeKey] is not Int32 code || code != 0) return;
+
         var key = BuildKey(context);
         if (key == null) return;
 

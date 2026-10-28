@@ -23,6 +23,8 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 {
 
     #region 属性
+    /// <summary>统一响应业务码在 HttpContext.Items 中的键，供结果过滤器读取本次响应是否成功</summary>
+    public const String ResponseCodeKey = "Cube_ResponseCode";
     /// <summary>临时会话扩展信息。仅限本地内存，不支持分布式共享</summary>
     public IDictionary<String, Object> Session { get; private set; }
 
@@ -243,6 +245,9 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
         var json = OnJsonSerialize(rs);
         DefaultSpan.Current?.AppendTag(json);
+
+        // 供结果过滤器（如幂等）判断本次响应是否成功，避免把失败结果缓存为重放结果
+        HttpContext.Items[ResponseCodeKey] = code;
 
         return new ContentResult
         {
