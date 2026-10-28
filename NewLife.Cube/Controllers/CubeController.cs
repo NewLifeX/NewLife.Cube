@@ -220,7 +220,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpGet]
     public ActionResult Info(String state = null)
     {
-        if (!IsSystemAdmin()) return Json(403, L.T("Only system administrators can view server information."));
+        if (!IsSystemAdmin()) return Json(403, L.T("Only available to system administrators."));
 
         var asmx = AssemblyX.Entry;
         var conn = HttpContext.Connection;
@@ -259,8 +259,8 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpGet]
     public ActionResult Apis()
     {
-        if (!CubeSetting.Current.EnableApiExplorer) return Json(404, L.T("The API explorer is disabled."));
-        if (!IsSystemAdmin()) return Json(403, L.T("Only system administrators can view the API list."));
+        if (!CubeSetting.Current.EnableApiExplorer) return Json(404, null);
+        if (!IsSystemAdmin()) return Json(403, L.T("Only available to system administrators."));
 
         var set = new List<EndpointDataSource>();
         var eps = new List<String>();
@@ -543,11 +543,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpGet]
     public ActionResult Lookup(String codes)
     {
-        if (codes.IsNullOrEmpty()) return Json(CubeCode.ParamError.ToInt(), L.T("codes is required."));
-        if (codes.Length > 2000) return Json(CubeCode.ParamError.ToInt(), L.T("codes is too long."));
+        if (codes.IsNullOrEmpty()) return Json(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter"));
+        if (codes.Length > 2000) return Json(CubeCode.ParamError.ToInt(), L.T("{0} must not exceed {1} characters.", "codes", 2000));
 
         var names = codes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (names.Length > MaxLookupCodes) return Json(CubeCode.ParamError.ToInt(), L.T("Too many codes; at most {0} are allowed.", MaxLookupCodes));
+        if (names.Length > MaxLookupCodes) return Json(CubeCode.ParamError.ToInt(), L.T("{0} must not exceed {1} characters.", "codes", MaxLookupCodes));
 
         var source = new Dictionary<String, Object>();
         foreach (var code in names)

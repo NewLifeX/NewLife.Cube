@@ -700,12 +700,13 @@ public static class ManagerProviderHelper
         var result = DecodeRefreshToken(refresh_token, out var username, out _);
         if (!result) throw new ApiException(CubeCode.LogOff.ToInt(), L.T("Failed to refresh the token: {0}", refresh_token));
 
-        // 令牌内用户名必须与请求用户一致，防止用自己的刷新令牌 + 他人用户名换取他人访问令牌（账号接管）
+        // 令牌内用户名必须与请求用户一致，防止用自己的刷新令牌 + 他人用户名换取他人访问令牌（账号接管）。
+        // 不区分具体原因，统一使用同一文案，避免泄露账号/令牌状态
         if (user == null || !user.Name.EqualIgnoreCase(username))
-            throw new ApiException(CubeCode.LogOff.ToInt(), L.T("The refresh token does not match the requested user."));
+            throw new ApiException(CubeCode.LogOff.ToInt(), L.T("refresh_token has expired; please sign in again."));
 
         // 用户必须启用
-        if (!user.Enable) throw new ApiException(CubeCode.LogOff.ToInt(), L.T("The user has been disabled."));
+        if (!user.Enable) throw new ApiException(CubeCode.LogOff.ToInt(), L.T("User is disabled."));
 
         // 刷新令牌必须仍然有效：存在、未吊销、未过期，否则视为重放
         var oldUt = UserToken.FindByToken(refresh_token);

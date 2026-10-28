@@ -114,8 +114,8 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     {
         var userName = model.UserName;
         var refreshToken = model.RefreshToken;
-        if (userName.IsNullOrEmpty() || refreshToken.IsNullOrEmpty())
-            return Json(CubeCode.LogOff.ToInt(), L.T("Username and refresh token are required."));
+        if (userName.IsNullOrEmpty()) return Json(CubeCode.LogOff.ToInt(), L.T("Username is required."));
+        if (refreshToken.IsNullOrEmpty()) return Json(CubeCode.LogOff.ToInt(), L.T("Token is required."));
 
         // 令牌轮换：旧令牌使用后加入黑名单，防止同一刷新令牌被重复使用（重放攻击/令牌泄漏检测）。
         // 黑名单键取 SHA-256 指纹而非 String.GetHashCode，避免哈希碰撞与 .NET 随机化导致跨进程失效
