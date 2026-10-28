@@ -29,11 +29,12 @@
 | 接口 | 方法 | 说明 |
 |------|------|------|
 | `/Cube/MenuTree` | GET | 当前用户可访问菜单树（`?module=` 过滤） |
-| `/Cube/Lookup?codes=enable,sex` | GET | 枚举字典 |
+| `/Cube/Lookup?codes=enable,sex` | GET | 枚举字典（需登录，最多 20 个已加载枚举） |
 | `/Cube/UserSearch` | GET | 用户选择器（`roleId` / `departmentId` / `key`） |
 | `/Cube/GetPageConfig?kind=&page=` | GET | 低代码页面配置 |
-| `/Cube/Info` | GET | 服务器信息（匿名，生产环境建议关闭） |
-| `/Cube/Apis` | GET | 端点清单（匿名，生产环境建议关闭） |
+| `/Cube/Health?state=` | GET | 健康检测（匿名，仅 status/time/state） |
+| `/Cube/Info` | GET | 服务器信息（仅系统管理员） |
+| `/Cube/Apis` | GET | 端点清单（系统管理员 + `EnableApiExplorer=true`，默认关闭） |
 
 ### 实体接口
 
