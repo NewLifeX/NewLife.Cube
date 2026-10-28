@@ -12,6 +12,9 @@ namespace NewLife.Cube;
 public class ControllerBaseX : Controller
 {
     #region 属性
+    /// <summary>统一响应业务码在 HttpContext.Items 中的键，供结果过滤器读取本次响应是否成功</summary>
+    public const String ResponseCodeKey = "Cube_ResponseCode";
+
     /// <summary>临时会话扩展信息。仅限本地内存，不支持分布式共享</summary>
     public IDictionary<String, Object> Session { get; private set; }
 
@@ -185,6 +188,9 @@ public class ControllerBaseX : Controller
 
         var json = OnJsonSerialize(rs);
         DefaultSpan.Current?.AppendTag(json);
+
+        // 记录本次业务码：幂等特性凭它判断是否为成功结果（失败结果不缓存，避免把错误当成可重放响应）
+        HttpContext.Items[ResponseCodeKey] = code;
 
         return Content(json, "application/json", Encoding.UTF8);
     }
