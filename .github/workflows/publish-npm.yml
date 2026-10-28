@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write       # npm Trusted Publishing（OIDC）签发短时发布令牌
       packages: write
 
     steps:
@@ -25,10 +26,11 @@ jobs:
       with:
         version: 9.15.0
 
+    # 不配 registry-url：否则 setup-node 会写 //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}，
+    # 未设该变量时 npm 会报 Failed to replace env in config；OIDC 发布不需要任何 token
     - uses: actions/setup-node@v4
       with:
         node-version: 22
-        registry-url: https://registry.npmjs.org
 
     - name: Install
       run: pnpm install --frozen-lockfile
@@ -53,17 +55,12 @@ jobs:
       if: steps.npm-tag.outputs.dist-tag == 'beta'
       run: node scripts/set-beta-version.mjs
 
-    # 先验证 token：无效时在这里明确报错，而不是被打包发布步骤的长日志掩盖
-    - name: Verify npm token
-      run: npm whoami --registry https://registry.npmjs.org
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-    # 发 npmjs.org：@newlifex scope 需 NPM_TOKEN（granular token 且勾选 Bypass 2FA，否则 403）
+    # 发 npmjs.org：Trusted Publishing（OIDC），npm 校验仓库 + workflow 后签发短时令牌，无需 NPM_TOKEN
+    # 前置：npm 包 Settings → Trusted Publisher 指向 NewLifeX/NewLife.Cube 的 publish-npm.yml，并授予 npm publish
+    # 首次需在配置过期前发一次以完成 Pending validation
     - name: Publish to npmjs.org
-      run: pnpm -r --filter './packages/*' publish --no-git-checks --tag ${{ steps.npm-tag.outputs.dist-tag }}
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      working-directory: packages/cube
+      run: npm publish --provenance --tag ${{ steps.npm-tag.outputs.dist-tag }}
 
     # 发 GitHub Packages：scope @newlifex 匹配组织 NewLifeX，用 GITHUB_TOKEN
     # 认证用 npm config set 写用户级 .npmrc；token 取 github.token（secrets.GITHUB_TOKEN 在该步骤可能为空，
