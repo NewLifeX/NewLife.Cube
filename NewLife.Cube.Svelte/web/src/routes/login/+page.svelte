@@ -66,6 +66,8 @@
         </button>
       </form>
 
+      <a class="block text-center text-sm mt-3" style="color: var(--primary)" href="/forgot-password">忘记密码？</a>
+
       {#if pageConfig?.oauth?.length}
         <div class="mt-6">
           <div class="relative">
