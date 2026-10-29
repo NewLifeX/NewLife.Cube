@@ -57,11 +57,11 @@ jobs:
     - name: Setup node
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 24
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
+    # 在仓库根安装：NewLife.Cube.Vue/web 是根工作区成员，目录内没有独立 lockfile
     - name: Install dependencies
-      working-directory: NewLife.Cube.Vue/web
       run: pnpm install --frozen-lockfile
     - name: Hardcoded Chinese scan (must be 0)
       run: node scripts/vue-i18n-scan.mjs --max=0
@@ -326,6 +326,10 @@ jobs:
         cache-dependency-path: '**/*.csproj'
     - name: Build CubeSSO
       run: dotnet build CubeSSO/CubeSSO.csproj -c Release --nologo
+    # E2EMvcTest 的输出目录是 Bin/E2ETest，Microsoft.Playwright 的构建目标会把 playwright.ps1
+    # 复制到这里；不先构建测试工程，下面的浏览器安装步骤会因为找不到脚本而失败。
+    - name: Build E2E test project
+      run: dotnet build E2EMvcTest/E2EMvcTest.csproj -c Release --nologo
     - name: Install Playwright browsers
       shell: pwsh
       run: |
@@ -408,7 +412,7 @@ jobs:
         version: 9.15.0
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 24
         cache: pnpm
     - name: Install
       run: pnpm install --frozen-lockfile
@@ -461,7 +465,7 @@ jobs:
         version: 9.15.0
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 24
         cache: pnpm
     - name: Install
       run: pnpm install --frozen-lockfile
@@ -516,7 +520,7 @@ jobs:
         version: 9.15.0
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 24
         cache: pnpm
     - name: Install
       run: pnpm install --frozen-lockfile

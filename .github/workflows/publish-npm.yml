@@ -19,6 +19,10 @@ jobs:
       id-token: write       # npm Trusted Publishing（OIDC）签发短时发布令牌
       packages: write
 
+    env:
+      # 只判断 secret 是否存在，不把令牌本身放到步骤级环境变量里
+      HAS_NPM_TOKEN: ${{ secrets.NPM_TOKEN != '' }}
+
     steps:
     - uses: actions/checkout@v4
 
@@ -28,16 +32,25 @@ jobs:
 
     # 不配 registry-url：否则 setup-node 会写 //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}，
     # 未设该变量时 npm 会报 Failed to replace env in config；OIDC 发布不需要任何 token。
-    # 必须用 Node 24（自带 npm ≥ 11.5）：Trusted Publishing 是 npm 11.5 起的能力，
-    # Node 22 的 npm 10 会在 publish 时报 ENEEDAUTH。
+    # Node 24 自带 npm 11.6+（Trusted Publishing 需要 npm ≥ 11.5.1）。
     - uses: actions/setup-node@v4
       with:
         node-version: 24
 
-    - name: Print toolchain versions
+    # 版本不足或没有 id-token 权限时在这里明确失败，而不是拖到 publish 报晦涩的 ENEEDAUTH。
+    - name: Verify toolchain
       run: |
         node --version
-        npm --version
+        NPMV=$(npm --version)
+        echo "npm $NPMV"
+        if [ "$(printf '%s\n%s\n' "$NPMV" 11.5.1 | sort -V | head -n1)" != "11.5.1" ]; then
+          echo "::error::npm $NPMV 低于 11.5.1，无法使用 Trusted Publishing"
+          exit 1
+        fi
+        if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+          echo "::error::缺少 ACTIONS_ID_TOKEN_REQUEST_URL，检查作业 permissions 是否包含 id-token: write"
+          exit 1
+        fi
 
     - name: Install
       run: pnpm install --frozen-lockfile
@@ -58,24 +71,80 @@ jobs:
           echo "dist-tag=latest" >> "$GITHUB_OUTPUT"
         fi
 
+    # 稳定版标签必须与包版本一致（v0.1.0）。.NET 发版标签（如 v6.16.2026.1027）不代表 npm 版本，
+    # 直接跳过，避免把 package.json 里的旧版本当 latest 重发而撞 E403。
+    - name: Check release tag
+      id: guard
+      run: |
+        SKIP=false
+        if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+          VER=$(node -p "require('./packages/cube/package.json').version")
+          if [ "v$VER" != "$GITHUB_REF_NAME" ]; then
+            SKIP=true
+            echo "::notice::标签 $GITHUB_REF_NAME 与 packages/cube 版本 v$VER 不一致，跳过 npm 发布"
+          fi
+        fi
+        echo "skip=$SKIP" >> "$GITHUB_OUTPUT"
+
     - name: Set beta version
       if: steps.npm-tag.outputs.dist-tag == 'beta'
       run: node scripts/set-beta-version.mjs
+
+    # 同一版本重复发布会被 npm 拒绝（E403），发布前先查一次，已存在就跳过
+    - name: Check published version
+      id: version
+      working-directory: packages/cube
+      run: |
+        NAME=$(node -p "require('./package.json').name")
+        VER=$(node -p "require('./package.json').version")
+        echo "::notice::准备发布 $NAME@$VER"
+        if npm view "$NAME@$VER" version >/dev/null 2>&1; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+          echo "::notice::$NAME@$VER 已存在于 npmjs，跳过发布"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
 
     # 发 npmjs.org：Trusted Publishing（OIDC），npm 校验仓库 + workflow 后签发短时令牌，无需 NPM_TOKEN
     # 前置：npm 包 Settings → Trusted Publisher 指向 NewLifeX/NewLife.Cube 的 publish-npm.yml，并授予 npm publish
     # 首次需在配置过期前发一次以完成 Pending validation
     - name: Publish to npmjs.org
+      id: publish-oidc
+      if: steps.guard.outputs.skip == 'false' && steps.version.outputs.exists == 'false'
+      continue-on-error: true
       working-directory: packages/cube
       run: npm publish --provenance --tag ${{ steps.npm-tag.outputs.dist-tag }}
 
-    # 发 GitHub Packages：scope @newlifex 匹配组织 NewLifeX，用 GITHUB_TOKEN
-    # 认证用 npm config set 写用户级 .npmrc；token 取 github.token（secrets.GITHUB_TOKEN 在该步骤可能为空，
-    # 空 token 会直接报 ENEEDAUTH need auth ... npm.pkg.github.com）
-    - name: Publish to GitHub Packages
+    # 兜底：Trusted Publisher 尚未完成验证时，退回仓库 Secrets 里的 NPM_TOKEN（配置好 OIDC 后可删除该 secret）
+    - name: Publish to npmjs.org (NPM_TOKEN fallback)
+      id: publish-token
+      if: steps.guard.outputs.skip == 'false' && steps.version.outputs.exists == 'false' && steps.publish-oidc.outcome == 'failure' && env.HAS_NPM_TOKEN == 'true'
+      continue-on-error: true
+      working-directory: packages/cube
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       run: |
-        npm config set //npm.pkg.github.com/:_authToken "${NODE_AUTH_TOKEN}" --location user
-        npm whoami --registry https://npm.pkg.github.com
-        pnpm -r --filter './packages/*' publish --no-git-checks --tag ${{ steps.npm-tag.outputs.dist-tag }} --registry https://npm.pkg.github.com
+        echo "::notice::OIDC 发布失败，改用 NPM_TOKEN 兜底"
+        echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "$RUNNER_TEMP/.npmrc.token"
+        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/.npmrc.token" npm publish --tag ${{ steps.npm-tag.outputs.dist-tag }}
+
+    - name: Report publish failure
+      if: >-
+        steps.guard.outputs.skip == 'false' && steps.version.outputs.exists == 'false' &&
+        steps.publish-oidc.outcome == 'failure' &&
+        (env.HAS_NPM_TOKEN != 'true' || steps.publish-token.outcome == 'failure')
+      run: |
+        echo "::error::npm 发布失败：OIDC 与 NPM_TOKEN 均不可用。请到 npm 包 Settings 确认 Trusted Publisher 已指向 NewLifeX/NewLife.Cube 的 publish-npm.yml，或在仓库 Secrets 配置可用的 NPM_TOKEN"
+        exit 1
+
+    # 发 GitHub Packages：scope @newlifex 匹配组织 NewLifeX，用 github.token。
+    # 这是附加分发渠道，失败不影响主流程（npmjs 已可安装），故 continue-on-error。
+    - name: Publish to GitHub Packages
+      if: steps.guard.outputs.skip == 'false' && steps.version.outputs.exists == 'false'
+      continue-on-error: true
       env:
         NODE_AUTH_TOKEN: ${{ github.token }}
+      run: |
+        pnpm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
+        pnpm config set @newlifex:registry https://npm.pkg.github.com
+        pnpm -r --filter './packages/*' publish --no-git-checks --access public --tag ${{ steps.npm-tag.outputs.dist-tag }}
