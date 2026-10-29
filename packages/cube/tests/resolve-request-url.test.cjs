@@ -56,6 +56,25 @@ test('resolveRequestUrl: base 尾部多余斜杠被清理', () => {
   assert.equal(resolveRequestUrl('http://host:5000///', '/Admin/Lov'), 'http://host:5000/api/Admin/Lov');
 });
 
+// 共享 loader（createWorkbenchLoader / createWidgetLayoutLoader）与部分皮肤传入的是不带前导斜杠的
+// `Admin/Index`，直接拼接会得到 `/apiAdmin/...`（路径粘连），这里锁定归一口径
+test('resolveRequestUrl: url 不带前导斜杠不粘连', () => {
+  assert.equal(resolveRequestUrl('', 'Admin/Index/Dashboard'), '/api/Admin/Index/Dashboard');
+  assert.equal(resolveRequestUrl('http://host:5000', 'Admin/Index/Dashboard'), 'http://host:5000/api/Admin/Index/Dashboard');
+  assert.equal(
+    resolveRequestUrl('http://host:5000/api', 'Admin/Index/SaveWidgetLayout'),
+    'http://host:5000/api/Admin/Index/SaveWidgetLayout',
+  );
+});
+
+test('resolveRequestUrl: 不带斜杠的服务接口仍去 /api', () => {
+  assert.equal(resolveRequestUrl('http://host:5000/api', 'Auth/Login'), 'http://host:5000/Auth/Login');
+});
+
+test('resolveRequestUrl: 不带斜杠且自带 api 前缀不重复补', () => {
+  assert.equal(resolveRequestUrl('http://host:5000', 'api/Admin/Lov'), 'http://host:5000/api/Admin/Lov');
+});
+
 test('getServiceBaseUrl: 跨域带 /api → 去掉 /api', () => {
   assert.equal(getServiceBaseUrl('http://host:5000/api'), 'http://host:5000');
 });
@@ -88,4 +107,11 @@ test('isServiceApiPath: /Cube 按动作区分', () => {
 
 test('isServiceApiPath: 绝对地址返回 false', () => {
   assert.equal(isServiceApiPath('https://x.com/Auth/Login'), false);
+});
+
+test('isServiceApiPath: 不带前导斜杠同样识别', () => {
+  assert.equal(isServiceApiPath('Auth/Login'), true);
+  assert.equal(isServiceApiPath('Cube/MenuTree'), true);
+  assert.equal(isServiceApiPath('Cube/App'), false);
+  assert.equal(isServiceApiPath('Admin/User'), false);
 });

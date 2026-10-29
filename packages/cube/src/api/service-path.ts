@@ -34,6 +34,20 @@ const CUBE_SERVICE_ACTIONS = new Set([
 ]);
 
 /**
+ * 相对地址归一：补齐前导斜杠
+ *
+ * 调用方（含包内 `page.getAction(type, action)` 与各皮肤）可能传入不带前导斜杠的
+ * `Admin/Index`，直接拼 `${base}/api${path}` 会得到 `/apiAdmin/...`（路径粘连）。
+ * 统一在入口归一，前缀识别与拼接都基于带斜杠的地址。
+ *
+ * @param url 相对地址
+ * @returns 带前导斜杠的相对地址
+ */
+function withLeadingSlash(url: string): string {
+  return url.startsWith('/') ? url : `/${url}`;
+}
+
+/**
  * 由实体 baseURL 派生服务接口 baseURL
  *
  * 实体接口带 /api 路径前缀，服务接口（Auth/Cube/Sso/Mfa）不带：
@@ -65,12 +79,13 @@ export function getServiceBaseUrl(baseUrl?: string): string {
 export function resolveRequestUrl(baseUrl: string, url: string): string {
   // 绝对地址（含协议或 //）原样返回
   if (!url || /^(?:https?:)?\/\//i.test(url)) return url;
+  const relative = withLeadingSlash(url);
   const base = (baseUrl ?? '').replace(/\/+$/, '');
   const baseNoApi = base.replace(/\/api$/i, '');
-  if (isServiceApiPath(url)) {
-    return `${baseNoApi}${url}`;
+  if (isServiceApiPath(relative)) {
+    return `${baseNoApi}${relative}`;
   }
-  const path = url.startsWith('/api') ? url.slice(4) : url;
+  const path = relative.startsWith('/api') ? relative.slice(4) : relative;
   return `${baseNoApi}/api${path}`;
 }
 
@@ -85,11 +100,12 @@ export function resolveRequestUrl(baseUrl: string, url: string): string {
 export function isServiceApiPath(url: string): boolean {
   if (!url || /^(?:https?:)?\/\//i.test(url)) return false;
 
-  if (SERVICE_PREFIXES.some((p) => url.startsWith(p))) return true;
+  const path = withLeadingSlash(url);
+  if (SERVICE_PREFIXES.some((p) => path.startsWith(p))) return true;
 
   // Cube 区域实体与 CubeController 服务共用 /Cube 前缀，按动作名区分
-  if (url.startsWith('/Cube/')) {
-    const seg = (url.split('/')[2] ?? '').split(/[?/]/)[0];
+  if (path.startsWith('/Cube/')) {
+    const seg = (path.split('/')[2] ?? '').split(/[?/]/)[0];
     return CUBE_SERVICE_ACTIONS.has(seg);
   }
 
