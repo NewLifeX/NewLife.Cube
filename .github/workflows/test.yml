@@ -434,6 +434,8 @@ jobs:
         pnpm --filter ./NewLife.Cube.Vuetify/web run test:unit
     - name: Skin unit tests (NaiveUI / ArcoVue / TDesign / Shadcn / Svelte)
       run: |
+        # Svelte 单测读 tsconfig 里的 ./.svelte-kit/tsconfig.json，需先 sync 生成（build 时会自动做）
+        pnpm --filter ./NewLife.Cube.Svelte/web exec svelte-kit sync
         pnpm --filter ./NewLife.Cube.NaiveUI/web run test:unit
         pnpm --filter ./NewLife.Cube.ArcoVue/web run test:unit
         pnpm --filter ./NewLife.Cube.TDesign/web run test:unit
