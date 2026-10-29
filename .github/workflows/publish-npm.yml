@@ -27,10 +27,17 @@ jobs:
         version: 9.15.0
 
     # 不配 registry-url：否则 setup-node 会写 //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}，
-    # 未设该变量时 npm 会报 Failed to replace env in config；OIDC 发布不需要任何 token
+    # 未设该变量时 npm 会报 Failed to replace env in config；OIDC 发布不需要任何 token。
+    # 必须用 Node 24（自带 npm ≥ 11.5）：Trusted Publishing 是 npm 11.5 起的能力，
+    # Node 22 的 npm 10 会在 publish 时报 ENEEDAUTH。
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 24
+
+    - name: Print toolchain versions
+      run: |
+        node --version
+        npm --version
 
     - name: Install
       run: pnpm install --frozen-lockfile
