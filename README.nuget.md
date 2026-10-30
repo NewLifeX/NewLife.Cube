@@ -211,7 +211,7 @@ public class AppController : EntityController<App, AppModel>
 | `NewLife.Cube.Svelte` | SvelteKit 2 + Svelte 5 | Tailwind CSS 4 | 5186 |
 | `NewLife.Cube.TDesign` | Vue 3 | TDesign | 5187 |
 
-> The skins above are reference implementations kept in this repository and are not published to NuGet. `NewLife.Cube.Vue` (official, full unit and E2E coverage) and `NewLife.Cube.React` (separate repository) are published as NuGet packages with the front-end embedded; reference both and call `app.UseCubeSkin()` to switch the active skin via the `SpaSkin` setting.
+> The skins above are reference implementations kept in this repository and are not published to NuGet. `NewLife.Cube.Vue` (official, full unit and E2E coverage) and `NewLife.Cube.React` (separate repository) are published as NuGet packages with the front-end embedded; after `AddCube` + `UseCube`, Cube auto-detects every referenced skin package and you can switch the active skin via the `SpaSkin` setting without any extra call.
 
 ```csharp
 // Pick one

@@ -370,6 +370,10 @@ public static class CubeService
             app.UseStaticFiles(new StaticFileOptions { FileProvider = fileProvider });
         }
 
+        // 前端皮肤：项目引用了三代前端皮肤包（NewLife.Cube.Vue / NewLife.Cube.React 等）时自动启用，
+        // 用户项目保持 AddCube + UseCube 不变，即可在设置页切换已引用的皮肤
+        var skinManager = CubeSkinService.RegisterSkins(app);
+
         // 如果，头像目录设置不为空，开启静态文件中间件
         if (!set.AvatarPath.IsNullOrWhiteSpace())
         {
@@ -415,6 +419,9 @@ public static class CubeService
                 context.Response.StatusCode = 404;
                 return Task.CompletedTask;
             });
+
+            // 前端皮肤 SPA 回退：接口路由优先，未匹配的非文件路径回退到当前皮肤的 index.html
+            CubeSkinService.MapFallback(endpoints, skinManager);
         });
 
         //ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];

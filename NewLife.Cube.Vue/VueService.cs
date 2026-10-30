@@ -8,7 +8,7 @@ namespace NewLife.Cube.Vue;
 public static class VueService
 {
     /// <summary>使用Vue前端皮肤。注册嵌入式静态资源与SPA回退路由，提供Vue3+Element Plus管理后台前端</summary>
-    /// <remarks>多个皮肤包共存时请改用 <see cref="CubeSkinService.UseCubeSkin(WebApplication, IWebHostEnvironment, String)"/>，按设置项切换皮肤</remarks>
+    /// <remarks>UseCube 已自动发现并启用皮肤包，通常无需调用；本方法仅用于强制指定 Vue 皮肤</remarks>
     /// <param name="app"></param>
     /// <param name="env"></param>
     /// <returns></returns>

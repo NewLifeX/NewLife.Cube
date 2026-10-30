@@ -114,6 +114,42 @@ public class CubeSkinTests
 
         var app = builder.Build();
         app.UseCubeSkin(app.Environment);
+        app.UseCubeSkin(app.Environment);
+
+        await app.StartAsync();
+        var address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.First();
+        using var client = new HttpClient { BaseAddress = new Uri(address) };
+        try
+        {
+            // 重复调用不重复注册，仍使用设置指定的皮肤；若重复注册回退路由，此处会抛路由歧义
+            Assert.Contains("FakeA-index", await GetTextAsync(client, "/"));
+        }
+        finally
+        {
+            await app.StopAsync();
+            await app.DisposeAsync();
+            CubeSetting.Current = old;
+        }
+    }
+
+    [Fact(DisplayName = "皮肤_UseCube自动注册后可强制切换皮肤")]
+    public async Task Skin_AutoRegistration_AndForceSwitch()
+    {
+        var old = CubeSetting.Current;
+        CubeSetting.Current = new CubeSetting { SpaSkin = "FakeA" };
+
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseSetting(WebHostDefaults.ServerUrlsKey, "http://127.0.0.1:0");
+        builder.Services.AddSingleton<CubeSkinManager>();
+
+        var app = builder.Build();
+
+        // 模拟 UseCube 内部的自动注册（静态资源 + SPA 回退）
+        var manager = CubeSkinService.RegisterSkins(app);
+        Assert.NotNull(manager);
+        CubeSkinService.MapFallback(app, manager);
+
+        // 用户项目无需额外调用；显式调用只用于强制皮肤
         app.UseCubeSkin(app.Environment, "FakeB");
 
         await app.StartAsync();
@@ -121,8 +157,8 @@ public class CubeSkinTests
         using var client = new HttpClient { BaseAddress = new Uri(address) };
         try
         {
-            // 第二次调用被忽略，仍使用首次注册的皮肤；若重复注册回退路由，此处会抛路由歧义
-            Assert.Contains("FakeA-index", await GetTextAsync(client, "/"));
+            Assert.Contains("FakeB-index", await GetTextAsync(client, "/"));
+            Assert.Contains("B-js", await GetTextAsync(client, "/app.js"));
         }
         finally
         {
