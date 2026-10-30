@@ -1228,6 +1228,7 @@
   "Skin",
   "Skin. Outer frame layout, ACE/layui",
   "Sort",
+  "SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)",
   "Sql文本",
   "SSO redirect allowlist",
   "SSO redirect allowlist. Domains allowed to receive the JWT after sign-in, comma-separated with wildcard prefixes such as *.company.com. Empty allows the same site only; other origins are rejected and sent back to the home page",

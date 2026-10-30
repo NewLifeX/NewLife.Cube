@@ -14,6 +14,31 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(30, true, Icon = "Tools")]
 public class CubeController : ConfigController<CubeSetting>, IPageDataContext
 {
+    private readonly CubeSkinManager _skinManager;
+
+    /// <summary>实例化</summary>
+    /// <param name="skinManager">前端皮肤管理器</param>
+    public CubeController(CubeSkinManager skinManager) => _skinManager = skinManager;
+
+    /// <summary>获取配置字段。SPA皮肤字段渲染为下拉，列出当前项目已引用的皮肤包</summary>
+    /// <param name="kind">视图类型</param>
+    /// <returns></returns>
+    protected override IList<DataField> OnGetFields(ViewKinds kind)
+    {
+        var list = base.OnGetFields(kind);
+
+        var df = list.FirstOrDefault(e => e.Name == nameof(CubeSetting.SpaSkin));
+        if (df != null)
+        {
+            df.ItemType = "singleSelect";
+            df.DataSource = _ => _skinManager.Skins.Values
+                .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(e => e.Name, e => e.DisplayName);
+        }
+
+        return list;
+    }
+
     //private Boolean _has;
     //private readonly UIService _uIService;
 

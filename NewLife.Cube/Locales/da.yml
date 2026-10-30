@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Startside. Den første indholdsside, der åbnes, når du går ind i administrationskonsollen"
 "Theme. Content page theme, ACE/layui": "Tema. Tema for indholdssiden, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Udseende. Layout for den ydre ramme, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPA-frontend-skin. Matcher navnet på skin-pakken, f.eks. Vue/React; tom vælger automatisk (Vue først)"
 "Login tip. Empty hides the tip on the sign-in page": "Logontip. Tomt skjuler tipset på logonsiden"
 "Login logo. Empty uses the default logo": "Logonlogo. Tomt bruger standardlogoet"
 "Login background. Image URL; empty uses the default background": "Logonbaggrund. Billed-URL; tom bruger standardbaggrunden"

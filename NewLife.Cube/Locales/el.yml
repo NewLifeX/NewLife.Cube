@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Αρχική σελίδα. Η πρώτη σελίδα περιεχομένου που ανοίγει μετά την είσοδο στην κονσόλα διαχείρισης"
 "Theme. Content page theme, ACE/layui": "Θέμα. Θέμα σελίδας περιεχομένου, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Εμφάνιση. Διάταξη εξωτερικού πλαισίου, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "Skin front-end SPA. Αντιστοιχεί στο όνομα του πακέτου skin, π.χ. Vue/React; κενό επιλέγει αυτόματα (πρώτα Vue)"
 "Login tip. Empty hides the tip on the sign-in page": "Συμβουλή σύνδεσης. Κενό κρύβει τη συμβουλή στη σελίδα σύνδεσης"
 "Login logo. Empty uses the default logo": "Λογότυπο σύνδεσης. Κενό χρησιμοποιεί το προεπιλεγμένο λογότυπο"
 "Login background. Image URL; empty uses the default background": "Φόντο σύνδεσης. URL εικόνας· κενό χρησιμοποιεί το προεπιλεγμένο φόντο"

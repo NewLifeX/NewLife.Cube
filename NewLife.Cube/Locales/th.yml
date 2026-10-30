@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "หน้าเริ่มต้น หน้าเนื้อหาแรกที่เปิดหลังเข้าสู่คอนโซลผู้ดูแล"
 "Theme. Content page theme, ACE/layui": "ธีม ธีมของหน้าเนื้อหา ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "สกิน เลย์เอาต์กรอบภายนอก ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "สกินฟรอนต์เอนด์ SPA ตรงกับชื่อแพ็กเกจสกิน เช่น Vue/React ค่าว่างจะเลือกอัตโนมัติ (Vue ก่อน)"
 "Login tip. Empty hides the tip on the sign-in page": "ข้อความแนะนำการเข้าสู่ระบบ หากเว้นว่างจะซ่อนข้อความแนะนำบนหน้าลงชื่อเข้าใช้"
 "Login logo. Empty uses the default logo": "โลโก้การเข้าสู่ระบบ หากเว้นว่างจะใช้โลโก้เริ่มต้น"
 "Login background. Image URL; empty uses the default background": "พื้นหลังการเข้าสู่ระบบ URL ของรูปภาพ หากเว้นว่างจะใช้พื้นหลังเริ่มต้น"

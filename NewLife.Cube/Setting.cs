@@ -350,6 +350,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("UI")]
     public String Skin { get; set; } = "";
 
+    /// <summary>SPA前端皮肤。Vue/React等，对应皮肤包的名称；留空自动选择（优先Vue）</summary>
+    [Description("SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)")]
+    [Category("UI")]
+    public String SpaSkin { get; set; } = "";
+
     /// <summary>登录提示。留空表示不显示登录提示信息</summary>
     [Description("Login tip. Empty hides the tip on the sign-in page")]
     [Category("UI")]

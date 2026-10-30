@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "スタート ページ。管理コンソールに入った後に最初に開くコンテンツ ページ"
 "Theme. Content page theme, ACE/layui": "テーマ。コンテンツ ページのテーマ（ACE/layui）"
 "Skin. Outer frame layout, ACE/layui": "スキン。外枠のレイアウト（ACE/layui）"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPAフロントエンドスキン。Vue/React などのスキンパッケージ名に対応します。空の場合は自動選択（Vue 優先）"
 "Login tip. Empty hides the tip on the sign-in page": "ログインのヒント。空にするとサインイン ページのヒントを非表示にします"
 "Login logo. Empty uses the default logo": "ログイン ロゴ。空の場合は既定のロゴを使用します"
 "Login background. Image URL; empty uses the default background": "ログイン背景。画像の URL。空の場合は既定の背景を使用します"

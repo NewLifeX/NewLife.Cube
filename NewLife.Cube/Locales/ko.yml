@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "시작 페이지. 관리 콘솔에 들어온 후 처음 열리는 콘텐츠 페이지입니다"
 "Theme. Content page theme, ACE/layui": "테마. 콘텐츠 페이지 테마이며 ACE/layui 중 선택합니다"
 "Skin. Outer frame layout, ACE/layui": "스킨. 외부 프레임 레이아웃이며 ACE/layui 중 선택합니다"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPA 프런트엔드 스킨. Vue/React와 같은 스킨 패키지 이름과 일치합니다. 비워 두면 자동 선택(Vue 우선)"
 "Login tip. Empty hides the tip on the sign-in page": "로그인 안내. 비워 두면 로그인 페이지의 안내를 숨깁니다"
 "Login logo. Empty uses the default logo": "로그인 로고. 비워 두면 기본 로고를 사용합니다"
 "Login background. Image URL; empty uses the default background": "로그인 배경. 이미지 URL이며, 비워 두면 기본 배경을 사용합니다"

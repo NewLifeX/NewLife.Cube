@@ -270,6 +270,9 @@ public static class CubeService
         // 注册IP地址库
         IpResolver.Register();
 
+        // 前端皮肤。皮肤包通过 ICubeSkin 自动发现，支持设置项切换与运行时切换
+        services.AddSingleton<CubeSkinManager>();
+
         // 插件
         var moduleManager = new ModuleManager();
         services.AddSingleton(moduleManager);

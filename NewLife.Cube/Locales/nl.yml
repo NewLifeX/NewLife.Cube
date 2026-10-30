@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Startpagina. Eerste inhoudspagina die wordt geopend na het betreden van de beheerconsole"
 "Theme. Content page theme, ACE/layui": "Thema. Thema van de inhoudspagina, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Uiterlijk. Indeling van het buitenframe, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPA-frontendskin. Komt overeen met de naam van het skinpakket, zoals Vue/React; leeg selecteert automatisch (Vue eerst)"
 "Login tip. Empty hides the tip on the sign-in page": "Aanmeldingstip. Leeg verbergt de tip op de aanmeldpagina"
 "Login logo. Empty uses the default logo": "Aanmeldingslogo. Leeg gebruikt het standaardlogo"
 "Login background. Image URL; empty uses the default background": "Aanmeldingsachtergrond. Afbeeldings-URL; leeg gebruikt de standaardachtergrond"

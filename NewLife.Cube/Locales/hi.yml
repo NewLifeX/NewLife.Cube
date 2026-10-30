@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "प्रारंभ पृष्ठ। प्रशासन कंसोल में प्रवेश करने के बाद खुलने वाला पहला सामग्री पृष्ठ"
 "Theme. Content page theme, ACE/layui": "थीम। सामग्री पृष्ठ थीम, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "स्किन। बाहरी फ़्रेम लेआउट, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPA फ़्रंटएंड स्किन। Vue/React जैसे स्किन पैकेज नाम से मेल खाता है; खाली होने पर स्वतः चयन (पहले Vue)"
 "Login tip. Empty hides the tip on the sign-in page": "लॉगिन संकेत। खाली रखने पर साइन-इन पृष्ठ पर संकेत छिप जाता है"
 "Login logo. Empty uses the default logo": "लॉगिन लोगो। खाली रखने पर डिफ़ॉल्ट लोगो उपयोग होता है"
 "Login background. Image URL; empty uses the default background": "लॉगिन पृष्ठभूमि। छवि URL; खाली रखने पर डिफ़ॉल्ट पृष्ठभूमि उपयोग होती है"

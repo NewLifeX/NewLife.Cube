@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Başlangıç sayfası. Yönetim konsoluna girdikten sonra açılan ilk içerik sayfası"
 "Theme. Content page theme, ACE/layui": "Tema. İçerik sayfası teması, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Kaplama. Dış çerçeve düzeni, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPA ön uç kaplaması. Vue/React gibi kaplama paketinin adıyla eşleşir; boş bırakılırsa otomatik seçilir (önce Vue)"
 "Login tip. Empty hides the tip on the sign-in page": "Oturum açma ipucu. Boş bırakılırsa oturum açma sayfasındaki ipucu gizlenir"
 "Login logo. Empty uses the default logo": "Oturum açma logosu. Boş bırakılırsa varsayılan logo kullanılır"
 "Login background. Image URL; empty uses the default background": "Oturum açma arka planı. Görsel URL'si; boş bırakılırsa varsayılan arka plan kullanılır"

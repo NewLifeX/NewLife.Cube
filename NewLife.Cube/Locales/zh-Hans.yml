@@ -534,6 +534,7 @@
 "Start page. First content page opened after entering the admin console": "工作台页面。进入后台的第一个内容页"
 "Theme. Content page theme, ACE/layui": "主题样式。每一个内容页，ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "首页皮肤。最外层框架页，ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPA前端皮肤。对应皮肤包的名称，如 Vue/React；留空自动选择（优先 Vue）"
 "Login tip. Empty hides the tip on the sign-in page": "登录提示。留空表示不显示登录提示信息"
 "Login logo. Empty uses the default logo": "登录页Logo。留空时使用默认Logo"
 "Login background. Image URL; empty uses the default background": "登录页背景图。留空时使用默认背景，可填写图片URL"

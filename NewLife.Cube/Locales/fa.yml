@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "صفحه شروع. نخستین صفحه محتوایی که پس از ورود به کنسول مدیریت باز می‌شود"
 "Theme. Content page theme, ACE/layui": "پوسته. پوسته صفحه محتوا، ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "پوشش. چیدمان قاب بیرونی، ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "پوسته فرانت‌اند SPA. با نام بسته پوسته مانند Vue/React مطابقت دارد؛ خالی به‌صورت خودکار انتخاب می‌کند (ابتدا Vue)"
 "Login tip. Empty hides the tip on the sign-in page": "راهنمای ورود. خالی بودن، راهنما را در صفحه ورود پنهان می‌کند"
 "Login logo. Empty uses the default logo": "نشان ورود. خالی بودن از نشان پیش‌فرض استفاده می‌کند"
 "Login background. Image URL; empty uses the default background": "پس‌زمینه ورود. نشانی URL تصویر؛ خالی بودن از پس‌زمینه پیش‌فرض استفاده می‌کند"
