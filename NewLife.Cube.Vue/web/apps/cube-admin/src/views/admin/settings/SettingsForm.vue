@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import request from '@newlifex/cube-vue/core/utils/request';
 import { routeToApiPrefix } from '@newlifex/cube-vue/core/utils/url';
-import { serializeSubmitModel } from '@newlifex/cube-vue/core/utils/fieldControl';
+import { serializeSubmitModel, normalizeEmptyTextValues, isRequiredField } from '@newlifex/cube-vue/core/utils/fieldControl';
 import { backendFieldsToFormFields } from '@newlifex/cube-vue/core/utils/fieldMeta';
 import FormContent from '@newlifex/cube-vue/core/views/components/FormContent.vue';
 import FormActions from '@newlifex/cube-vue/core/views/components/FormActions.vue';
@@ -29,6 +29,8 @@ const apiPrefix = computed(() => routeToApiPrefix(String(route.path)));
 const fields = computed(() =>
   backendFieldsToFormFields((props.meta?.form ?? []) as BackendField[]),
 );
+/** 是否存在必填项。配置页字段全部可选时为 false，不再展示「* 为必填字段」图例 */
+const hasRequiredField = computed(() => fields.value.some((field) => isRequiredField(field)));
 
 const model = ref<Record<string, any>>({});
 const loading = ref(false);
@@ -58,7 +60,11 @@ async function save() {
 
   saving.value = true;
   try {
-    const payload = serializeSubmitModel(model.value, fields.value);
+    // 文本字段的空值统一转空串：配置模型的 String 属性不可空，null 会被隐式 [Required] 拒收
+    const payload = serializeSubmitModel(
+      normalizeEmptyTextValues(model.value, fields.value),
+      fields.value,
+    );
     await request({ url: apiPrefix.value, method: 'put', data: payload });
     ElMessage.success(t('common.saveSuccess'));
   } catch {
@@ -86,7 +92,7 @@ watch(
         :api-prefix="apiPrefix"
         @update:model-value="(value: Record<string, any>) => (model = value)"
       />
-      <FormActions :loading="saving" @submit="save" />
+      <FormActions :loading="saving" :show-required-hint="hasRequiredField" @submit="save" />
     </template>
   </div>
 </template>

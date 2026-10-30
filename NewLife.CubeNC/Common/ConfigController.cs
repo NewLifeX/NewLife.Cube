@@ -37,7 +37,14 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
 
     /// <summary>获取配置字段，按当前请求语言本地化</summary>
     /// <returns>本地化后的字段集合</returns>
-    protected override IList<DataField> GetFields() => DataField.Localize(GetMembers(typeof(TConfig)));
+    protected override IList<DataField> GetFields()
+    {
+        var fields = DataField.Localize(GetMembers(typeof(TConfig)));
+        // 配置项都是可选覆盖，留空表示沿用默认值，因此一律不标记必填，避免配置页满屏必填星号并拦截保存
+        foreach (var field in fields) field.Nullable = true;
+
+        return fields;
+    }
 
     #region AI 表单
     // IFormAiContext：配置表单页（如魔方设置）经全局 AiController 注册 get_form_schema / fill_form 工具，支持 AI 填表。

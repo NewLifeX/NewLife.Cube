@@ -304,6 +304,40 @@ export function serializeSubmitModel(
 }
 
 /**
+ * 提交前把文本字段的空值（null/undefined）归一为空串。
+ *
+ * 单对象配置页的模型属性多是不可空 `String`（如 `SysConfig.Name`），请求体中的 null 会触发
+ * ASP.NET Core 对不可空引用类型的隐式 `[Required]` 校验，返回 code=-2「xxx field is required」，
+ * 表现为「留空即使用默认值」的配置项永远保存失败。空串不触发该校验，与 MVC 表单提交语义一致。
+ *
+ * @param model 表单数据
+ * @param fields 字段元数据（用于判定哪些字段是文本字段）
+ * @returns 归一后的新对象，不修改入参
+ */
+export function normalizeEmptyTextValues(
+  model: Record<string, unknown>,
+  fields: FieldMeta[],
+): Record<string, unknown> {
+  if (!model) return {};
+
+  // 后端字段名为 PascalCase，模型键为 camelCase，按不区分大小写匹配
+  const textNames = new Set(
+    fields
+      .filter((field) => (field.typeName ?? '').trim().toLowerCase() === 'string')
+      .map((field) => field.name.toLowerCase()),
+  );
+  const out: Record<string, unknown> = { ...model };
+  if (textNames.size === 0) return out;
+
+  for (const key of Object.keys(out)) {
+    if (!textNames.has(key.toLowerCase())) continue;
+    if (out[key] === null || out[key] === undefined) out[key] = '';
+  }
+
+  return out;
+}
+
+/**
  * 枚举选项值归一：dataSource 的键为字符串（如 "1"），而提交目标模型可能是枚举 / Int32，
  * 纯数字键转 number（System.Text.Json 把数字转枚举）；非数字键（如名称型字典）原样返回。
  *

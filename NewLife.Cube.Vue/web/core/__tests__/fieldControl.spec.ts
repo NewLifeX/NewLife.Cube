@@ -17,6 +17,7 @@ import {
   areaLevel,
   isMoneyItemType,
   isPercentItemType,
+  normalizeEmptyTextValues,
   parseDecimalItemType,
   resolveControl,
   resolveSearchControl,
@@ -392,5 +393,33 @@ describe('ItemType 扩展：percent / money / decimal(p,s) / 前缀', () => {
       expect(areaLevel(field)).toBe(level);
     }
     expect(areaLevel(f({ name: 'AreaId', typeName: 'Int32', itemType: 'area' }))).toBe(3);
+  });
+});
+
+describe('normalizeEmptyTextValues 提交前空串归一', () => {
+  it('文本字段的 null/undefined 转空串，其余类型原样保留', () => {
+    const fields = [
+      f({ name: 'Name', typeName: 'String' }),
+      f({ name: 'Count', typeName: 'Int32' }),
+      f({ name: 'Enable', typeName: 'Boolean' }),
+    ];
+    const model = { name: null, count: 0, enable: false };
+
+    expect(normalizeEmptyTextValues(model, fields)).toEqual({ name: '', count: 0, enable: false });
+  });
+
+  it('字段名 PascalCase 与模型键 camelCase 不区分大小写匹配', () => {
+    const out = normalizeEmptyTextValues({ displayName: null }, [f({ name: 'DisplayName', typeName: 'String' })]);
+
+    expect(out).toEqual({ displayName: '' });
+  });
+
+  it('非空文本、非文本字段的空值都不改写，且不修改入参', () => {
+    const model = { name: 'cube', remark: null };
+    const out = normalizeEmptyTextValues(model, [f({ name: 'Name', typeName: 'String' })]);
+
+    expect(out).toEqual({ name: 'cube', remark: null });
+    expect(out).not.toBe(model);
+    expect(model.name).toBe('cube');
   });
 });

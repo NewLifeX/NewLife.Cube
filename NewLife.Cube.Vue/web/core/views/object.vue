@@ -12,7 +12,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import request from '@newlifex/cube-vue/core/utils/request';
 import { routeToApiPrefix } from '@newlifex/cube-vue/core/utils/url';
-import { serializeSubmitModel } from '@newlifex/cube-vue/core/utils/fieldControl';
+import { serializeSubmitModel, normalizeEmptyTextValues, isRequiredField } from '@newlifex/cube-vue/core/utils/fieldControl';
 import type { FieldMeta } from '@newlifex/cube-vue/core/types/field';
 import FormContent from './components/FormContent.vue';
 import FormActions from './components/FormActions.vue';
@@ -26,6 +26,8 @@ const { t } = useI18n();
 const apiPrefix = computed(() => props.apiPrefix || routeToApiPrefix(String(route.path)));
 
 const fields = ref<FieldMeta[]>([]);
+/** 是否存在必填项。全部可选（如配置页）时不展示「* 为必填字段」图例 */
+const hasRequiredField = computed(() => fields.value.some((field) => isRequiredField(field)));
 const model = ref<Record<string, any>>({});
 const loading = ref(false);
 const saving = ref(false);
@@ -59,7 +61,11 @@ async function handleSubmit() {
 
   saving.value = true;
   try {
-    const payload = serializeSubmitModel(model.value, fields.value);
+    // 文本字段的空值统一转空串：配置模型的 String 属性不可空，null 会被隐式 [Required] 拒收
+    const payload = serializeSubmitModel(
+      normalizeEmptyTextValues(model.value, fields.value),
+      fields.value,
+    );
     await request({ url: apiPrefix.value, method: 'put', data: payload });
     ElMessage.success(t('common.saveSuccess'));
   } catch (e) {
@@ -82,7 +88,7 @@ onMounted(load);
       :api-prefix="apiPrefix"
       @update:model-value="(v: Record<string, any>) => (model = v)"
     />
-    <FormActions :loading="saving" @submit="handleSubmit" />
+    <FormActions :loading="saving" :show-required-hint="hasRequiredField" @submit="handleSubmit" />
   </div>
 </template>
 

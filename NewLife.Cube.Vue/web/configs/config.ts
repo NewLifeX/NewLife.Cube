@@ -5,7 +5,7 @@ import type { EnvConfig } from '../core/configure/types';
  */
 export const config: EnvConfig = {
   base: {
-    title: '魔方系统',
+    // title 留空时使用当前语言的品牌兜底文案（topBar.brandFallback），不要写死中文
     footer: '版权所有 © 2025',
     logo: 'https://sso.newlifex.com/favicon.ico',
   },

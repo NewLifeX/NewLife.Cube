@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
 import { useMenuStore, type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 import { getConfig } from '@newlifex/cube-vue/core/configure';
@@ -22,8 +23,10 @@ const visibleMenus = computed(() => filterVisibleMenuTree(treeMenus.value ?? [])
 
 const config = getConfig();
 const siteStore = useSiteStore();
+const { t } = useI18n();
 void siteStore.load();
-const title = computed(() => siteStore.name || config.base.title);
+// 站点名称为空时使用当前语言的品牌兜底文案，确保切换语言后标题同步翻译
+const title = computed(() => siteStore.name || t('topBar.brandFallback'));
 const logo = computed(() => siteStore.logo || config.base.logo);
 const openMenuId = ref<string | null>(null);
 

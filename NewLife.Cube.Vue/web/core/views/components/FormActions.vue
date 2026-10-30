@@ -3,10 +3,13 @@ import { useI18n } from 'vue-i18n';
 
 interface Props {
   showContinue?: boolean;
+  /** 是否展示「* 为必填字段」图例。表单没有必填项时由调用方关闭，避免出现无意义的说明 */
+  showRequiredHint?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   showContinue: true,
+  showRequiredHint: true,
 });
 
 const emit = defineEmits<{
@@ -20,7 +23,7 @@ const { t } = useI18n();
 
 <template>
   <div class="form-actions">
-    <span class="fa-hint">* {{ t('form.requiredMark') }}</span>
+    <span v-if="showRequiredHint" class="fa-hint">* {{ t('form.requiredMark') }}</span>
     <div class="fa-buttons">
       <button class="fa-btn fa-btn--cancel" type="button" @click="emit('cancel')">
         {{ t('button.cancel') }}

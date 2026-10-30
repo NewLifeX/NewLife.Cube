@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using NewLife.Configuration;
 using XCode.Membership;
 using Xunit;
 
@@ -72,6 +73,42 @@ public class MetaContractTests
 
         Assert.Contains("\"ui\":{", json);
         Assert.Contains("\"density\":\"compact\"", json);
+    }
+
+    private sealed class OptionalConfig : Config<OptionalConfig>
+    {
+        public String Name { get; set; } = "test";
+
+        public Int32 Count { get; set; }
+    }
+
+    private sealed class OptionalConfigController : ConfigController<OptionalConfig>
+    {
+        public String Serialize(Object data) => OnJsonSerialize(data);
+    }
+
+    [Fact(DisplayName = "配置页字段全部可选，不标必填")]
+    public void ConfigMeta_FieldsAreOptional()
+    {
+        var old = Config<OptionalConfig>.Current;
+        try
+        {
+            Config<OptionalConfig>.Current = new OptionalConfig();
+            var http = new DefaultHttpContext();
+            var controller = new OptionalConfigController
+            {
+                ControllerContext = new ControllerContext { HttpContext = http, RouteData = new RouteData() },
+            };
+
+            var json = controller.Serialize(controller.Meta().Data);
+
+            Assert.DoesNotContain("\"required\":", json);
+            Assert.Equal(2, json.Split("\"nullable\":true").Length - 1);
+        }
+        finally
+        {
+            Config<OptionalConfig>.Current = old;
+        }
     }
 
     private sealed class NoTimeMetaController : ReadOnlyEntityController<User>

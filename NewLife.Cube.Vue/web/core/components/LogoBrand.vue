@@ -24,7 +24,8 @@ const config = getConfig();
 const siteStore = useSiteStore();
 const { t } = useI18n();
 void siteStore.load();
-const brandTitle = computed(() => siteStore.name || config.base.title || t('topBar.brandFallback'));
+// 站点名称为空时使用当前语言的品牌兜底文案，确保切换语言后左上角标题同步翻译
+const brandTitle = computed(() => siteStore.name || t('topBar.brandFallback'));
 const brandLogo = computed(() => siteStore.logo || config.base.logo);
 
 // 图片 logo 相关
