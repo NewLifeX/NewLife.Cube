@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
+using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Reflection;
 using Scalar.AspNetCore;
@@ -35,7 +36,11 @@ public static class SwaggerService
                 options.IncludeXmlComments(xmlFile, true);
 
             var asm = AssemblyX.Entry;
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "第三代魔方", Description = "第三代魔方WebApi接口，用于前后端分离。", Version = asm.FileVersion });
+            // 文档标题默认读项目系统展示名（SysConfig.DisplayName，即 LoginConfig 返回给前端的同源字段），
+            // 未配置时回退框架原名，零侵入兼容既有宿主；项目入口只需设置 DisplayName 一处
+            var sysName = SysConfig.Current.DisplayName;
+            if (sysName.IsNullOrEmpty()) sysName = "第三代魔方";
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = sysName, Description = $"{sysName}WebApi接口，用于前后端分离。", Version = asm.FileVersion });
             //options.SwaggerDoc("Basic", new OpenApiInfo { Version = "basic", Title = "基础模块" });
             //options.SwaggerDoc("Admin", new OpenApiInfo { Version = "admin", Title = "系统管理" });
             //options.SwaggerDoc("Cube", new OpenApiInfo { Version = "cube", Title = "魔方管理" });
@@ -123,7 +128,9 @@ public static class SwaggerService
         app.UseSwaggerUI(options =>
         {
             var asm = AssemblyX.Entry;
-            options.DocumentTitle = !asm.Title.IsNullOrEmpty() ? asm.Title : "魔方Web开发平台";
+            // 页面标题同样优先系统展示名，回退入口程序集标题
+            var sysName = SysConfig.Current.DisplayName;
+            options.DocumentTitle = !sysName.IsNullOrEmpty() ? sysName : (!asm.Title.IsNullOrEmpty() ? asm.Title : "魔方Web开发平台");
 
             //options.SwaggerEndpoint("/swagger/Basic/swagger.json", "Basic");
             //options.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin");
@@ -199,7 +206,8 @@ public static class SwaggerService
             branch.UseRouting();
             branch.UseEndpoints(endpoints => endpoints.MapScalarApiReference(options =>
             {
-                options.WithTitle(title ?? app.Environment.ApplicationName ?? "魔方接口文档");
+                // 标题缺省链：显式传入 > 系统展示名 > 应用名 > 框架原名
+                options.WithTitle(title ?? SysConfig.Current.DisplayName ?? app.Environment.ApplicationName ?? "魔方接口文档");
                 options.AddPreferredSecuritySchemes("JwtBearer");
                 options.AddHttpAuthentication("JwtBearer", auth => auth.Token = app.Configuration["Scalar:JwtToken"] ?? String.Empty);
                 options.WithJavaScriptConfiguration("/scalar/config.js");
