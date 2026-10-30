@@ -198,7 +198,7 @@ public class AppController : EntityController<App, AppModel>
 | 自定义主题 | 仿照 `MetronicModule` 实现 IModule 并在 Use 阶段挂载。 |
 | 视图覆写 | 子项目同路径同名 `.cshtml` 覆盖父级。 |
 | 多语言 | 11 种运行时语言用于接口消息，按请求识别区域，并提供 11 语言 Vue 前端。 |
-| 新一代皮肤包 | 基于 pnpm workspace + 公共模块 `@newlifex/cube`（统一 API / Token / 类型、字段元数据 → 控件映射）。`NewLife.Cube.Vue` 为官方皮肤；8 套 SPA 皮肤为仓库内参考实现，不发布 NuGet，构建其 `web` 后引用 .NET 项目；React 皮肤独立为 CubeAntd 仓库。 |
+| 新一代皮肤包 | 基于 pnpm workspace + 公共模块 `@newlifex/cube`（统一 API / Token / 类型、字段元数据 → 控件映射）。`NewLife.Cube.Vue` 为官方皮肤并已发布 NuGet（编译产物嵌入 DLL）；React 由独立仓库 `NewLife.Cube.React` 以同样方式发布；其余 8 套 SPA 皮肤为仓库内参考实现，不发布 NuGet，构建其 `web` 后引用 .NET 项目。 |
 
 | NuGet 包 | 框架 | UI 库 | 开发端口 |
 |---------|------|-------|---------|

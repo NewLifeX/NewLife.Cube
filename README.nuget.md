@@ -198,7 +198,7 @@ public class AppController : EntityController<App, AppModel>
 | Custom themes | Implement `IModule` like `MetronicModule` and mount it in the use phase. |
 | View overrides | A `.cshtml` with the same path in a child project overrides the parent. |
 | Localization | 11 runtime languages for API messages, request-level culture detection and an 11-language Vue front-end. |
-| New-generation skins | pnpm workspace with the shared package `@newlifex/cube` (API / token / types, field metadata -> controls). `NewLife.Cube.Vue` is the official skin; the eight SPA skins live in this repo as reference implementations and are not published to NuGet — build their `web` project with pnpm, then reference the .NET project. React lives in the separate CubeAntd repository. |
+| New-generation skins | pnpm workspace with the shared package `@newlifex/cube` (API / token / types, field metadata -> controls). `NewLife.Cube.Vue` is the official skin and is published to NuGet with the compiled front-end embedded; React is published from the separate `NewLife.Cube.React` repository the same way. The other SPA skins live in this repo as reference implementations and are not published — build their `web` project with pnpm, then reference the .NET project. |
 
 | Skin project | Framework | UI library | Dev port |
 |---------------|-----------|------------|----------|
@@ -211,7 +211,7 @@ public class AppController : EntityController<App, AppModel>
 | `NewLife.Cube.Svelte` | SvelteKit 2 + Svelte 5 | Tailwind CSS 4 | 5186 |
 | `NewLife.Cube.TDesign` | Vue 3 | TDesign | 5187 |
 
-> The skins above are reference implementations kept in this repository, not published NuGet packages. `NewLife.Cube.Vue` is the official skin with full unit and E2E coverage.
+> The skins above are reference implementations kept in this repository and are not published to NuGet. `NewLife.Cube.Vue` (official, full unit and E2E coverage) and `NewLife.Cube.React` (separate repository) are published as NuGet packages with the front-end embedded; reference both and call `app.UseCubeSkin()` to switch the active skin via the `SpaSkin` setting.
 
 ```csharp
 // Pick one
