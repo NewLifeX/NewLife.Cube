@@ -9,10 +9,10 @@ export function deepMerge<T extends object = object>(target: T, source: any): T 
 
   if (isObject(target) && isObject(source)) {
     for (const key in source) {
-      if (isObject(source[key])) {
-        if (!result[key]) {
-          Object.assign(result, { [key]: {} });
-        }
+      // 仅当两侧都是普通对象时才递归合并；target 侧是函数/非对象时（如 defaultConfig
+      // 的 getUserInfoAxiosConfig 函数被项目对象覆盖），直接以 source 值覆盖。
+      // 否则 deepMerge(函数, 对象) 会因 {...函数}={} 且 isObject(函数)=false 退化为空对象，两边数据全丢。
+      if (isObject(source[key]) && isObject(result[key])) {
         result[key] = deepMerge(result[key], source[key]);
       } else {
         Object.assign(result, { [key]: source[key] });
