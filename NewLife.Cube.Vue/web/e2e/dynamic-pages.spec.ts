@@ -16,6 +16,27 @@ test.describe('动态页（/meta 驱动）', () => {
     await expect(page.locator('.el-table__body tr').first()).toBeVisible();
   });
 
+  test('列表页高级菜单收纳低频操作，勾选后才出现批量条', async ({ page }) => {
+    await page.goto('/Admin/Parameter');
+    await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 15000 });
+
+    // 未勾选时批量条不占位
+    await expect(page.locator('[data-role="batch-bar"]')).toHaveCount(0);
+
+    // 高级菜单打开后有导出格式等菜单项
+    await page.locator('[data-role="advanced"]').click();
+    await expect(page.locator('.el-dropdown-menu__item').first()).toBeVisible();
+    expect(await page.locator('.el-dropdown-menu__item').count()).toBeGreaterThanOrEqual(5);
+    await page.keyboard.press('Escape');
+
+    // 勾选后出现批量条与批量按钮
+    await page.locator('.el-table__body .el-checkbox').first().click();
+    const bar = page.locator('[data-role="batch-bar"]');
+    await expect(bar).toBeVisible();
+    await expect(bar.locator('[data-role="batch-enable"]')).toBeVisible();
+    await expect(bar.locator('[data-role="batch-delete"]')).toBeVisible();
+  });
+
   test('菜单列表按树渲染', async ({ page }) => {
     await page.goto('/Admin/Menu');
     await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 15000 });

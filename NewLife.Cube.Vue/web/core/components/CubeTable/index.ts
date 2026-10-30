@@ -10,8 +10,12 @@
  * 定制走插槽；需要自管引擎时 `useCubeEngine({ routePath })` 后 `:context="ctx"` 传入。
  */
 export { default as CubeTable } from './CubeTable.vue';
+export { default as CubeTableToolbar } from './CubeTableToolbar.vue';
 export { default as CubeTableActions } from './CubeTableActions.vue';
+export { default as CubeTableAdvancedMenu } from './CubeTableAdvancedMenu.vue';
+export { default as CubeTableBatchBar } from './CubeTableBatchBar.vue';
 export { default as CubeTableSearch } from './CubeTableSearch.vue';
+export { default as CubeTableMetricList } from './CubeTableMetricList.vue';
 export { default as CubeTableMetrics } from './CubeTableMetrics.vue';
 export { default as CubeTableColumnSetting } from './CubeTableColumnSetting.vue';
 export { default as CubeTableGrid } from './CubeTableGrid.vue';

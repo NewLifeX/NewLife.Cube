@@ -50,9 +50,10 @@ describe('CubeTableActions 按钮显隐', () => {
     const { wrapper } = await mountActions();
     const text = wrapper.text();
     expect(text).toContain('新增');
-    expect(text).toContain('批量删除');
     expect(text).toContain('导入');
     expect(text).toContain('导出');
+    // 未勾选时不渲染批量条
+    expect(wrapper.find('[data-role="batch-bar"]').exists()).toBe(false);
     // 下载模板对应后端自定义 Action，默认不给（给了点了就报错）
     expect(text).not.toContain('下载模板');
   });
@@ -66,9 +67,10 @@ describe('CubeTableActions 按钮显隐', () => {
     const { wrapper } = await mountActions({
       setting: { enableAdd: false, enableSelect: false },
       flags: { add: true, batchDelete: true },
+      selected: [{ id: 1 }],
     });
     expect(wrapper.text()).toContain('新增');
-    expect(wrapper.text()).toContain('批量删除');
+    expect(wrapper.find('[data-role="batch-delete"]').exists()).toBe(true);
   });
 
   it('应该在整页只读时收掉全部写入口 当后端 isReadOnly 时', async () => {
@@ -116,9 +118,9 @@ describe('CubeTableActions 批量启用/禁用', () => {
     expect(wrapper.find('[data-role="batch-disable"]').exists()).toBe(false);
   });
 
-  it('应该无勾选时禁用、勾选后可点 当实体含 Enable 字段时', async () => {
+  it('应该无勾选时不渲染、勾选后可点 当实体含 Enable 字段时', async () => {
     const empty = await mountWithEnable([FIELDS.id, FIELDS.enable], []);
-    expect(empty.wrapper.find('[data-role="batch-enable"]').attributes('disabled')).toBeDefined();
+    expect(empty.wrapper.find('[data-role="batch-enable"]').exists()).toBe(false);
 
     const picked = await mountWithEnable([FIELDS.id, FIELDS.enable], [{ id: 7 }, { id: 8 }]);
     expect(picked.wrapper.find('[data-role="batch-enable"]').attributes('disabled')).toBeUndefined();
@@ -167,18 +169,19 @@ describe('CubeTableActions 动作', () => {
 });
 
 describe('CubeTableActions 批量删除与勾选联动', () => {
-  it('应该在没有勾选时禁用按钮 当选中数为零时', async () => {
+  it('应该在没有勾选时不渲染批量条 当选中数为零时', async () => {
     const { wrapper, actions } = await mountActions();
-    const button = buttonByText(wrapper, '批量删除');
-    expect(button.attributes('disabled')).toBeDefined();
-    await button.trigger('click');
+    expect(wrapper.find('[data-role="batch-bar"]').exists()).toBe(false);
     expect(actions.removeSelectedRows).not.toHaveBeenCalled();
   });
 
-  it('应该把勾选条数写进按钮文案并可点 当有勾选时', async () => {
+  it('应该在批量条显示勾选数量并可点删除 当有勾选时', async () => {
     const { wrapper, actions } = await mountActions({ selected: [{ id: 1 }, { id: 2 }] });
-    const button = buttonByText(wrapper, '批量删除');
-    expect(button.text()).toContain('（2）');
+    const bar = wrapper.find('[data-role="batch-bar"]');
+    expect(bar.exists()).toBe(true);
+    expect(bar.text()).toContain('已选 2 项');
+
+    const button = wrapper.find('[data-role="batch-delete"]');
     expect(button.attributes('disabled')).toBeUndefined();
     await button.trigger('click');
     expect(actions.removeSelectedRows).toHaveBeenCalled();

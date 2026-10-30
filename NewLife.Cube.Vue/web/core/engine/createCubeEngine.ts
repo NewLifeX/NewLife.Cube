@@ -44,6 +44,7 @@ import {
   dateStamp,
   entityNameFromPrefix,
   findMissingRequiredField,
+  hasActiveSearch,
   inferBlobExtension,
   isZeroRowImport,
   parseImportResult,
@@ -56,6 +57,7 @@ import type {
   CubeEngineOptions,
   CubeFormMode,
   CubePageMeta,
+  DevelopAction,
   ImportResult,
   NormalizedPageFields,
   PageSetting,
@@ -550,6 +552,76 @@ export function createCubeEngine(
     }
   }
 
+  async function removeAll(): Promise<boolean> {
+    const kw = keywordEnabled.value ? keyword.value : '';
+    if (!hasActiveSearch(kw, searchModel)) {
+      deps.notify?.warning?.(t('engine.deleteAllNeedQuery'));
+      return false;
+    }
+
+    submitting.value = true;
+    try {
+      const params = buildQueryParams({
+        keyword: kw,
+        filters: searchModel,
+        keywordEnabled: keywordEnabled.value,
+        multiKeys: multiKeys.value,
+      });
+      const res = (await deps.http({
+        url: type.value,
+        method: 'delete',
+        params,
+      })) as { message?: string } | undefined;
+      deps.notify?.success?.(res?.message || t('engine.deleteAllSuccess'));
+      selected.value = [];
+      pageIndex.value = 1;
+      await load();
+      return true;
+    } catch (err) {
+      error.value = extractMessage(err) ?? t('engine.deleteAllFailed');
+      return false;
+    } finally {
+      submitting.value = false;
+    }
+  }
+
+  /** 开发工具：备份/备份并下载/恢复/清空表。后端仍会再次校验开发模式与系统管理员身份 */
+  async function developAction(act: DevelopAction): Promise<boolean> {
+    submitting.value = true;
+    try {
+      if (act === 'BackupAndExport') {
+        const blob = await fetchBlob(`${type.value}/Develop`, { act });
+        pendingBlob.value = {
+          blob,
+          name: buildDownloadName(
+            entityNameFromPrefix(type.value),
+            dateStamp(),
+            inferBlobExtension(blob.type),
+          ),
+        };
+        deps.notify?.success?.(t('engine.backupExportSuccess'));
+      } else {
+        const res = (await deps.http({
+          url: `${type.value}/Develop`,
+          method: 'get',
+          params: { act },
+        })) as { message?: string } | undefined;
+        deps.notify?.success?.(res?.message || t('engine.developSuccess'));
+        if (act === 'Restore' || act === 'Clear') {
+          selected.value = [];
+          pageIndex.value = 1;
+          await load();
+        }
+      }
+      return true;
+    } catch (err) {
+      error.value = extractMessage(err) ?? t('engine.developFailed');
+      return false;
+    } finally {
+      submitting.value = false;
+    }
+  }
+
   /** 导出：引擎只拿 blob 与文件名，`<a download>` 的 DOM 操作留在视图层 */
   async function exportFile(format = 'xlsx'): Promise<string | null> {
     const params = buildExportParams({
@@ -683,6 +755,8 @@ export function createCubeEngine(
     submitForm,
     remove,
     removeSelected,
+    removeAll,
+    developAction,
     exportFile,
     downloadTemplate,
     importFile,

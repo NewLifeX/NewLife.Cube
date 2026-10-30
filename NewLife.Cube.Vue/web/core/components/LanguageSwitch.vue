@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="language-switch">
+  <div v-if="!locked" class="language-switch">
     <el-dropdown @command="handleCommand">
       <span class="el-dropdown-link">
         {{ currentLanguageLabel }}
@@ -24,9 +24,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { ArrowDown } from '@element-plus/icons-vue';
-import { getCurrentLanguage, setLanguage, supportedLanguages } from '../i18n';
+import { useSiteStore } from '../stores/site';
+import {
+  getCurrentLanguage,
+  resolveSelectableLanguages,
+  setLanguage,
+  type CubeLocale,
+} from '../i18n';
 
 defineOptions({
   name: 'LanguageSwitch',
@@ -37,22 +43,27 @@ const emit = defineEmits<{
   change: [language: string];
 }>();
 
-const languages = supportedLanguages;
+const siteStore = useSiteStore();
 
-const currentLanguage = ref(getCurrentLanguage());
+/** 站点锁定语言时隐藏切换入口（与 /Cube/Site 的 language.locked 保持一致） */
+const locked = computed(() => siteStore.config?.language?.locked === true);
+
+/** 可选语言 = 前端 11 语 ∩ 站点/租户白名单 */
+const languages = computed(() => resolveSelectableLanguages(siteStore.config?.language));
+
+const currentLanguage = computed(() => getCurrentLanguage());
 
 const currentLanguageLabel = computed(() => {
-  const lang = languages.find((item) => item.value === currentLanguage.value);
+  const lang = languages.value.find((item) => item.value === currentLanguage.value);
   return lang ? lang.label : currentLanguage.value;
 });
 
 // 处理语言切换
-function handleCommand(command: typeof currentLanguage.value) {
-  if (command !== currentLanguage.value) {
-    currentLanguage.value = command;
-    setLanguage(command);
-    emit('change', command);
-  }
+function handleCommand(command: CubeLocale) {
+  if (command === currentLanguage.value) return;
+
+  setLanguage(command);
+  emit('change', command);
 }
 </script>
 

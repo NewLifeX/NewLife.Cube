@@ -73,9 +73,9 @@ beforeEach(() => {
 });
 
 describe('CubeTable 五段结构', () => {
-  it('应该按「操作栏→搜索→统计行→表格→分页」自上而下排 当用默认区块时', async () => {
+  it('应该按「搜索→工具栏→表格→分页」自上而下排 当用默认区块时', async () => {
     const { wrapper } = await mountHost();
-    const selectors = ['.cta', '.cts-wrap', '.ct-panel .ctm', '.ct-panel .ct-table-wrap', '.ct-panel .ctp'];
+    const selectors = ['.cts-wrap', '.ct-panel .ctt', '.ct-panel .ct-table-wrap', '.ct-panel .ctp'];
     const nodes = selectors.map((sel) => {
       const found = wrapper.find(sel);
       expect(found.exists(), sel).toBe(true);
@@ -86,6 +86,8 @@ describe('CubeTable 五段结构', () => {
       // 前一段必须在文档流里早于后一段（视觉自上而下）
       expect(before & Node.DOCUMENT_POSITION_FOLLOWING, selectors[i]).toBeTruthy();
     }
+    // 操作栏合并进工具栏，不再是独立一行
+    expect(wrapper.find('.ctt .cta').exists()).toBe(true);
   });
 
   it('应该渲染全套默认区块的内容 当页面自带引擎时', async () => {
@@ -212,7 +214,7 @@ describe('CubeTable 插槽转发', () => {
       },
     });
     expect(wrapper.find('.cta-left .biz').exists()).toBe(true);
-    expect(wrapper.find('.ctm-controls .te').exists()).toBe(true);
+    expect(wrapper.find('.ctt-controls .te').exists()).toBe(true);
     expect(wrapper.find('.ctp-left .fe').exists()).toBe(true);
   });
 
@@ -249,7 +251,7 @@ describe('CubeTable 插槽转发', () => {
     const { wrapper } = await mountHost({
       slots: { 'toolbar-extra': '<button class="ex">业务按钮</button>' },
     });
-    const controls = wrapper.find('.ctm-controls');
+    const controls = wrapper.find('.ctt-controls');
     expect(controls.find('.ex').exists()).toBe(true);
     expect(controls.find('.ctcs-trigger').exists()).toBe(true);
     // 内置按钮仍在

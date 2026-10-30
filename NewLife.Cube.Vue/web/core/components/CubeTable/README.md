@@ -1,27 +1,29 @@
 # CubeTable
 
-魔方默认列表页的**单一集成组件**：一个组件就是一个列表页，从上到下固定五段
-**操作栏 → 搜索条件 → 表格统计 → 表格 → 分页**，结构与视觉对齐 SmartMES 前端的
+魔方默认列表页的**单一集成组件**：一个组件就是一个列表页，从上到下固定四段
+**搜索条件 → 表格工具栏（操作 + 指标 + 视图控制）→ 表格 → 分页**，结构与视觉对齐 SmartMES 前端的
 `src/components/ListPage`（MES 全站 62 个列表页用的就是它）。定制一律走具名插槽。
 
 当前状态：**默认列表页的唯一实现**。`core/views/index.vue` 已只剩这一条渲染路径。
 
 ---
 
-## 五段结构（与 MES 同一套尺寸）
+## 四段结构
 
-| 段 | 组件 | 类名 | 对应 MES |
+| 段 | 组件 | 类名 | 说明 |
 | --- | --- | --- | --- |
 | ⓪ 页头（可选） | 页面经 `#header` 传入 | — | 页面自绘标题 |
-| ① 操作栏 | `CubeTableActions` | `.cta` | `.page-actions` |
-| ② 搜索条件 | `CubeTableSearch` | `.cts-wrap` | `.search-wrap`（一体式：常驻每行三列栅格） |
-| ③ 表格统计 | `CubeTableMetrics` | `.ctm` | `.table-toolbar`（左指标，右 追加控件 / 设置列 / 刷新） |
-| ④ 表格 | `CubeTableGrid` | `.ct-table-wrap` | `.table-wrap` + `el-table height=100%` |
-| ⑤ 分页 | `CubeTablePagination` | `.ctp` | `ListPage/PaginationBar`（左「共 N 条」，右分页器 + 每页条数下拉） |
+| ① 搜索条件 | `CubeTableSearch` | `.cts-wrap` | 一体式：常驻每行三列栅格 |
+| ② 表格工具栏 | `CubeTableToolbar` | `.ctt` | 左操作（`CubeTableActions` 内联 + 批量条）、中指标（`CubeTableMetricList`）、右视图控制（高级菜单 / 图表 / 设置列 / 刷新） |
+| ③ 表格 | `CubeTableGrid` | `.ct-table-wrap` | `.table-wrap` + `el-table height=100%` |
+| ④ 分页 | `CubeTablePagination` | `.ctp` | 左「共 N 条」，右分页器 + 每页条数下拉 |
+
+原「操作栏 + 指标行」已合并进 `.ctt`，表格因此上移一层。`CubeTableActions` 与
+`CubeTableMetrics` 仍单独导出，供业务页独立使用。
 
 ### 滚动模型：视口自适应，只有表格内滚动
 
-`.cube-table` 高 100%、页面本身不出滚动条，只有表格数据区滚动（③④⑤ 包在 `.ct-panel` 里，
+`.cube-table` 高 100%、页面本身不出滚动条，只有表格数据区滚动（②③④ 包在 `.ct-panel` 里，
 `flex:1 + min-height:0`；`el-table height=100%`）。搜索区 `flex-shrink:0`，展开时变高、
 表格区自动变矮，收起时反之——**筛选展开/收起天然自适应，无需额外代码**。
 
@@ -29,6 +31,21 @@
 > 宿主内容区必须 `height:100vh; overflow:hidden`（框架自带 `TopMenu` 布局即 `calc(100vh - 页头)`），
 > 仅 `min-height:100vh` 不算确定高度，百分比高度不生效→表格按内容撑高。`CubeTable` 自身已加
 > `overflow:hidden` 兜底，但撑不满的根因仍在宿主高度链。
+
+---
+
+## 高级菜单与批量条
+
+表面只常驻 `新增` + 业务按钮；低频/危险操作收进工具栏右侧的「高级」下拉：
+
+- 下载导入模板（`showDownloadTemplate` 开启时）
+- 导入数据（未只读 + 新增权限）
+- 导出 Excel / Csv / Json / Xml / Zip
+- 删除全部（当前查询结果）：有查询条件、删除权限、总数 > 0 时出现
+- 开发工具（`/meta` 的 `develop && isSystem`）：备份到服务器 / 备份并下载 / 从最新备份恢复 / 清空数据表
+
+批量启用/禁用/删除只在勾选后以 `CubeTableBatchBar` 出现，不勾选时不占位。业务自定义
+`meta.toolbar` 按钮仍平铺在操作区，不进入高级菜单。
 
 ---
 
@@ -104,13 +121,13 @@ const ctx = useCubeEngine({
 | 插槽 | 作用域 | 默认渲染 | 用途 |
 | --- | --- | --- | --- |
 | `header` | `{ ctx }` | 无 | 页头（标题、面包屑、提示条） |
-| `actions` | `{ ctx }` | 无（内置按钮仍在） | 操作栏左侧业务按钮，排在「添加」之前 |
-| `actions-extra` | `{ ctx }` | 无 | 操作栏右侧 |
+| `actions` | `{ ctx }` | 无（内置按钮仍在） | 操作区左侧业务按钮，排在「添加」之前 |
+| `actions-extra` | `{ ctx }` | 无 | 工具栏右侧业务控件，排在高级菜单之前 |
 | `search` | `{ ctx }` | `CubeTableSearch` | **Cube 扩展**：整块换掉搜索区 |
 | `search-bar` | `{ advanced, toggle, ctx }` | 搜索条（常驻三列栅格） | 换搜索栏那一行（自己管展开态时用） |
 | `search-advanced` | `{ ctx, controls }` | 无（默认条件已内联到搜索条） | 业务自带条件面板；有它时即使没有元数据条件也给展开入口 |
-| `metrics` | `{ ctx, metrics }` | `metrics` 数组渲染 | 换统计区 |
-| `toolbar-extra` | `{ ctx }` | 无 | 统计行右侧追加控件，排在齿轮之前 |
+| `metrics` | `{ ctx, metrics }` | `metrics` 数组渲染 | 换合并工具栏中间的统计区 |
+| `toolbar-extra` | `{ ctx }` | 无 | 视图控制区追加控件，排在高级菜单之后、设置列之前 |
 | `table` | `{ ctx, data, loading }` | `CubeTableGrid` | 整块换掉表格（卡片视图等） |
 | `default` | `{ visibleColumns, resetColumnVisibility }` | 按元数据生成列 | **业务自写列**，写了它生成列即让位 |
 | `col-<字段名>` | `{ row, column, value, index }` | 内置按控件渲染 | 单列单元格替换，如 `#col-Status` |
@@ -120,7 +137,8 @@ const ctx = useCubeEngine({
 | `footer-extra` | `{ ctx }` | 无 | 在「共 N 条」旁追加（如已选条数） |
 | `form` | `{ ctx }` | `CubeTableFormDialog` | 弹窗替换（要用 `el-drawer` 就在这里换） |
 
-子组件也可单独取用：`CubeTableActions` / `CubeTableSearch` / `CubeTableMetrics` /
+子组件也可单独取用：`CubeTableToolbar` / `CubeTableActions` / `CubeTableAdvancedMenu` /
+`CubeTableBatchBar` / `CubeTableSearch` / `CubeTableMetricList` / `CubeTableMetrics` /
 `CubeTableColumnSetting` / `CubeTableGrid` / `CubeTablePagination` / `CubeTableFormDialog`，
 全部以 `ctx` 为 prop（受控、可单测）。
 
@@ -206,14 +224,15 @@ const ctx = useCubeEngine({
 | `searchPlaceholder` | `string` | `'搜索关键字'` | 关键字框占位 |
 | `showSearch` | `boolean` | `true` | 是否显示搜索区 |
 | `metrics` | `CubeTableMetric[]` | `[]` | 统计指标（图标 / 名称 / 值 / 环比） |
-| `showRefresh` | `boolean` | `true` | 统计行右侧刷新按钮 |
+| `showRefresh` | `boolean` | `true` | 工具栏右侧刷新按钮 |
 | `pageSizes` | `number[]` | `[10,20,50]` | 每页条数档位（与 MES 同档） |
 | `totalUnit` / `sizeUnit` | `string` | `'条'` | 「共 N 条」/「N 条/页」单位 |
-| `columnsSetting` | `boolean` | `true` | 统计行「设置列」（localStorage 记忆） |
+| `columnsSetting` | `boolean` | `true` | 工具栏右侧「设置列」（localStorage 记忆） |
 | `columnsStorageKey` | `string` | `cube-table:columns:{apiPrefix}` | 迁移旧配置时可显式指定 |
-| `showAdd` / `showBatchDelete` | `boolean` | 跟随后端 | 添加 / 批量删除按钮 |
-| `showImport` / `showExport` | `boolean` | `true` | 导入 / 导出按钮 |
-| `showDownloadTemplate` | `boolean` | `false` | 下载模板（后端要有 `DownloadTemplate` Action） |
+| `showAdd` / `showBatchDelete` | `boolean` | 跟随后端 | 添加按钮 / 选中态批量删除 |
+| `showImport` / `showExport` | `boolean` | `true` | 高级菜单中的导入 / 导出入口 |
+| `showDownloadTemplate` | `boolean` | `false` | 高级菜单中的下载模板（后端要有 `DownloadTemplate` Action） |
+| `showAdvanced` | `boolean` | `true` | 是否显示高级菜单；关闭后导入/导出/删除全部/开发工具入口都不显示 |
 | `exportFormat` | `string` | `'xlsx'` | 导出格式 |
 | `importAccept` | `string` | — | 导入文件类型限制 |
 | `confirmDelete` | `boolean` | — | 删除二次确认（不传跟随 `pageSetting.doubleDelete`） |
@@ -225,8 +244,8 @@ const ctx = useCubeEngine({
 1. 列、条件、表单默认由 `meta` 元数据生成（MES 是页面各写一遍 `columns` / `formFields`）；
    要自己写列就用 `#default`。
 2. 取数失败就地说明在表格空态里，不再顶部弹错误条（`ElMessage` 由引擎统一提示）。
-3. 「图表」这类后台专属能力不属于组件：由页面经 `#toolbar-extra` 挂到统计行右侧，与「设置列」「刷新」同组
-   （共用 `core/views/components/ListChartButton.vue`；操作栏第一位留给业务按钮）。
+3. 「图表」这类后台专属能力不属于组件：由页面经 `#toolbar-extra` 挂到工具栏右侧，与高级菜单、「设置列」「刷新」同组
+   （共用 `core/views/components/ListChartButton.vue`；操作区第一位留给业务按钮）。
 
 ---
 
@@ -305,8 +324,8 @@ const ctx = useCubeEngine({
 
 ## CT（组件视觉回归）
 
-`CubeTable.story.ts` 定义 11 个变体，`CubeTable.ct.spec.ts` 共 19 条用例（12 条带像素基线、共 15 张，7 条纯行为）：
-`Default`（五段结构 + 全控件形态一屏）、`ReadOnly`、`Empty`、`LoadFail`、`Metrics`（指标行）、
+`CubeTable.story.ts` 定义 11 个变体，`CubeTable.ct.spec.ts` 覆盖默认结构、选中态批量条、高级菜单与像素基线：
+`Default`（四段结构 + 全控件形态一屏）、`ReadOnly`（只读时导出收在高级菜单）、`Empty`、`LoadFail`、`Metrics`（合并工具栏中的指标）、
 `OneFilter`（只有一个条件时的搜索栏）、`FormDialog`、`RowActions`（内置动作 5 个：前 3 + 「更多」，
 含展开下拉点选真实触发回调的行为断言）、`RowActionsSlotTextIcon` / `RowActionsSlotText` /
 `RowActionsSlotIcon`（外部插槽的三种按钮形态：文字+图标 / 纯文字带 `actionWidth:150` / 纯图标，
@@ -344,17 +363,20 @@ pnpm run test:ct          # 之后做像素比对
 | 文件 | 覆盖 |
 | --- | --- |
 | `core/engine/__tests__/logic.spec.ts` | 参数过滤、导出扩展名、导入行数解析、列显隐合并、主键容错、整行清洗、日期格式、必填判定 |
-| `core/engine/__tests__/createCubeEngine.spec.ts` | 首查/翻页/关键字/条件、附加条件、删除端点、批量删除与降级、提交校验与清洗、详情回显、导入 0 行、导出文件名、失败分支、换实体 |
+| `core/engine/__tests__/createCubeEngine.spec.ts` | 首查/翻页/关键字/条件、附加条件、删除端点、批量删除与降级、删除全部、开发工具备份/下载/清空、提交校验与清洗、详情回显、导入 0 行、导出文件名、失败分支、换实体 |
 | `core/engine/__tests__/useCubeEngine.spec.ts` | 路由推导、provide/inject、找不到引擎时报错、默认 deps 的解包与通知接线 |
 | `__tests__/cubeTable.logic.spec.ts` | 搜索控件显示态、展开入口判定、列视图与主键列、工具栏/表格开关优先级、操作列自适应与收起、弹窗分档、单元格渲染 |
 | `__tests__/useCubeTableActions.spec.ts` | 确认框取消不请求、`doubleDelete` 跟随后端、条数文案、导入复位、blob 落地后清空 |
 | `__tests__/useCubeTableColumns.spec.ts` | 历史配置读取、按前缀分桶、迁移旧键、新增列默认显示、存储不可用不炸页 |
 | `__tests__/CubeTableGrid.spec.ts` | 列头/行值/空值占位/0 与 false、值集翻译、图片附件、勾选列与操作列、操作列宽自适应与「更多」收起、`extraRowActions` 行级可见/禁用、插槽覆盖、双击编辑、业务自写列接管、`height=100%` 滚动模型、空态与失败态 |
 | `__tests__/CubeTableSearch.spec.ts` | 一体式结构（收起态第一行三格 / 展开铺入全部条件、格序、无条件不给入口）、各类型条件出的控件、字典下拉、是/否三档、LOV 交 LovSelect、`#bar` 与 `#advanced` 接管 |
-| `__tests__/CubeTableActions.spec.ts` | 按钮默认集、后端开关与页面意图优先级、只读收写入口、批量删除与勾选联动、导入文件框、业务按钮排在内置之前、空行不渲染 |
+| `__tests__/CubeTableActions.spec.ts` | 按钮默认集、内联/独立模式差异、后端开关与页面意图优先级、只读收写入口、业务按钮排在内置之前、空行不渲染 |
+| `__tests__/CubeTableBatchBar.spec.ts` | 未勾选不渲染、已选数量、批量启用/禁用请求、批量删除、取消选择、只读收写入口 |
+| `__tests__/CubeTableAdvancedMenu.spec.ts` | 菜单项按开关/权限/查询条件显隐、只读仅导出、开发工具开关、导出格式与删除全部命令 |
+| `__tests__/CubeTableToolbar.spec.ts` | 操作/指标/视图控制同一行、业务操作/指标/工具插槽转发、高级菜单关闭、无内容不渲染 |
 | `__tests__/CubeTableMetrics.spec.ts` | 指标/分隔线/图标/环比、`#metrics` 接管、右侧「追加→齿轮→刷新」顺序、空行不渲染 |
 | `__tests__/CubeTableColumnSetting.spec.ts` | 列清单、未记录视为显示、按记录取消勾选、set/reset 事件 |
 | `__tests__/CubeTablePagination.spec.ts` | 「共 N 条」与单位、`prev,pager,next,jumper` 布局、每页条数独立下拉、档位默认与覆盖 |
-| `__tests__/CubeTable.spec.ts` | 五段自上而下顺序、上下文三级解析优先级、区块开关、每个插槽的替换/追加边界、自写列转发、设置列持久化、失败就地说明、导出下载落地 |
-| `CubeTable.ct.spec.ts` + `CubeTable.story.ts` | 十一个变体的像素基线与行为：勾选→批量删除带条数并弹确认、关键字回车走 `q`、重置回全量、设置列隐藏并落 localStorage、换每页条数回第 1 页、行内删除取消不动数据、编辑先取详情、操作列超 3 个收「更多」并点选触发、插槽动作三种形态（文字+图标 / 纯文字 / 纯图标）的实测列宽与收起、滚动模型（矮视口下验证页面不滚、分页在视口内、只有表体内滚、展开筛选面板变矮） |
+| `__tests__/CubeTable.spec.ts` | 四段自上而下顺序、操作栏已合并进工具栏、上下文三级解析优先级、区块开关、每个插槽的替换/追加边界、自写列转发、设置列持久化、失败就地说明、导出下载落地 |
+| `CubeTable.ct.spec.ts` + `CubeTable.story.ts` | 变体像素基线与行为：默认/只读/空态/失败/指标/选中态批量条/高级菜单、勾选→批量删除带条数并弹确认、关键字回车走 `q`、重置回全量、设置列隐藏并落 localStorage、换每页条数回第 1 页、行内删除取消不动数据、编辑先取详情、操作列超 3 个收「更多」并点选触发、插槽动作三种形态（文字+图标 / 纯文字 / 纯图标）的实测列宽与收起、滚动模型（矮视口下验证页面不滚、分页在视口内、只有表体内滚、展开筛选面板变矮） |
 

@@ -77,6 +77,25 @@ export function withPagination(
   return { pageIndex, pageSize, ...params };
 }
 
+/**
+ * 当前是否带有有效查询条件。
+ *
+ * 用于「删除全部 / 清空数据表」这类危险操作的显隐：空串、null、空数组不算条件，
+ * `0` 与 `false` 算条件（与 `dropEmptyParams` 同口径）。
+ */
+export function hasActiveSearch(
+  keyword?: string,
+  filters?: Record<string, unknown>,
+): boolean {
+  if ((keyword ?? '').trim()) return true;
+
+  return Object.values(filters ?? {}).some((value) => {
+    if (value === null || value === undefined || value === '') return false;
+    if (Array.isArray(value)) return value.length > 0;
+    return true;
+  });
+}
+
 /** 导出请求参数：格式 + 当前关键字与筛选（保证「导出当前筛选结果」语义） */
 export function buildExportParams(options: {
   format: string;
@@ -86,12 +105,10 @@ export function buildExportParams(options: {
   /** 多选字段名；数组值统一转逗号分隔 */
   multiKeys?: Iterable<string>;
 }): Record<string, unknown> {
-  const params: Record<string, unknown> = { [EXPORT_FORMAT_PARAM]: options.format };
-  if (options.keywordEnabled !== false) {
-    const kw = (options.keyword ?? '').trim();
-    if (kw) params[KEYWORD_PARAM] = kw;
-  }
-  return joinMultiParams({ ...params, ...dropEmptyParams(options.filters ?? {}) }, options.multiKeys);
+  return {
+    [EXPORT_FORMAT_PARAM]: options.format,
+    ...buildQueryParams(options),
+  };
 }
 
 /**
@@ -105,6 +122,7 @@ export function inferBlobExtension(contentType?: string): string {
   if (type.includes('csv')) return '.csv';
   if (type.includes('json')) return '.json';
   if (type.includes('xml')) return '.xml';
+  if (type.includes('gzip')) return '.gz';
   if (type.includes('zip')) return '.zip';
   return '.xlsx';
 }

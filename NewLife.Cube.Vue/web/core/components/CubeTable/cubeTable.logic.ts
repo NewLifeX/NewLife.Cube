@@ -343,6 +343,8 @@ export interface ToolbarFlagInput {
   exportFile?: boolean;
   downloadTemplate?: boolean;
   refresh?: boolean;
+  /** 是否显示「高级」菜单。默认 true */
+  advanced?: boolean;
 }
 
 /** 操作行与指标行的按钮开关结论（同一份判定，两行各自取用） */
@@ -353,6 +355,8 @@ export interface ToolbarFlags {
   exportFile: boolean;
   downloadTemplate: boolean;
   refresh: boolean;
+  /** 是否显示「高级」菜单 */
+  advanced: boolean;
   /** 后端整页只读时一律隐藏写入口 */
   readOnly: boolean;
 }
@@ -392,6 +396,7 @@ export function resolveToolbarFlags(
     exportFile: input.exportFile ?? permissions?.export !== false,
     downloadTemplate: input.downloadTemplate ?? false,
     refresh: input.refresh ?? true,
+    advanced: input.advanced ?? true,
   };
 }
 

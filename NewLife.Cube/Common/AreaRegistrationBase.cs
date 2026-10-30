@@ -46,7 +46,7 @@ public class AreaBase : AreaAttribute, IApiDescriptionGroupNameProvider
 
         var ns = areaType.Namespace + ".Controllers";
         areaName = areaName ?? areaType.Name.TrimSuffix("Area");
-        XTrace.WriteLine("Registering administration area [{0}], controller namespace [{1}]", areaName, ns);
+        XTrace.WriteLine(L.TLog("Start registering admin area [{0}], controller namespace [{1}]", areaName, ns));
 
         // 更新区域名集合
         var rs = CubeService.AreaNames?.ToList() ?? new List<String>();
@@ -80,7 +80,6 @@ public class AreaBase : AreaAttribute, IApiDescriptionGroupNameProvider
     protected static void ScanController(Type areaType, String areaName = null)
     {
         areaName = areaName ?? areaType.Name.TrimSuffix("Area");
-        XTrace.WriteLine("start------Initializing menu system of [{0}]------start", areaName);
 
         var mf = ManageProvider.Menu;
         if (mf == null) return;
@@ -113,8 +112,6 @@ public class AreaBase : AreaAttribute, IApiDescriptionGroupNameProvider
             Role.CheckRole();
         }, TaskCreationOptions.LongRunning);
         task.Wait(1_000);
-
-        XTrace.WriteLine("end---------Initializing menu system of [{0}]---------end", areaName);
     }
 
     private static ICollection<String> _namespaces;

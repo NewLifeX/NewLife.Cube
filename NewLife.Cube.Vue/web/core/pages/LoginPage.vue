@@ -5,7 +5,7 @@
   核心理念：使用 Element Plus CSS 变量驱动全部配色，自动适配多主题（cyber/forest/aurora/industrial）与黑白模式。
 
   功能：
-  1. onMounted 并行调用 /Cube/Site 与 /Auth/LoginConfig（透传 ?tenant=），分别获取站点品牌与登录能力
+  1. onMounted 并行加载站点配置（共享 store：/Cube/Site）与 /Auth/LoginConfig（透传 ?tenant=），分别获取站点品牌/语言与登录能力
   2. 根据配置渲染密码表单 / OAuth 入口 / 版权信息
   3. 密码登录成功后写入 token 并跳回 redirect 页面
   4. OAuth 跳转 URL 统一为 /Sso/Login/{name}?source=front-end&redirect_uri={redirect}
@@ -16,7 +16,8 @@
   依赖：
   - core/configure 的 getConfig() 获取 baseUrl
   - core/utils/token 的 setAccessToken() 写入 token
-  - core/utils/loginApi 的 fetchSiteConfig / fetchLoginConfig / loginByPassword 调用后端
+  - core/stores/site 的 useSiteStore 加载站点品牌/语言（标题、favicon 同步生效）
+  - core/utils/loginApi 的 fetchLoginConfig / loginByPassword 调用后端
   - @newlifex/cube 的类型定义
 -->
 <template>
@@ -196,7 +197,6 @@ import { getConfig } from '../configure';
 import { setAccessToken, setRefreshToken } from '../utils/token';
 import {
   fetchLoginConfig,
-  fetchSiteConfig,
   loginByPassword,
   registerByForm,
   sendCode,
@@ -205,12 +205,14 @@ import {
 import LoginForm from './LoginForm.vue';
 import RegisterForm from './RegisterForm.vue';
 import LanguageSwitch from '../components/LanguageSwitch.vue';
-import type { LoginConfig, LoginResult, OAuthProvider, SiteConfig } from '@newlifex/cube';
+import { useSiteStore } from '../stores/site';
+import type { LoginConfig, LoginResult, OAuthProvider } from '@newlifex/cube';
 
 // ── 路由与配置 ──────────────────────────────────────────────────────
 const route = useRoute();
 const router = useRouter();
 const config = getConfig();
+const siteStore = useSiteStore();
 const { t } = useI18n();
 
 /** 租户标识：登录链接可通过 ?tenant={id|code|name} 指定，未指定时由服务端按当前上下文解析 */
@@ -227,8 +229,8 @@ const loading = ref<boolean>(true);
 const submitting = ref<boolean>(false);
 /** 后端返回的登录配置 */
 const loginConfig = ref<LoginConfig | null>(null);
-/** 后端返回的站点配置（品牌、语言、功能开关） */
-const siteConfig = ref<SiteConfig | null>(null);
+/** 站点配置（品牌、语言、功能开关），由共享 store 统一缓存并写入标题/图标 */
+const siteConfig = computed(() => siteStore.config);
 /** 配置加载错误信息 */
 const configError = ref<string>('');
 /** 粒子画布引用 */
@@ -795,8 +797,7 @@ function destroyParticleSystem(): void {
  */
 async function reloadSiteConfig(): Promise<void> {
   try {
-    const res = await fetchSiteConfig(tenant.value);
-    if (res.code === 0 && res.data) siteConfig.value = res.data;
+    await siteStore.load(tenant.value, true);
   } catch {
     // 站点配置是可选增强，失败不阻塞登录页
   }
@@ -806,11 +807,7 @@ onMounted(async () => {
   // 初始化粒子动画
   initParticleSystem();
 
-  const [siteResult, loginResult] = await Promise.allSettled([fetchSiteConfig(tenant.value), fetchLoginConfig(tenant.value)]);
-
-  if (siteResult.status === 'fulfilled' && siteResult.value.code === 0) {
-    siteConfig.value = siteResult.value.data;
-  }
+  const [, loginResult] = await Promise.allSettled([siteStore.load(tenant.value, true), fetchLoginConfig(tenant.value)]);
 
   if (loginResult.status === 'fulfilled') {
     const res = loginResult.value;
@@ -852,7 +849,7 @@ onUnmounted(() => {
   position: absolute;
   top: 20px;
   right: 24px;
-  z-index: 10;
+  z-index: 20;
   padding: 6px 12px;
   border-radius: 999px;
   color: var(--el-text-color-primary);

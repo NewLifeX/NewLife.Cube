@@ -43,10 +43,31 @@ export type CubeLocale = (typeof supportedLanguages)[number]['value'];
 
 const supportedValues = supportedLanguages.map((item) => item.value) as readonly string[];
 
-// 获取浏览器语言设置，命中支持列表则复用，否则回退英文
-function getBrowserLanguage(): CubeLocale {
-  const navigatorLanguage = navigator.language;
-  const lower = navigatorLanguage.toLowerCase();
+/** 站点下发的语言设置（`/Cube/Site` 的 language 字段） */
+export interface SiteLanguageInput {
+  /** 当前请求解析出的语言 */
+  current?: string | null;
+  /** 站点默认语言 */
+  default?: string | null;
+  /** 是否锁定语言 */
+  locked?: boolean;
+  /** 站点支持的语言 */
+  options?: ReadonlyArray<{ name?: string | null }> | null;
+}
+
+/**
+ * 将语言代码归一化到前端已实现的区域语言
+ *
+ * 裸语言码（en）与未收录区域（de-AT）按前缀映射，中文按书写系统区分繁简；
+ * 完全不支持的语言返回 null，由调用方决定回退。
+ * @param value 原始语言代码
+ * @returns 前端支持的语言代码，不支持时返回 null
+ */
+export function tryNormalizeLanguage(value?: string | null): CubeLocale | null {
+  if (!value) return null;
+  const lower = value.trim().toLowerCase().replace(/_/g, '-');
+  if (!lower) return null;
+
   const exact = supportedValues.find((item) => item.toLowerCase() === lower);
   if (exact) return exact as CubeLocale;
 
@@ -58,14 +79,55 @@ function getBrowserLanguage(): CubeLocale {
 
   const prefix = lower.split('-')[0];
   const matched = supportedLanguages.find((item) => item.value.split('-')[0].toLowerCase() === prefix);
-  return matched ? matched.value : 'en-US';
+  return matched ? (matched.value as CubeLocale) : null;
+}
+
+/**
+ * 归一化语言代码，不支持时回退英文
+ * @param value 原始语言代码
+ * @returns 前端支持的语言代码
+ */
+export function normalizeLanguage(value?: string | null): CubeLocale {
+  return tryNormalizeLanguage(value) ?? 'en-US';
+}
+
+// 获取浏览器语言设置，命中支持列表则复用，否则回退英文
+function getBrowserLanguage(): CubeLocale {
+  return tryNormalizeLanguage(navigator.language) ?? 'en-US';
+}
+
+/**
+ * 读取本地显式选择的语言
+ * @returns 本地语言；未选择或不在前端词表内时返回 null
+ */
+export function getStoredLanguage(): CubeLocale | null {
+  if (typeof localStorage === 'undefined') return null;
+  return tryNormalizeLanguage(localStorage.getItem('cube-language'));
+}
+
+/**
+ * 读取 URL 中的 `lang` 参数
+ *
+ * 与服务端「`?lang=` → Cookie → Accept-Language」的优先级保持一致，
+ * 便于分享带语言的登录链接。
+ * @returns URL 指定的语言；未指定或不支持时返回 null
+ */
+export function getUrlLanguage(): CubeLocale | null {
+  if (typeof window === 'undefined') return null;
+  return tryNormalizeLanguage(new URLSearchParams(window.location.search).get('lang'));
+}
+
+/**
+ * 是否已显式选择语言
+ * @returns URL 参数或本地存储存在有效语言时返回 true
+ */
+export function hasExplicitLanguage(): boolean {
+  return !!(getUrlLanguage() || getStoredLanguage());
 }
 
 // 获取本地存储的语言设置或使用浏览器语言
 function getLanguage(): CubeLocale {
-  const stored = localStorage.getItem('cube-language');
-  if (stored && supportedValues.includes(stored)) return stored as CubeLocale;
-  return getBrowserLanguage();
+  return getUrlLanguage() ?? getStoredLanguage() ?? getBrowserLanguage();
 }
 
 // 创建 i18n 实例
@@ -101,13 +163,111 @@ export default i18n;
 
 /**
  * 切换语言的工具函数
- * @param lang - 语言代码
+ *
+ * @param lang 语言代码
+ * @param persist 是否写入本地偏好。用户显式切换为 true；自动跟随/站点锁定为 false
  */
-export function setLanguage(lang: CubeLocale) {
-  i18n.global.locale.value = lang;
-  localStorage.setItem('cube-language', lang);
-  document.querySelector('html')?.setAttribute('lang', lang);
-  document.querySelector('html')?.setAttribute('dir', lang === 'ar-SA' ? 'rtl' : 'ltr');
+export function setLanguage(lang: CubeLocale, persist = true) {
+  const locale = normalizeLanguage(lang);
+  i18n.global.locale.value = locale;
+  if (persist && typeof localStorage !== 'undefined') {
+    localStorage.setItem('cube-language', locale);
+    syncQueryLanguage(locale);
+  }
+  document.querySelector('html')?.setAttribute('lang', locale);
+  document.querySelector('html')?.setAttribute('dir', locale === 'ar-SA' ? 'rtl' : 'ltr');
+}
+
+/** 同步 URL 中已有的 lang 参数，避免刷新后被旧语言覆盖 */
+function syncQueryLanguage(locale: CubeLocale) {
+  if (typeof window === 'undefined') return;
+
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has('lang')) return;
+
+  url.searchParams.set('lang', locale);
+  window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+}
+
+/**
+ * 解析站点语言下拉的可选语言
+ *
+ * 前端只提供已实现词表的 11 种语言；站点/租户白名单只做收窄，
+ * 交集为空时回退本地全部语言，避免站点配置异常导致没有可选项。
+ * @param language 站点语言设置
+ * @returns 可选语言列表
+ */
+export function resolveSelectableLanguages(language?: SiteLanguageInput | null) {
+  const allowed = new Set<CubeLocale>();
+  for (const item of language?.options ?? []) {
+    const normalized = tryNormalizeLanguage(item?.name);
+    if (normalized) allowed.add(normalized);
+  }
+  if (!allowed.size) return supportedLanguages;
+
+  const list = supportedLanguages.filter((item) => allowed.has(item.value));
+  return list.length ? list : supportedLanguages;
+}
+
+/**
+ * 解析站点语言
+ *
+ * 优先级：URL `?lang=` → 本地显式选择 → 站点 current → 站点 default → 浏览器 → 英文；
+ * `locked` 时忽略本地选择强制使用 current/default；`options` 作为白名单。
+ * @param language 站点语言设置
+ * @returns 当前应使用的语言
+ */
+export function resolveSiteLocale(language?: SiteLanguageInput | null): CubeLocale {
+  const allowed = new Set<CubeLocale>();
+  for (const item of language?.options ?? []) {
+    const normalized = tryNormalizeLanguage(item?.name);
+    if (normalized) allowed.add(normalized);
+  }
+  const isAllowed = (value: CubeLocale | null): value is CubeLocale =>
+    !!value && (allowed.size === 0 || allowed.has(value));
+
+  const current = tryNormalizeLanguage(language?.current);
+  const siteDefault = tryNormalizeLanguage(language?.default);
+
+  if (language?.locked) {
+    if (isAllowed(current)) return current;
+    if (isAllowed(siteDefault)) return siteDefault;
+
+    const lockedBrowser = getBrowserLanguage();
+    if (isAllowed(lockedBrowser)) return lockedBrowser;
+
+    return supportedLanguages.find((item) => allowed.size === 0 || allowed.has(item.value))?.value ?? 'en-US';
+  }
+
+  const explicit = getUrlLanguage() ?? getStoredLanguage();
+  if (isAllowed(explicit)) return explicit;
+  if (isAllowed(current)) return current;
+  if (isAllowed(siteDefault)) return siteDefault;
+
+  const browser = getBrowserLanguage();
+  if (isAllowed(browser)) return browser;
+
+  return supportedLanguages.find((item) => allowed.size === 0 || allowed.has(item.value))?.value ?? 'en-US';
+}
+
+/**
+ * 应用站点下发的语言设置
+ *
+ * 自动跟随（无显式选择）与站点锁定不写 localStorage；本地选择被白名单排除时
+ * 以服务端解析结果为准并纠正本地记录。
+ * @param language 站点语言设置
+ * @returns 应用后的语言
+ */
+export function applySiteLanguage(language?: SiteLanguageInput | null): CubeLocale {
+  const resolved = resolveSiteLocale(language);
+  const stored = getStoredLanguage();
+  const selectable = resolveSelectableLanguages(language);
+  const storedBlocked = !!stored && !!language?.options?.length && !selectable.some((item) => item.value === stored);
+
+  if (resolved !== getCurrentLanguage()) setLanguage(resolved, false);
+  if (storedBlocked && !language?.locked && typeof localStorage !== 'undefined') localStorage.setItem('cube-language', resolved);
+
+  return resolved;
 }
 
 // 获取当前语言

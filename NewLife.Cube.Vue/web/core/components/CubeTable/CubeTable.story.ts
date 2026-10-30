@@ -291,10 +291,10 @@ const slotIcon = slotActionsStory((ctx) => [
 ]);
 
 export const stories = [
-  // 测试状态：操作栏 + 一体式搜索栏（收起）+ 主面板（表格 + 分页）；3 行数据、6 个搜索条件但未展开
+  // 测试状态：搜索栏 + 合并工具栏（操作 + 指标 + 视图控制）+ 主面板（表格 + 分页）；3 行数据、6 个搜索条件但未展开
   { id: 'CubeTable/Default', component: CubeTable, props: { context: engine() } },
 
-  // 测试状态：整页只读（后端 isReadOnly）—— 添加 / 批量删除 / 导入 / 操作列全部不出现，只留导出与刷新
+  // 测试状态：整页只读（后端 isReadOnly）—— 添加 / 批量删除 / 导入 / 操作列全部不出现，只留高级菜单里的导出与刷新
   { id: 'CubeTable/ReadOnly', component: CubeTable, props: { context: engine({ readOnly: true }) } },
 
   // 测试状态：0 行 —— 空态文案「暂无数据」，操作栏仍在（还能导入/导出）
@@ -303,7 +303,7 @@ export const stories = [
   // 测试状态：元数据接口失败 —— 失败原因就地显示在表格空态里（不再顶部弹错误条）
   { id: 'CubeTable/LoadFail', component: CubeTable, props: { context: engine({ failMeta: true }) } },
 
-  // 测试状态：统计指标行 —— 左三个指标（含图标与环比），右侧设置列齿轮 + 刷新
+  // 测试状态：统计指标 —— 三个指标（含图标与环比）合并进工具栏左侧，右侧设置列齿轮 + 刷新
   { id: 'CubeTable/Metrics', component: CubeTable, props: { context: engine(), metrics: METRICS } },
 
   // 测试状态：只有 1 个搜索条件 —— 与 6 个条件同一套一体式搜索栏，差异只在展开后的行数

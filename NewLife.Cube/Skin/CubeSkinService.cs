@@ -28,7 +28,7 @@ public static class CubeSkinService
         var skinProvider = manager.GetFileProvider(current);
         if (skinProvider == null || !skinProvider.GetFileInfo("index.html").Exists)
         {
-            XTrace.WriteLine("SPA skin [{0}] has no embedded index.html, skip auto registration", current.Name);
+            XTrace.WriteLine(L.TLog("SPA skin [{0}] has no embedded index.html, skip auto registration", current.Name));
             return null;
         }
 
@@ -36,8 +36,8 @@ public static class CubeSkinService
 
         app.Properties[SkinKey] = manager;
 
-        XTrace.WriteLine("Enabled SPA skin: {0} ({1})", current.DisplayName, current.Name);
-        if (manager.Skins.Count > 1) XTrace.WriteLine("Available SPA skins: {0}", manager.Skins.Keys.Join(", "));
+        XTrace.WriteLine(L.TLog("Enabled SPA skin: {0} ({1})", current.DisplayName, current.Name));
+        if (manager.Skins.Count > 1) XTrace.WriteLine(L.TLog("Available SPA skins: {0}", manager.Skins.Keys.Join(", ")));
 
         return manager;
     }
@@ -120,7 +120,7 @@ public static class CubeSkinService
 
         properties[SkinKey] = manager;
 
-        XTrace.WriteLine("Enabled SPA skin: {0} ({1})", current.DisplayName, current.Name);
+        XTrace.WriteLine(L.TLog("Enabled SPA skin: {0} ({1})", current.DisplayName, current.Name));
 
         return app;
     }

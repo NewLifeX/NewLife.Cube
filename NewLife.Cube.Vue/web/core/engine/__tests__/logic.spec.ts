@@ -18,6 +18,7 @@ import {
   extractImportRows,
   findMissingRequiredField,
   formatCellDateTime,
+  hasActiveSearch,
   inferBlobExtension,
   isBlankCell,
   isZeroRowImport,
@@ -71,6 +72,20 @@ describe('engine/logic 空值过滤', () => {
   it('应该由数据层注入分页 当调用 withPagination 时', () => {
     expect(withPagination({ q: 'k' }, 3, 50)).toEqual({ pageIndex: 3, pageSize: 50, q: 'k' });
   });
+
+  it('应该识别有效查询条件 当关键字或筛选有值时', () => {
+    expect(hasActiveSearch('abc', {})).toBe(true);
+    expect(hasActiveSearch('  ', { Name: 'x' })).toBe(true);
+    expect(hasActiveSearch('', { Count: 0 })).toBe(true);
+    expect(hasActiveSearch('', { Enable: false })).toBe(true);
+    expect(hasActiveSearch('', { Tags: ['a'] })).toBe(true);
+  });
+
+  it('应该把空值视为无查询条件 当关键字与筛选都为空时', () => {
+    expect(hasActiveSearch('', {})).toBe(false);
+    expect(hasActiveSearch('  ', {})).toBe(false);
+    expect(hasActiveSearch('', { Name: '', Tags: [] })).toBe(false);
+  });
 });
 
 describe('engine/logic 文件下载', () => {
@@ -81,6 +96,7 @@ describe('engine/logic 文件下载', () => {
     ['application/json', '.json'],
     ['application/xml', '.xml'],
     ['application/zip', '.zip'],
+    ['application/gzip', '.gz'],
     ['', '.xlsx'],
     [undefined, '.xlsx'],
   ])('应该识别 %s 为 %s 当推断导出扩展名时', (type, ext) => {

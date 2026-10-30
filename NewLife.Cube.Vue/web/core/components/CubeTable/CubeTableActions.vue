@@ -1,20 +1,19 @@
 <script setup lang="ts">
 /**
- * CubeTable 操作按钮行（列表页第一行，对应 MES ListPage 的 `.page-actions`）
+ * CubeTable 操作按钮组
  *
- * 排布与 MES 一致：业务按钮在最左（默认插槽），内置通用按钮（添加 / 下载模板 / 导入 / 导出 /
- * 批量删除）排在其后，右侧留给业务动作（`#extra`）。
+ * 默认（内联）模式由 `CubeTableToolbar` 承载，只放业务按钮、后端工具栏按钮、添加与批量条；
+ * 导入/导出/下载模板/高级菜单由工具栏统一收纳。独立使用时保留原平铺按钮。
  * 一行都没有内容时整行不渲染，不留一条空白带。
  */
 import { computed, ref, useSlots, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
-import { Document, Download, Delete, Plus, Upload, CircleCheck, CircleClose } from '@element-plus/icons-vue';
+import { Document, Download, Plus, Upload } from '@element-plus/icons-vue';
 import request from '../../utils/request';
 import {
   buildToolbarPayload,
-  canBatchEnable,
   parseToolbarResult,
   resolveToolbarFlags,
   toolbarKeyField,
@@ -22,6 +21,7 @@ import {
 } from './cubeTable.logic';
 import { getToolbarRenderer, toolbarDisabled } from './toolbarRenderers';
 import { usePagePermissions } from '../../composables/usePagePermissions';
+import CubeTableBatchBar from './CubeTableBatchBar.vue';
 import type { BackendToolbarItem, CubeEngineContext } from '../../engine/types';
 import type { CubeTableActions, CubeToolbarFlags } from './types';
 
@@ -31,8 +31,10 @@ const props = withDefaults(
     actions: CubeTableActions;
     /** 显式覆盖按钮开关；不传跟随后端 pageSetting */
     flags?: CubeToolbarFlags;
+    /** 内联模式：去掉独立卡片外观，由 CubeTableToolbar 统一承载行高与背景 */
+    inline?: boolean;
   }>(),
-  { flags: () => ({}) },
+  { flags: () => ({}), inline: false },
 );
 
 const slots = useSlots();
@@ -48,6 +50,7 @@ const flags = computed(() =>
       importFile: props.flags.importFile,
       exportFile: props.flags.exportFile,
       downloadTemplate: props.flags.downloadTemplate,
+      advanced: props.flags.advanced,
     },
     props.ctx.pageSetting.value,
     {
@@ -61,50 +64,6 @@ const selectedCount = computed(() => props.ctx.selected.value.length);
 const busy = computed(() => props.ctx.submitting.value);
 /** 正在执行的工具栏按钮名，防止重复提交 */
 const pending = ref<string | null>(null);
-
-/** 实体含 Boolean 类型 Enable 字段时提供批量启用/禁用（与 MVC 工具栏自动注入同口径） */
-const batchEnableAvailable = computed(() => canBatchEnable(props.ctx.listFields.value));
-
-/** 勾选行主键（与工具栏动作同一取键口径） */
-function selectedKeys(): unknown[] {
-  const key = keyField.value;
-  return props.ctx.selected.value
-    .map((row) => row[key] ?? row[key.toLowerCase()] ?? row[key.toUpperCase()])
-    .filter((value) => value !== null && value !== undefined && value !== '');
-}
-
-/** 批量启用 / 禁用：POST 到后端 enableSelect / disableSelect，成功后刷新列表 */
-async function batchSetEnable(enable: boolean): Promise<void> {
-  const keys = selectedKeys();
-  if (keys.length === 0 || pending.value) return;
-
-  const act = enable ? 'enableSelect' : 'disableSelect';
-  const label = enable ? t('grid.batchEnable') : t('grid.batchDisable');
-  try {
-    await ElMessageBox.confirm(t('grid.batchEnableConfirm', { count: keys.length, action: label }), {
-      type: 'warning',
-    });
-  } catch {
-    return;
-  }
-
-  pending.value = label;
-  try {
-    const res = (await request({
-      url: `${props.ctx.apiPrefix.value}/${act}`,
-      method: 'post',
-      data: { keys: keys.join(',') },
-    })) as { message?: string } | undefined;
-    ElMessage.success(res?.message || t('common.saveSuccess'));
-    props.ctx.setSelected([]);
-    await props.ctx.refresh();
-  } catch (err) {
-    // 请求层已统一提示，这里只避免未捕获 rejection
-    console.error('[CubeTable] batch enable/disable failed:', err);
-  } finally {
-    pending.value = null;
-  }
-}
 
 type ElButtonType = 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';
 
@@ -134,18 +93,20 @@ const uploadRef = ref<HTMLInputElement | null>(null);
 const hasUploadItem = computed(() => toolbarViews.value.some((e) => e.item.kind === 'upload'));
 
 /** 整行是否有任何内容 */
-const visible = computed(
-  () =>
-    Boolean(slots.default || slots.extra) ||
-    toolbarViews.value.length > 0 ||
-    (!flags.value.readOnly &&
-      (flags.value.add ||
-        flags.value.batchDelete ||
-        flags.value.importFile ||
-        flags.value.downloadTemplate ||
-        batchEnableAvailable.value)) ||
-    flags.value.exportFile,
-);
+const visible = computed(() => {
+  const hasBusiness = Boolean(slots.default || slots.extra) || toolbarViews.value.length > 0;
+  const hasPrimary = flags.value.add;
+  const hasBatch = selectedCount.value > 0;
+
+  // 内联模式由 CubeTableToolbar 统一承载导入/导出/模板/高级菜单，动作组只关心主操作与批量条
+  if (props.inline) return hasBusiness || hasPrimary || hasBatch;
+
+  const hasStandaloneTools =
+    !flags.value.readOnly &&
+    Boolean(flags.value.importFile || flags.value.downloadTemplate || flags.value.exportFile);
+
+  return hasBusiness || hasPrimary || hasBatch || hasStandaloneTools;
+});
 
 /** 当前查询条件（搜索模型），用于 link 的 appendQuery 与 action 的 include */
 function currentQuery(): Record<string, unknown> {
@@ -259,7 +220,7 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
 </script>
 
 <template>
-  <div v-if="visible" class="cta">
+  <div v-if="visible" class="cta" :class="{ 'cta--inline': inline }">
     <div class="cta-left">
       <!-- 业务按钮先行，内置通用按钮排在其后（与 MES 一致） -->
       <slot :ctx="ctx" />
@@ -298,7 +259,10 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
         {{ t('button.add') }}
       </el-button>
 
-      <template v-if="!flags.readOnly">
+      <CubeTableBatchBar :ctx="ctx" :actions="actions" :flags="flags" />
+
+      <!-- 独立使用时保留旧的平铺按钮；内联模式由高级菜单统一承载 -->
+      <template v-if="!inline && !flags.readOnly">
         <input
           ref="fileInputRef"
           class="cta-file"
@@ -318,40 +282,12 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
         </el-button>
       </template>
 
-      <el-button v-if="flags.exportFile" :icon="Download" @click="actions.exportNow()">{{ t('grid.export') }}</el-button>
-
       <el-button
-        v-if="batchEnableAvailable && !flags.readOnly"
-        type="success"
-        plain
-        :icon="CircleCheck"
-        :disabled="selectedCount === 0 || busy"
-        data-role="batch-enable"
-        @click="batchSetEnable(true)"
+        v-if="!inline && flags.exportFile"
+        :icon="Download"
+        @click="actions.exportNow()"
       >
-        {{ t('grid.batchEnable') }}
-      </el-button>
-      <el-button
-        v-if="batchEnableAvailable && !flags.readOnly"
-        type="warning"
-        plain
-        :icon="CircleClose"
-        :disabled="selectedCount === 0 || busy"
-        data-role="batch-disable"
-        @click="batchSetEnable(false)"
-      >
-        {{ t('grid.batchDisable') }}
-      </el-button>
-
-      <el-button
-        v-if="flags.batchDelete && !flags.readOnly"
-        type="danger"
-        plain
-        :icon="Delete"
-        :disabled="selectedCount === 0"
-        @click="actions.removeSelectedRows()"
-      >
-        {{ selectedCount > 0 ? t('grid.batchDeleteCount', { count: selectedCount }) : t('grid.batchDelete') }}
+        {{ t('grid.export') }}
       </el-button>
     </div>
 
@@ -376,6 +312,17 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
   background: var(--el-bg-color-overlay);
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 8px;
+}
+/* 内联模式：由 CubeTableToolbar 提供背景、边框与行高，这里只保留按钮组 */
+.cta--inline {
+  flex: 0 1 auto;
+  width: auto;
+  min-height: 0;
+  margin-bottom: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
 }
 .cta-left {
   display: flex;

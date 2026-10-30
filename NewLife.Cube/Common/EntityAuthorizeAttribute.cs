@@ -26,7 +26,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
     #endregion
 
     #region 构造
-    static EntityAuthorizeAttribute() => XTrace.WriteLine("Registering filter: {0}", typeof(EntityAuthorizeAttribute).FullName);
+    static EntityAuthorizeAttribute() => XTrace.WriteLine(L.TLog("Register filter: {0}", typeof(EntityAuthorizeAttribute).FullName));
 
     /// <summary>实例化实体授权特性。只需登录，不校验具体权限位</summary>
     public EntityAuthorizeAttribute() { }

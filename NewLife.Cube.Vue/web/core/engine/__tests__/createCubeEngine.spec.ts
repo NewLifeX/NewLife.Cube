@@ -362,6 +362,67 @@ describe('createCubeEngine 删除', () => {
   });
 });
 
+describe('createCubeEngine 删除全部与开发工具', () => {
+  it('应该拒绝删除全部 当没有查询条件时', async () => {
+    const { deps, http, notify } = makeDeps();
+    const ctx = createCubeEngine({ routePath: ROUTE }, deps);
+    await ctx.init();
+    const before = http.calls.length;
+
+    expect(await ctx.removeAll()).toBe(false);
+    expect(http.calls).toHaveLength(before);
+    expect(notify.warning).toHaveBeenCalledWith(t('engine.deleteAllNeedQuery'));
+  });
+
+  it('应该按当前查询条件删除全部并刷新 当有关键字时', async () => {
+    const { deps, http, notify } = makeDeps();
+    const ctx = createCubeEngine({ routePath: ROUTE }, deps);
+    await ctx.init();
+    ctx.keyword.value = '阀';
+    ctx.searchModel.Name = '泵';
+    ctx.setSelected([{ id: 1 }]);
+
+    const before = http.calls.length;
+    expect(await ctx.removeAll()).toBe(true);
+
+    const del = http.calls.slice(before).reverse().find((c) => c.method === 'delete');
+    expect(del?.url).toBe(TYPE);
+    expect(del?.params).toEqual({ q: '阀', Name: '泵' });
+    expect(notify.success).toHaveBeenCalledWith('ok');
+    expect(ctx.selected.value).toEqual([]);
+    expect(http.calls.some((c) => c.method === 'get' && c.url === TYPE)).toBe(true);
+  });
+
+  it('应该备份并下载 gz 文件 当调用 developAction BackupAndExport 时', async () => {
+    const http = makeHttp();
+    http.get = vi.fn(async () => new Blob(['backup'], { type: 'application/gzip' }));
+    const { deps, notify } = makeDeps({ http });
+    const ctx = createCubeEngine({ routePath: ROUTE }, deps);
+    await ctx.init();
+
+    expect(await ctx.developAction('BackupAndExport')).toBe(true);
+    expect(http.get).toHaveBeenCalledWith(`${TYPE}/Develop`, {
+      responseType: 'blob',
+      params: { act: 'BackupAndExport' },
+    });
+    expect(ctx.pendingBlob.value?.name.endsWith('.gz')).toBe(true);
+    expect(notify.success).toHaveBeenCalledWith(t('engine.backupExportSuccess'));
+  });
+
+  it('应该调用 Develop 端点并在清空后刷新 当调用 developAction Clear 时', async () => {
+    const { deps, http, notify } = makeDeps();
+    const ctx = createCubeEngine({ routePath: ROUTE }, deps);
+    await ctx.init();
+    const before = http.calls.length;
+
+    expect(await ctx.developAction('Clear')).toBe(true);
+    const call = http.calls.slice(before).find((c) => c.method === 'get' && c.url === `${TYPE}/Develop`);
+    expect(call?.params).toEqual({ act: 'Clear' });
+    expect(notify.success).toHaveBeenCalled();
+    expect(http.calls.slice(before).some((c) => c.method === 'get' && c.url === TYPE)).toBe(true);
+  });
+});
+
 describe('createCubeEngine 表单提交', () => {
   it('应该以 POST 新增并给 Boolean 默认 false 当打开新增并提交时', async () => {
     const { deps, http, notify } = makeDeps();

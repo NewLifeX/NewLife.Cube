@@ -247,6 +247,7 @@ describe('CubeTable/logic 列视图', () => {
 describe('CubeTable/logic 工具栏与表格开关', () => {  it('应该默认开新增导入导出刷新、模板默认关 当后端没给开关时', () => {
     expect(resolveToolbarFlags({})).toEqual({
       add: true,
+      advanced: true,
       batchDelete: true,
       importFile: true,
       exportFile: true,

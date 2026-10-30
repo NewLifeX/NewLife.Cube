@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * CubeTable —— 一个组件就是一个列表页（结构与视觉对齐 MES ListPage）
+ * CubeTable —— 一个组件就是一个列表页
  *
- * 从上到下固定五段：操作栏 → 搜索条件 → 表格统计 → 表格 → 分页。
+ * 从上到下固定四段：搜索条件 → 表格工具栏（操作 + 指标 + 视图控制）→ 表格 → 分页。
  * 页面不滚动，只有表格数据区滚动（`.ct-panel` + `el-table height=100%`）。
  *
  * 上下文三级解析：`:context` 外部指定 → `inject(CubeEngineKey)` 父级已建 → 按当前路由自建。
@@ -15,9 +15,8 @@ import { useCubeTableActions } from './useCubeTableActions';
 import { useCubeTableColumns } from './useCubeTableColumns';
 import type { CubeEngineContext } from '../../engine/types';
 import type { CubeTableProps } from './types';
-import CubeTableActions from './CubeTableActions.vue';
+import CubeTableToolbar from './CubeTableToolbar.vue';
 import CubeTableSearch from './CubeTableSearch.vue';
-import CubeTableMetrics from './CubeTableMetrics.vue';
 import CubeTableColumnSetting from './CubeTableColumnSetting.vue';
 import CubeTableGrid from './CubeTableGrid.vue';
 import CubeTablePagination from './CubeTablePagination.vue';
@@ -57,6 +56,7 @@ const props = withDefaults(defineProps<CubeTableProps>(), {
   showImport: undefined,
   showExport: undefined,
   showDownloadTemplate: undefined,
+  showAdvanced: undefined,
   exportFormat: 'xlsx',
   confirmDelete: undefined,
   extraRowActions: () => [],
@@ -119,27 +119,7 @@ const metaMissing = computed(() => ctx.metaMissing?.value === true);
     <!-- ⓪ 页头：框架默认页传标题，业务自绘页面一般不用 -->
     <slot name="header" :ctx="ctx" />
 
-    <!-- ① 操作栏：业务按钮在前，内置通用按钮在后（与 MES 一致，#actions 是「加内容」不是「换整行」） -->
-    <CubeTableActions
-      :ctx="ctx"
-      :actions="actions"
-      :flags="{
-        add: showAdd,
-        batchDelete: showBatchDelete,
-        importFile: showImport,
-        exportFile: showExport,
-        downloadTemplate: showDownloadTemplate,
-      }"
-    >
-      <template v-if="slots.actions" #default="scope">
-        <slot name="actions" v-bind="scope" />
-      </template>
-      <template v-if="slots['actions-extra']" #extra="scope">
-        <slot name="actions-extra" v-bind="scope" />
-      </template>
-    </CubeTableActions>
-
-    <!-- ② 搜索条件：关键字行 + 可展开条件面板。
+    <!-- ① 搜索条件：关键字行 + 可展开条件面板。
          #search-bar / #search-advanced 是 MES 口径的「换内容」，#search 是 Cube 扩展的「换整块」 -->
     <template v-if="showSearch || slots.search || slots['search-bar']">
       <slot name="search" :ctx="ctx">
@@ -154,18 +134,33 @@ const metaMissing = computed(() => ctx.metaMissing?.value === true);
       </slot>
     </template>
 
-    <!-- ③④⑤ 主面板：统计行 + 表格 + 分页 -->
+    <!-- ②③④ 主面板：合并工具栏（操作 + 指标 + 视图控制）→ 表格 → 分页 -->
     <div class="ct-panel">
-      <CubeTableMetrics
+      <CubeTableToolbar
         :ctx="ctx"
+        :actions="actions"
+        :flags="{
+          add: showAdd,
+          batchDelete: showBatchDelete,
+          importFile: showImport,
+          exportFile: showExport,
+          downloadTemplate: showDownloadTemplate,
+          advanced: showAdvanced,
+        }"
         :metrics="metrics"
         :show-refresh="showRefresh"
         :show-column-setting="columnsSetting"
       >
+        <template v-if="slots.actions" #actions="scope">
+          <slot name="actions" v-bind="scope" />
+        </template>
+        <template v-if="slots['actions-extra']" #actions-extra="scope">
+          <slot name="actions-extra" v-bind="scope" />
+        </template>
         <template v-if="slots.metrics" #metrics="scope">
           <slot name="metrics" v-bind="scope" />
         </template>
-        <template v-if="slots['toolbar-extra']" #extra="scope">
+        <template v-if="slots['toolbar-extra']" #toolbar-extra="scope">
           <slot name="toolbar-extra" v-bind="scope" />
         </template>
         <template v-if="columnsSetting" #column-setting>
@@ -177,7 +172,7 @@ const metaMissing = computed(() => ctx.metaMissing?.value === true);
             @reset="columns.reset()"
           />
         </template>
-      </CubeTableMetrics>
+      </CubeTableToolbar>
 
       <div class="ct-table-wrap">
         <slot name="table" :ctx="ctx" :data="ctx.list.value" :loading="ctx.loading.value">

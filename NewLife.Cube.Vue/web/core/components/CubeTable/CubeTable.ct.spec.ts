@@ -45,14 +45,18 @@ async function openStory(page: import('@playwright/test').Page, id: string) {
 
 const table = (page: import('@playwright/test').Page) => page.locator('.cube-table');
 
-test('默认态-完整列表页五段结构', async ({ page }) => {
+test('默认态-完整列表页结构', async ({ page }) => {
   await openStory(page, 'CubeTable/Default');
 
-  // 自上而下：操作栏 → 搜索栏 → 统计/表格/分页主面板
+  // 自上而下：搜索栏 → 合并工具栏/表格/分页主面板
   const sections = page.locator('.cube-table > *');
-  await expect(sections.nth(0)).toHaveClass(/cta/);
-  await expect(sections.nth(1)).toHaveClass(/cts-wrap/);
-  await expect(sections.nth(2)).toHaveClass(/ct-panel/);
+  await expect(sections.nth(0)).toHaveClass(/cts-wrap/);
+  await expect(sections.nth(1)).toHaveClass(/ct-panel/);
+  // 操作栏已合并进工具栏，不再是独立一行
+  await expect(page.locator('.ct-panel .ctt .cta.cta--inline')).toBeVisible();
+  await expect(page.locator('.ct-panel .ctt [data-role="advanced"]')).toBeVisible();
+  // 未勾选时不渲染批量条
+  await expect(page.locator('[data-role="batch-bar"]')).toHaveCount(0);
 
   // 值集列翻成标签（不是码值）、布尔列是开关、日期列已格式化、空值给占位
   const firstRow = table(page).locator('.el-table__row').first();
@@ -81,8 +85,9 @@ test('只读态-写入口全部消失', async ({ page }) => {
   await expect(table(page).getByRole('button', { name: /批量删除/ })).toHaveCount(0);
   await expect(table(page).getByRole('button', { name: '导入' })).toHaveCount(0);
   await expect(table(page).locator('.el-table__row').first().getByRole('button', { name: '删除' })).toHaveCount(0);
-  // 查询类动作不受只读影响
-  await expect(table(page).getByRole('button', { name: '导出' })).toBeVisible();
+  // 查询类动作不受只读影响：导出收在高级菜单里
+  await page.locator('[data-role="advanced"]').click();
+  await expect(page.getByRole('menuitem', { name: /导出 Excel/ })).toBeVisible();
   await expect(table(page)).toHaveScreenshot();
 });
 
@@ -107,15 +112,39 @@ test('失败态-原因就地显示在空表格里', async ({ page }) => {
 test('指标行-图标/环比/设置列齿轮与刷新', async ({ page }) => {
   await openStory(page, 'CubeTable/Metrics');
 
-  const bar = page.locator('.ctm');
+  const bar = page.locator('.ctt');
   await expect(bar.locator('.ctm-item')).toHaveCount(3);
   await expect(bar.locator('.ctm-item').nth(1)).toContainText('运行中');
   await expect(bar.locator('.ctm-item').nth(1)).toContainText('↑1');
   await expect(bar.locator('.ctm-divider')).toHaveCount(2);
   await expect(bar.locator('.ctm-icon')).toHaveCount(3);
   await expect(bar.locator('.ctcs-trigger')).toBeVisible();
-  await expect(bar.locator('.ctm-controls .el-button').last()).toBeVisible();
+  await expect(bar.locator('.ctt-controls .el-button').last()).toBeVisible();
   await expect(bar).toHaveScreenshot();
+});
+
+test('选中态-批量操作条出现', async ({ page }) => {
+  await openStory(page, 'CubeTable/Default');
+
+  await expect(page.locator('[data-role="batch-enable"]')).toHaveCount(0);
+  await page.locator('.el-table__body .el-checkbox').first().click();
+  const bar = page.locator('[data-role="batch-bar"]');
+  await expect(bar).toBeVisible();
+  await expect(bar).toContainText('已选 1 项');
+  await expect(bar.locator('[data-role="batch-enable"]')).toBeVisible();
+  await expect(bar.locator('[data-role="batch-disable"]')).toBeVisible();
+  await expect(bar.locator('[data-role="batch-delete"]')).toBeVisible();
+});
+
+test('高级菜单-导入导出收进下拉', async ({ page }) => {
+  await openStory(page, 'CubeTable/Default');
+
+  await page.locator('[data-role="advanced"]').click();
+  await expect(page.getByRole('menuitem', { name: '导入' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: /导出 Excel/ })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: /导出 Csv/ })).toBeVisible();
+  // 无查询条件时不出现「删除全部」
+  await expect(page.getByRole('menuitem', { name: /删除全部/ })).toHaveCount(0);
 });
 
 test('搜索-收起态第一行三格，展开后每行三列栅格', async ({ page }) => {

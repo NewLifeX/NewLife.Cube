@@ -7,6 +7,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import type { SiteConfig } from '@newlifex/cube';
+import { applySiteLanguage } from '../i18n';
 import { site } from '../utils/request';
 
 export const useSiteStore = defineStore('site', () => {
@@ -27,6 +28,33 @@ export const useSiteStore = defineStore('site', () => {
   }
 
   /**
+   * 将站点 Logo 写入浏览器图标
+   * 站点未配置 Logo 时保持默认图标，避免白屏或空图标
+   * @param logo 站点 Logo 地址，为空时保持原样
+   */
+  function applyFavicon(logo?: string) {
+    if (typeof document === 'undefined' || !logo) return;
+
+    let link = document.head.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = logo;
+  }
+
+  /**
+   * 应用站点品牌与语言
+   * @param value 站点配置
+   */
+  function applySite(value: SiteConfig) {
+    applyTitle(value.name);
+    applyFavicon(value.logo);
+    applySiteLanguage(value.language);
+  }
+
+  /**
    * 加载站点配置
    * @param tenant 租户标识（编号/编码/名称），为空时由服务端按当前上下文解析
    * @param force 强制重新请求，忽略已有缓存
@@ -43,7 +71,7 @@ export const useSiteStore = defineStore('site', () => {
         if (res?.code === 0 && res.data) {
           config.value = res.data;
           loadedTenant.value = tenant;
-          applyTitle(res.data.name);
+          applySite(res.data);
         }
         return config.value;
       })

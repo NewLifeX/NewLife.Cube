@@ -53,6 +53,10 @@ export interface PageSetting {
   tree?: boolean;
   /** 当前页面菜单编号，用于和用户权限串匹配 */
   menuId?: number;
+  /** 服务端开发模式（SysConfig.Develop）。与 isSystem 一起控制开发工具菜单 */
+  develop?: boolean;
+  /** 当前用户是否系统管理员。与 develop 一起控制开发工具菜单 */
+  isSystem?: boolean;
   /** 页面动作所需权限位。有效权限由前端结合用户信息计算 */
   requiredPermissions?: RequiredPermissions;
 }
@@ -63,6 +67,9 @@ export interface RequiredPermissions {
   update?: number;
   delete?: number;
 }
+
+/** 高级开发动作，对齐后端 `GET {api}/Develop?act=` 的 act 取值 */
+export type DevelopAction = 'Backup' | 'BackupAndExport' | 'Restore' | 'Clear';
 
 /**
  * 后端 `meta` 下发的原始字段（NewLife.Cube `DataField` 序列化结构，camelCase）。
@@ -445,6 +452,10 @@ export interface CubeEngineContext {
   remove: (row: Record<string, unknown>) => Promise<boolean>;
   /** 批量删除当前勾选行 */
   removeSelected: () => Promise<boolean>;
+  /** 删除当前查询条件下的全部数据（无查询条件时拒绝） */
+  removeAll: () => Promise<boolean>;
+  /** 开发工具动作：备份/备份并下载/恢复/清空表 */
+  developAction: (act: DevelopAction) => Promise<boolean>;
   /** 导出（返回文件名，失败返回 null） */
   exportFile: (format?: string) => Promise<string | null>;
   /** 下载导入模板（后端未实现该 Action 时返回 null 并提示） */
