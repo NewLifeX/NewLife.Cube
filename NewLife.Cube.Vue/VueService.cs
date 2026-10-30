@@ -1,75 +1,34 @@
-using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.Modules;
 
 namespace NewLife.Cube.Vue;
 
 /// <summary>Vue前端皮肤服务</summary>
 public static class VueService
 {
-    /// <summary>使用Vue前端皮肤。替换WebRootFileProvider以注册嵌入式静态资源，并添加SPA回退路由，提供Vue3+Element Plus管理后台前端</summary>
+    /// <summary>使用Vue前端皮肤。注册嵌入式静态资源与SPA回退路由，提供Vue3+Element Plus管理后台前端</summary>
+    /// <remarks>多个皮肤包共存时请改用 <see cref="CubeSkinService.UseCubeSkin(WebApplication, IWebHostEnvironment, String)"/>，按设置项切换皮肤</remarks>
     /// <param name="app"></param>
     /// <param name="env"></param>
     /// <returns></returns>
-    public static WebApplication UseVue(this WebApplication app, IWebHostEnvironment env)
-    {
-        // 嵌入在 DLL 中的 wwwroot 文件，作为静态资源
-        var assembly = Assembly.GetExecutingAssembly();
-        var embeddedProvider = new CubeEmbeddedFileProvider(assembly, "NewLife.Cube.Vue.wwwroot");
-
-        if (!env.WebRootPath.IsNullOrEmpty() && Directory.Exists(env.WebRootPath) && env.WebRootFileProvider != null)
-        {
-            // 嵌入资源优先，再到主机的 WebRootFileProvider
-            env.WebRootFileProvider = new CompositeFileProvider(
-                embeddedProvider,
-                env.WebRootFileProvider);
-        }
-        else
-        {
-            env.WebRootFileProvider = embeddedProvider;
-        }
-
-        app.UseStaticFiles();
-
-        // SPA 回退路由：所有未匹配 endpoint 的请求回退到 index.html，支持 Vue History 路由模式
-        app.MapFallbackToFile("index.html");
-
-        return app;
-    }
+    public static WebApplication UseVue(this WebApplication app, IWebHostEnvironment env) => app.UseCubeSkin(env, "Vue");
 }
 
-/// <summary>Vue前端皮肤模块</summary>
-[DisplayName("Vue前端皮肤")]
-internal class VueModule : IModule
+/// <summary>Vue前端皮肤。由魔方自动发现，多个皮肤包共存时可通过设置项 SpaSkin 切换</summary>
+internal sealed class VueSkin : ICubeSkin
 {
-    /// <summary>添加模块</summary>
-    /// <param name="services"></param>
-    public void Add(IServiceCollection services) { }
+    /// <summary>皮肤标识</summary>
+    public String Name => "Vue";
 
-    /// <summary>使用模块</summary>
-    /// <remarks>Module模式仅注册静态文件，SPA回退路由需通过 app.UseVue() 显式调用</remarks>
-    /// <param name="app"></param>
-    /// <param name="env"></param>
-    public void Use(IApplicationBuilder app, IWebHostEnvironment env)
+    /// <summary>显示名称</summary>
+    public String DisplayName => "Vue3 + Element Plus";
+
+    /// <summary>创建静态资源文件提供者。前端编译产物编译时嵌入程序集，无需物理文件</summary>
+    /// <returns></returns>
+    public IFileProvider CreateFileProvider()
     {
-        // Module接口签名为IApplicationBuilder，无法调用MapFallbackToFile
-        // SPA回退路由通过用户在Program.cs显式调用 app.UseVue(env) 注册
         var assembly = Assembly.GetExecutingAssembly();
-        var embeddedProvider = new CubeEmbeddedFileProvider(assembly, "NewLife.Cube.Vue.wwwroot");
-
-        if (!env.WebRootPath.IsNullOrEmpty() && Directory.Exists(env.WebRootPath) && env.WebRootFileProvider != null)
-        {
-            env.WebRootFileProvider = new CompositeFileProvider(
-                embeddedProvider,
-                env.WebRootFileProvider);
-        }
-        else
-        {
-            env.WebRootFileProvider = embeddedProvider;
-        }
-
-        app.UseStaticFiles();
+        return new CubeEmbeddedFileProvider(assembly, "NewLife.Cube.Vue.wwwroot");
     }
 }
