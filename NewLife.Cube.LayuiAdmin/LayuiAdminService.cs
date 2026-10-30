@@ -1,4 +1,3 @@
-﻿using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
@@ -6,7 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 
 namespace NewLife.Cube.LayuiAdmin;
@@ -40,11 +38,4 @@ public static class LayuiAdminService
 
         return app;
     }
-}
-
-[DisplayName("LayuiAdmin皮肤")]
-internal class LayuiAdminModule : IModule
-{
-    public void Add(IServiceCollection services) { }
-    public void Use(IApplicationBuilder app, IWebHostEnvironment env) => app.UseLayuiAdmin(env);
 }

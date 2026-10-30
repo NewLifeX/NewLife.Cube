@@ -31,7 +31,7 @@ public class AreaPageCoverageTests
     /// <summary>魔方管理（Cube）区域的控制器页面清单，与 MVC 版对齐</summary>
     private static readonly String[] CubePages =
     [
-        "App", "AppLog", "AppModule", "Area", "Attachment", "CronJob", "PrincipalAgent", "Widget",
+        "App", "AppLog", "Area", "Attachment", "CronJob", "PrincipalAgent", "Widget",
     ];
 
     private static String[] ControllersIn(Type areaType)
@@ -79,16 +79,6 @@ public class AreaPageCoverageTests
         Assert.Contains(
             markAll!.GetCustomAttributes<HttpPostAttribute>(),
             e => e.Template == "/api/[area]/[controller]/NotifyMarkAllRead");
-    }
-
-    [Fact(DisplayName = "应用插件页在魔方管理菜单中可见")]
-    public void AppModule_HasVisibleMenu()
-    {
-        var att = typeof(AppModuleController).GetCustomAttribute<MenuAttribute>();
-
-        Assert.NotNull(att);
-        Assert.True(att!.Visible);
-        Assert.Equal(36, att.Order);
     }
 
     [Fact(DisplayName = "通知记录页为隐藏菜单页面")]

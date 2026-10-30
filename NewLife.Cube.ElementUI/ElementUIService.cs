@@ -1,8 +1,6 @@
-﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Model;
 
@@ -37,11 +35,4 @@ public static class ElementUIService
 
         return app;
     }
-}
-
-[DisplayName("Element皮肤")]
-internal class ElementUIModule : IModule
-{
-    public void Add(IServiceCollection services) { }
-    public void Use(IApplicationBuilder app, IWebHostEnvironment env) => app.UseElementUI(env);
 }

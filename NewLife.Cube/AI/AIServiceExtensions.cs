@@ -1,6 +1,5 @@
-﻿using NewLife.AI.Services;
+using NewLife.AI.Services;
 using NewLife.AI.Tools;
-using NewLife.Cube.Modules;
 using NewLife.Log;
 
 namespace NewLife.Cube.AI;
@@ -21,7 +20,7 @@ public static class AIServiceExtensions
         //    return services;
         //}
 
-        XTrace.WriteLine("AI enabled, Provider={0} Model={1}", set.AIProvider, set.AIModel);
+        XTrace.WriteLine(L.TLog("AI enabled, Provider={0} Model={1}", set.AIProvider, set.AIModel));
         services.AddSingleton<IAIService, AIService>();
 
         // 对话会话历史：单例存储（NewLife.AI 内置 MemoryCacheSessionStore，1h 过期；后续将由上游升级为 ICacheProvider 版本支持分布式）。
@@ -38,19 +37,6 @@ public static class AIServiceExtensions
 
         return services;
     }
-}
-
-/// <summary>AI 插件，实现 IModule 接口，可通过 AppModule 数据库注册方式启用</summary>
-public class AIPlugin : IModule
-{
-    /// <summary>添加模块，注册服务</summary>
-    /// <param name="services"></param>
-    public void Add(IServiceCollection services) => services.AddCubeAI();
-
-    /// <summary>使用模块，配置中间件</summary>
-    /// <param name="app"></param>
-    /// <param name="env"></param>
-    public void Use(IApplicationBuilder app, IWebHostEnvironment env) { }
 }
 
 ///// <summary>AI 服务空实现，用于 AI 未启用时的占位</summary>

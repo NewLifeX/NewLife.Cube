@@ -1,8 +1,6 @@
-﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Model;
 
@@ -37,11 +35,4 @@ public static class Metronic8Service
 
         return app;
     }
-}
-
-[DisplayName("Metronic8皮肤")]
-internal class Metronic8Module : IModule
-{
-    public void Add(IServiceCollection services) { }
-    public void Use(IApplicationBuilder app, IWebHostEnvironment env) => app.UseMetronic8(env);
 }

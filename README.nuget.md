@@ -195,7 +195,7 @@ public class AppController : EntityController<App, AppModel>
 | Multiple front-ends | Vue (official), eight in-repo reference SPA skins and classic Razor coexist; React (Ant Design) is maintained in a separate CubeAntd repository; Blazor is a frozen MVC-theme experiment. |
 | Embedded theme assets | `CubeEmbeddedFileProvider` ships theme assets inside the package. |
 | Theme registration | Register skins via `AddTheme/AddSkin` and pick one in `UseCube` (`app.UseMetronic(env)` etc.). |
-| Custom themes | Implement `IModule` like `MetronicModule` and mount it in the use phase. |
+| Custom themes | Implement `ICubeSkin` for front-end assets, or `IModule` for backend services; both are discovered automatically once referenced. |
 | View overrides | A `.cshtml` with the same path in a child project overrides the parent. |
 | Localization | 11 runtime languages for API messages, request-level culture detection and an 11-language Vue front-end. |
 | New-generation skins | pnpm workspace with the shared package `@newlifex/cube` (API / token / types, field metadata -> controls). `NewLife.Cube.Vue` is the official skin and is published to NuGet with the compiled front-end embedded; React is published from the separate `NewLife.Cube.React` repository the same way. The other SPA skins live in this repo as reference implementations and are not published — build their `web` project with pnpm, then reference the .NET project. |
@@ -377,7 +377,7 @@ Milestones (excerpt):
 | Menu tree | `/Admin/Index/GetMenuTree` builds multi-level menus from permissions. |
 | Permission model | User -> role -> menu (action set). The first registered user becomes administrator and `admin` is disabled. |
 | ApiResponse | Standard response wrapper with code / data / page / stat. |
-| IModule | Startup module that injects services and static assets (themes, Swagger, etc.). |
+| Extensions | Referencing a package is enough: `IModule` (services / middleware / endpoints) and `ICubeSkin` (front-end assets) are discovered automatically. |
 | AI assistant | Global `AiController.AiChat` endpoint (`/Ai/AiChat`) plus NAI `AiChatService` orchestration (session history, tool loop, SSE events); entity controllers expose capabilities through `IEntityAiContext`. `AiInsightHelper` remains for data collection (14 sensitive-field blacklists). |
 
 </details>

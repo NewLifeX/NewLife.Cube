@@ -1,119 +1,124 @@
 using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using NewLife.Cube.Entity;
 using NewLife.Cube.Modules;
-using NewLife.Cube.Tests.Membership;
-using NewLife.Cube.ViewModels;
 using Xunit;
 
 namespace NewLife.Cube.Tests.Common;
 
 /// <summary>
-/// BASE-3 模块化插件机制测试。覆盖从应用插件表加载模块/适配器、禁用项跳过、非法类型名容错与加载结果缓存。
+/// BASE-3 模块化插件机制测试。覆盖程序集自动发现、显式注册、装配顺序、重名去重、异常隔离、
+/// 端点映射、加载结果缓存与默认适配器可用。
 /// </summary>
-[Collection("TenantAuth")]
 public class ModuleManagerTests
 {
-    private readonly TenantAuthFixture _fx;
-
-    /// <summary>实例化</summary>
-    /// <param name="fixture">多租户认证夹具。复用其 SQLite 库（应用插件表）</param>
-    public ModuleManagerTests(TenantAuthFixture fixture) => _fx = fixture;
-
-
-    #region 辅助
-    private static String Unique(String prefix) => prefix + Guid.NewGuid().ToString("N")[..8];
-
-    private static AppModule CreateModule(String name, Type type, String kind = "Module", Boolean enable = true)
+    [Fact(DisplayName = "模块插件_自动发现已引用程序集")]
+    public void Load_DiscoversModules()
     {
-        var item = new AppModule
-        {
-            Name = name,
-            DisplayName = name,
-            Type = kind,
-            ClassName = type.FullName,
-            FilePath = type.Assembly.Location,
-            Enable = enable,
-        };
-        item.Insert();
+        var manager = new ModuleManager();
+        var modules = manager.Load();
 
-        return item;
+        Assert.True(modules.ContainsKey("M"));
+        Assert.IsType<NlMod.M>(modules["M"]);
+        Assert.True(modules.ContainsKey("OrderA"));
+        Assert.True(modules.ContainsKey("Endpoint"));
     }
-    #endregion
 
-    [Fact(DisplayName = "模块插件_加载启用模块并可供调用")]
-    public void LoadAll_EnabledModule()
+    [Fact(DisplayName = "模块插件_显式注册被合并且不重复")]
+    public void Load_ExplicitRegistration()
     {
-        var name = Unique("mod");
-        CreateModule(name, typeof(NlMod.M));
-        AppModule.Meta.Cache.Clear("插件测试", true);
+        var services = new ServiceCollection();
+        services.AddCubeModule<NlMod.ExplicitModule>();
 
         var manager = new ModuleManager();
-        var modules = manager.LoadAll();
+        var modules = manager.Load(services);
 
-        Assert.True(modules.TryGetValue(name, out var module));
-        Assert.IsType<NlMod.M>(module);
+        Assert.True(modules.ContainsKey("Explicit"));
+        Assert.IsType<NlMod.ExplicitModule>(modules["Explicit"]);
+        Assert.Single(modules.Keys, e => e.EqualIgnoreCase("Explicit"));
+    }
 
+    [Fact(DisplayName = "模块插件_按Order升序装配")]
+    public void Add_FollowsOrder()
+    {
+        NlMod.ModuleLog.Reset();
+
+        var manager = new ModuleManager();
+        manager.Add(new ServiceCollection());
+
+        var a = NlMod.ModuleLog.Added.IndexOf("OrderA");
+        var b = NlMod.ModuleLog.Added.IndexOf("OrderB");
+        Assert.True(a >= 0 && b >= 0);
+        Assert.True(b < a, $"OrderB(10) 应早于 OrderA(20)，实际顺序 {NlMod.ModuleLog.Added.Join(",")}");
+    }
+
+    [Fact(DisplayName = "模块插件_重名只保留一个")]
+    public void Load_DuplicateName_KeepsOne()
+    {
+        var manager = new ModuleManager();
+        var modules = manager.Load();
+
+        Assert.Single(modules.Keys, e => e.EqualIgnoreCase("Dup"));
+    }
+
+    [Fact(DisplayName = "模块插件_单模块异常不影响其它模块")]
+    public void Add_IsolatesFailure()
+    {
+        NlMod.ModuleLog.Reset();
         NlMod.M.AddTimes = 0;
-        NlMod.M.UseTimes = 0;
-        module!.Add(new ServiceCollection());
-        module.Use(null, null);
+        NlMod.Broken.Enabled = true;
+
+        var manager = new ModuleManager();
+        manager.Add(new ServiceCollection());
+
         Assert.Equal(1, NlMod.M.AddTimes);
+        Assert.Contains("OrderA", NlMod.ModuleLog.Added);
+    }
+
+    [Fact(DisplayName = "模块插件_Use与Map被调用")]
+    public void UseAndMap_InvokeModules()
+    {
+        NlMod.ModuleLog.Reset();
+        NlMod.M.UseTimes = 0;
+
+        var manager = new ModuleManager();
+        manager.Use(null!, null!);
+        manager.Map(null!);
+
         Assert.Equal(1, NlMod.M.UseTimes);
-    }
-
-    [Fact(DisplayName = "模块插件_禁用与非法类型被跳过")]
-    public void LoadAll_SkipsDisabledAndInvalid()
-    {
-        var disabled = Unique("mod");
-        CreateModule(disabled, typeof(NlMod.M), enable: false);
-
-        var invalid = Unique("mod");
-        var item = new AppModule
-        {
-            Name = invalid,
-            DisplayName = invalid,
-            Type = "Module",
-            ClassName = "No.Such.Type.For.Test",
-            FilePath = typeof(NlMod.M).Assembly.Location,
-            Enable = true,
-        };
-        item.Insert();
-        AppModule.Meta.Cache.Clear("插件测试", true);
-
-        var manager = new ModuleManager();
-        var modules = manager.LoadAll();
-
-        Assert.False(modules.ContainsKey(disabled));
-        Assert.False(modules.ContainsKey(invalid));
-    }
-
-    [Fact(DisplayName = "模块插件_适配器加载并可按名称获取")]
-    public void LoadAll_Adapter_GetByName()
-    {
-        var name = Unique("adp");
-        CreateModule(name, typeof(NlMod.A), kind: "Adapter");
-        AppModule.Meta.Cache.Clear("插件测试", true);
-
-        var manager = new ModuleManager();
-        manager.LoadAll();
-
-        Assert.IsType<NlMod.A>(manager.GetAdapter(name));
-        Assert.Null(manager.GetAdapter(Unique("none")));
+        Assert.Equal(1, NlMod.ModuleLog.Mapped);
     }
 
     [Fact(DisplayName = "模块插件_加载结果被缓存")]
-    public void LoadAll_Cached()
+    public void Load_Cached()
     {
         var manager = new ModuleManager();
-        var first = manager.LoadAll();
-        var second = manager.LoadAll();
+        var first = manager.Load();
+        var second = manager.Load();
 
         Assert.Same(first, second);
         Assert.Same(manager.Modules, first);
+    }
+
+    [Fact(DisplayName = "模块插件_适配器自动发现且默认适配器始终可用")]
+    public void Adapters_Discovered()
+    {
+        var manager = new ModuleManager();
+
+        Assert.IsType<NlMod.A>(manager.GetAdapter("A"));
+        Assert.IsType<DefaultAdapter>(manager.GetAdapter("Default"));
+        Assert.Null(manager.GetAdapter("none"));
+        Assert.Null(manager.GetAdapter(null));
+    }
+
+    [Fact(DisplayName = "模块插件_扫描结果包含测试模块")]
+    public void ScanAllModules_FindsTestModules()
+    {
+        var map = ModuleManager.ScanAllModules();
+
+        Assert.True(map.ContainsKey("M"));
+        Assert.True(map.ContainsKey("OrderA"));
+        Assert.True(map.ContainsKey("Endpoint"));
     }
 }
 

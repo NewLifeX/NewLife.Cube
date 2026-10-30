@@ -225,18 +225,14 @@ public static class CubeService
         // 注册IP地址库
         IpResolver.Register();
 
-        // 插件
+        // 功能模块。引用即安装：扫描已引用程序集并合并显式注册，不需要数据库登记
         var moduleManager = new ModuleManager();
         services.AddSingleton(moduleManager);
-        var modules = moduleManager.LoadAll(services);
+        var modules = moduleManager.Load(services);
         if (modules.Count > 0)
         {
-            XTrace.WriteLine(L.TLog("Loaded [{0}] feature plugins", modules.Count));
-            foreach (var item in modules)
-            {
-                XTrace.WriteLine(L.TLog("Load plugin: {0}", item.Key));
-                item.Value.Add(services);
-            }
+            XTrace.WriteLine("Loaded [{0}] feature modules: {1}", modules.Count, modules.Keys.Join(", "));
+            moduleManager.Add(services);
         }
 
         XTrace.WriteLine(L.TLog("{0} End   configure Cube {0}", new String('=', 32)));
@@ -454,6 +450,10 @@ public static class CubeService
 
         if (env != null) app.UseCubeDefaultUI(env);
 
+        // 功能模块中间件。必须在路由注册之前调用；需要更早位置的模块可使用 IStartupFilter
+        var moduleManager = provider.GetRequiredService<ModuleManager>();
+        moduleManager.Use(app, env);
+
         // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
         app.UseRouter(endpoints =>
         {
@@ -462,6 +462,9 @@ public static class CubeService
             endpoints.MapControllerRoute(
                 "CubeAreas",
                 "{area}/{controller=Index}/{action=Index}/{id?}");
+
+            // 模块端点。位于前端回退之前，保证模块路由优先
+            moduleManager.Map(endpoints);
         });
 
         ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
@@ -469,19 +472,6 @@ public static class CubeService
         // 自动检查并添加菜单
         AreaBase.RegisterArea<Areas.Admin.AdminArea>();
         AreaBase.RegisterArea<Areas.Cube.CubeArea>();
-
-        // 插件
-        var moduleManager = provider.GetRequiredService<ModuleManager>();
-        var modules = moduleManager.LoadAll();
-        if (modules.Count > 0)
-        {
-            XTrace.WriteLine(L.TLog("Enabled [{0}] feature plugins", modules.Count));
-            foreach (var item in modules)
-            {
-                XTrace.WriteLine(L.TLog("Enable plugin: {0}", item.Key));
-                item.Value.Use(app, env);
-            }
-        }
 
         XTrace.WriteLine(L.TLog("{0} End   initialize Cube {0}", new String('=', 32)));
 

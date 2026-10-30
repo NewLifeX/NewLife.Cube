@@ -18,7 +18,7 @@
 | 数据校验、威胁检测、UA 解析、空富文本 | ✅ | ✅ | 纯托管逻辑 |
 | `PageSetting` 等配置模型 | ✅ | ✅ | 不含配置提供者初始化 |
 | MVC 控制器 / Razor 视图 | ✅ | ❌ | 框架不支持 |
-| 主题/插件动态加载（`ModuleManager`） | ✅ | ⚠️ 边界 | `Assembly.Load`、`Type.GetType`、构造器反射 |
+| 模块/适配器自动发现（`ModuleManager`） | ✅ | ⚠️ 边界 | `AssemblyX.FindAllPlugins`、构造器反射；AOT 下改用 `AddCubeModule<T>` 显式注册 |
 | XCode 实体动态映射与高级查询 | ✅ | ⚠️ 边界 | 依赖 Model.xml 与反射元数据 |
 | 动态控制器发现、`ControllerFactory` 反射 | ✅ | ❌ | 运行时类型扫描 |
 
@@ -28,7 +28,7 @@
 
 | 类别 | 代表位置 | 处置 |
 |------|---------|------|
-| 插件/类型动态加载（IL2026/IL2057/IL2072） | `Modules/ModuleManager.cs`、`Services/LovRegistry.cs` | 设计性动态能力，边界方法声明 `[RequiresUnreferencedCode]` 或运行期守卫 |
+| 模块自动发现/类型反射（IL2026/IL2057/IL2072） | `Modules/ModuleManager.cs`、`Services/LovRegistry.cs` | 设计性动态能力，边界方法声明 `[RequiresUnreferencedCode]` 或运行期守卫 |
 | 构造器/成员反射（IL2075/IL2090/IL2091） | `Membership/MenuHelper.cs`、`ViewModels/*`、`EntityController*` | 元数据驱动能力，AOT 下需改用静态注册或源生成 |
 | `Assembly.Location`（IL3000） | `Extensions/CubeEmbeddedFileProvider.cs`、`Areas/Admin/Controllers/IndexController.cs` | 改用 `AppContext.BaseDirectory` |
 | 动态代码（IL3050） | `Services/ExternalAuthService.cs`、`ViewModels/ExpandField.cs` | 表达式/动态调用，AOT 下必须关闭对应功能 |

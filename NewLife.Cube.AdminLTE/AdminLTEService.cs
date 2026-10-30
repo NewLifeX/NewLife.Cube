@@ -1,8 +1,6 @@
-﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Model;
 
@@ -37,11 +35,4 @@ public static class AdminLTEService
 
         return app;
     }
-}
-
-[DisplayName("AdminLTE皮肤")]
-internal class AdminLTEModule : IModule
-{
-    public void Add(IServiceCollection services) { }
-    public void Use(IApplicationBuilder app, IWebHostEnvironment env) => app.UseAdminLTE(env);
 }

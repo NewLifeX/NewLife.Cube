@@ -195,7 +195,7 @@ public class AppController : EntityController<App, AppModel>
 | 多前端共存 | Vue / Blazor / AntDesign / 傳統 Razor 可漸進遷移。 |
 | 主題內嵌資源 | `CubeEmbeddedFileProvider` 把主題靜態資源打包進程式集。 |
 | 皮膚註冊 | `AddTheme/AddSkin` 註冊皮膚，Use 階段任選其一（`app.UseMetronic(env)` 等）。 |
-| 自定義主題 | 仿照 `MetronicModule` 實現 IModule 並在 Use 階段掛載。 |
+| 自定義主題 | 前端資源實作 `ICubeSkin`，後端能力實作 `IModule`；引用套件即自動探索。 |
 | 檢視覆寫 | 子專案同路徑同名 `.cshtml` 覆蓋父級。 |
 | 多語言 | 11 種執行時語言用於介面訊息，按請求識別區域，並提供 11 語言 Vue 前端。 |
 | 新一代皮膚包 | 基於 pnpm workspace + 公共模組 `@newlifex/cube`（統一 API / Token / 型別、欄位後設資料 → 控制元件對映），8 套皮膚開箱即用，NuGet 引包即得完整前端。 |
@@ -380,7 +380,7 @@ https://github.com/NewLifeX/NewLife.CubeVue · https://github.com/NewLifeX/NewLi
 | 選單樹 | `/Admin/Index/GetMenuTree` 根據許可權生成多級選單。 |
 | 許可權模型 | 使用者 -> 角色 -> 選單（Action 集合）。首個使用者搶管理員，`admin` 被停用。 |
 | ApiResponse | 標準響應包裝 code / data / page / stat。 |
-| IModule | 啟動模組注入服務和靜態資源（主題、Swagger 等）。 |
+| 擴充套件 | 引用即安裝：`IModule`（服務/中介軟體/端點）與 `ICubeSkin`（前端資源）自動探索。 |
 | AI 對話助手 | 全域性 `AiController.AiChat` 端點（`/Ai/AiChat`）+ NAI `AiChatService` 編排（會話歷史 / 工具迴圈 / SSE 事件流）；實體控制器經 `IEntityAiContext` 暴露能力。`AiInsightHelper` 保留資料收集（14 類敏感欄位黑名單）。 |
 
 </details>

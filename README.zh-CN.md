@@ -195,7 +195,7 @@ public class AppController : EntityController<App, AppModel>
 | 多前端共存 | Vue（官方）、8 套仓库内参考 SPA 皮肤与传统 Razor 可渐进迁移；React（Ant Design）由独立仓库 CubeAntd 维护；Blazor 为已冻结的 MVC 主题实验。 |
 | 主题内嵌资源 | `CubeEmbeddedFileProvider` 把主题静态资源打包进程序集。 |
 | 皮肤注册 | `AddTheme/AddSkin` 注册皮肤，Use 阶段任选其一（`app.UseMetronic(env)` 等）。 |
-| 自定义主题 | 仿照 `MetronicModule` 实现 IModule 并在 Use 阶段挂载。 |
+| 自定义主题 | 前端资源实现 `ICubeSkin`，后端能力实现 `IModule`；引用包即自动发现。 |
 | 视图覆写 | 子项目同路径同名 `.cshtml` 覆盖父级。 |
 | 多语言 | 11 种运行时语言用于接口消息，按请求识别区域，并提供 11 语言 Vue 前端。 |
 | 新一代皮肤包 | 基于 pnpm workspace + 公共模块 `@newlifex/cube`（统一 API / Token / 类型、字段元数据 → 控件映射）。`NewLife.Cube.Vue` 为官方皮肤并已发布 NuGet（编译产物嵌入 DLL）；React 由独立仓库 `NewLife.Cube.React` 以同样方式发布；引用多少皮肤包，`AddCube` + `UseCube` 后即可在设置页切换多少套；其余 8 套 SPA 皮肤为仓库内参考实现，不发布 NuGet。 |
@@ -380,7 +380,7 @@ https://github.com/NewLifeX/NewLife.CubeVue · https://github.com/NewLifeX/NewLi
 | 菜单树 | `/Admin/Index/GetMenuTree` 根据权限生成多级菜单。 |
 | 权限模型 | 用户 -> 角色 -> 菜单（Action 集合）。首个用户抢管理员，`admin` 被禁用。 |
 | ApiResponse | 标准响应包装 code / data / page / stat。 |
-| IModule | 启动模块注入服务和静态资源（主题、Swagger 等）。 |
+| 扩展包 | 引用即安装：`IModule`（服务/中间件/端点）与 `ICubeSkin`（前端资源）自动发现。 |
 | AI 对话助手 | 全局 `AiController.AiChat` 端点（`/Ai/AiChat`）+ NAI `AiChatService` 编排（会话历史 / 工具循环 / SSE 事件流）；实体控制器经 `IEntityAiContext` 暴露能力。`AiInsightHelper` 保留数据收集（14 类敏感字段黑名单）。 |
 
 </details>

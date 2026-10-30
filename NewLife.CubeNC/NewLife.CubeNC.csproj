@@ -71,7 +71,7 @@
   <ItemGroup>
     <Compile Include="..\NewLife.Cube\AI\IAIService.cs" Link="AI\IAIService.cs" />
     <Compile Include="..\NewLife.Cube\AI\AIService.cs" Link="AI\AIService.cs" />
-    <Compile Include="..\NewLife.Cube\AI\AIPlugin.cs" Link="AI\AIPlugin.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AIServiceExtensions.cs" Link="AI\AIServiceExtensions.cs" />
     <Compile Include="..\NewLife.Cube\AI\Jobs\AILogSummaryJob.cs" Link="AI\Jobs\AILogSummaryJob.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiDataHelper.cs" Link="AI\AiDataHelper.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiFormHelper.cs" Link="AI\AiFormHelper.cs" />
@@ -113,7 +113,6 @@
     <Compile Include="..\NewLife.Cube\Entity\Models\AccessRuleModel.cs" Link="Entity\Models\AccessRuleModel.cs" />
      <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AppModel.cs" Link="Entity\Models\AppModel.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\Models\AppModuleModel.cs" Link="Entity\Models\AppModuleModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AttachmentModel.cs" Link="Entity\Models\AttachmentModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\CronJobModel.cs" Link="Entity\Models\CronJobModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\MailConfigModel.cs" Link="Entity\Models\MailConfigModel.cs" />
@@ -135,8 +134,6 @@
     <Compile Include="..\NewLife.Cube\Entity\委托代理.cs" Link="Entity\委托代理.cs" />
     <Compile Include="..\NewLife.Cube\Entity\定时作业.Biz.cs" Link="Entity\定时作业.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\定时作业.cs" Link="Entity\定时作业.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\应用插件.Biz.cs" Link="Entity\应用插件.Biz.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\应用插件.cs" Link="Entity\应用插件.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs" Link="Entity\应用日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.cs" Link="Entity\应用日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />

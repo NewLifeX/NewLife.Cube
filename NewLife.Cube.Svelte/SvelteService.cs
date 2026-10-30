@@ -1,64 +1,28 @@
-using System.ComponentModel;
-using System.Reflection;
 using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.Modules;
 
 namespace NewLife.Cube.Svelte;
 
 /// <summary>Svelte前端皮肤服务</summary>
 public static class SvelteService
 {
-    /// <summary>使用Svelte前端皮肤。替换WebRootFileProvider以注册嵌入式静态资源，并添加SPA回退路由，提供SvelteKit+Skeleton UI管理后台前端</summary>
+    /// <summary>使用Svelte前端皮肤。UseCube 已自动发现并启用皮肤包，通常无需调用；本方法仅用于强制指定 Svelte 皮肤</summary>
     /// <param name="app"></param>
     /// <param name="env"></param>
     /// <returns></returns>
-    public static WebApplication UseSvelte(this WebApplication app, IWebHostEnvironment env)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var embeddedProvider = new CubeEmbeddedFileProvider(assembly, "NewLife.Cube.Svelte.wwwroot");
-
-        if (!env.WebRootPath.IsNullOrEmpty() && Directory.Exists(env.WebRootPath) && env.WebRootFileProvider != null)
-        {
-            env.WebRootFileProvider = new CompositeFileProvider(embeddedProvider, env.WebRootFileProvider);
-        }
-        else
-        {
-            env.WebRootFileProvider = embeddedProvider;
-        }
-
-        app.UseStaticFiles();
-        app.MapFallbackToFile("index.html");
-
-        return app;
-    }
+    public static WebApplication UseSvelte(this WebApplication app, IWebHostEnvironment env) => app.UseCubeSkin(env, "Svelte");
 }
 
-/// <summary>Svelte前端皮肤模块</summary>
-[DisplayName("Svelte前端皮肤")]
-internal class SvelteModule : IModule
+/// <summary>Svelte前端皮肤。由魔方自动发现，多个皮肤包共存时可通过设置项 SpaSkin 切换</summary>
+internal sealed class SvelteSkin : ICubeSkin
 {
-    /// <summary>添加模块</summary>
-    /// <param name="services"></param>
-    public void Add(IServiceCollection services) { }
+    /// <summary>皮肤标识</summary>
+    public String Name => "Svelte";
 
-    /// <summary>使用模块</summary>
-    /// <param name="app"></param>
-    /// <param name="env"></param>
-    public void Use(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var embeddedProvider = new CubeEmbeddedFileProvider(assembly, "NewLife.Cube.Svelte.wwwroot");
+    /// <summary>显示名称</summary>
+    public String DisplayName => "SvelteKit + Skeleton UI";
 
-        if (!env.WebRootPath.IsNullOrEmpty() && Directory.Exists(env.WebRootPath) && env.WebRootFileProvider != null)
-        {
-            env.WebRootFileProvider = new CompositeFileProvider(embeddedProvider, env.WebRootFileProvider);
-        }
-        else
-        {
-            env.WebRootFileProvider = embeddedProvider;
-        }
-
-        app.UseStaticFiles();
-    }
+    /// <summary>创建静态资源文件提供者。前端编译产物编译时嵌入程序集，无需物理文件</summary>
+    /// <returns></returns>
+    public IFileProvider CreateFileProvider() => new CubeEmbeddedFileProvider(typeof(SvelteSkin).Assembly, "NewLife.Cube.Svelte.wwwroot");
 }
