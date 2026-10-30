@@ -342,6 +342,7 @@ export default {
   'route.login': 'Sign in',
   'route.activate': 'Account activation',
   'route.security': 'Security center',
+  'route.profile': 'Profile',
   'route.unauthorized': 'Unauthorized',
   'route.loading': 'Loading',
   'route.default': 'Default page',
@@ -676,6 +677,25 @@ export default {
   // XCode settings
 
   // User statistics
+
+  // Personal center
+  'profile.title': 'Profile',
+  'profile.basic': 'Basic information',
+  'profile.displayName': 'Display name',
+  'profile.role': 'Role',
+  'profile.online': 'Online',
+  'profile.offline': 'Offline',
+  'profile.enabled': 'Enabled',
+  'profile.disabled': 'Disabled',
+  'profile.contact': 'Contact',
+  'profile.securityManage': 'Manage in security center',
+  'profile.loginInfo': 'Sign-in activity',
+  'profile.logins': 'Login count',
+  'profile.lastLogin': 'Last login',
+  'profile.lastLoginIP': 'Last login IP',
+  'profile.registerTime': 'Registered at',
+  'profile.registerIP': 'Registered IP',
+  'profile.loadFailed': 'Failed to load user info',
 
   // Security center
   'security.title': 'Security center',

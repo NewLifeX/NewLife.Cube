@@ -341,6 +341,7 @@ export default {
   'route.login': '登录',
   'route.activate': '账号激活',
   'route.security': '安全中心',
+  'route.profile': '个人中心',
   'route.unauthorized': '未授权',
   'route.loading': '加载中',
   'route.default': '默认页面',
@@ -670,6 +671,25 @@ export default {
   'common.noData': '暂无数据',
 
   // XCode 设置
+
+  // 个人中心
+  'profile.title': '个人中心',
+  'profile.basic': '基本信息',
+  'profile.displayName': '显示名',
+  'profile.role': '角色',
+  'profile.online': '在线',
+  'profile.offline': '离线',
+  'profile.enabled': '已启用',
+  'profile.disabled': '已停用',
+  'profile.contact': '联系方式',
+  'profile.securityManage': '前往安全中心管理',
+  'profile.loginInfo': '登录信息',
+  'profile.logins': '登录次数',
+  'profile.lastLogin': '上次登录',
+  'profile.lastLoginIP': '上次登录 IP',
+  'profile.registerTime': '注册时间',
+  'profile.registerIP': '注册 IP',
+  'profile.loadFailed': '加载用户信息失败',
 
   // 安全中心
   'security.title': '安全中心',
