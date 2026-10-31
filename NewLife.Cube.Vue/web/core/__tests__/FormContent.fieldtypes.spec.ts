@@ -137,6 +137,34 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     expect(w.find('.el-date-editor').exists()).toBe(true);
   });
 
+  it('ItemType=TimeSpan → 时:分:秒 分栏输入（不再渲染裸秒数）', () => {
+    const w = mountField(
+      fm({
+        name: 'OnlineTime',
+        typeName: 'Int32',
+        itemType: 'TimeSpan',
+        description: '累计在线总时间，单位秒',
+      }),
+      22515,
+    );
+    const parts = w.findAllComponents({ name: 'ElInputNumber' });
+    expect(parts).toHaveLength(3);
+    expect(parts.map((p) => p.props('modelValue'))).toEqual([6, 15, 15]);
+  });
+
+  it('ItemType=TimeSpan 修改后回写原始秒数', async () => {
+    const w = mountField(
+      fm({ name: 'OnlineTime', typeName: 'Int32', itemType: 'TimeSpan', description: '单位秒' }),
+      22515,
+    );
+    w.findAllComponents({ name: 'ElInputNumber' })[0].vm.$emit('update:model-value', 8);
+    await flushPromises();
+
+    type UpdateEvent = [Record<string, unknown>];
+    const emitted = w.emitted('update:modelValue') as UpdateEvent[] | undefined;
+    expect(emitted?.at(-1)?.[0]).toEqual({ OnlineTime: 8 * 3600 + 15 * 60 + 15 });
+  });
+
   it('枚举(lovCode) → LovSelect（单选 multiple=false）', () => {
     const w = mountField(fm({ name: 'Kind', typeName: '测试枚举', lovCode: ENUM_LOV }), 1);
     const lov = w.findComponent(LovSelect);
@@ -152,6 +180,61 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     const lov = w.findComponent(LovSelect);
     expect(lov.exists()).toBe(true);
     expect(lov.props('multiple')).toBe(true);
+  });
+
+  it('映射字段（RoleName→RoleID）→ el-select，回显关联键并用名称展示', async () => {
+    const meta = fm({
+      name: 'RoleName',
+      displayName: '角色',
+      typeName: 'String',
+      mapField: 'RoleID',
+      mapTypeName: 'Int32',
+      dataSource: { '0': '（无）', '1': '管理员', '3': '普通用户' },
+    });
+    const w = mount(FormContent, {
+      props: { fields: [meta], modelValue: { roleID: 3 } },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+    await flushPromises();
+
+    const select = w.findComponent({ name: 'ElSelect' });
+    expect(select.exists()).toBe(true);
+    expect(select.props('modelValue')).toBe(3);
+    expect(w.text()).toContain('普通用户');
+
+    // 选择新角色时回写的是关联键 RoleID，而不是只读显示名 RoleName
+    select.vm.$emit('update:model-value', 1);
+    await flushPromises();
+    const emitted = w.emitted('update:modelValue')?.at(-1)?.[0] as Record<string, unknown>;
+    expect(emitted.roleID).toBe(1);
+    expect(emitted.RoleName).toBeUndefined();
+  });
+
+  it('字典多选（角色组）→ el-select multiple，逗号串回显为同型数组', async () => {
+    const meta = fm({
+      name: 'RoleIds',
+      displayName: '角色组',
+      typeName: 'String',
+      dataSource: { '1': '管理员', '3': '普通用户' },
+      multiple: true,
+    });
+    const w = mount(FormContent, {
+      props: { fields: [meta], modelValue: { roleIds: ',1,3,' } },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+    await flushPromises();
+
+    const select = w.findComponent({ name: 'ElSelect' });
+    expect(select.exists()).toBe(true);
+    expect(select.props('multiple')).toBe(true);
+    // 字典键是字符串，选项值是数字；回显值必须转成数字才匹配得上
+    expect(select.props('modelValue')).toEqual([1, 3]);
+
+    select.vm.$emit('update:model-value', [3]);
+    await flushPromises();
+    const emitted = w.emitted('update:modelValue')?.at(-1)?.[0] as Record<string, unknown>;
+    // 回写沿用模型已有键名（camelCase），避免同字段大小写双键并存
+    expect(emitted.roleIds).toEqual([3]);
   });
 
   it('ItemType=file → Uploader（kind=file）', () => {

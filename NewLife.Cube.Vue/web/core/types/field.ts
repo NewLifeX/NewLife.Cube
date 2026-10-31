@@ -32,6 +32,10 @@ export type ControlType =
   | 'password' // 密码（遮蔽显示，ItemType=password）
   | 'readonly' // 只读文本（Guid 等）
   | 'select' // 枚举 / 字典下拉（后端下发 dataSource）
+  | 'multiSelect' // 字典多选（后端下发 dataSource + multiple）
+  | 'mapSelect' // 映射下拉（RoleName→RoleID 等，按关联表数据源选择并提交关联键）
+  | 'mapInput' // 映射键值输入（关联表过大、无数据源时退回）
+  | 'timeSpan' // 时长（时:分:秒 分栏输入，ItemType=TimeSpan）
   | 'area'; // 地区级联（ItemType=area1~4）
 
 /** 动态搜索控件类型（搜索区子集） */
@@ -133,6 +137,10 @@ export interface FieldMeta {
   class?: string;
   /** 值集编码（枚举 / singleSelect / multipleSelect 由后端静态构造下发，前端绝不硬编码） */
   lovCode?: string;
+  /** 映射键字段名（如 `RoleID`）。有值时表单渲染为关联下拉，提交的是该键而不是本字段 */
+  mapField?: string;
+  /** 映射键的类型名（如 `Int32`）。无数据源时用于退回数字/文本键值输入 */
+  mapTypeName?: string;
   /** 是否多选（multipleSelect 为 true；亦可由前端在映射时推导） */
   multiple?: boolean;
   /** 选项（保留，LOV 模式一般留空） */

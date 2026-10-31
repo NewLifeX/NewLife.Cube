@@ -131,6 +131,24 @@ describe('CubeTable/logic 搜索控件显示态', () => {
     ]);
   });
 
+  it('应该升级为多选下拉 当内联字典字段声明多选时', () => {
+    // 角色组搜索：后端 ItemType=multipleSelect + dataSource，必须给多选，否则只能筛一个角色
+    const control = buildSearchControl({
+      name: 'RoleID',
+      displayName: '角色',
+      typeName: 'Int32',
+      itemType: 'multipleSelect',
+      multiple: true,
+      dataSource: { '1': '管理员', '3': '普通用户' },
+    });
+    expect(control.kind).toBe('dictMulti');
+    expect(control.span).toBe(2);
+    expect(control.options).toEqual([
+      { label: '管理员', value: 1 },
+      { label: '普通用户', value: 3 },
+    ]);
+  });
+
   it('应该保留非数字字典键原样 当内联字典是名称型时', () => {
     const control = buildSearchControl({
       name: 'Level',

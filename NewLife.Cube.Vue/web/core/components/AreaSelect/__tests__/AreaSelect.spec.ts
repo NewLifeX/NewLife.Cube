@@ -72,4 +72,36 @@ describe('AreaSelect 组件', () => {
 
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([undefined]);
   });
+
+  it('应该按级联深度判定叶子 当后端子级没有返回 level 时', async () => {
+    requestStub.mockClear();
+    requestStub.mockResolvedValue({ data: [{ id: 310100, name: '市辖区' }] });
+    const wrapper = mount(AreaSelect, {
+      props: { modelValue: null, level: 2 },
+      global: { plugins: [ElementPlus] },
+    });
+    await nextTick();
+
+    const props = wrapper.findComponent({ name: 'ElCascader' }).props('props') as {
+      lazyLoad: (node: { value?: unknown; level?: number }, resolve: (options?: any[]) => void) => void;
+    };
+
+    // 展开省级节点（level=1），子级是第 2 级，两级选择应直接成为叶子
+    const cityOptions: any[] = [];
+    props.lazyLoad({ value: 310000, level: 1 }, (options) => cityOptions.push(...(options ?? [])));
+    await vi.waitFor(() => expect(cityOptions).toHaveLength(1));
+    expect(cityOptions[0]).toMatchObject({ value: 310100, level: 2, leaf: true });
+
+    // 三级选择时，同一批省级子级只是第 2 级，还可继续展开
+    const wrapper3 = mount(AreaSelect, {
+      props: { modelValue: null, level: 3 },
+      global: { plugins: [ElementPlus] },
+    });
+    await nextTick();
+    const props3 = wrapper3.findComponent({ name: 'ElCascader' }).props('props') as typeof props;
+    const cityOptions3: any[] = [];
+    props3.lazyLoad({ value: 310000, level: 1 }, (options) => cityOptions3.push(...(options ?? [])));
+    await vi.waitFor(() => expect(cityOptions3).toHaveLength(1));
+    expect(cityOptions3[0]).toMatchObject({ value: 310100, level: 2, leaf: false });
+  });
 });

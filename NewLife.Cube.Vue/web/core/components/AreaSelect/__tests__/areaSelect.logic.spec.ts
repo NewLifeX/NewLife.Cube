@@ -40,6 +40,25 @@ describe('AreaSelect/logic', () => {
     expect(cityLevel[0]?.leaf).toBe(false);
   });
 
+  it('后端未返回 level 时按级联深度兜底判定叶子', () => {
+    // 上海三级选择：根 → 省(1) → 市辖区(2) → 宝山(3)
+    const provinces = toAreaOptions([{ id: 310000, name: '上海', level: 0 }], 3, 1);
+    expect(provinces[0]?.level).toBe(1);
+    expect(provinces[0]?.leaf).toBe(false);
+
+    const cities = toAreaOptions([{ id: 310100, name: '市辖区', level: 0 }], 3, 2);
+    expect(cities[0]?.level).toBe(2);
+    expect(cities[0]?.leaf).toBe(false);
+
+    const districts = toAreaOptions([{ id: 310113, name: '宝山', level: 0 }], 3, 3);
+    expect(districts[0]?.level).toBe(3);
+    expect(districts[0]?.leaf).toBe(true);
+
+    // 两级选择：市级即叶子
+    const twoLevel = toAreaOptions([{ id: 310100, name: '市辖区', level: 0 }], 2, 2);
+    expect(twoLevel[0]?.leaf).toBe(true);
+  });
+
   it('父级路径按层级升序并排除根节点', () => {
     const path = areaPathIds([
       { id: 0, name: '根', level: 0 },

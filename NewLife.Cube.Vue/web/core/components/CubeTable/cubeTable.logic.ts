@@ -8,6 +8,7 @@
  */
 import {
   enumOptionValue,
+  hasDataSource,
   isMoneyItemType,
   isPercentItemType,
   parseDecimalItemType,
@@ -15,6 +16,7 @@ import {
   resolveSearchControl,
 } from '../../utils/fieldControl';
 import { formatCellDateTime } from '../../engine/logic';
+import { timeSpanToSeconds, timeSpanUnitOfDescription } from '../TimeSpanInput/timeSpan.logic';
 import i18n from '../../i18n';
 import type { FieldMeta, ListControlType } from '../../types/field';
 import type { CubeColumnView, CubeSearchControl, CubeSearchKind } from './types';
@@ -76,6 +78,7 @@ export const FILE_EXISTS_OPTIONS = [
 /** 占整行的控件（范围类与值集多选） */
 const FULL_ROW_KINDS: ReadonlySet<CubeSearchKind> = new Set<CubeSearchKind>([
   'lovMulti',
+  'dictMulti',
   'fileExists',
   'area',
 ]);
@@ -106,9 +109,8 @@ export function buildSearchControl(field: FieldMeta): CubeSearchControl {
 
   let kind: CubeSearchKind = resolveSearchControl(field);
 
-  // 后端把 DateTime 字段声明为纯日期（ItemType='date'，如生日、班次日期）时，
-  // `resolveSearchControl` 仍按 typeName 给 datetimeRange，搜索要用户填到时分秒。
-  // 这里按同一份 itemType 降级为日期区间 —— 与 `widthForControl` 用 itemType 分宽度的口径一致。
+  // 防御性兜底：`resolveSearchControl` 已按 itemType=date 直接返回 dateRange，
+  // 这里再兜一次，避免旧缓存或 preset 注入的字段把纯日期降级成日期时间区间。
   const itemType = (field.itemType ?? '').trim().toLowerCase();
   if (kind === 'datetimeRange' && itemType === 'date') kind = 'dateRange';
 
@@ -117,14 +119,10 @@ export function buildSearchControl(field: FieldMeta): CubeSearchControl {
   // 免得渲染出一个永远选不出东西的空 LOV。
   if ((kind === 'lov' || kind === 'lovMulti') && !field.lovCode) kind = 'text';
 
-  // resolveSearchControl 不认 dataSource，字典枚举会落到 text —— 这里按同一份 dataSource 升级为下拉
-  if (
-    kind === 'text' &&
-    !field.lovCode &&
-    field.dataSource &&
-    Object.keys(field.dataSource).length > 0
-  ) {
-    kind = 'dict';
+  // resolveSearchControl 不认 dataSource，字典枚举会落到 text —— 这里按同一份 dataSource 升级为下拉；
+  // 多选字典（如角色组搜索）必须给多选，否则只能筛一个角色
+  if (kind === 'text' && !field.lovCode && hasDataSource(field)) {
+    kind = field.multiple || itemType === 'multipleselect' ? 'dictMulti' : 'dict';
   }
 
   const isRange = kind === 'numberRange' || kind === 'timeRange';
@@ -136,7 +134,7 @@ export function buildSearchControl(field: FieldMeta): CubeSearchControl {
     key: isRange ? `${field.name}_min` : field.name,
     maxKey: isRange ? `${field.name}_max` : null,
     options:
-      kind === 'dict'
+      kind === 'dict' || kind === 'dictMulti'
         ? dictOptions(field)
         : kind === 'switch'
           ? BOOLEAN_FILTER_OPTIONS
@@ -667,11 +665,8 @@ export function formatTimeSpanCell(field: FieldMeta, raw: unknown): string {
   const value = Number(raw);
   if (!Number.isFinite(value)) return String(raw ?? '');
 
-  const description = (field.description ?? '').toLowerCase();
-  let totalSeconds = value;
-  if (/毫秒|ms|millisecond/.test(description)) totalSeconds = value / 1000;
-  else if (/小时|hour/.test(description)) totalSeconds = value * 3600;
-  else if (/分|minute/.test(description)) totalSeconds = value * 60;
+  // 单位口径与 TimeSpanInput 输入组件共用，避免「列表显示 6 小时、编辑框按秒回显」的漂移
+  const totalSeconds = timeSpanToSeconds(value, timeSpanUnitOfDescription(field.description));
 
   const itemType = (field.itemType ?? '').trim();
   const colon = itemType.indexOf(':');

@@ -47,14 +47,26 @@ export function normalizeAreaResponse(response: unknown): AreaNode[] {
   return nodes;
 }
 
-/** 地区节点 → 级联选项；达到目标层级即叶子 */
-export function toAreaOptions(nodes: AreaNode[], targetLevel: number): AreaOption[] {
-  return nodes.map((node) => ({
-    value: node.id,
-    label: node.name,
-    level: node.level,
-    leaf: node.level >= targetLevel,
-  }));
+/** 地区节点 → 级联选项；达到目标层级即叶子
+ *
+ * @param nodes 子级节点
+ * @param targetLevel 目标层级。省=1、市=2、区=3、街道=4
+ * @param fallbackLevel 节点自身未携带层级时的兜底层级（按级联深度推导），保证叶子判定始终生效
+ */
+export function toAreaOptions(
+  nodes: AreaNode[],
+  targetLevel: number,
+  fallbackLevel?: number,
+): AreaOption[] {
+  return nodes.map((node) => {
+    const level = node.level > 0 ? node.level : (fallbackLevel ?? 0);
+    return {
+      value: node.id,
+      label: node.name,
+      level,
+      leaf: level >= targetLevel,
+    };
+  });
 }
 
 /** 父级链 → 级联路径（按层级升序） */

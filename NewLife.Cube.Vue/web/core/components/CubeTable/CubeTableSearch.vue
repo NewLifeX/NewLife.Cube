@@ -125,6 +125,19 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
             <el-option v-for="o in c.options" :key="String(o.value)" :label="o.label" :value="o.value" />
           </el-select>
 
+          <el-select
+            v-else-if="c.kind === 'dictMulti'"
+            v-model="ctx.searchModel[c.key] as Array<string | number> | undefined"
+            class="cts-ctl"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            clearable
+            :placeholder="t('search.all')"
+          >
+            <el-option v-for="o in c.options" :key="String(o.value)" :label="o.label" :value="o.value" />
+          </el-select>
+
           <div v-else-if="c.kind === 'numberRange'" class="cts-range">
             <el-input-number v-model="ctx.searchModel[c.key] as number" :controls="false" :placeholder="t('search.minValue')" />
             <span class="cts-sep">–</span>

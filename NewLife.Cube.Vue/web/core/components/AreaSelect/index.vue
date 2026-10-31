@@ -45,14 +45,14 @@ const emit = defineEmits<{
 const selected = ref<number[]>([]);
 const loading = ref(false);
 
-/** 拉取直接子级 */
-async function fetchChildren(parentId: number): Promise<AreaOption[]> {
+/** 拉取直接子级。childLevel 由级联深度推导，后端未返回 level 时同样能正确判定叶子 */
+async function fetchChildren(parentId: number, childLevel: number): Promise<AreaOption[]> {
   const res = await request({
     url: '/Cube/AreaChilds',
     method: 'get',
     params: { id: parentId },
   });
-  return toAreaOptions(normalizeAreaResponse(res), props.level);
+  return toAreaOptions(normalizeAreaResponse(res), props.level, childLevel);
 }
 
 /** el-cascader lazy 配置 */
@@ -60,10 +60,12 @@ const cascaderProps = {
   value: 'value',
   label: 'label',
   lazy: true,
-  lazyLoad: (node: { value?: unknown } | undefined, resolve: (options?: AreaOption[]) => void) => {
+  lazyLoad: (node: { value?: unknown; level?: number } | undefined, resolve: (options?: AreaOption[]) => void) => {
     const id = Number(node?.value ?? 0);
+    // 根节点（level=0）展开得到第 1 级，其余子级 = 当前节点层级 + 1
+    const level = (node?.level ?? 0) + 1;
     loading.value = true;
-    fetchChildren(id)
+    fetchChildren(id, level)
       .then((options) => resolve(options))
       .catch((err) => {
         console.error('[AreaSelect] Failed to load child areas:', err);

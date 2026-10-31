@@ -58,6 +58,7 @@ const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
   area2: 'area',
   area3: 'area',
   area4: 'area',
+  timespan: 'timeSpan',
   singleselect: 'lov',
   multipleselect: 'lovMulti',
   lovtable: 'lov',
@@ -92,6 +93,29 @@ function normalizeItemType(field: FieldMeta): string {
   return (field.itemType ?? '').trim().toLowerCase();
 }
 
+/** 后端是否下发了取值字典（枚举 / 关联表） */
+export function hasDataSource(field: FieldMeta): boolean {
+  return !!field.dataSource && Object.keys(field.dataSource).length > 0;
+}
+
+/**
+ * 表单实际读写的模型键。
+ *
+ * 映射字段（`RoleName` 通过 Map 指向 `RoleID`）在元数据里是只读展示名，
+ * 真正要提交的是关联键，因此读写键取 `mapField`，其余字段就是自身名称。
+ *
+ * @param field 字段元数据
+ * @returns 模型键
+ */
+export function mapValueKey(field: FieldMeta): string {
+  return field.mapField || field.name;
+}
+
+/** 映射键是否为数值类型。无数据源时据此退回数字输入而非文本 */
+export function isNumericMapKey(field: FieldMeta): boolean {
+  return NUMERIC_TYPES.has((field.mapTypeName ?? '').trim());
+}
+
 /**
  * 解析表单 / 编辑控件类型。
  *
@@ -102,12 +126,27 @@ export function resolveControl(field: FieldMeta): ControlType {
   // 1. ItemType 优先
   const itemType = normalizeItemType(field);
   if (itemType && ITEM_TYPE_TO_CONTROL[itemType]) {
-    return ITEM_TYPE_TO_CONTROL[itemType];
+    const control = ITEM_TYPE_TO_CONTROL[itemType];
+    // singleSelect / multipleSelect 没有 lovCode 就没有远程值集，退回内联字典下拉（多选保持多选）
+    if ((control === 'lov' || control === 'lovMulti') && !field.lovCode && hasDataSource(field)) {
+      return control === 'lovMulti' ? 'multiSelect' : 'select';
+    }
+    return control;
   }
   // 带参数的 decimal(p,s) 与 file-zip / image-xxx 等前缀形式
   if (parseDecimalItemType(itemType)) return 'inputNumber';
   if (itemType.startsWith('file')) return 'upload';
   if (itemType.startsWith('image')) return 'image';
+  if (itemType.startsWith('timespan')) return 'timeSpan';
+
+  // 2. 映射字段（RoleName→RoleID 等）：值集码优先走远程 LOV；有关联表数据源时渲染下拉并提交关联键；
+  //    关联表过大未下发数据源时，整型键退回键值输入；
+  //    字符串/复合键（如 RoleNames→RoleIds）没有可编辑语义，按只读文本展示虚拟值
+  if (field.mapField) {
+    if (field.lovCode) return field.multiple ? 'lovMulti' : 'lov';
+    if (hasDataSource(field)) return 'mapSelect';
+    return isNumericMapKey(field) ? 'mapInput' : 'readonly';
+  }
 
   const typeName = field.typeName;
 
@@ -121,9 +160,10 @@ export function resolveControl(field: FieldMeta): ControlType {
     return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
   }
 
-  // 3.1 无 lovCode 但后端下发 dataSource（枚举字典）→ 本地下拉，提交数字避免枚举反序列化失败
-  if (field.dataSource && Object.keys(field.dataSource).length > 0) {
-    return 'select';
+  // 3.1 无 lovCode 但后端下发 dataSource（枚举字典 / 关联表）→ 本地下拉，提交数字避免枚举反序列化失败
+  if (hasDataSource(field)) {
+    // 多选字典（如角色组 RoleIds）必须渲染多选，否则只能选出一个角色
+    return field.multiple || itemType === 'multipleselect' ? 'multiSelect' : 'select';
   }
 
   // 4. 已知 CLR 类型
@@ -176,7 +216,8 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
 
   // 已知 CLR 类型
   if (typeName === 'Boolean') return 'switch';
-  if (typeName === 'DateTime') return 'datetimeRange';
+  // ItemType=date 只到年月日，搜索用日期区间，避免要求用户填时分秒
+  if (typeName === 'DateTime') return itemType === 'date' ? 'dateRange' : 'datetimeRange';
   if (typeName === 'TimeSpan') return 'timeRange';
   if (NUMERIC_TYPES.has(typeName)) return 'numberRange';
 
@@ -267,8 +308,10 @@ export function isFullWidthControl(control: ControlType): boolean {
  * @returns true 表示必填
  */
 export function isRequiredField(field: FieldMeta): boolean {
-  // Boolean 开关恒有值（默认 false），强制必填只会要求用户多余拨动一次开关
+  // Boolean 开关恒有值（默认 false=否 即默认态），无需强制用户操作，故不计必填
   if (field.typeName === 'Boolean') return false;
+  // 映射字段（RoleName→RoleID）的取值取决于关联键，虚拟属性不可空不代表必须选择，与 MVC _Form_Map 同口径
+  if (field.mapField) return false;
   return !field.nullable && !field.primaryKey && resolveControl(field) !== 'readonly';
 }
 

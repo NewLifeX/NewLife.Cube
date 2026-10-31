@@ -128,6 +128,8 @@ export interface BackendField {
   readOnly?: boolean;
   /** 映射字段 */
   mapField?: string;
+  /** 映射键类型名（后端下发；无数据源时前端据此退回键值输入） */
+  mapTypeName?: string;
   /** 值集编码 */
   lovCode?: string;
   /** 是否多选 */

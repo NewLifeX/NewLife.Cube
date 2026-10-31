@@ -17,7 +17,9 @@ import {
   enumOptionValue,
   isFullWidthControl,
   isMoneyItemType,
+  isNumericMapKey,
   isPercentItemType,
+  mapValueKey,
   resolveControl,
   resolveNumberPrecision,
   resolveNumberStep,
@@ -26,6 +28,7 @@ import { resolveFieldRenderer } from '../../engine/fieldRenderers';
 import { toPascalAndCamel } from '../../utils/url';
 import LovSelect from '../../components/LovSelect/index.vue';
 import AreaSelect from '../../components/AreaSelect/index.vue';
+import TimeSpanInput from '../../components/TimeSpanInput/index.vue';
 import Uploader from '../../components/Uploader.vue';
 // 重型编辑器改为异步组件，仅在表单确有 json / 富文本字段时才按需加载，
 // 避免把 @wangeditor / md-editor-v3 / vanilla-jsoneditor 全部打进主表单 chunk。
@@ -182,6 +185,8 @@ function isRequired(field: FieldMeta): boolean {
   if (field.requiredWhen) return field.requiredWhen(props.modelValue ?? {});
   // Boolean 开关恒有值（默认 false），与 fieldControl.isRequiredField 口径一致，避免星号与校验漂移
   if (field.typeName === 'Boolean') return false;
+  // 映射字段（RoleName→RoleID）的空值由关联键决定，虚拟属性不可空不代表必须选择，与 MVC 一致不做必填
+  if (field.mapField) return false;
   return !field.nullable && !field.primaryKey && controlOf(field) !== 'readonly';
 }
 
@@ -233,7 +238,7 @@ function validate(): boolean {
   if (!props.disabled) {
     for (const field of visibleFields.value) {
       if (!isRequired(field)) continue;
-      if (isEmptyValue(getValue(field.name))) {
+      if (isEmptyValue(getValue(mapValueKey(field)))) {
         next[field.name] = t('form.fieldRequired', { field: field.displayName || field.name });
       }
     }
@@ -300,6 +305,22 @@ function toMultiArray(val: unknown): string[] {
     .split(',')
     .map((x) => x.trim())
     .filter((x) => x.length > 0);
+}
+
+/** 映射字段实际读写的模型键（RoleName → RoleID） */
+function mapKeyOf(field: FieldMeta): string {
+  return mapValueKey(field);
+}
+
+/**
+ * 字典多选值归一：逗号串 / 数组 → 与选项同型的数组。
+ * 后端 dataSource 的键是字符串，选项值经 enumOptionValue 转成数字；
+ * 若模型值仍是字符串，el-select 会匹配不上，表现为「已保存的角色组显示为空」。
+ */
+function toMultiSelectValue(field: FieldMeta, val: unknown): Array<string | number> {
+  const values = toMultiArray(val);
+  const ds = field.dataSource ?? {};
+  return values.map((v) => (v in ds ? enumOptionValue(v) : v));
 }
 </script>
 
@@ -389,6 +410,16 @@ function toMultiArray(val: unknown): string[] {
             <span v-if="numberSuffix(field)" class="fmc-unit">{{ numberSuffix(field) }}</span>
           </div>
 
+          <!-- 时长（ItemType=TimeSpan）：时:分:秒 分栏输入，对外仍是原始存储值 -->
+          <TimeSpanInput
+            v-else-if="controlOf(field) === 'timeSpan'"
+            :id="`fmc-${field.name}`"
+            :disabled="props.disabled"
+            :description="field.description"
+            :model-value="toNumber(getValue(field.name))"
+            @update:model-value="(v: number) => updateField(field.name, v)"
+          />
+
           <!-- 枚举 / 字典下拉（后端下发 dataSource） -->
           <el-select
             v-else-if="controlOf(field) === 'select'"
@@ -404,6 +435,64 @@ function toMultiArray(val: unknown): string[] {
               :value="enumOptionValue(key)"
             />
           </el-select>
+
+          <!-- 字典多选（后端下发 dataSource + multiple，如角色组） -->
+          <el-select
+            v-else-if="controlOf(field) === 'multiSelect'"
+            class="fmc-select"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            :placeholder="hintOf(field, 'form.placeholderMultiSelect')"
+            :disabled="props.disabled"
+            :model-value="toMultiSelectValue(field, getValue(field.name))"
+            @update:model-value="(v: Array<string | number>) => updateField(field.name, v)"
+          >
+            <el-option
+              v-for="(label, key) in field.dataSource || {}"
+              :key="key"
+              :label="label"
+              :value="enumOptionValue(key)"
+            />
+          </el-select>
+
+          <!-- 映射下拉（RoleName→RoleID 等）：显示关联表名称，提交关联键 -->
+          <el-select
+            v-else-if="controlOf(field) === 'mapSelect'"
+            class="fmc-select"
+            :placeholder="hintOf(field, 'form.placeholderSelect')"
+            :disabled="props.disabled"
+            :model-value="asScalar(getValue(mapKeyOf(field)))"
+            @update:model-value="(v: string | number) => updateField(mapKeyOf(field), v)"
+          >
+            <el-option
+              v-for="(label, key) in field.dataSource || {}"
+              :key="key"
+              :label="label"
+              :value="enumOptionValue(key)"
+            />
+          </el-select>
+
+          <!-- 映射键值输入（关联表过大、没有下发数据源时退回，MVC 同口径） -->
+          <el-input-number
+            v-else-if="controlOf(field) === 'mapInput' && isNumericMapKey(field)"
+            :id="`fmc-${field.name}`"
+            class="fmc-input-number"
+            :controls="false"
+            :disabled="props.disabled"
+            :placeholder="hintOf(field, 'form.placeholderNumber')"
+            :model-value="toNumber(getValue(mapKeyOf(field)))"
+            @update:model-value="(v: number | undefined) => updateNumber(mapKeyOf(field), v)"
+          />
+          <el-input
+            v-else-if="controlOf(field) === 'mapInput'"
+            :id="`fmc-${field.name}`"
+            class="fmc-input"
+            :disabled="props.disabled"
+            :placeholder="hintOf(field, 'form.placeholderInput')"
+            :model-value="String(getValue(mapKeyOf(field)) ?? '')"
+            @update:model-value="(v: string) => updateField(mapKeyOf(field), v)"
+          />
 
           <!-- 布尔开关 -->
           <div v-else-if="controlOf(field) === 'switch'" class="fmc-switch-wrapper">
@@ -449,27 +538,27 @@ function toMultiArray(val: unknown): string[] {
             @update:model-value="(v: number | undefined) => updateField(field.name, v)"
           />
 
-          <!-- 值集单选 -->
+          <!-- 值集单选（映射字段也提交关联键） -->
           <LovSelect
             v-else-if="controlOf(field) === 'lov'"
             :code="field.lovCode || ''"
             :disabled="props.disabled"
             :parent="field.parentField ? (getValue(field.parentField) as string | number | undefined) : undefined"
-            :model-value="(getValue(field.name) as string | number | undefined)"
+            :model-value="(getValue(mapKeyOf(field)) as string | number | undefined)"
             :placeholder="hintOf(field, 'form.placeholderSelect')"
-            @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(field.name, v)"
+            @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(mapKeyOf(field), v)"
           />
 
-          <!-- 值集多选 -->
+          <!-- 值集多选（映射字段也提交关联键） -->
           <LovSelect
             v-else-if="controlOf(field) === 'lovMulti'"
             :code="field.lovCode || ''"
             :multiple="true"
             :disabled="props.disabled"
             :parent="field.parentField ? (getValue(field.parentField) as string | number | undefined) : undefined"
-            :model-value="toMultiArray(getValue(field.name))"
+            :model-value="toMultiArray(getValue(mapKeyOf(field)))"
             :placeholder="hintOf(field, 'form.placeholderMultiSelect')"
-            @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(field.name, v)"
+            @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(mapKeyOf(field), v)"
           />
 
           <!-- 文件上传 -->

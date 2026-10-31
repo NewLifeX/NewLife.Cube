@@ -8,14 +8,14 @@ import type { FieldMeta, ListControlType, SearchControlType } from '../../types/
 import type { CubeEngineContext } from '../../engine/types';
 
 /**
- * 搜索控件类型扩展：在引擎的 `SearchControlType` 之外补一个 `dict`。
+ * 搜索控件类型扩展：在引擎的 `SearchControlType` 之外补 `dict` / `dictMulti`。
  *
  * `resolveSearchControl()` 不读 `field.dataSource`（只认 `lovCode`），所以后端下发内联字典
  * 的枚举字段会退化成文本框（`core/utils/fieldControl.ts:111-139`）。表单侧由 `FormContent`
- * 的 `select` 分支消费 dataSource，搜索侧此前没有对应处理。这里按同一份 `dataSource`
- * 渲染下拉，值仍提交字典键（数字键转 number），与表单口径一致。
+ * 的 `select` / `multiSelect` 分支消费 dataSource，搜索侧此前没有对应处理。这里按同一份
+ * `dataSource` 渲染单选/多选下拉，值仍提交字典键（数字键转 number），与表单口径一致。
  */
-export type CubeSearchKind = SearchControlType | 'dict' | 'range';
+export type CubeSearchKind = SearchControlType | 'dict' | 'dictMulti' | 'range';
 
 /** 搜索控件显示态 */
 export interface CubeSearchControl {
@@ -105,7 +105,7 @@ export interface CubeSectionSlotProps {
 }
 
 /**
- * 行操作项（内置 查看/编辑/删除 + 业务页经 `extraRowActions` 追加的动作）。
+ * 行操作项（内置 编辑（无写权限时改为查看）/删除 + 业务页经 `extraRowActions` 追加的动作）。
  *
  * 数据驱动而不是插槽自由堆按钮，才能参与「列宽自适应 + 超过 3 个收进更多」
  * 的布局（`layoutRowActions` / `splitRowActions`）。
@@ -228,7 +228,7 @@ export interface CubeTableProps {
   importAccept?: string;
   /** 删除是否二次确认：不传跟随后端 `doubleDelete` */
   confirmDelete?: boolean;
-  /** 操作列追加动作：排在内置 查看/编辑/删除 之后，一起参与列宽自适应与「更多」收起 */
+  /** 操作列追加动作：排在内置 编辑（无写权限时改为查看）/删除 之后，一起参与列宽自适应与「更多」收起 */
   extraRowActions?: CubeRowAction[];
 
   // ── 表格区 ──

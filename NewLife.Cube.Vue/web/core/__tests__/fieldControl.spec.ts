@@ -16,7 +16,9 @@ import type { FieldMeta } from '../types/field';
 import {
   areaLevel,
   isMoneyItemType,
+  isNumericMapKey,
   isPercentItemType,
+  mapValueKey,
   normalizeEmptyTextValues,
   parseDecimalItemType,
   resolveControl,
@@ -25,6 +27,8 @@ import {
   isFullWidthControl,
   resolveNumberPrecision,
   resolveNumberStep,
+  isRequiredField,
+  hasDataSource,
 } from '../utils/fieldControl';
 
 /** 构造最小 FieldMeta 的便捷工厂 */
@@ -187,9 +191,17 @@ describe('resolveSearchControl（动态搜索控件）', () => {
   });
 
   it('DateTime → datetimeRange（ListSearchBar 已消费）', () => {
-    // 注：架构 §3.2 表标注为 dateRange，实现返回 datetimeRange，
-    // ListSearchBar 已处理 datetimeRange 分支，内部一致。
     expect(resolveSearchControl(f({ name: 'D', typeName: 'DateTime' }))).toBe('datetimeRange');
+  });
+
+  it('ItemType=date 的 DateTime → dateRange（只到年月日）', () => {
+    expect(resolveSearchControl(f({ name: 'Birthday', typeName: 'DateTime', itemType: 'date' }))).toBe(
+      'dateRange',
+    );
+    // 大小写与空白同样归一
+    expect(resolveSearchControl(f({ name: 'Day', typeName: 'DateTime', itemType: ' DATE ' }))).toBe(
+      'dateRange',
+    );
   });
 
   it('TimeSpan → timeRange', () => {
@@ -393,6 +405,96 @@ describe('ItemType 扩展：percent / money / decimal(p,s) / 前缀', () => {
       expect(areaLevel(field)).toBe(level);
     }
     expect(areaLevel(f({ name: 'AreaId', typeName: 'Int32', itemType: 'area' }))).toBe(3);
+  });
+});
+
+describe('映射字段与字典多选', () => {
+  const roleOptions = { '0': '（无）', '1': '管理员', '3': '普通用户' };
+
+  it('映射字段带数据源 → mapSelect，读写键是关联键', () => {
+    const field = f({
+      name: 'RoleName',
+      typeName: 'String',
+      mapField: 'RoleID',
+      mapTypeName: 'Int32',
+      dataSource: roleOptions,
+    });
+
+    expect(resolveControl(field)).toBe('mapSelect');
+    expect(mapValueKey(field)).toBe('RoleID');
+    expect(isNumericMapKey(field)).toBe(true);
+    expect(hasDataSource(field)).toBe(true);
+  });
+
+  it('映射字段没有数据源 → mapInput（退回键值输入）', () => {
+    const field = f({ name: 'RoleName', typeName: 'String', mapField: 'RoleID', mapTypeName: 'Int32' });
+
+    expect(resolveControl(field)).toBe('mapInput');
+    expect(hasDataSource(field)).toBe(false);
+    expect(isNumericMapKey(field)).toBe(true);
+  });
+
+  it('字符串/复合映射键没有数据源 → readonly（展示虚拟值，如角色组名称）', () => {
+    const field = f({ name: 'RoleNames', typeName: 'String', mapField: 'RoleIds', readOnly: true });
+
+    expect(resolveControl(field)).toBe('readonly');
+    expect(isNumericMapKey(field)).toBe(false);
+  });
+
+  it('字典字段未声明多选 → select，声明多选 → multiSelect', () => {
+    expect(
+      resolveControl(f({ name: 'Kind', typeName: 'String', dataSource: { '1': '甲' } })),
+    ).toBe('select');
+    expect(
+      resolveControl(
+        f({ name: 'RoleIds', typeName: 'String', dataSource: roleOptions, multiple: true }),
+      ),
+    ).toBe('multiSelect');
+    expect(
+      resolveControl(
+        f({ name: 'RoleIds', typeName: 'String', itemType: 'multipleSelect', dataSource: roleOptions }),
+      ),
+    ).toBe('multiSelect');
+  });
+
+  it('映射字段配值集码 → 远程 LOV 优先（大数据量关联表）', () => {
+    const field = f({
+      name: 'RoleName',
+      typeName: 'String',
+      mapField: 'RoleID',
+      lovCode: 'Role',
+      dataSource: roleOptions,
+    });
+
+    expect(resolveControl(field)).toBe('lov');
+  });
+
+  it('映射字段不做必填，避免虚拟属性不可空导致无法提交', () => {
+    const field = f({ name: 'RoleName', typeName: 'String', mapField: 'RoleID', dataSource: roleOptions });
+    expect(isRequiredField(field)).toBe(false);
+  });
+});
+
+describe('时长字段（ItemType=TimeSpan）', () => {
+  it('TimeSpan 字段渲染时长分栏输入，而不是裸数字或时钟选择', () => {
+    const field = f({
+      name: 'OnlineTime',
+      typeName: 'Int32',
+      itemType: 'TimeSpan',
+      description: '累计在线总时间，单位秒',
+    });
+
+    expect(resolveControl(field)).toBe('timeSpan');
+  });
+
+  it('ItemType 大小写与空格归一，前缀形式同样识别', () => {
+    expect(resolveControl(f({ name: 'A', typeName: 'Int32', itemType: ' timespan ' }))).toBe('timeSpan');
+    expect(resolveControl(f({ name: 'B', typeName: 'Int32', itemType: 'TimeSpan:hh\\:mm' }))).toBe('timeSpan');
+  });
+
+  it('未声明 ItemType 时仍是原口径（CLR TimeSpan → timePicker，数值 → inputNumber）', () => {
+    expect(resolveControl(f({ name: 'C', typeName: 'TimeSpan' }))).toBe('timePicker');
+    expect(resolveControl(f({ name: 'D', typeName: 'Int32' }))).toBe('inputNumber');
   });
 });
 
