@@ -212,6 +212,7 @@ onMounted(async () => {
       <slot name="actions">
         <component
           :is="FormActionsComp"
+          :loading="isSubmitting"
           :show-continue="showContinue && !auto"
           @submit="handleSubmit"
           @continue="handleContinue"

@@ -57,6 +57,7 @@ async function load() {
 }
 
 async function handleSubmit() {
+  if (saving.value) return;
   if (formRef.value?.validate && !formRef.value.validate()) return;
 
   saving.value = true;
@@ -88,7 +89,13 @@ onMounted(load);
       :api-prefix="apiPrefix"
       @update:model-value="(v: Record<string, any>) => (model = v)"
     />
-    <FormActions :loading="saving" :show-required-hint="hasRequiredField" @submit="handleSubmit" />
+    <FormActions
+      :loading="saving"
+      :show-continue="false"
+      :show-required-hint="hasRequiredField"
+      @submit="handleSubmit"
+      @cancel="load"
+    />
   </div>
 </template>
 

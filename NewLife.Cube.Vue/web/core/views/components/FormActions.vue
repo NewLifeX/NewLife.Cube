@@ -5,11 +5,14 @@ interface Props {
   showContinue?: boolean;
   /** 是否展示「* 为必填字段」图例。表单没有必填项时由调用方关闭，避免出现无意义的说明 */
   showRequiredHint?: boolean;
+  /** 提交中。为 true 时禁用全部按钮，避免重复提交 */
+  loading?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   showContinue: true,
   showRequiredHint: true,
+  loading: false,
 });
 
 const emit = defineEmits<{
@@ -25,18 +28,29 @@ const { t } = useI18n();
   <div class="form-actions">
     <span v-if="showRequiredHint" class="fa-hint">* {{ t('form.requiredMark') }}</span>
     <div class="fa-buttons">
-      <button class="fa-btn fa-btn--cancel" type="button" @click="emit('cancel')">
+      <button
+        class="fa-btn fa-btn--cancel"
+        type="button"
+        :disabled="loading"
+        @click="emit('cancel')"
+      >
         {{ t('button.cancel') }}
       </button>
       <button
         v-if="showContinue"
         class="fa-btn fa-btn--continue"
         type="button"
+        :disabled="loading"
         @click="emit('continue')"
       >
         {{ t('form.saveAndContinue') }}
       </button>
-      <button class="fa-btn fa-btn--primary" type="button" @click="emit('submit')">
+      <button
+        class="fa-btn fa-btn--primary"
+        type="button"
+        :disabled="loading"
+        @click="emit('submit')"
+      >
         {{ t('button.save') }}
       </button>
     </div>
@@ -110,6 +124,11 @@ const { t } = useI18n();
     &:hover {
       background: var(--el-bg-color);
     }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 }
 </style>

@@ -56,6 +56,7 @@ async function load() {
 }
 
 async function save() {
+  if (saving.value) return;
   if (formRef.value?.validate && !formRef.value.validate()) return;
 
   saving.value = true;
@@ -92,7 +93,13 @@ watch(
         :api-prefix="apiPrefix"
         @update:model-value="(value: Record<string, any>) => (model = value)"
       />
-      <FormActions :loading="saving" :show-required-hint="hasRequiredField" @submit="save" />
+      <FormActions
+        :loading="saving"
+        :show-continue="false"
+        :show-required-hint="hasRequiredField"
+        @submit="save"
+        @cancel="load"
+      />
     </template>
   </div>
 </template>
