@@ -206,7 +206,7 @@ test('新增弹窗-字段控件与必填标记', async ({ page }) => {
   await expect(dialog).toHaveScreenshot();
 });
 
-test('行为-勾选后批量删除按钮可用并带条数', async ({ page }) => {
+test('行为-勾选后批量条出现且删除可用', async ({ page }) => {
   await openStory(page, 'CubeTable/Default');
 
   // 未勾选时批量条不渲染
