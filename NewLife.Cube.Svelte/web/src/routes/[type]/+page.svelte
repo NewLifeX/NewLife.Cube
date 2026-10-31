@@ -5,7 +5,7 @@
   import { getMenuPermission } from '$lib/stores/user';
   import FieldInput from '$lib/components/FieldInput.svelte';
   import { Auth, type DataField } from '@newlifex/cube';
-  import { toCamelCase, resolveColumnWidth, resolveColumnAlign, getFieldValue, resolveModelKey } from '@newlifex/cube';
+  import { resolveColumnWidth, resolveColumnAlign, getFieldValue, resolveModelKey } from '@newlifex/cube';
   import { validateRequiredFields } from '@newlifex/cube';
   import * as echarts from 'echarts';
 
@@ -181,7 +181,7 @@
   // 保存
   async function handleSave() {
     // 表单键为字段名的小驼峰形式，校验时按同一口径取值
-    const invalid = validateRequiredFields(editFields as any, formData, toCamelCase);
+    const invalid = validateRequiredFields(editFields as any, formData);
     if (invalid.length) {
       formError = invalid.map((e) => e.message).join('；');
       return;

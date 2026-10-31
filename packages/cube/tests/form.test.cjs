@@ -58,3 +58,30 @@ test('validateRequiredFields: 支持自定义字段名到表单键的映射', ()
   assert.deepEqual(validateRequiredFields(fields, { userName: 'stone' }, keyOf), []);
   assert.deepEqual(validateRequiredFields(fields, {}, keyOf), [{ name: 'userName', message: '用户名 不能为空' }]);
 });
+
+test('validateRequiredFields: 元数据 PascalCase 与表单 camelCase 键名互通', () => {
+  const fields = [
+    { widget: 'text', field: { name: 'Name', displayName: '名称', required: true } },
+    { widget: 'number', field: { name: 'ID', displayName: '编号', required: true } },
+    { widget: 'text', field: { name: 'OnlineTime', displayName: '在线时间', required: true } },
+  ];
+
+  assert.deepEqual(validateRequiredFields(fields, { name: 'stone', id: 2, onlineTime: 0 }), []);
+  assert.deepEqual(
+    validateRequiredFields(fields, { name: '  ', id: 2, onlineTime: 0 }),
+    [{ name: 'Name', message: '名称 不能为空' }],
+  );
+});
+
+test('validateRequiredFields: 映射字段先取关联键，未提交时回退字段自身键', () => {
+  const fields = [
+    { widget: 'mapSelect', field: { name: 'RoleName', displayName: '角色', required: true, mapField: 'RoleID', mapTypeName: 'Int32' } },
+  ];
+
+  // 表单按关联键提交（roleID）
+  assert.deepEqual(validateRequiredFields(fields, { roleID: 3 }), []);
+  // 后端按显示名回填（roleName）时同样算已填
+  assert.deepEqual(validateRequiredFields(fields, { roleName: '管理员' }), []);
+  // 两者都为空才报错，错误名取关联键
+  assert.deepEqual(validateRequiredFields(fields, {}), [{ name: 'RoleID', message: '角色 不能为空' }]);
+});

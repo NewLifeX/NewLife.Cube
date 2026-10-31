@@ -82,7 +82,7 @@ import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
 import { Auth, type DataField } from '@newlifex/cube';
-import { toCamelCase, resolveColumnWidth, resolveColumnAlign, getFieldValue, resolveModelKey } from '@newlifex/cube';
+import { resolveColumnWidth, resolveColumnAlign, getFieldValue, resolveModelKey } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import { Button as TButton } from 'tdesign-vue-next';
 import * as echarts from 'echarts';
@@ -295,7 +295,7 @@ async function handleDetail(id: number) {
 
 async function handleSave() {
   // 表单键为字段名的小驼峰形式，校验时按同一口径取值
-  const invalid = validateRequiredFields(editFields.value as any, formData.value, toCamelCase);
+  const invalid = validateRequiredFields(editFields.value as any, formData.value);
   if (invalid.length) {
     formError.value = invalid.map((e) => e.message).join('；');
     return;

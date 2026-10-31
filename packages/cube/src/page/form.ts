@@ -7,6 +7,8 @@
 
 import type { DataField } from '../api';
 import type { FieldMapping } from '../field';
+import { mapValueKey } from '../field';
+import { getFieldValue } from '../utils';
 
 /** 校验错误：字段名与提示文案 */
 export interface FieldValidationError {
@@ -28,6 +30,9 @@ export function isBlankValue(value: unknown): boolean {
 /**
  * 校验字段列表中的必填项
  *
+ * 字段元数据名为 PascalCase（`Name`/`RoleID`），表单模型多为接口回填的 camelCase（`name`/`roleID`），
+ * 因此取值按大小写不敏感匹配；映射字段（`RoleName` → `RoleID`）先取关联键，未提交时回退字段自身键。
+ *
  * @param fields 表单字段（字段映射或字段元数据，按界面顺序）
  * @param values 当前表单值
  * @param keyOf 字段名到表单值键的映射。多数皮肤直接同名；个别皮肤把字段名转小驼峰后入表单
@@ -43,8 +48,14 @@ export function validateRequiredFields(
     // 兼容两种入参：字段映射（含 widget）与裸字段元数据
     const field = (mapping as FieldMapping).field ?? (mapping as DataField);
     if (!field?.required) continue;
-    const key = keyOf ? keyOf(field.name) : field.name;
-    if (!isBlankValue(values?.[key])) continue;
+
+    const key = keyOf ? keyOf(field.name) : mapValueKey(field);
+    if (!isBlankValue(getFieldValue(values, key))) continue;
+
+    // 关联键未提交时退回字段自身键（后端也可能按显示名回填）
+    const mapKey = mapValueKey(field);
+    if (mapKey !== field.name && !isBlankValue(getFieldValue(values, field.name))) continue;
+
     errors.push({ name: key, message: `${field.displayName ?? field.name} 不能为空` });
   }
 
