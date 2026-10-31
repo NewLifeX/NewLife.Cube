@@ -98,7 +98,7 @@ public static class CubeSkinService
 
         var current = manager.Current;
         if (current == null)
-            throw new InvalidOperationException("No front-end skin package was found. Reference NewLife.Cube.Vue or NewLife.Cube.React first.");
+            throw new InvalidOperationException("No front-end skin package was found. Reference a skin package such as NewLife.Cube.Vue first.");
 
         // 皮肤嵌入式资源优先，其次宿主 wwwroot，允许用物理文件覆盖个别资源
         var provider = new CubeSkinFileProvider(manager);
