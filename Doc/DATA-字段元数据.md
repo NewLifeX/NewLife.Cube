@@ -279,6 +279,10 @@ protected override IEnumerable<Product> Search(Pager p)
 
 ## 6.6 字段类型与控件映射
 
+> **一条映射，全皮肤生效**：`ItemType`（含 `FormField.Type` 写法）到控件的映射统一收敛在共享前端包 `@newlifex/cube` 的 `resolveWidget`，与 MVC `_Form_Item` / `_Form_String` / `_Form_Editor` 同口径。八个 SPA 皮肤（NaiveUI/ArcoVue/TDesign/Vuetify/MUI/Shadcn/Svelte/Angular）只负责把抽象 widget 映射到自己的组件库，**不要在皮肤里另写一套 ItemType 判断**；新增 ItemType 时改共享包并补 `packages/cube/tests/resolve-widget.test.cjs`，`tests/skin-compliance.test.cjs` 会校验每个皮肤的控件分支是否齐全。Vue 皮肤在此之上保留了一层更细的控件词表（`mapSelect`/`mapInput`/`multiSelect`/`timeSpan`/`area`），其判定口径与共享引擎一致，**数据换算与地区接口一律复用共享实现**（`timeSpan*`、`AreaCascade`）。
+>
+> 覆盖范围：文本类（text/textarea/password/email/phone/url/color/code/json/icon/html/markdown）、附件类（image/avatar/file/files/attachment 及 `image-*`/`file-*` 前缀）、选择类（select/radio/singleSelect/multipleSelect/checkbox/lovTable/映射 Map 字段）、日期类（date/datetime/time）、数值类（number/percent/money/decimal(p,s)/GMK）、地区类（area/area1~4 级联）、时长类（`TimeSpan`/`TimeSpan:<格式>`）。
+
 ### 文本框 / 文本域
 
 ```csharp
@@ -305,6 +309,8 @@ var field = new FormField
     Type = "password"
 };
 ```
+
+> **密码只写不读**：`ItemType = "password"` 或字段名以 `Password` 结尾即视为敏感字段。`/meta` 不会把它下发到列表、详情与搜索；新增/编辑表单保留遮蔽输入，编辑时取值为空、留空提交即保持原密码。实体接口返回前统一清空取值，导出也跳过该列。密码有专用修改接口的页面可再把字段从 `EditFormFields` 移除（如用户管理）。
 
 ### 下拉选择 / 单选 / 多选
 
@@ -340,6 +346,10 @@ var field = new FormField
 };
 ```
 
+> **映射字段（Map）**：`RoleName` 这类通过 `Map` 指向 `RoleID` 的虚拟字段，`/meta` 会下发 `mapField`（关联键）、`mapTypeName`（键类型）与 `dataSource`（关联表选项）；前端在字段原位置渲染下拉，提交的是关联键 `RoleID`，列表仍显示名称。控制器设置 `DataSource` 时优先使用（可过滤/排序），未设置时由 `MapProvider` 自动取关联表：行数不超过 `CubeSetting.MaxDropDownList` 才下发，整型键自动补「无」选项，超过该上限则退回键值输入（与 MVC `_Form_Map` 同口径）。关联表很大时给该字段配 `LovCode` 即可改走远程 LOV（同样提交关联键，支持远程搜索与分页）。
+>
+> **多选字典**：`dataSource` 配合 `multiple`（`ItemType=multipleSelect`，或字段名以 `s` 结尾）渲染多选下拉，提交时前端把数组拼成逗号串（如角色组 `RoleIds`）；搜索区同样按多选渲染并把数组拼成逗号串提交。
+
 ### 日期时间选择器
 
 ```csharp
@@ -364,6 +374,38 @@ var field = new FormField
     Type = "time"
 };
 ```
+
+> **纯日期**：日期字段应显式声明 `ItemType = "date"`。此时表单用纯日期选择器、列表/详情只显示 `yyyy-MM-dd`、搜索用日期区间，不再出现时分秒；生日、班次日期等只到年月日的字段都应如此声明。
+
+### 时长（TimeSpan）
+
+```csharp
+// 累计在线时长（秒）
+var field = new FormField
+{
+    Name = "OnlineTime",
+    Type = "TimeSpan"
+};
+```
+
+> **时长按存储值输入**：`ItemType = "TimeSpan"` 的字段本身仍是整数（或小数），单位从字段描述推断——描述含「毫秒/ms」按毫秒、含「小时」按小时、含「分」按分钟，其余按秒（与列表格式化同一口径）。Vue 表单渲染为「时 : 分 : 秒」分栏输入：小时不限位数（可超 24 小时），分/秒限 0~59，毫秒单位的秒保留 3 位小数，对外提交的仍是原始存储值，不做单位换算歧义。`Type = "TimeSpan"`（CLR 时间类型）与时长不是一回事，后者请一律用 `ItemType` 声明。
+>
+> 八个 SPA 皮肤共用同一份换算（`@newlifex/cube` 的 `timeSpanUnitOfDescription`/`splitTimeSpan`/`joinTimeSpan`）：单位推断、分段回显、进位规则完全一致，列表格式化 `formatTimeSpanCell` 也复用它，因此不会出现「列表显示 6 小时、编辑框按秒回显」。
+
+### 地区级联（area / area1~4）
+
+```csharp
+// 省市区三级（默认）：省 → 市 → 区
+var field = new FormField { Name = "AreaId", Type = "area" };
+
+// 省略层级时的等价写法与显式层级
+var province = new FormField { Name = "ProvinceId", Type = "area1" }; // 只到省
+var city = new FormField { Name = "CityId", Type = "area2" };         // 省 → 市
+var district = new FormField { Name = "DistrictId", Type = "area3" }; // 省 → 市 → 区
+var street = new FormField { Name = "StreetId", Type = "area4" };     // 省 → 市 → 区 → 街道
+```
+
+> **级联层级由 ItemType 决定**：`area` 等同 `area3`（省市区选到底），`area1` 只选省、`area2` 到市、`area4` 到街道；提交值是**最后一级地区编号**。数据来自魔方内置接口 `/Cube/AreaChilds?id=（0 取省）` 与 `/Cube/AreaParents?id=&isContainSelf=true`（回显路径），前端级联状态机在 `@newlifex/cube` 的 `AreaCascade`/`createAreaCascade`，八个 SPA 皮肤与 MVC 的 city-picker 行为一致。
 
 ### 文件上传 / 图片上传
 
