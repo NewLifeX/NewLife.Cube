@@ -26,8 +26,12 @@ const { t } = useI18n();
 const permissions = usePagePermissions(props.ctx);
 const count = computed(() => props.ctx.selected.value.length);
 const busy = computed(() => props.ctx.submitting.value);
-/** 正在执行的批量动作名，防止重复提交 */
-const pending = ref<string | null>(null);
+
+/** 批量动作标识。用动作键而非译文比较，语言切换时不会丢失 loading 与禁用状态 */
+type BatchAction = 'enable' | 'disable' | 'delete';
+
+/** 正在执行的批量动作，防止重复提交 */
+const pending = ref<BatchAction | null>(null);
 
 /** 实体含 Boolean 类型 Enable 字段时提供批量启用/禁用（与 MVC 工具栏自动注入同口径） */
 const batchEnableAvailable = computed(
@@ -65,7 +69,7 @@ async function batchSetEnable(enable: boolean): Promise<void> {
     return;
   }
 
-  pending.value = label;
+  pending.value = enable ? 'enable' : 'disable';
   try {
     const res = (await request({
       url: `${props.ctx.apiPrefix.value}/${act}`,
@@ -85,7 +89,7 @@ async function batchSetEnable(enable: boolean): Promise<void> {
 
 async function removeSelected(): Promise<void> {
   if (pending.value) return;
-  pending.value = t('grid.batchDelete');
+  pending.value = 'delete';
   try {
     await props.actions.removeSelectedRows();
   } finally {
@@ -94,7 +98,14 @@ async function removeSelected(): Promise<void> {
 }
 
 function clearSelection(): void {
+  // 动作请求进行中不允许清空勾选，避免请求仍在跑而用户以为已取消
+  if (pending.value) return;
   props.ctx.setSelected([]);
+}
+
+/** 批量动作进行中：只允许当前动作按钮保持可点（展示 loading），其余禁用 */
+function isDisabled(action: BatchAction): boolean {
+  return pending.value === null ? busy.value : pending.value !== action;
 }
 </script>
 
@@ -104,12 +115,11 @@ function clearSelection(): void {
 
     <el-button
       v-if="batchEnableAvailable"
-      type="success"
-      plain
+      link
       size="small"
       :icon="CircleCheck"
-      :loading="pending === t('grid.batchEnable')"
-      :disabled="busy && pending !== t('grid.batchEnable')"
+      :loading="pending === 'enable'"
+      :disabled="isDisabled('enable')"
       data-role="batch-enable"
       @click="batchSetEnable(true)"
     >
@@ -117,12 +127,11 @@ function clearSelection(): void {
     </el-button>
     <el-button
       v-if="batchEnableAvailable"
-      type="warning"
-      plain
+      link
       size="small"
       :icon="CircleClose"
-      :loading="pending === t('grid.batchDisable')"
-      :disabled="busy && pending !== t('grid.batchDisable')"
+      :loading="pending === 'disable'"
+      :disabled="isDisabled('disable')"
       data-role="batch-disable"
       @click="batchSetEnable(false)"
     >
@@ -130,18 +139,24 @@ function clearSelection(): void {
     </el-button>
     <el-button
       v-if="batchDeleteAvailable"
+      link
       type="danger"
-      plain
       size="small"
       :icon="Delete"
-      :loading="pending === t('grid.batchDelete')"
-      :disabled="busy && pending !== t('grid.batchDelete')"
+      :loading="pending === 'delete'"
+      :disabled="isDisabled('delete')"
       data-role="batch-delete"
       @click="removeSelected"
     >
       {{ t('grid.batchDelete') }}
     </el-button>
-    <el-button link size="small" data-role="clear-selection" @click="clearSelection">
+    <el-button
+      link
+      size="small"
+      :disabled="pending !== null"
+      data-role="clear-selection"
+      @click="clearSelection"
+    >
       {{ t('grid.clearSelection') }}
     </el-button>
   </div>
@@ -154,9 +169,9 @@ function clearSelection(): void {
   gap: 8px;
   flex-wrap: wrap;
   padding: 4px 10px;
-  border: 1px solid var(--el-color-primary-light-7);
+  border: 1px solid var(--el-border-color-lighter);
   border-radius: 6px;
-  background: var(--el-color-primary-light-9);
+  background: var(--el-fill-color-light);
 }
 .ctb-count {
   font-size: 12px;

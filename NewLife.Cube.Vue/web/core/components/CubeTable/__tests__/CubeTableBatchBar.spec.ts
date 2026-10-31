@@ -103,8 +103,24 @@ describe('CubeTableBatchBar 动作', () => {
     expect(setSelected).toHaveBeenCalledWith([]);
   });
 
-  it('应该按主键集合请求 enableSelect 并刷新 当确认批量启用时', async () => {
-    const { wrapper, ctx } = mountBar({
+  it('应该在批量动作进行中禁用其它动作与取消选择 当删除请求未返回时', async () => {
+    const { wrapper, actions } = mountBar({
+      selected: [{ id: 1 }],
+      listFields: [FIELDS.id, FIELDS.enable],
+    });
+    // 请求挂起，模拟动作进行中
+    actions.removeSelectedRows.mockImplementation(() => new Promise(() => {}));
+
+    await wrapper.find('[data-role="batch-delete"]').trigger('click');
+    await nextTick();
+
+    // 当前动作保留 loading，其余动作与取消选择置灰，避免请求仍在跑而用户以为已取消
+    expect(wrapper.find('[data-role="batch-delete"]').classes()).toContain('is-loading');
+    expect(wrapper.find('[data-role="batch-enable"]').attributes('disabled')).toBeDefined();
+    expect(wrapper.find('[data-role="clear-selection"]').attributes('disabled')).toBeDefined();
+  });
+
+  it('应该按主键集合请求 enableSelect 并刷新 当确认批量启用时', async () => {    const { wrapper, ctx } = mountBar({
       selected: [{ id: 7 }, { id: 8 }],
       listFields: [FIELDS.id, FIELDS.enable],
     });

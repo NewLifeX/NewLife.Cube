@@ -209,12 +209,15 @@ test('新增弹窗-字段控件与必填标记', async ({ page }) => {
 test('行为-勾选后批量删除按钮可用并带条数', async ({ page }) => {
   await openStory(page, 'CubeTable/Default');
 
-  const batch = table(page).getByRole('button', { name: /批量删除/ });
-  await expect(batch).toBeDisabled();
+  // 未勾选时批量条不渲染
+  await expect(page.locator('[data-role="batch-bar"]')).toHaveCount(0);
 
   await table(page).locator('.el-table__row').first().locator('.el-checkbox').click();
+  const bar = page.locator('[data-role="batch-bar"]');
+  await expect(bar).toBeVisible();
+  await expect(bar).toContainText('已选 1 项');
+  const batch = bar.locator('[data-role="batch-delete"]');
   await expect(batch).toBeEnabled();
-  await expect(batch).toContainText('（1）');
 
   await batch.click();
   const confirmBox = page.locator('.el-message-box');
