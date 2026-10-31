@@ -27,6 +27,7 @@ export {
   type PasswordLoginOptions,
 } from './api';
 export { createSiteApi } from './site';
+export { createAreaApi, createAreaCascade, type AreaApi } from './area';
 
 // 类型
 export type {

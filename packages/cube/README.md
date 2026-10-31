@@ -5,7 +5,9 @@
 | 能力 | 内容 |
 |------|------|
 | API 调用层 | axios 封装、统一请求/响应拦截、401 跳转、Token 管理、密码 RSA 加密（Challenge-Response） |
-| 字段映射 | 后端 `DataField` 元数据 → 抽象控件类型、列宽、对齐方式 |
+| 字段映射 | 后端 `DataField` 元数据 → 抽象控件类型（全 ItemType 矩阵）、列宽、对齐方式 |
+| 地区级联 | `AreaCascade` / `createAreaCascade`：`area`/`area1~4` 的多级下拉状态机与 `/Cube/AreaChilds`、`/Cube/AreaParents` 接口 |
+| 时长换算 | `timeSpanUnitOfDescription` / `splitTimeSpan` / `joinTimeSpan`：`ItemType=TimeSpan` 的时:分:秒换算，皮肤与列表格式化共用 |
 | 页面工具 | 权限码（`Auth`）、菜单查找、URL 变量替换、导出链接 |
 | 认证逻辑 | 登录 / 登出 / 注册 / 激活 / 找回密码 / MFA，框架无关核心 + Pinia/Zustand 适配器 |
 | 列表页编排 | 字段加载、分页查询、CRUD、导入导出、页签、工作台视图模型 |

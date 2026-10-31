@@ -8,5 +8,6 @@
 export * from './api';
 export * from './utils';
 export * from './field';
+export * from './field/area';
 export * from './auth';
 export * from './page';
