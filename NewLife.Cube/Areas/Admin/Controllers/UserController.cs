@@ -8,6 +8,7 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
+using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -514,10 +515,8 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         entity.Dirtys["Password"] = false;
         user.Update();
 
-        // 密码等敏感字段只写不读，响应前清空
-        user["Password"] = null;
-
-        return Json(0, null, user);
+        // 回包按编辑表单字段集合投影，密码等只写字段不会带出
+        return Json(0, null, OnProject(user, OnGetOutputFields(ViewKinds.EditForm, user)));
     }
 
     /// <summary>上传头像。复用基类 Attachments（SaveFile 核心一致），仅做三件事：
@@ -620,19 +619,30 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
 
         // 第三方绑定
         var ucs = UserConnect.FindAllByUserID(user.ID);
-        // 第三方令牌只写不读，绑定列表只回传展示信息
-        foreach (var uc in ucs)
-        {
-            uc.AccessToken = null;
-            uc.RefreshToken = null;
-        }
         var ms = OAuthConfig.GetValids(tenantContext.TenantId, GrantTypes.AuthorizationCode);
 
+        // 自定义接口直接回实体容易带出令牌、应用密钥等只写字段，这里显式映射为展示 DTO
         var model = new BindsModel
         {
             Name = user.Name,
-            Connects = ucs,
-            OAuthItems = ms,
+            Connects = ucs.Select(e => new UserBindModel
+            {
+                ID = e.ID,
+                Provider = e.Provider,
+                NickName = e.NickName,
+                Avatar = e.Avatar,
+                Enable = e.Enable,
+                CreateTime = e.CreateTime,
+            }).ToArray(),
+            OAuthItems = ms.Select(e => new OAuthPlatformModel
+            {
+                ID = e.ID,
+                Name = e.Name,
+                NickName = e.NickName,
+                Logo = e.Logo,
+                Enable = e.Enable,
+                Visible = e.Visible,
+            }).ToArray(),
         };
 
         return Json(0, null, model);

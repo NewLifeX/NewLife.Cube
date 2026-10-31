@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.ViewModels;
 using NewLife.Remoting;
 using XCode;
 using Xunit;
@@ -58,8 +59,8 @@ public class UpdateEndpointTests
 
         protected override Boolean Valid(UpdateTestEntity entity, DataObjectMethodType type, Boolean post) => true;
 
-        protected override Task<ApiResponse<UpdateTestEntity>> ProcessUpdate(UpdateTestEntity entity) =>
-            Task.FromResult(new ApiResponse<UpdateTestEntity> { Code = 0, Data = entity });
+        protected override Task<ApiResponse<ApiRow>> ProcessUpdate(UpdateTestEntity entity) =>
+            Task.FromResult(new ApiResponse<ApiRow> { Code = 0, Data = OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)) });
     }
     #endregion
 
@@ -91,10 +92,10 @@ public class UpdateEndpointTests
         var rs = await controller.Update("5", new UpdateTestEntity { Name = "新值" });
 
         Assert.Equal(0, rs.Code);
-        Assert.Equal(5, rs.Data!.Id);
-        Assert.Equal("新值", rs.Data.Name);
+        Assert.Equal(5, rs.Data!["Id"]);
+        Assert.Equal("新值", rs.Data["Name"]);
         // 未提交的字段保持库中原值
-        Assert.Equal(30, rs.Data.Age);
+        Assert.Equal(30, rs.Data["Age"]);
     }
 
     [Fact(DisplayName = "修改：body 主键与路径一致时正常通过")]

@@ -67,6 +67,8 @@
 - **Int64 输出为字符串**（`Int64AsString`），主键、`totalCount` 等均按此规则，避免 JS 精度丢失。
 - 信封模型用 `[JsonIgnore(WhenWritingNull)]` 省略空的可选字段，响应体更精简。
 
+实体数据行（`ApiRow`）按**字段集合投影**：列表使用 `ListFields`，详情使用 `DetailFields ∪ EditFormFields`（详情同时是编辑回显数据源），写接口回包使用 `EditFormFields`，主键恒定下发。字段集合之外的列不下发；只写字段（`ItemType=password`）不参与投影；"不显示但要值"的列需留在字段集合并设 `Visible=false`。自定义接口返回显式 DTO，避免直接回实体带出未声明字段。
+
 成功判定：客户端只判 **`code === 0`**（历史兼容也接受 `200`），HTTP 200 不代表业务成功。
 
 ```json

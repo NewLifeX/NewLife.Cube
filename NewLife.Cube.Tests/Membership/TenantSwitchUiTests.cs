@@ -112,36 +112,33 @@ public class TenantSwitchUiTests
 
     #endregion
 
-    #region 列表字段值注入（OnFillListValues）
+    #region 列表字段投影（虚拟字段计算值）
 
-    /// <summary>测试控制器子类，暴露 OnFillListValues</summary>
-    private class TestFillValuesController : ReadOnlyEntityController<TenantUser>
+    /// <summary>测试控制器子类，暴露 OnProject</summary>
+    private class TestProjectController : ReadOnlyEntityController<TenantUser>
     {
-        public void FillForTest(IEnumerable<TenantUser> list, IList<DataField>? fields = null) => OnFillListValues(list, fields);
+        public ApiRow ProjectForTest(TenantUser entity, IList<DataField>? fields = null) => OnProject(entity, fields);
     }
 
-    [Fact(DisplayName = "OnFillListValues：虚拟字段 GetValue 按行计算值写入 Items，DataVisible=false 跳过")]
-    public void OnFillListValues_Injects_VirtualFieldValues()
+    [Fact(DisplayName = "OnProject：虚拟字段 GetValue 按行计算值，DataVisible=false 跳过")]
+    public void OnProject_Injects_VirtualFieldValues()
     {
-        var ctrl = new TestFillValuesController();
+        var ctrl = new TestProjectController();
 
         var avatar = new ListField { Name = "AvatarImage", ItemType = "image" };
         avatar.GetValue = e => "url://" + (e as TenantUser)?.UserId;
         var hidden = new ListField { Name = "Hidden", GetValue = e => "x", DataVisible = e => false };
-        var fields = new FieldCollection(ViewKinds.List) { avatar, hidden };
+        var userId = new DataField { Name = "UserId" };
+        var fields = new List<DataField> { avatar, hidden, userId };
 
-        var u1 = new TenantUser { UserId = 11 };
-        var u2 = new TenantUser { UserId = 22 };
+        var row = ctrl.ProjectForTest(new TenantUser { UserId = 11 }, fields);
 
-        ctrl.FillForTest([u1, u2], fields);
-
-        // 虚拟字段按行计算值并写入实体扩展，随行 JSON 内联输出
-        Assert.Equal("url://11", ((IExtend)u1).Items["AvatarImage"]);
-        Assert.Equal("url://22", ((IExtend)u2).Items["AvatarImage"]);
+        // 虚拟字段按行计算值，随行输出
+        Assert.Equal("url://11", row["AvatarImage"]);
         // DataVisible=false 的字段不输出
-        Assert.False(((IExtend)u1).Items.ContainsKey("Hidden"));
-        // 普通实体字段不在 Items 中（不重复注入）
-        Assert.False(((IExtend)u1).Items.ContainsKey("UserId"));
+        Assert.False(row.ContainsKey("Hidden"));
+        // 普通实体字段正常输出
+        Assert.Equal(11, row["UserId"]);
     }
 
     #endregion

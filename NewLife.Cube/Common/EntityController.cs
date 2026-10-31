@@ -28,7 +28,7 @@ public partial class EntityController<TEntity, TModel>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("Delete {type}")]
     [HttpDelete("/api/[area]/[controller]/{id}")]
-    public virtual ApiResponse<TEntity> Delete(String id)
+    public virtual ApiResponse<ApiRow> Delete(String id)
     {
         if (id.IsNullOrEmpty()) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
 
@@ -39,15 +39,11 @@ public partial class EntityController<TEntity, TModel>
         try
         {
             act = ProcessDelete(entity);
-            // 密码等敏感字段只写不读，响应前清空
-            OnHideSecrets(entity);
-            return new ApiResponse<TEntity> { Code = 0, Message = L.T("{0} succeeded!", act), Data = entity };
+            return new ApiResponse<ApiRow> { Code = 0, Message = L.T("{0} succeeded!", act), Data = OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)) };
         }
         catch (Exception ex)
         {
-            // 密码等敏感字段只写不读，失败回包同样清空
-            OnHideSecrets(entity);
-            return BuildFailResponse(ex, act, entity);
+            return BuildFailResponse(ex, act, OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)));
         }
     }
 
@@ -98,7 +94,7 @@ public partial class EntityController<TEntity, TModel>
         catch (Exception ex)
         {
             // 返回 ApiResponse<String>，复用 BuildFailResponse 后做类型适配（保留错误码/消息/字段错误）
-            var fail = BuildFailResponse(ex, act, null);
+            var fail = BuildFailResponse<ApiRow>(ex, act, null);
             return new ApiResponse<String> { Code = fail.Code, Message = fail.Message, Data = null, FieldErrors = fail.FieldErrors };
         }
     }
@@ -109,7 +105,7 @@ public partial class EntityController<TEntity, TModel>
     [DisplayName("Add {type}")]
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost("/api/[area]/[controller]")]
-    public virtual async Task<ApiResponse<TEntity>> Insert(TModel model)
+    public virtual async Task<ApiResponse<ApiRow>> Insert(TModel model)
     {
         // 实例化实体对象，然后拷贝
         if (model is TEntity entity) return await ProcessInsert(entity);
@@ -125,7 +121,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
-            return BuildFailResponse(ex, L.T("Add"), entity);
+            return BuildFailResponse(ex, L.T("Add"), OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)));
         }
 
         return await ProcessInsert(entity);
@@ -135,7 +131,7 @@ public partial class EntityController<TEntity, TModel>
     /// <param name="entity">已通过校验、待写入数据库的实体</param>
     /// <returns>新增结果响应</returns>
     [NonAction]
-    protected virtual async Task<ApiResponse<TEntity>> ProcessInsert(TEntity entity)
+    protected virtual async Task<ApiResponse<ApiRow>> ProcessInsert(TEntity entity)
     {
         // 检测避免乱用Add/id
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0)
@@ -155,13 +151,11 @@ public partial class EntityController<TEntity, TModel>
                 {
                     var firstMsg = fieldErrors[0].Message;
                     WriteLog("Add", false, firstMsg);
-                    // 密码等敏感字段只写不读，失败回包同样清空
-                    OnHideSecrets(entity);
-                    return new ApiResponse<TEntity>
+                    return new ApiResponse<ApiRow>
                     {
                         Code = Models.CubeCode.ParamError.ToInt(),
                         Message = SysConfig.Develop ? $"{L.T("Add failed!")} {firstMsg}" : L.T("Add failed!"),
-                        Data = entity,
+                        Data = OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)),
                         FieldErrors = fieldErrors
                     };
                 }
@@ -177,20 +171,14 @@ public partial class EntityController<TEntity, TModel>
 
             if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
 
-            // 密码等敏感字段只写不读，响应前清空
-            OnHideSecrets(entity);
-
-            return new ApiResponse<TEntity> { Code = 0, Message = L.T("Add succeeded!"), Data = entity };
+            return new ApiResponse<ApiRow> { Code = 0, Message = L.T("Add succeeded!"), Data = OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)) };
         }
         catch (Exception ex)
         {
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Factory.Unique.Name] = 0;
 
-            // 密码等敏感字段只写不读，失败回包同样清空
-            OnHideSecrets(entity);
-
-            return BuildFailResponse(ex, L.T("Add"), entity);
+            return BuildFailResponse(ex, L.T("Add"), OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)));
         }
     }
 
@@ -206,7 +194,7 @@ public partial class EntityController<TEntity, TModel>
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("Update {type}")]
     [HttpPut("/api/[area]/[controller]/{id}")]
-    public virtual async Task<ApiResponse<TEntity>> Update(String id, TModel model)
+    public virtual async Task<ApiResponse<ApiRow>> Update(String id, TModel model)
     {
         if (id.IsNullOrEmpty()) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
 
@@ -239,9 +227,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
-            // 密码等敏感字段只写不读，失败回包同样清空
-            OnHideSecrets(entity);
-            return BuildFailResponse(ex, L.T("Save"), entity);
+            return BuildFailResponse(ex, L.T("Save"), OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)));
         }
 
         return await ProcessUpdate(entity);
@@ -263,8 +249,8 @@ public partial class EntityController<TEntity, TModel>
             var pi = type.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             if (pi == null || !pi.CanRead || !pi.CanWrite) continue;
 
-            // 敏感字段留空表示不修改：编辑表单不回填密码，原样提交会把库中密码清空
-            if (IsSecretName(fi.Name) && IsEmpty(pi.GetValue(source))) continue;
+            // 只写字段留空表示不修改：编辑表单不回填密码，原样提交会把库中密码清空
+            if (IsWriteOnlyName(fi.Name) && IsEmpty(pi.GetValue(source))) continue;
 
             pi.SetValue(target, pi.GetValue(source));
         }
@@ -288,8 +274,8 @@ public partial class EntityController<TEntity, TModel>
             var spi = modelType.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             if (tpi == null || !tpi.CanWrite || spi == null || !spi.CanRead) continue;
 
-            // 敏感字段留空表示不修改：编辑表单不回填密码，原样提交会把库中密码清空
-            if (IsSecretName(fi.Name) && IsEmpty(spi.GetValue(model))) continue;
+            // 只写字段留空表示不修改：编辑表单不回填密码，原样提交会把库中密码清空
+            if (IsWriteOnlyName(fi.Name) && IsEmpty(spi.GetValue(model))) continue;
 
             tpi.SetValue(target, spi.GetValue(model));
         }
@@ -328,7 +314,7 @@ public partial class EntityController<TEntity, TModel>
     /// <param name="entity">已完成字段合并、待更新的实体</param>
     /// <returns>更新结果响应</returns>
     [NonAction]
-    protected virtual async Task<ApiResponse<TEntity>> ProcessUpdate(TEntity entity)
+    protected virtual async Task<ApiResponse<ApiRow>> ProcessUpdate(TEntity entity)
     {
         try
         {
@@ -344,7 +330,7 @@ public partial class EntityController<TEntity, TModel>
                 {
                     var firstMsg = fieldErrors[0].Message;
                     WriteLog("Edit", false, firstMsg);
-                    return new ApiResponse<TEntity>
+                    return new ApiResponse<ApiRow>
                     {
                         Code = Models.CubeCode.ParamError.ToInt(),
                         Message = SysConfig.Develop ? $"{L.T("Save failed!")} {firstMsg}" : L.T("Save failed!"),
@@ -360,17 +346,14 @@ public partial class EntityController<TEntity, TModel>
 
             OnUpdate(entity);
 
-            // 密码等敏感字段只写不读，响应前清空
-            OnHideSecrets(entity);
-
-            return new ApiResponse<TEntity> { Code = 0, Message = L.T("Save succeeded!"), Data = entity };
+            return new ApiResponse<ApiRow> { Code = 0, Message = L.T("Save succeeded!"), Data = OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)) };
         }
         catch (Exception ex)
         {
             // 保留 ModelState 以兼容 MVC 视图场景
             ModelState.AddModelError((ex as ArgumentException)?.ParamName ?? "", ex.Message);
 
-            return BuildFailResponse(ex, L.T("Save"), null);
+            return BuildFailResponse<ApiRow>(ex, L.T("Save"), null);
         }
     }
     #endregion

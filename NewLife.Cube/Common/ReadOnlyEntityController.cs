@@ -3,9 +3,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
+using System.Security;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Cube.AI;
 using NewLife.Cube.ViewModels;
@@ -58,7 +60,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("{type} management")]
     [HttpGet("/api/[area]/[controller]")]
-    public virtual ApiListResponse<TEntity> Index()
+    public virtual ApiListResponse<ApiRow> Index()
     {
         var p = new Pager(WebHelper.Params)
         {
@@ -68,53 +70,22 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var list = SearchData(p).ToList();
 
-        // 密码等敏感字段只写不读，列表返回前统一清空
-        foreach (var entity in list) OnHideSecrets(entity);
-
-        // 复刻 MVC ListField 按行计算值：虚拟字段/GetValue 字段写入实体扩展，随行 JSON 内联输出
-        OnFillListValues(list);
-
-        //return list.ToOkApiResponse().WithList(p); 
-        return new ApiListResponse<TEntity>
-        {
-            Data = list,
-            Page = p.ToModel(),
-            Stat = (TEntity)p.State,
-            TraceId = DefaultSpan.Current?.TraceId,
-        };
-    }
-
-    /// <summary>填充列表字段计算值。复刻 MVC 版 ListField 按行计算单元格值的能力</summary>
-    /// <remarks>
-    /// MVC 版在视图渲染时调用 ListField.GetLink/GetLinkName 按行计算单元格值；API 版无视图，
-    /// 在 Index 序列化前统一计算并写入实体扩展字典（<see cref="IExtend.Items"/>），
-    /// 由 JsonWriter 内联到行 JSON 顶层，前端字段元数据驱动的通用渲染即可显示，无需修改前端代码。
-    /// 仅处理虚拟字段（Field 为空，如 AddListField 创建的 AvatarImage）或设置了 GetValue 委托的字段，
-    /// 普通列不参与，避免额外开销。
-    /// </remarks>
-    /// <param name="list">数据列表</param>
-    /// <param name="fields">列表字段。为空时使用当前列表字段集合（OnGetFields）</param>
-    protected virtual void OnFillListValues(IEnumerable<TEntity> list, IList<DataField>? fields = null)
-    {
-        fields ??= OnGetFields(ViewKinds.List, null);
-
-        // 只收集需要计算值的字段：虚拟字段（非实体列）或设置了 GetValue 委托的字段
-        var lfs = fields.OfType<ListField>().Where(e => e.Field == null || e.GetValue != null).ToArray();
-        if (lfs.Length == 0) return;
-
+        // 输出 = 字段集合 × 行值：集合之外的字段不下发，只写字段不参与投影
+        var fields = OnGetOutputFields(ViewKinds.List);
+        var rows = new List<ApiRow>(list.Count);
         foreach (var entity in list)
         {
-            if (entity is not IExtend ext) continue;
-
-            foreach (var df in lfs)
-            {
-                // 可见性控制：DataVisible 为 false 时不输出该列值
-                if (df.DataVisible != null && !df.DataVisible(entity)) continue;
-
-                var value = df.GetValue?.Invoke(entity) ?? entity[df.Name];
-                if (value != null) ext.Items[df.Name] = value;
-            }
+            rows.Add(OnProject(entity, fields));
         }
+
+        //return list.ToOkApiResponse().WithList(p); 
+        return new ApiListResponse<ApiRow>
+        {
+            Data = rows,
+            Page = p.ToModel(),
+            Stat = p.State is TEntity state ? OnProject(state, fields) : null,
+            TraceId = DefaultSpan.Current?.TraceId,
+        };
     }
 
     /// <summary>查看单行数据。主键在路径中</summary>
@@ -123,7 +94,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("View {type}")]
     [HttpGet("/api/[area]/[controller]/{id}")]
-    public virtual ApiResponse<TEntity> Detail(String id)
+    public virtual ApiResponse<ApiRow> Detail(String id)
     {
         if (id.IsNullOrEmpty()) throw new XException("Missing primary key.");
         var entity = FindData(id);
@@ -132,63 +103,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
 
-        // 密码等敏感字段只写不读，详情返回前清空
-        OnHideSecrets(entity);
-
         //return entity.ToOkApiResponse();
-        return new ApiResponse<TEntity> { Data = entity };
-    }
-    #endregion
-
-    #region 敏感字段
-    /// <summary>补充需要隐藏的敏感字段名（密码之外的密钥、令牌等）。默认空，子类按需重写</summary>
-    protected virtual String[] ExtraSecretFields => [];
-
-    /// <summary>判断字段是否为不允许下发取值的敏感字段。默认识别密码类字段，子类可补充</summary>
-    /// <param name="field">字段元数据</param>
-    /// <returns>是否敏感</returns>
-    protected virtual Boolean IsSecretField(DataField field) => field.IsSecret || IsSecretName(field.Name);
-
-    /// <summary>判断字段名是否属于敏感字段</summary>
-    /// <param name="name">字段名</param>
-    /// <returns>是否敏感</returns>
-    protected Boolean IsSecretName(String name) => DataField.IsSecretName(name) || ExtraSecretFields.Any(e => e.EqualIgnoreCase(name));
-
-    /// <summary>判断值是否为空。敏感字段留空表示不修改</summary>
-    /// <param name="value">字段值</param>
-    /// <returns>空值返回 true</returns>
-    protected static Boolean IsEmpty(Object value) => value == null || value is String str && str.Length == 0;
-
-    private String[] _secretNames;
-    /// <summary>当前实体的敏感字段名。密码类字段与子类补充字段，值一律不向客户端输出</summary>
-    private String[] GetSecretNames()
-    {
-        if (_secretNames != null) return _secretNames;
-
-        var names = new List<String>();
-        foreach (var field in Factory.Fields)
-        {
-            if (IsSecretName(field.Name) || field.Field?.ItemType.EqualIgnoreCase("password") == true) names.Add(field.Name);
-        }
-
-        return _secretNames = names.ToArray();
-    }
-
-    /// <summary>隐藏实体中的敏感字段值。密码等字段只写不读，接口返回前统一清空</summary>
-    /// <param name="entity">实体对象</param>
-    protected virtual void OnHideSecrets(TEntity entity)
-    {
-        if (entity == null) return;
-
-        // 用属性反射清空：手写实体未必重写索引器，索引器写入只落扩展字典，改不到真实属性
-        var type = typeof(TEntity);
-        foreach (var name in GetSecretNames())
-        {
-            var pi = type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            if (pi == null || !pi.CanWrite) continue;
-
-            pi.SetValue(entity, pi.PropertyType.IsValueType ? Activator.CreateInstance(pi.PropertyType) : null);
-        }
+        return new ApiResponse<ApiRow> { Data = OnProject(entity, OnGetOutputFields(ViewKinds.Detail, entity)) };
     }
     #endregion
 
@@ -244,7 +160,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         PageMetaBuilder.ApplyTraceUrl(list, CubeSetting.Current.StarWeb);
 
         // 密码等敏感字段只在新增/编辑表单出现（编辑时留空表示不修改），列表/详情/搜索一律不下发
-        Func<DataField, Boolean> hideSecret = IsSecretField;
+        Func<DataField, Boolean> hideSecret = e => e.IsWriteOnly;
         var listDic = PageMetaBuilder.BuildFields(list, hideSecret);
         var formDic = PageMetaBuilder.BuildFields(OnGetFields(ViewKinds.EditForm, null));
         var addDic = PageMetaBuilder.BuildFields(OnGetFields(ViewKinds.AddForm, null));
@@ -457,8 +373,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var fs = new List<FieldItem>();
         foreach (var fi in source)
         {
-            // 密码等敏感字段不导出，避免哈希随文件外泄
-            if (IsSecretName(fi.Name)) continue;
+            // 只写字段（ItemType=password）不导出，避免密码哈希随文件外泄
+            if (DataField.IsWriteOnlyField(fi)) continue;
             if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
             if (!fi.IsDataObjectField)
             {
@@ -569,8 +485,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [NonAction]
     protected List<DataField> GetExportFields(IList<FieldItem> fs, IEnumerable<TEntity> list)
     {
-        // 密码等敏感字段不导出，避免哈希随文件外泄
-        var fields = fs.Where(e => !IsSecretName(e.Name)).Select(e => new DataField(e)).ToList();
+        // 只写字段（ItemType=password）不导出，避免密码哈希随文件外泄
+        var fields = fs.Where(e => !DataField.IsWriteOnlyField(e)).Select(e => new DataField(e)).ToList();
         foreach (var field in fields) field.Localize();
 
         if (list.FirstOrDefault() is IExtend ext)
@@ -595,10 +511,11 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var name = MakeExportFileName(".json");
         var list = ExportData().ToList();
 
-        // 密码等敏感字段只写不读，导出前清空取值
-        foreach (var entity in list) OnHideSecrets(entity);
+        // 按字段集合投影，只写字段不参与，实体本身不被修改；导出保留字段原名
+        var fields = GetExportFields(Factory.Fields, list);
+        var rows = list.Select(e => OnProject(e, fields, false)).ToList();
 
-        var json = list.ToJson(true);
+        var json = rows.ToJson(true);
         return new FileContentResult(json.GetBytes(), "application/json") { FileDownloadName = name };
     }
 
@@ -610,11 +527,29 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var name = MakeExportFileName(".xml");
         var list = ExportData().ToList();
 
-        // 密码等敏感字段只写不读，导出前清空取值
-        foreach (var entity in list) OnHideSecrets(entity);
+        // 按字段集合投影，只写字段不参与；手工拼 Xml，避免把字典投影序列化成 Dictionary 节点
+        var fields = GetExportFields(Factory.Fields, list);
+        var typeName = Factory.EntityType.Name;
+        var sb = Pool.StringBuilder.Get();
+        sb.Append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        sb.Append("<ArrayOf").Append(typeName).Append('>');
+        foreach (var entity in list)
+        {
+            var row = OnProject(entity, fields, false);
+            sb.Append('<').Append(typeName).Append('>');
+            foreach (var item in row)
+            {
+                var value = item.Value is DateTime dt ? dt.ToString("yyyy-MM-dd HH:mm:ss") : item.Value;
+                sb.Append('<').Append(item.Key).Append('>');
+                sb.Append(SecurityElement.Escape(value + ""));
+                sb.Append("</").Append(item.Key).Append('>');
+            }
+            sb.Append("</").Append(typeName).Append('>');
+        }
+        sb.Append("</ArrayOf").Append(typeName).Append('>');
 
         // 实体列表转 Xml（对齐 MVC OnExportXml：IEntity.ToXml / IList.ToXml），此前误用 ToJson 输出 JSON
-        var xml = list.ToXml();
+        var xml = sb.Return(true);
         return new FileContentResult(xml.GetBytes(), "application/xml") { FileDownloadName = name };
     }
 

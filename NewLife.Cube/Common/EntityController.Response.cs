@@ -65,11 +65,13 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>构建失败响应，自动提取字段级错误</summary>
+    /// <remarks>数据部分由调用方决定（接口版传投影行，MVC 版传实体），本方法只负责码、消息与字段错误</remarks>
+    /// <typeparam name="T">响应数据类型</typeparam>
     /// <param name="ex">异常对象</param>
     /// <param name="action">操作名称（添加/保存/删除）</param>
-    /// <param name="entity">实体对象</param>
+    /// <param name="data">失败回包携带的数据</param>
     /// <returns></returns>
-    private ApiResponse<TEntity> BuildFailResponse(Exception ex, String action, TEntity entity)
+    private ApiResponse<T> BuildFailResponse<T>(Exception ex, String action, T data)
     {
         DefaultSpan.Current?.SetError(ex);
 
@@ -85,11 +87,11 @@ public partial class EntityController<TEntity, TModel>
         var err = isBiz || SysConfig.Develop ? $"{L.T("{0} failed!", action)} {tip}" : L.T("{0} failed!", action);
 
         var code = trueEx is ApiException ae ? ae.Code : ApiCode.InternalServerError.ToInt();
-        return new ApiResponse<TEntity>
+        return new ApiResponse<T>
         {
             Code = code,
             Message = err,
-            Data = entity,
+            Data = data,
             FieldErrors = fieldErrors
         };
     }

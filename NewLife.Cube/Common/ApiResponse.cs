@@ -61,3 +61,15 @@ public class ApiListResponse<T> : ApiResponse<IList<T>>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public T Stat { get; set; }
 }
+
+/// <summary>接口数据行。按字段集合投影后的行数据，键为字段名</summary>
+/// <remarks>
+/// 与字段元数据一一对应：字段集合之外的字段不下发，只写字段（ItemType=password）不参与投影。
+/// 键名沿用 <see cref="DataField.Name"/>（PascalCase，与 /meta 下发的字段名一致），
+/// 前端可直接按字段名取值；序列化时字典键不做改名。
+/// </remarks>
+public class ApiRow : Dictionary<String, Object?>
+{
+    /// <summary>实例化数据行。键名不区分大小写，避免字段名与扩展值重名</summary>
+    public ApiRow() : base(StringComparer.OrdinalIgnoreCase) { }
+}

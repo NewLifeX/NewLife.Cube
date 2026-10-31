@@ -15,6 +15,8 @@ public class PageMetaBuilderTests
 
     private static FormField Form(String name, String display) => new() { Name = name, DisplayName = display, Type = typeof(String) };
 
+    private static FormField WriteOnlyForm(String name, String display) => new() { Name = name, DisplayName = display, Type = typeof(String), ItemType = "password" };
+
     private static SearchField Search(String name, String display) => new() { Name = name, DisplayName = display, Type = typeof(String) };
     #endregion
 
@@ -165,36 +167,50 @@ public class PageMetaBuilderTests
         Assert.False(PageMetaBuilder.SameFields(form, changed));
     }
 
-    [Fact(DisplayName = "敏感字段按判定跳过，不下发到前端")]
-    public void BuildFields_SkipsSecretFields()
+    [Fact(DisplayName = "只写字段按判定跳过，不下发到前端")]
+    public void BuildFields_SkipsWriteOnlyFields()
     {
         var fields = new List<DataField>
         {
             Form("Name", "姓名"),
-            Form("Password", "密码"),
-            Form("AccessToken", "访问令牌"),
+            WriteOnlyForm("Password", "密码"),
+            WriteOnlyForm("AccessToken", "访问令牌"),
         };
 
-        var list = PageMetaBuilder.BuildFields(fields, e => e.IsSecret || e.Name == "AccessToken");
+        var list = PageMetaBuilder.BuildFields(fields, e => e.IsWriteOnly);
 
         var only = Assert.Single(list);
         Assert.Equal("Name", only["name"]);
     }
 
-    [Fact(DisplayName = "密码字段自动标记 ItemType=password，其余敏感前缀不误判")]
-    public void ToDictionary_PasswordFieldGetsPasswordItemType()
+    [Fact(DisplayName = "密码类字段名在填充时归一到 ItemType=password，其余名称不误判")]
+    public void Fill_PasswordName_NormalizesItemType()
     {
-        var password = Form("Password", "密码");
-        Assert.True(password.IsSecret);
+        var fi = User.Meta.Factory.Fields.First(e => e.Name.EqualIgnoreCase("Password"));
+        var password = new DataField(fi);
+        Assert.True(password.IsWriteOnly);
         Assert.Equal("password", password.ToDictionary()["itemType"]);
 
-        var explicitType = Form("Password", "密码");
+        var explicitType = Form("AccessToken", "访问令牌");
         explicitType.ItemType = "password";
-        Assert.True(explicitType.IsSecret);
+        Assert.True(explicitType.IsWriteOnly);
 
         var secret = Form("AppSecret", "应用密钥");
-        Assert.False(secret.IsSecret);
+        Assert.False(secret.IsWriteOnly);
         Assert.False(secret.ToDictionary().ContainsKey("itemType"));
+    }
+
+    [Fact(DisplayName = "密码类字段名支持后缀写法，普通密钥不误判")]
+    public void IsPasswordName_MatchesSuffix()
+    {
+        Assert.True(DataField.IsPasswordName("Password"));
+        Assert.True(DataField.IsPasswordName("NewPassword"));
+        Assert.True(DataField.IsPasswordName("OldPassword"));
+        Assert.True(DataField.IsPasswordName("LoginPwd"));
+        Assert.True(DataField.IsPasswordName("secret"));
+        Assert.False(DataField.IsPasswordName("AppSecret"));
+        Assert.False(DataField.IsPasswordName("Name"));
+        Assert.False(DataField.IsPasswordName(""));
     }
 
     [Fact(DisplayName = "已构建字段输出一致时省略 add/detail")]

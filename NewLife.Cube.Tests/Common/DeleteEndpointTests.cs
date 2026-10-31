@@ -98,7 +98,7 @@ public class DeleteEndpointTests
         var rs = controller.Delete("2");
 
         Assert.Equal(0, rs.Code);
-        Assert.Equal(2, rs.Data!.Id);
+        Assert.Equal(2, rs.Data!["Id"]);
         Assert.Equal([2], controller.Deleted);
     }
 

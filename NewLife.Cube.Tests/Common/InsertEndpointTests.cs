@@ -73,7 +73,7 @@ public class InsertEndpointTests
         var rs = await controller.Insert(new InsertTestEntity { Name = "合法值" });
 
         Assert.Equal(0, rs.Code);
-        Assert.Equal(7, rs.Data.Id);
+        Assert.Equal(7, rs.Data["Id"]);
         Assert.NotNull(controller.Inserted);
         Assert.Equal("合法值", controller.Inserted!.Name);
     }
@@ -100,6 +100,6 @@ public class InsertEndpointTests
         Assert.NotEqual(0, rs.Code);
         Assert.Null(controller.Inserted);
         // 失败时主键清零，前端才不会显示"保存"按钮
-        Assert.Equal(0, rs.Data.Id);
+        Assert.Equal(0, rs.Data["Id"]);
     }
 }

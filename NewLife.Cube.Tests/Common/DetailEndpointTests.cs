@@ -76,20 +76,20 @@ public class DetailEndpointTests
         var rs = controller.Detail("5");
 
         Assert.Equal(0, rs.Code);
-        Assert.Equal(5, rs.Data.Id);
-        Assert.Equal("行5", rs.Data.Name);
+        Assert.Equal(5, rs.Data["Id"]);
+        Assert.Equal("行5", rs.Data["Name"]);
         Assert.Equal(1, controller.ValidCalls);
     }
 
-    [Fact(DisplayName = "详情：密码等敏感字段返回前清空")]
+    [Fact(DisplayName = "详情：密码等只写字段不参与投影")]
     public void Detail_HidesPassword()
     {
         var controller = Create(5);
 
         var rs = controller.Detail("5");
 
-        Assert.Equal("行5", rs.Data.Name);
-        Assert.Null(rs.Data.Password);
+        Assert.Equal("行5", rs.Data["Name"]);
+        Assert.False(rs.Data.ContainsKey("Password"));
     }
 
     [Fact(DisplayName = "详情：主键为空抛参数异常")]

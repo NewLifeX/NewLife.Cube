@@ -175,8 +175,6 @@ public class DataField : IDictionarySource
         if (!Category.IsNullOrEmpty()) dic["category"] = Category;
         if (!TypeName.IsNullOrEmpty()) dic["typeName"] = TypeName;
         if (!ItemType.IsNullOrEmpty()) dic["itemType"] = ItemType;
-        // 密码类字段未显式声明 ItemType 时自动标记为 password，前端渲染遮蔽输入
-        else if (IsSecretName(Name)) dic["itemType"] = "password";
         if (Length > 0) dic["length"] = Length;
         if (Precision > 0) dic["precision"] = Precision;
         if (Scale > 0) dic["scale"] = Scale;
@@ -396,6 +394,9 @@ public class DataField : IDictionarySource
                 }
             }
         }
+
+        // 密码类字段名沿用 MVC 约定，统一归一为 ItemType=password：遮蔽输入 + 只写，取值永不下发
+        if (ItemType.IsNullOrEmpty() && IsPasswordName(Name)) ItemType = "password";
     }
 
     /// <summary>从PropertyInfo填充</summary>
@@ -446,6 +447,9 @@ public class DataField : IDictionarySource
 
         var ra = property.GetCustomAttribute<ReadOnlyAttribute>();
         if (ra != null) ReadOnly = ra.IsReadOnly;
+
+        // 密码类字段名沿用 MVC 约定，统一归一为 ItemType=password：遮蔽输入 + 只写，取值永不下发
+        if (ItemType.IsNullOrEmpty() && IsPasswordName(Name)) ItemType = "password";
     }
 
     /// <summary>按当前语言本地化显示名、描述与分类</summary>
@@ -597,13 +601,25 @@ public class DataField : IDictionarySource
     /// <returns></returns>
     public Boolean IsAttachment() => ItemType.EqualIgnoreCase("file", "image") || ItemType.StartsWithIgnoreCase("file-", "image-");
 
-    /// <summary>是否敏感字段。密码类字段只允许写入，值不允许下发到前端</summary>
-    public Boolean IsSecret => ItemType.EqualIgnoreCase("password") || IsSecretName(Name);
+    /// <summary>是否只写字段。ItemType=password 表示写入专用，取值不允许下发到前端</summary>
+    public Boolean IsWriteOnly => ItemType.EqualIgnoreCase("password");
 
-    /// <summary>判断字段名是否为密码类敏感字段。名称以 Password 结尾</summary>
+    /// <summary>判断字段名是否为密码类字段。沿用 MVC 约定：pass/password/pwd/secret，以及 NewPassword 这类后缀写法</summary>
     /// <param name="name">字段名</param>
-    /// <returns>是否敏感</returns>
-    public static Boolean IsSecretName(String name) => !name.IsNullOrEmpty() && name.EndsWith("Password", StringComparison.OrdinalIgnoreCase);
+    /// <returns>是否密码类字段</returns>
+    public static Boolean IsPasswordName(String name)
+    {
+        if (name.IsNullOrEmpty()) return false;
+        if (name.EqualIgnoreCase("pass", "password", "pwd", "secret")) return true;
+
+        // NewPassword / OldPassword / LoginPwd 等派生命名同样是密码，取值不得回传
+        return name.EndsWith("Password", StringComparison.OrdinalIgnoreCase) || name.EndsWith("Pwd", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>判断模型字段是否为只写字段。密码类名称与 ItemType=password 等价</summary>
+    /// <param name="field">模型字段</param>
+    /// <returns>是否只写</returns>
+    public static Boolean IsWriteOnlyField(FieldItem field) => field != null && (field.Field?.ItemType.EqualIgnoreCase("password") == true || IsPasswordName(field.Name));
 
     /// <summary>格式化数据用于显示</summary>
     /// <param name="value"></param>

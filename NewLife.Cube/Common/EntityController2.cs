@@ -118,7 +118,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         }
         catch (Exception ex)
         {
-            var fail = BuildFailResponse(ex, act, null);
+            var fail = BuildFailResponse<ApiRow>(ex, act, null);
             return new ApiResponse<Int32> { Code = fail.Code, Message = fail.Message, FieldErrors = fail.FieldErrors };
         }
     }

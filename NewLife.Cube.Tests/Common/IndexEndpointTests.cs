@@ -117,7 +117,7 @@ public class IndexEndpointTests
         Assert.Equal(0, rs.Page.TotalCount);
     }
 
-    [Fact(DisplayName = "列表：密码等敏感字段返回前清空")]
+    [Fact(DisplayName = "列表：密码等只写字段不参与投影")]
     public void Index_HidesPassword()
     {
         var controller = Create();
@@ -126,7 +126,7 @@ public class IndexEndpointTests
         var rs = controller.Index();
 
         var row = Assert.Single(rs.Data);
-        Assert.Equal("行1", row.Name);
-        Assert.Null(row.Password);
+        Assert.Equal("行1", row["Name"]);
+        Assert.False(row.ContainsKey("Password"));
     }
 }

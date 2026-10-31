@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -41,7 +42,15 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
 
         foreach (var item in all)
         {
-            if (set != null && item.Name.EqualIgnoreCase(set.Name, set.Parent))
+            if (set != null && item.Name.EqualIgnoreCase(set.Parent))
+            {
+                // 前端按父字段组装树形层级：保留在列表字段中但默认隐藏，值随行下发（投影只下发字段集合内的字段）
+                var df = list.GetField(item.Name) ?? list.Add(item);
+                if (df is ListField lf) lf.Visible = false;
+                continue;
+            }
+
+            if (set != null && item.Name.EqualIgnoreCase(set.Name))
             {
                 list.RemoveField(item.Name);
                 continue;
