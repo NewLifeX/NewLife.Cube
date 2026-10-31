@@ -1524,3 +1524,8 @@
 "MFA required": "MFA প্রয়োজন"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "প্রোটোকল স্ট্যাটাস কোড। ব্যর্থতায় 401/403/404/409/429/500 সেট করে; ডিফল্টভাবে বন্ধ"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "সাইন-ইন, কোড, লুকআপ ও সাইটের জন্য প্রতি IP হার সীমা; ডিফল্টভাবে চালু"
+
+# 菜单搜索
+"Menu search": "মেনু অনুসন্ধান"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "মেনু অনুসন্ধান। নেভিগেশন বারে ফাজি মেনু অনুসন্ধানের জন্য একটি অনুসন্ধান বাক্স দেখায়; ডিফল্ট true"
+"Search menu": "মেনু অনুসন্ধান করুন"

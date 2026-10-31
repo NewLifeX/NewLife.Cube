@@ -115,21 +115,38 @@ layui.use(['element_cube', 'layer', 'util'], function () {
         return false;
     };
 
+    // 定位左侧菜单：按 data-url 匹配，展开父级并高亮
+    function cubeLocateMenu(url) {
+        if (!url) return false;
+
+        var decoded = url;
+        try { decoded = decodeURIComponent(url); } catch (e) { }
+
+        var eleA = $('.layui-nav .layui-nav-item dd a[data-url]').filter(function () {
+            var v = this.getAttribute('data-url');
+            return v === url || v === decoded;
+        }).first();
+        if (!eleA.length) return false;
+
+        // 点击对应菜单
+        eleA.click();
+        // 菜单对应父级
+        var eleLi = eleA.parents('.layui-nav-item');
+        // 关闭其他打开菜单
+        eleLi.siblings('.layui-nav-itemed').find('>a').click();
+        // 展开父级菜单
+        if (!eleLi.hasClass('layui-nav-itemed')) eleLi.find('>a').click();
+
+        return true;
+    }
+    window.cubeLocateMenu = cubeLocateMenu;
+
     // 判断url是否存在hash，自动打开该标签页
     if (location.hash && location.hash.startsWith('#/')) {
-        const url = location.hash.replace('#', '');
-        const eleA = $(`.layui-nav .layui-nav-item dd a[data-url="${url}"]`)
-        if (eleA && eleA.length) {
-            // 点击对应菜单
-            eleA.click()
-            // 菜单对应父级
-            const eleLi = eleA.parents('.layui-nav-item')
-            // 关闭其他打开菜单
-            eleLi.siblings('.layui-nav-itemed').find('>a').click()
-            // 展开父级菜单
-            if (!eleLi.hasClass('layui-nav-itemed')) eleLi.find('>a').click()
-        } else {
-            window.cubeAddTab(url, "新标签页")
-        }
+        var url = location.hash.replace('#', '');
+        var decoded = url;
+        try { decoded = decodeURIComponent(url); } catch (e) { }
+
+        if (!cubeLocateMenu(url)) window.cubeAddTab(decoded, "新标签页");
     }
 });

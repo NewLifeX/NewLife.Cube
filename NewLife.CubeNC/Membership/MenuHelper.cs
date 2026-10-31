@@ -2,6 +2,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Common;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -420,4 +421,97 @@ public static partial class MenuHelper
 
         return _admins[key] = false;
     }
+
+    #region 搜索
+    /// <summary>判断菜单在指定租户模式下是否可见。仅按菜单 FullName 解析控制器的 MenuAttribute.Mode</summary>
+    /// <param name="menu">菜单</param>
+    /// <param name="isTenant">是否租户模式（TenantId&gt;0）</param>
+    /// <returns>可见返回 true；无 FullName 或解析不到控制器时按可见处理</returns>
+    public static Boolean CheckVisible(IMenu menu, Boolean isTenant)
+    {
+        if (menu == null) return false;
+        if (menu.FullName.IsNullOrEmpty()) return true;
+
+        var type = ResolveMenuType(menu.FullName);
+        if (type == null) return true;
+
+        var att = type.GetCustomAttribute<MenuAttribute>();
+        if (att == null) return true;
+
+        // 租户模式仅放行含Tenant模式的菜单；管理后台排除纯租户菜单
+        if (isTenant) return att.Mode.Has(MenuModes.Tenant);
+        return att.Mode.Has(MenuModes.Admin) || !att.Mode.Has(MenuModes.Tenant);
+    }
+
+    /// <summary>构建菜单搜索数据。遍历权限过滤后的菜单树，收集可见且带链接的菜单项</summary>
+    /// <param name="menus">顶层菜单，已按权限与租户过滤</param>
+    /// <param name="getChildren">获取子菜单，已按权限与租户过滤；返回空表示无子菜单</param>
+    /// <param name="modules">用户模块字典，键为顶层菜单名；不在字典中的顶层菜单归入 base</param>
+    /// <param name="resolveUrl">链接归一化，通常为 Url.Content</param>
+    /// <returns>可搜索菜单列表，永不返回 null</returns>
+    public static IList<MenuSearchItem> BuildSearchMenus(IList<IMenu> menus, Func<IMenu, IList<IMenu>> getChildren, IDictionary<String, String> modules, Func<String, String> resolveUrl)
+    {
+        var list = new List<MenuSearchItem>();
+        if (menus == null || menus.Count == 0) return list;
+
+        var visited = new HashSet<Int32>();
+        void Walk(IEnumerable<IMenu> items, String module, String parentPath, String parentSourcePath)
+        {
+            foreach (var menu in items)
+            {
+                if (menu == null || !menu.Visible) continue;
+                if (menu.ID > 0 && !visited.Add(menu.ID)) continue;
+
+                var name = GetDisplayName(menu) ?? menu.Name;
+                var path = parentPath.IsNullOrEmpty() ? name : $"{parentPath} / {name}";
+
+                // 拼音按库中源文显示名计算，英文界面下也能用中文拼音搜索
+                var source = menu.DisplayName.IsNullOrEmpty() ? menu.Name : menu.DisplayName;
+                var sourcePath = parentSourcePath.IsNullOrEmpty() ? source : $"{parentSourcePath} {source}";
+
+                var url = menu.Url;
+                if (!url.IsNullOrEmpty() && !url.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase))
+                {
+                    var resolved = resolveUrl != null ? resolveUrl(url) : url;
+                    if (!resolved.IsNullOrEmpty() && resolved != "#")
+                    {
+                        var pinyin = PinYin.Get(source);
+                        var initials = PinYin.GetFirst(source);
+                        var pathPinyin = PinYin.Get(sourcePath);
+                        var pathInitials = PinYin.GetFirst(sourcePath);
+
+                        list.Add(new MenuSearchItem
+                        {
+                            ID = menu.ID,
+                            Name = menu.Name,
+                            DisplayName = name,
+                            Url = resolved,
+                            Icon = menu.Icon,
+                            NewWindow = menu.NewWindow,
+                            Module = module,
+                            Path = path,
+                            PinYin = pinyin,
+                            Initials = initials,
+                            PathPinYin = pathPinyin,
+                            PathInitials = pathInitials,
+                        });
+                    }
+                }
+
+                var childs = getChildren?.Invoke(menu);
+                if (childs != null && childs.Count > 0) Walk(childs, module, path, sourcePath);
+            }
+        }
+
+        foreach (var menu in menus)
+        {
+            if (menu == null || !menu.Visible) continue;
+
+            var module = modules != null && modules.ContainsKey(menu.Name) ? menu.Name : "base";
+            Walk([menu], module, null, null);
+        }
+
+        return list;
+    }
+    #endregion
 }

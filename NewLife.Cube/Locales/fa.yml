@@ -1524,3 +1524,8 @@
 "MFA required": "احراز هویت دو مرحله‌ای لازم است"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "کدهای وضعیت پروتکل. در خطاها 401/403/404/409/429/500 را تنظیم می‌کند؛ به‌طور پیش‌فرض خاموش است"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "محدودیت نرخ بر اساس IP برای ورود، کد، جستجو و سایت؛ به‌طور پیش‌فرض روشن است"
+
+# 菜单搜索
+"Menu search": "جستجوی منو"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "جستجوی منو. کادر جستجو را در نوار پیمایش برای جستجوی تقریبی منو نمایش می‌دهد؛ پیش‌فرض true"
+"Search menu": "جستجوی منو"

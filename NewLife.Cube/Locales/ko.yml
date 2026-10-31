@@ -1524,3 +1524,8 @@
 "MFA required": "MFA가 필요합니다"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "프로토콜 상태 코드. 실패 시 401/403/404/409/429/500을 설정합니다. 기본값은 꺼짐"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "로그인, 코드, 조회, 사이트에 대한 IP별 속도 제한. 기본값은 켜짐"
+
+# 菜单搜索
+"Menu search": "메뉴 검색"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "메뉴 검색. 탐색 모음에 메뉴 퍼지 검색 상자를 표시합니다. 기본값은 true"
+"Search menu": "메뉴 검색"

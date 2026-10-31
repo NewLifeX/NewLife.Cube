@@ -1,0 +1,35 @@
+@using System.Text.Json
+@{
+    var set = CubeSetting.Current;
+    if (!set.EnableMenuSearch) return;
+
+    var items = ViewBag.MenuSearch as IList<MenuSearchItem> ?? [];
+    // 默认编码器会转义 < > & 等字符，写入 script 标签不会被提前闭合
+    var json = JsonSerializer.Serialize(items, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+    var mode = ViewData.Model as String ?? "tab";
+    var module = Context.Request.Query["module"].ToString();
+    var shellUrl = Url.Action("Index", "Index", new { area = "Admin" });
+    var title = L.T("Search menu");
+}
+<li class="cube-menu-search-item">
+    <div class="cube-menu-search" data-mode="@mode" data-module="@module" data-shell="@shellUrl">
+        <div class="cube-menu-search-box">
+            <svg class="cube-menu-search-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+            </svg>
+            <input type="text" class="cube-menu-search-input" placeholder="@title" autocomplete="off" aria-label="@title" />
+            <button type="button" class="cube-menu-search-clear" hidden aria-label="@L.T("Clear")">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="cube-menu-search-panel" hidden>
+            <ul class="cube-menu-search-list" role="listbox"></ul>
+            <div class="cube-menu-search-empty" hidden>@L.T("Menu not found")</div>
+        </div>
+        <script type="application/json" class="cube-menu-search-data">@Html.Raw(json)</script>
+    </div>
+</li>

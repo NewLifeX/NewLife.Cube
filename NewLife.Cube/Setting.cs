@@ -400,6 +400,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("UI")]
     public Boolean EnableNewUI { get; set; }
 
+    /// <summary>菜单搜索。在导航栏显示菜单搜索框，支持按显示名/菜单名/地址/拼音模糊搜索，默认true</summary>
+    [Description("Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true")]
+    [Category("UI")]
+    public Boolean EnableMenuSearch { get; set; } = true;
+
     /// <summary>ECharts主题。图表样式主题</summary>
     [Description("ECharts theme. Chart theme")]
     [Category("UI")]

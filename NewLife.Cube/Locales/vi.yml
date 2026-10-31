@@ -1524,3 +1524,8 @@
 "MFA required": "Cần MFA"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Mã trạng thái giao thức. Đặt 401/403/404/409/429/500 khi lỗi; mặc định tắt"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Giới hạn tần suất theo IP cho đăng nhập, mã, tra cứu và trang; mặc định bật"
+
+# 菜单搜索
+"Menu search": "Tìm kiếm menu"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Tìm kiếm menu. Hiển thị hộp tìm kiếm trên thanh điều hướng để tìm kiếm menu mờ; mặc định true"
+"Search menu": "Tìm kiếm menu"

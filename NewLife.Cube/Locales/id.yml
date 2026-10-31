@@ -1524,3 +1524,8 @@
 "MFA required": "MFA diperlukan"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Kode status protokol. Menetapkan 401/403/404/409/429/500 saat gagal; nonaktif secara default"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Batas laju per IP untuk masuk, kode, pencarian, dan situs; aktif secara default"
+
+# 菜单搜索
+"Menu search": "Pencarian menu"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Pencarian menu. Menampilkan kotak pencarian di bilah navigasi untuk pencarian menu samar; bawaan true"
+"Search menu": "Cari menu"

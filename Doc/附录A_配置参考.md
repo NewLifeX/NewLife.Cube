@@ -125,6 +125,7 @@
 | `Layout` | String | "_Layout" | 布局页名称 |
 | `Theme` | String | "" | 主题颜色 |
 | `DisplayName` | String | "魔方" | 系统显示名称 |
+| `EnableMenuSearch` | Boolean | true | 导航栏菜单模糊搜索（显示名/菜单名/URL/拼音，含最近使用），关闭后搜索入口不渲染 |
 
 ### 用户登录设置
 

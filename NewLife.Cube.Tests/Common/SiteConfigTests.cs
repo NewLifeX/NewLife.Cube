@@ -42,6 +42,26 @@ public class SiteConfigTests
     }
 
     [Fact]
+    [DisplayName("站点配置的菜单搜索开关跟随魔方设置")]
+    public void SiteConfig_Should_Expose_MenuSearch_Switch()
+    {
+        var set = CubeSetting.Current;
+        var old = set.EnableMenuSearch;
+        try
+        {
+            set.EnableMenuSearch = false;
+            Assert.False(new SiteConfigModel(null).Features.MenuSearch);
+
+            set.EnableMenuSearch = true;
+            Assert.True(new SiteConfigModel(null).Features.MenuSearch);
+        }
+        finally
+        {
+            set.EnableMenuSearch = old;
+        }
+    }
+
+    [Fact]
     [DisplayName("站点配置应合并租户品牌字段")]
     public void SiteConfig_Should_Merge_Tenant_Brand()
     {

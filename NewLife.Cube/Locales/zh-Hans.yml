@@ -1503,3 +1503,8 @@
 "MFA required": "需要二步验证"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "协议层状态码。失败时同时写入 401/403/404/409/429/500，默认关闭"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "接口限流。按 IP 限制登录、发码、字典与站点接口频率，默认开启"
+
+# 菜单搜索
+"Menu search": "菜单搜索"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "菜单搜索。在导航栏显示菜单搜索框，支持按显示名/菜单名/地址模糊搜索，默认true"
+"Search menu": "搜索菜单"

@@ -2118,3 +2118,8 @@
 "MFA required": "MFA erforderlich"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protokoll-Statuscodes. Setzt bei Fehlern 401/403/404/409/429/500; standardmäßig aus"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Ratenbegrenzung pro IP für Anmeldung, Code, Lookup und Seite; standardmäßig an"
+
+# 菜单搜索
+"Menu search": "Menüsuche"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Menüsuche. Zeigt ein Suchfeld in der Navigationsleiste für die unscharfe Menüsuche an, Standard true"
+"Search menu": "Menü suchen"

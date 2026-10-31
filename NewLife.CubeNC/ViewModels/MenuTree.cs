@@ -33,6 +33,12 @@ public class MenuTree
     /// <summary>可选权限子项</summary>
     public Dictionary<Int32, String> Permissions { get; set; }
 
+    /// <summary>拼音全拼。按库中源文显示名计算，用于前端菜单搜索</summary>
+    public String PinYin { get; set; }
+
+    /// <summary>拼音首字母。按库中源文显示名计算，用于前端菜单搜索</summary>
+    public String Initials { get; set; }
+
     /// <summary>子菜单</summary>
     public IList<MenuTree> Children { get => GetChildren?.Invoke(this) ?? null; set { } }
 

@@ -1524,3 +1524,8 @@
 "MFA required": "MFA szükséges"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protokoll állapotkódok. Hibáknál 401/403/404/409/429/500; alapértelmezés szerint ki"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "IP-nkénti sebességkorlát bejelentkezéshez, kódhoz, kereséshez és oldalhoz; alapértelmezés szerint be"
+
+# 菜单搜索
+"Menu search": "Menükeresés"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Menükeresés. Keresőmezőt jelenít meg a navigációs sávban a menük közelítő kereséséhez; alapértelmezés true"
+"Search menu": "Menü keresése"

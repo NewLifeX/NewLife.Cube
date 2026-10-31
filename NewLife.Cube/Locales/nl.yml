@@ -1524,3 +1524,8 @@
 "MFA required": "MFA vereist"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protocolstatuscodes. Zet 401/403/404/409/429/500 bij fouten; standaard uit"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Snelheidslimiet per IP voor inloggen, code, opzoeken en site; standaard aan"
+
+# 菜单搜索
+"Menu search": "Menu zoeken"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Menu zoeken. Toont een zoekvak in de navigatiebalk voor fuzzy zoeken in menu's; standaard true"
+"Search menu": "Menu zoeken"

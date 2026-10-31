@@ -339,6 +339,52 @@ public List<Menu> GetDynamicMenus()
 
 ---
 
+## 7.6 菜单搜索
+
+菜单规模变大后（数百个菜单），逐级查找效率很低。魔方在导航栏提供菜单模糊搜索：输入关键字即可下拉匹配，选中后直接打开页面并定位模块与左侧菜单。两端都由配置项 `EnableMenuSearch` 控制（UI 分类，默认 `true`），可在「系统设置 → 魔方设置」关闭，关闭后搜索入口整体不渲染。
+
+### 权限口径
+
+搜索结果与导航**同源过滤**，当前用户没有权限的菜单搜不到：
+
+- **MVC 版**：与左侧菜单相同的 `MenuHelper.FilterAvailable` + `IMenuFactory.GetMySubMenus(..., user, true)` 权限链路；开启多租户时按 `MenuHelper.CheckVisible(menu, isTenant)` 过滤租户/后台菜单。
+- **API 版**：直接使用 `/Cube/MenuTree` 返回的菜单树，该接口已按当前用户角色过滤。
+
+同时排除 `Visible=false` 的隐藏菜单、无 `Url` 的分类节点，以及本站未部署控制器的菜单（`IsMenuAvailable`）。搜索不会额外暴露 `FullName`、权限子项等内部结构。
+
+### 匹配规则
+
+- 匹配显示名、菜单名、URL、拼音全拼与首字母，并支持父级路径匹配，忽略大小写；
+- 空格分隔多个关键字时要求全部命中（如「系统 用户」可命中「系统管理 / 用户」，「xitong yh」可命中「系统管理 / 用户」）；
+- 没有使用界面语言的限制：拼音按库中源文显示名（通常是中文）在后端预计算，英文界面下同样可以用 `yonghu`、`yh` 搜索；
+- 结果按「最近使用 → 完全相同 → 显示名前缀 → 首字母前缀 → 全拼前缀 → 名称前缀 → 包含 → 父级路径 → URL 包含」排序，同优先级按路径长度升序；弹窗搜索最多 20 条，侧边栏内联搜索最多 10 条；
+- 最近使用记录保存在浏览器 localStorage（键 `cube-menu-search-recent`，最多 12 条），输入框为空时展示前 8 条。
+
+> 搜索数据是随外壳/菜单树一次性下发的本地索引，数百个菜单（实测 50 个菜单约 12 KB，300 个约 75 KB，gzip 后 10–20 KB）无需额外搜索接口。若菜单规模达到上千条、或需要跨租户/跨数据源检索，再引入服务端搜索接口（如 `/Admin/Index/SearchMenu`、`/Cube/SearchMenu`）替换本地索引即可，前端交互与定位逻辑不变。
+
+### MVC 版实现
+
+外壳页面（Skin=layui 或 ACE）在渲染时由 `IndexController.GetMenuSearch()` 生成全量可搜索菜单，写入 `ViewBag.MenuSearch`，由 `Views/Shared/_MenuSearch.cshtml` 序列化到页面内置的 JSON 中，**不新增任何搜索接口**，前端纯内存过滤：
+
+| 文件 | 说明 |
+| --- | --- |
+| `NewLife.CubeNC/Membership/MenuHelper.BuildSearchMenus` | 权限过滤后的菜单树 → 扁平搜索数据（模块、层级路径、URL 归一化、全拼/首字母） |
+| `NewLife.CubeNC/Views/Shared/_MenuSearch.cshtml` | 搜索框、结果面板、内置 JSON 数据 |
+| `NewLife.CubeNC/wwwroot/Content/js/menu-search.js` | 输入即搜、拼音匹配、最近使用、键盘上下/回车/Esc、点击外部关闭 |
+| `NewLife.CubeNC/wwwroot/Content/menu-search.css` | 主题中立样式，layui 深色头部与 ACE 浅色头部各自覆盖 |
+
+选中结果后的定位行为：
+
+- **同模块**：layui 外壳调用 `cubeAddTab` 打开标签并展开左侧菜单；ACE 外壳设置 `#main` iframe 并高亮左侧菜单。
+- **跨模块**：跳转 `?module=<模块>` 重载外壳，layui 通过 `#<url>`、ACE 通过 `&page=<url>` 自动展开定位。
+- `NewWindow` 菜单直接新窗口打开。
+
+### API 版实现
+
+官方 Vue 皮肤（TopMenu 默认布局、Cyber 布局）直接使用已加载的 `menuStore.flatMenus` 本地搜索，不额外请求接口；`/Cube/MenuTree` 为每个菜单下发 `pinYin`/`initials` 供拼音匹配。开关经 `/Cube/Site` 的 `features.menuSearch` 下发。`SearchBar` 组件在 `icon` 模式点击弹出搜索面板，`box` 模式使用内联下拉；MVC 与 API 两端使用同一 localStorage 键 `cube-menu-search-recent` 保存最近使用记录。
+
+---
+
 ## 菜单最佳实践
 
 ### 1. 菜单层级建议

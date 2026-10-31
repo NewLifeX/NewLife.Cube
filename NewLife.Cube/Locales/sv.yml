@@ -1524,3 +1524,8 @@
 "MFA required": "MFA krävs"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protokollstatuskoder. Sätter 401/403/404/409/429/500 vid fel; av som standard"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Hastighetsgräns per IP för inloggning, kod, uppslag och webbplats; på som standard"
+
+# 菜单搜索
+"Menu search": "Menysökning"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Menysökning. Visar en sökruta i navigeringsfältet för oskarp menysökning; standard true"
+"Search menu": "Sök meny"

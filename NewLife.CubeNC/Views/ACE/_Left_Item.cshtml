@@ -23,7 +23,7 @@
     else
     {
         var target = item.NewWindow ? "_blank" : "main";
-        <a href="@url" target="@target">
+        <a href="@url" target="@target" data-url="@url">
             <i class="menu-icon fa @ico"></i> &nbsp;
             @item.DisplayName
         </a>

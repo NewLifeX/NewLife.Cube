@@ -1524,3 +1524,8 @@
 "MFA required": "二段階認証が必要です"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "プロトコルの状態コード。失敗時に 401/403/404/409/429/500 を設定します。既定では無効です"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "サインイン、コード、検索、サイトの IP ごとのレート制限。既定では有効です"
+
+# 菜单搜索
+"Menu search": "メニュー検索"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "メニュー検索。ナビゲーションバーにメニューのあいまい検索ボックスを表示します。既定値は true"
+"Search menu": "メニューを検索"

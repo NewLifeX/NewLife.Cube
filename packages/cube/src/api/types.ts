@@ -497,6 +497,8 @@ export interface SiteAiFeature {
 export interface SiteFeatures {
   /** AI 能力 */
   ai?: SiteAiFeature;
+  /** 菜单搜索。导航栏是否提供菜单模糊搜索 */
+  menuSearch?: boolean;
 }
 
 /** 站点配置（匿名接口 /Cube/Site） */
@@ -701,5 +703,9 @@ export interface MenuItem {
   visible: boolean;
   newWindow?: boolean;
   permissions?: Record<string, string>;
+  /** 拼音全拼。后端按库中源文显示名计算，用于菜单搜索 */
+  pinYin?: string;
+  /** 拼音首字母。后端按库中源文显示名计算，用于菜单搜索 */
+  initials?: string;
   children: MenuItem[];
 }

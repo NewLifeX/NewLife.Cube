@@ -1524,3 +1524,8 @@
 "MFA required": "MFA gerekli"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protokol durum kodları. Hatalarda 401/403/404/409/429/500 ayarlar; varsayılan olarak kapalı"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Giriş, kod, arama ve site için IP başına hız sınırı; varsayılan olarak açık"
+
+# 菜单搜索
+"Menu search": "Menü arama"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Menü arama. Gezinti çubuğunda bulanık menü araması için bir arama kutusu gösterir; varsayılan true"
+"Search menu": "Menü ara"

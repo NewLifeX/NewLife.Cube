@@ -44,6 +44,9 @@ public class SiteFeaturesModel
     /// <summary>AI 能力</summary>
     public SiteAiFeatureModel Ai { get; set; }
 
+    /// <summary>菜单搜索。导航栏是否提供菜单模糊搜索</summary>
+    public Boolean MenuSearch { get; set; }
+
     /// <summary>实例化站点功能开关</summary>
     /// <param name="set">魔方设置</param>
     public SiteFeaturesModel(CubeSetting set)
@@ -55,6 +58,7 @@ public class SiteFeaturesModel
             SecondaryColor = set.AISecondaryColor,
             MermaidUrl = set.GetMermaidUrl(),
         };
+        MenuSearch = set.EnableMenuSearch;
     }
 }
 

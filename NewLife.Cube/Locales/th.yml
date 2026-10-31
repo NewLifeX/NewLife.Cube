@@ -1524,3 +1524,8 @@
 "MFA required": "ต้องใช้ MFA"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "รหัสสถานะโปรโตคอล ตั้งค่า 401/403/404/409/429/500 เมื่อเกิดข้อผิดพลาด ปิดโดยค่าเริ่มต้น"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "จำกัดอัตราต่อ IP สำหรับการเข้าสู่ระบบ รหัส ค้นหา และเว็บไซต์ เปิดโดยค่าเริ่มต้น"
+
+# 菜单搜索
+"Menu search": "ค้นหาเมนู"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "ค้นหาเมนู แสดงกล่องค้นหาในแถบนำทางสำหรับการค้นหาเมนูแบบคลุมเครือ ค่าเริ่มต้น true"
+"Search menu": "ค้นหาเมนู"

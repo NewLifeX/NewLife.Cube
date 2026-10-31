@@ -48,6 +48,8 @@
     <link rel="stylesheet" href="@res/Cube.css" type="text/css" />
     <!-- ACE 主题现代化样式 -->
     <link rel="stylesheet" href="@res/ace-ui.css" type="text/css" />
+    <!-- 菜单搜索 -->
+    <link rel="stylesheet" href="@res/menu-search.css" type="text/css" />
     <!-- ace settings handler -->
     <script src="@res/ace/js/ace-extra.min.js"></script>
 
@@ -118,6 +120,9 @@
     <script src="@res/artDialog/dist/dialog-plus-min.js"></script>
     <script src="@res/artDialog/dist/dialog.newlife.js"></script>
 
+    <!-- 菜单搜索：纯前端内存过滤，选择后切换 iframe 并定位左侧菜单 -->
+    <script src="@res/js/menu-search.js"></script>
+
     <script type="text/javascript">
         $(function () {
             var $frmContent = $('#main');
@@ -134,6 +139,34 @@
             if (window != top) {
                 top.location.href = location.href;
             }
+
+            // 定位左侧菜单：匹配 data-url，展开父级并高亮
+            window.cubeLocateMenu = function (url) {
+                if (!url) return false;
+
+                var decoded = url;
+                try { decoded = decodeURIComponent(url); } catch (e) { }
+
+                var $a = $('.nav-list a[data-url]').filter(function () {
+                    var v = this.getAttribute('data-url');
+                    return v === url || v === decoded;
+                }).first();
+                if (!$a.length) return false;
+
+                $('.nav-list li').removeClass('active open');
+                $a.parent('li').addClass('active');
+
+                var $group = $a.closest('.submenu').parent('li');
+                if ($group.length) {
+                    $group.addClass('active open');
+                    $group.children('.submenu').show();
+                }
+                return true;
+            };
+
+            // 载入时按 iframe 起始页定位左侧菜单（含跨模块搜索跳转）
+            var initialSrc = $frmContent.attr('src');
+            if (initialSrc) window.cubeLocateMenu(initialSrc);
 
             //菜单active样式
             $(".nav-list").children("li").click(function () {

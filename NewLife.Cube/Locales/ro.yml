@@ -1524,3 +1524,8 @@
 "MFA required": "MFA necesar"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Coduri de stare ale protocolului. Setează 401/403/404/409/429/500 la erori; dezactivat implicit"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Limită pe IP pentru autentificare, cod, căutare și site; activată implicit"
+
+# 菜单搜索
+"Menu search": "Căutare meniu"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Căutare meniu. Afișează o casetă de căutare în bara de navigare pentru căutarea aproximativă a meniurilor; implicit true"
+"Search menu": "Caută meniu"

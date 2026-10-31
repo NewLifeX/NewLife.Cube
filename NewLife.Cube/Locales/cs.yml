@@ -1524,3 +1524,8 @@
 "MFA required": "Vyžadováno MFA"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Stavové kódy protokolu. Při chybách nastaví 401/403/404/409/429/500; ve výchozím nastavení vypnuto"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Limit na IP pro přihlášení, kód, vyhledávání a web; ve výchozím nastavení zapnuto"
+
+# 菜单搜索
+"Menu search": "Hledání menu"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Hledání menu. Zobrazí vyhledávací pole v navigační liště pro přibližné hledání v menu; výchozí true"
+"Search menu": "Hledat menu"

@@ -1524,3 +1524,8 @@
 "MFA required": "Απαιτείται MFA"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Κωδικοί κατάστασης πρωτοκόλλου. Ορίζει 401/403/404/409/429/500 σε σφάλματα· απενεργοποιημένο από προεπιλογή"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Όριο ανά IP για σύνδεση, κωδικό, αναζήτηση και ιστότοπο· ενεργό από προεπιλογή"
+
+# 菜单搜索
+"Menu search": "Αναζήτηση μενού"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Αναζήτηση μενού. Εμφανίζει ένα πλαίσιο αναζήτησης στη γραμμή πλοήγησης για ασαφή αναζήτηση μενού· προεπιλογή true"
+"Search menu": "Αναζήτηση μενού"

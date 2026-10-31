@@ -15,6 +15,10 @@ export interface FlatMenuItem {
   parentId?: string | null;
   visible?: boolean;
   active?: boolean;
+  /** 拼音全拼。后端按库中源文显示名计算，用于菜单搜索 */
+  pinYin?: string;
+  /** 拼音首字母。后端按库中源文显示名计算，用于菜单搜索 */
+  initials?: string;
 }
 
 export interface TreeMenuItem {
@@ -29,6 +33,10 @@ export interface TreeMenuItem {
   children?: TreeMenuItem[];
   visible?: boolean;
   active?: boolean;
+  /** 拼音全拼。后端按库中源文显示名计算，用于菜单搜索 */
+  pinYin?: string;
+  /** 拼音首字母。后端按库中源文显示名计算，用于菜单搜索 */
+  initials?: string;
 }
 
 /** 平铺菜单转换成树形菜单 */
@@ -100,6 +108,9 @@ const covertMenu = (list: Record<string, unknown>[]): TreeMenuItem[] => {
       icon: item[menuConfig.iconField] as string,
       sort: item[menuConfig.sortField] as number,
       visible: item[menuConfig.visibleField as string] as boolean | undefined,
+      // 拼音字段由 Cube 菜单树固定下发（/Cube/MenuTree），不参与可配置字段映射
+      pinYin: item['pinYin'] as string,
+      initials: item['initials'] as string,
       children: children ? covertMenu(children).filter(Boolean) as TreeMenuItem[] : undefined,
     };
   };

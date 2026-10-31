@@ -98,6 +98,8 @@ public class IndexController : ControllerBaseX, IPageDataContext
         var module = Request.GetRequestValue("module");
         //var modules = (user as User)?.GetModules();
         ViewBag.Menus = GetMenu(module);
+        // 菜单搜索数据随外壳页面下发，前端本地模糊搜索，不再额外请求接口
+        if (set.EnableMenuSearch) ViewBag.MenuSearch = GetMenuSearch();
 
         var uAgent = Request.Headers["User-Agent"] + "";
         var isMobile = uAgent.Contains("Android") || uAgent.Contains("iPhone") || uAgent.Contains("iPad");
@@ -540,5 +542,36 @@ public class IndexController : ControllerBaseX, IPageDataContext
             menuTree = MenuHelper.FilterByTenant(menuTree, TenantContext.Current.GetTenantMode() == TenantMode.Tenant);
 
         return menuTree ?? [];
+    }
+
+    /// <summary>构建菜单搜索数据。与左侧导航同源过滤，随外壳页面下发，由前端本地模糊搜索</summary>
+    /// <returns>可搜索菜单列表，永不返回 null</returns>
+    private IList<MenuSearchItem> GetMenuSearch()
+    {
+        var user = _provider.Current as IUser;
+        var fact = ManageProvider.Menu;
+        var set = CubeSetting.Current;
+        var isTenant = TenantContext.CurrentId > 0;
+
+        IList<IMenu> GetMenus(Int32 parentId)
+        {
+            IList<IMenu> menus;
+            if (user?.Role != null)
+                menus = fact.GetMySubMenus(parentId, user, true);
+            else if (parentId > 0)
+                menus = fact.FindByID(parentId)?.Childs;
+            else
+                menus = fact.Root.Childs;
+
+            menus = MenuHelper.FilterAvailable(menus);
+            if (set.EnableTenant) menus = menus.Where(e => MenuHelper.CheckVisible(e, isTenant)).ToList();
+
+            return menus;
+        }
+
+        var list = GetMenus(fact.Root.ID);
+        var modules = user.GetModules();
+
+        return MenuHelper.BuildSearchMenus(list, m => GetMenus(m.ID), modules, url => Url.Content(url));
     }
 }

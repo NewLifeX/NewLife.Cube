@@ -1524,3 +1524,8 @@
 "MFA required": "Потрібен MFA"
 "Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Коди стану протоколу. Встановлює 401/403/404/409/429/500 при помилках; вимкнено за замовчуванням"
 "Rate limit per IP for sign-in, code, lookup and site; default on": "Обмеження на IP для входу, коду, пошуку та сайту; увімкнено за замовчуванням"
+
+# 菜单搜索
+"Menu search": "Пошук меню"
+"Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Пошук меню. Показує поле пошуку в панелі навігації для нечіткого пошуку меню; типово true"
+"Search menu": "Пошук меню"
