@@ -102,8 +102,8 @@ const visible = computed(() => {
   if (props.inline) return hasBusiness || hasPrimary || hasBatch;
 
   const hasStandaloneTools =
-    !flags.value.readOnly &&
-    Boolean(flags.value.importFile || flags.value.downloadTemplate || flags.value.exportFile);
+    Boolean(flags.value.exportFile) ||
+    (!flags.value.readOnly && Boolean(flags.value.importFile || flags.value.downloadTemplate));
 
   return hasBusiness || hasPrimary || hasBatch || hasStandaloneTools;
 });
