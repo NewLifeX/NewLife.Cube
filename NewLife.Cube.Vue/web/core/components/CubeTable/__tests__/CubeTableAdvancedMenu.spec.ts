@@ -58,31 +58,58 @@ afterEach(() => {
 });
 
 describe('CubeTableAdvancedMenu 显隐', () => {
-  it('应该默认显示导入与多格式导出，不显示模板和危险项 当无查询条件时', async () => {
+  it('应该导出在前、导入在后 当菜单打开时', async () => {
     const { wrapper } = mountMenu();
     await openMenu(wrapper);
 
     const texts = menuItemTexts();
-    expect(texts).toContain('导入');
-    expect(texts).toContain('导出 Excel');
-    expect(texts).toContain('导出 Csv');
-    expect(texts).toContain('导出 Json');
-    expect(texts).toContain('导出 Xml');
-    expect(texts).toContain('导出 Zip');
+    // 导出最常用，Excel 排第一；导入是第二组
+    expect(texts[0]).toBe('导出 Excel');
+    expect(texts.slice(0, 5)).toEqual(['导出 Excel', '导出 Csv', '导出 Json', '导出 Xml', '导出 Zip']);
+    expect(texts.indexOf('导入')).toBe(5);
+
+    // 无查询条件且无勾选时不出现删除与开发工具
     expect(texts).not.toContain('删除全部（当前查询结果）');
     expect(texts).not.toContain('备份到服务器');
   });
 
-  it('应该显示删除全部 当有查询条件且有删除权限时', async () => {
-    const { wrapper } = mountMenu({ keyword: 'admin', total: 5 });
+  it('应该显示删除全部 当有数据且有删除权限时，无查询条件时置灰', async () => {
+    const noQuery = mountMenu({ total: 5 });
+    await openMenu(noQuery.wrapper);
+    const disabledItem = Array.from(document.querySelectorAll('.el-dropdown-menu__item')).find(
+      (el) => el.textContent?.includes('删除全部'),
+    );
+    expect(disabledItem).toBeTruthy();
+    expect(disabledItem!.classList.contains('is-disabled')).toBe(true);
+
+    document.body.innerHTML = '';
+    const withQuery = mountMenu({ keyword: 'admin', total: 5 });
+    await openMenu(withQuery.wrapper);
+    const enabledItem = Array.from(document.querySelectorAll('.el-dropdown-menu__item')).find(
+      (el) => el.textContent?.includes('删除全部'),
+    );
+    expect(enabledItem!.classList.contains('is-disabled')).toBe(false);
+  });
+
+  it('应该显示带条数的删除选中 当勾选数据时', async () => {
+    const { wrapper } = mountMenu({ selected: [{ id: 1 }, { id: 2 }], total: 5 });
     await openMenu(wrapper);
-    expect(menuItemTexts()).toContain('删除全部（当前查询结果）');
+
+    expect(menuItemTexts()).toContain('批量删除（2）');
+  });
+
+  it('应该不显示删除选中 当没有勾选时', async () => {
+    const { wrapper } = mountMenu({ total: 5 });
+    await openMenu(wrapper);
+
+    expect(menuItemTexts().some((text) => text.startsWith('批量删除'))).toBe(false);
   });
 
   it('应该只留导出项 当页面只读时', async () => {
     const { wrapper } = mountMenu({
       keyword: 'admin',
       total: 5,
+      selected: [{ id: 1 }],
       setting: { isReadOnly: true },
       flags: { readOnly: true },
     });
@@ -92,6 +119,7 @@ describe('CubeTableAdvancedMenu 显隐', () => {
     expect(texts).toContain('导出 Excel');
     expect(texts).not.toContain('导入');
     expect(texts).not.toContain('删除全部（当前查询结果）');
+    expect(texts.some((text) => text.startsWith('批量删除'))).toBe(false);
   });
 
   it('应该显示开发工具 当 develop 且系统管理员时', async () => {
@@ -159,6 +187,13 @@ describe('CubeTableAdvancedMenu 命令', () => {
     (document.querySelector('.el-message-box__btns .el-button--primary') as HTMLElement)?.click();
     await flushPromises();
     expect(removeAll).toHaveBeenCalled();
+  });
+
+  it('应该走批量删除动作 当选择删除选中时', async () => {
+    const { wrapper, actions } = mountMenu({ selected: [{ id: 1 }], total: 5 });
+
+    await emitCommand(wrapper, 'delete-selected');
+    expect(actions.removeSelectedRows).toHaveBeenCalled();
   });
 
   it('应该把开发工具动作传给引擎 当选择备份时', async () => {

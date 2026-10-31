@@ -136,15 +136,20 @@ test('选中态-批量操作条出现', async ({ page }) => {
   await expect(bar.locator('[data-role="batch-delete"]')).toBeVisible();
 });
 
-test('高级菜单-导入导出收进下拉', async ({ page }) => {
+test('高级菜单-导出在前、导入在后，删除全部无查询条件时置灰', async ({ page }) => {
   await openStory(page, 'CubeTable/Default');
 
   await page.locator('[data-role="advanced"]').click();
-  await expect(page.getByRole('menuitem', { name: '导入' })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: /导出 Excel/ })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: /导出 Csv/ })).toBeVisible();
-  // 无查询条件时不出现「删除全部」
-  await expect(page.getByRole('menuitem', { name: /删除全部/ })).toHaveCount(0);
+  const menu = page.getByRole('menu');
+  const items = menu.getByRole('menuitem');
+  // 导出最常用，Excel 排第一；导入在导出之后
+  await expect(items.first()).toContainText('导出 Excel');
+  await expect(menu.getByRole('menuitem', { name: '导入' })).toBeVisible();
+  await expect(menu.getByRole('menuitem', { name: /导出 Csv/ })).toBeVisible();
+  // 有数据时出现「删除全部」，但无查询条件时置灰（引擎与后端都会拒绝无条件删除）
+  await expect(menu.getByRole('menuitem', { name: /删除全部/ })).toBeDisabled();
+  // 未勾选时不出现「删除选中」
+  await expect(menu.getByRole('menuitem', { name: /批量删除/ })).toHaveCount(0);
 });
 
 test('搜索-收起态第一行三格，展开后每行三列栅格', async ({ page }) => {
