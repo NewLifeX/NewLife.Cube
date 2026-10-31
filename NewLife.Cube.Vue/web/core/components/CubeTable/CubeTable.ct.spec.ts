@@ -304,21 +304,21 @@ test('行为-操作列超过 3 个动作收进更多', async ({ page }) => {
   await openStory(page, 'CubeTable/RowActions');
 
   const firstRow = table(page).locator('.el-table__row').first();
-  // 内置三键直接显示，第 4 个位置是「更多」；追加的两个动作不铺在行里
-  await expect(firstRow.getByRole('button', { name: '查看' })).toBeVisible();
+  // 内置两键 + 首个业务动作直接显示，第 4 个位置是「更多」；「复制」不铺在行里
+  await expect(firstRow.getByRole('button', { name: '查看' })).toHaveCount(0);
   await expect(firstRow.getByRole('button', { name: '编辑' })).toBeVisible();
   await expect(firstRow.getByRole('button', { name: '删除' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '归档' })).toBeVisible();
   await expect(firstRow.getByRole('button', { name: '更多' })).toBeVisible();
   await expect(firstRow.getByRole('button', { name: '复制' })).toHaveCount(0);
   await expect(table(page)).toHaveScreenshot();
 
-  // 点开「更多」出现两个后加动作；点「复制」真触发回调（借新增弹窗作证）
+  // 点开「更多」出现被收起的动作；点「复制」真触发回调（借新增弹窗作证）
   await firstRow.getByRole('button', { name: '更多' }).click();
   // 每行都挂了一个 popper（未展开的也在 DOM 里），必须限定到当前可见的那份
   const popper = page.locator('.el-dropdown__popper:visible');
   const menu = popper.locator('.el-dropdown-menu__item');
   await expect(menu.filter({ hasText: '复制' })).toBeVisible();
-  await expect(menu.filter({ hasText: '归档' })).toBeVisible();
   await expect(popper).toHaveScreenshot();
   await menu.filter({ hasText: '复制' }).click();
   await expect(page.locator('.el-dialog')).toContainText('新增');

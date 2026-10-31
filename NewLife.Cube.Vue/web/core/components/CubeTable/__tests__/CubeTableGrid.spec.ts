@@ -11,8 +11,10 @@ import './domShims';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import ElementPlus, { ElMessage } from 'element-plus';
 import CubeTableGrid from '../CubeTableGrid.vue';
+import { useUserStore } from '../../../stores/user';
 import { clearFieldRenderers, registerFieldRenderer } from '../../../engine/fieldRenderers';
 import { FIELDS, makeFakeActions, makeFakeCtx } from './fakeCtx';
 import { testI18n } from '../../../__tests__/helpers/i18n';
@@ -273,14 +275,29 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     expect(setSelected).toHaveBeenCalledWith([{ Name: 'a' }]);
   });
 
-  it('应该默认给查看/编辑/删除三个动作 当未覆盖操作列时', async () => {
+  it('应该默认给编辑与删除两个动作 当未覆盖操作列时', async () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }, { Name: 'b' }] });
     const text = await textOf(ctx);
     expect(text).toContain('操作');
-    // 两行数据 → 每行一组按钮
-    expect(text.match(/查看/g)?.length).toBe(2);
+    // 两行数据 → 每行一组按钮；有写权限时首键是编辑，不再重复摆一个只读的查看
     expect(text.match(/编辑/g)?.length).toBe(2);
     expect(text.match(/删除/g)?.length).toBe(2);
+    expect(text).not.toContain('查看');
+  });
+
+  it('应该在无编辑权限时把首键换成查看 当用户只有查看权限时', async () => {
+    setActivePinia(createPinia());
+    const user = useUserStore();
+    user.userInfo = { permission: '5#1', isSystemAdmin: false };
+    const ctx = makeFakeCtx({
+      listFields: [FIELDS.name],
+      list: [{ Name: 'a' }],
+      setting: { menuId: 5, requiredPermissions: { update: 4, delete: 8 } },
+    });
+    const text = await textOf(ctx);
+    expect(text).toContain('查看');
+    expect(text).not.toContain('编辑');
+    expect(text).not.toContain('删除');
   });
 
   it('应该只给查看不给编辑删除 当后端 isReadOnly 时', async () => {
@@ -348,10 +365,10 @@ describe('CubeTableGrid 勾选列与操作列', () => {
   });
 
   it('应该按动作文案自适应列宽 当未显式指定 actionWidth 时', async () => {
-    // 内置三键（查看/编辑/删除）按中文文案估算出 220（旧固定 168 会把「删除」裁成只剩图标，
+    // 内置两键（编辑/删除）按中文文案估算出 152（旧固定 168 会把「删除」裁成只剩图标，
     // 而固定 56/单元又放不下英文的 Delete / 德文的 Löschen）
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
-    expect(actionWidthOf(await mountGrid(ctx))).toBe(220);
+    expect(actionWidthOf(await mountGrid(ctx))).toBe(152);
   });
 
   it('应该让页面显式列宽当作下限 当传入更宽的 actionWidth 时', async () => {
@@ -360,15 +377,15 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     expect(actionWidthOf(wrapper)).toBe(300);
   });
 
-  it('应该把追加动作排进「更多」并撑宽列 当内置三键再加 1 个动作时', async () => {
+  it('应该把追加动作直接排在编辑/删除之后 当内置两键再加 1 个动作时', async () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
     const extra = { key: 'dispatch', label: '派工', onClick: vi.fn() };
     const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
-    // 4 个动作已超过直显上限：内置三键铺在行里，派工进「更多」
-    expect(wrapper.text()).not.toContain('派工');
-    expect(wrapper.text()).toContain('更多');
-    // 列宽按「3 个直显 + 更多」的文案估算：4 × 60 + 3 × 8 + 24 = 288
-    expect(actionWidthOf(wrapper)).toBe(288);
+    // 3 个动作还没到直显上限：编辑 / 删除 / 派工 全部铺在行里，不出现「更多」
+    expect(wrapper.text()).toContain('派工');
+    expect(wrapper.text()).not.toContain('更多');
+    // 列宽按 3 个按钮的文案估算：24 + 3 × 60 + 2 × 8 = 220
+    expect(actionWidthOf(wrapper)).toBe(220);
   });
 
   it('应该只露前 3 个加更多 当单行动作超过 3 个时', async () => {
@@ -378,41 +395,48 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     const wrapper = await mountGrid(ctx, { props: { extraRowActions: [dispatch, suspend] } });
     const text = wrapper.text();
     expect(text).toContain('更多');
-    // 第 4、5 个不再直接铺在行里，而是收进下拉（popper 未展开不渲染）
-    expect(text).not.toContain('派工');
+    expect(text).toContain('派工');
+    // 第 4 个不再直接铺在行里，而是收进下拉（popper 未展开不渲染）
     expect(text).not.toContain('停用');
     // 列宽按 4 个单元封顶（3 个直接动作 + 「更多」），不再随动作数继续增长
     expect(actionWidthOf(wrapper)).toBe(288);
     // 下拉 command 接回原动作回调，带的是本行数据
     wrapper.findComponent({ name: 'ElDropdown' }).vm.$emit('command', 0);
     await nextTick();
-    expect(dispatch.onClick).toHaveBeenCalledWith({ Name: 'a' });
+    expect(suspend.onClick).toHaveBeenCalledWith({ Name: 'a' });
+    expect(dispatch.onClick).not.toHaveBeenCalled();
   });
 
   it('应该把行级不可见的追加动作剔除 当 visible 返回 false 时', async () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }, { Name: 'b' }] });
-    const extra = { key: 'dispatch', label: '派工', onClick: vi.fn(), visible: (row: Record<string, unknown>) => row.Name === 'a' };
-    const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
-    // a 行 4 个动作 → 有「更多」；b 行只剩内置 3 个 → 不硬塞空的「更多」
+    const extras = [
+      { key: 'dispatch', label: '派工', onClick: vi.fn(), visible: (row: Record<string, unknown>) => row.Name === 'a' },
+      { key: 'suspend', label: '停用', onClick: vi.fn(), visible: (row: Record<string, unknown>) => row.Name === 'a' },
+    ];
+    const wrapper = await mountGrid(ctx, { props: { extraRowActions: extras } });
+    // a 行 4 个动作 → 有「更多」；b 行只剩内置 2 个 → 不硬塞空的「更多」
     expect(wrapper.findAll('.ctg-more')).toHaveLength(1);
-    expect(wrapper.text()).not.toContain('派工');
+    expect(wrapper.text()).not.toContain('停用');
   });
 
   it('应该给禁用行的追加动作置灰而不是隐藏 当 disabled 返回 true 时', async () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
     // 条目文本带唯一后缀：EP 的 popper 是常驻 DOM 的（未展开也在），
     // 用上一条用例的「派工」查会拿到上一份残留
-    const extra = { key: 'dispatch', label: '派工-禁用', onClick: vi.fn(), disabled: () => true };
-    const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
+    const extras = [
+      { key: 'dispatch', label: '派工', onClick: vi.fn() },
+      { key: 'suspend', label: '停用-禁用', onClick: vi.fn(), disabled: () => true },
+    ];
+    const wrapper = await mountGrid(ctx, { props: { extraRowActions: extras } });
     // 收进「更多」后仍保留 disabled：展开下拉，条目要是置灰态而不是消失
     const dropdown = wrapper.findComponent({ name: 'ElDropdown' });
     dropdown.vm.handleOpen();
     await nextTick();
     await nextTick();
     const items = Array.from(document.body.querySelectorAll('.el-dropdown-menu__item'));
-    const dispatch = items.find((el) => el.textContent?.includes('派工-禁用'));
-    expect(dispatch).toBeTruthy();
-    expect(dispatch!.classList.contains('is-disabled')).toBe(true);
+    const suspend = items.find((el) => el.textContent?.includes('停用-禁用'));
+    expect(suspend).toBeTruthy();
+    expect(suspend!.classList.contains('is-disabled')).toBe(true);
     dropdown.vm.handleClose();
   });
 

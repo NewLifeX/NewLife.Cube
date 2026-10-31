@@ -225,12 +225,13 @@ const METRICS: CubeTableMetric[] = [
   },
 ];
 
-// 测试状态：操作列自适应与「更多」收起 —— 3 内置键 + 2 业务动作，只露前 3 个，第 4 个位置是「更多」
+// 测试状态：操作列自适应与「更多」收起 —— 2 内置键 + 2 业务动作，只露前 3 个，第 4 个位置是「更多」
 const rowActionsCtx = engine();
 const ROW_EXTRA_ACTIONS: CubeRowAction[] = [
-  // 复制借引擎的新增弹窗证明「下拉项真触发了回调」；归档只验证存在，不产生可见变化
-  { key: 'copy', label: '复制', onClick: () => rowActionsCtx.openCreate() },
+  // 归档只验证存在，不产生可见变化
   { key: 'archive', label: '归档', onClick: () => undefined },
+  // 复制排在业务动作第二位，正好落进「更多」：借引擎的新增弹窗证明「下拉项真触发了回调」
+  { key: 'copy', label: '复制', onClick: () => rowActionsCtx.openCreate() },
 ];
 
 /**
@@ -312,7 +313,7 @@ export const stories = [
   // 测试状态：新增弹窗已打开 —— 字段控件与必填星号、底部「取消/保存」
   { id: 'CubeTable/FormDialog', component: CubeTable, props: { context: engine({ openDialog: true }) } },
 
-  // 测试状态：操作列 5 个动作 —— 列宽按 3 直显 + 1 个「更多」封顶，后 2 个收进下拉
+  // 测试状态：操作列 4 个动作 —— 列宽按 3 直显 + 1 个「更多」封顶，第 4 个收进下拉
   { id: 'CubeTable/RowActions', component: CubeTable, props: { context: rowActionsCtx, extraRowActions: ROW_EXTRA_ACTIONS } },
 
   // 测试状态：外部插槽动作 · 文字+图标 —— 4 个动作，前 3 个直显、「归档」进「更多」

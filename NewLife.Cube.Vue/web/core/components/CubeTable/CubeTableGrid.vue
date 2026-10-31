@@ -17,13 +17,13 @@
  *
  * 插槽：
  *   - `#default`：自写列定义（整块接管数据列）；
- *   - `#row-actions="{ row, index }"`：整列操作按钮替换（默认 查看 / 编辑 / 删除）；
+ *   - `#row-actions="{ row, index }"`：整列操作按钮替换（默认 编辑 / 删除，无写权限时首键为 查看）；
  *   - 动态 `#col-<字段名>`（宿主 CubeTable 转发）：单列单元格替换，优先于内置渲染；
  *   - `#empty`：空态替换。
  * 未声明的属性（`row-key`、`stripe`、`size` 等）透传给内部 `el-table`。
  *
  * 操作列宽度按行自适应（`layoutRowActions` / `layoutMeasuredActions`）：
- * - 内置动作（查看/编辑/删除 + `extraRowActions`）按个数估算；
+ * - 内置动作（查看或编辑 + 删除，再加 `extraRowActions`）按个数估算；
  * - `#row-actions` 插槽由页面自定义按钮（纯文字 / 文字+图标 / 纯图标），宽度只能量：
  *   本组件在隐藏探针里渲染「动作最多的那一行」的动作，量出每个按钮与「更多」的真实宽度后再定列宽。
  * 两者同一收起规则：≤3 个全部直显；>3 个只直显前 3 个，第 4 个位置是「更多」下拉。
@@ -87,7 +87,7 @@ const props = withDefaults(
     doubleClickEdit?: boolean;
     /** 操作列宽：不传按行自适应；传了只作下限（实测更宽时以实测为准） */
     actionWidth?: number;
-    /** 操作列追加动作：排在内置 查看/编辑/删除 之后，一起参与自适应与「更多」收起 */
+    /** 操作列追加动作：排在内置 编辑（或查看）/删除 之后，一起参与自适应与「更多」收起 */
     extraRowActions?: CubeRowAction[];
   }>(),
   {
@@ -193,15 +193,19 @@ const slotName = (column: CubeColumnView) => `col-${column.key}`;
 /** 后端下发 view 名时优先交给已注册的字段渲染器，未注册则回退内置控件 */
 const fieldRendererOf = (column: CubeColumnView) => resolveFieldRenderer(column.field);
 
-/** 内置行操作：与旧 Section 组件同口径（查看 / 编辑 / 删除），删除走确认层不直连引擎 */
+/**
+ * 内置行操作：首键在「编辑 / 查看」里二选一，删除走确认层不直连引擎。
+ *
+ * 有写权限的用户点开的就是编辑弹窗，再摆一个只读的「查看」是重复入口；
+ * 没写权限（或整页只读，后端没有写入端点）时首键退回「查看」，保留详情入口。
+ */
 const builtinRowActions = computed<CubeRowAction[]>(() => {
+  const canEdit = !flags.value.readOnly && permissions.canUpdate.value;
   const actions: CubeRowAction[] = [
-    { key: '__view', label: t('perm.detail'), icon: View, type: 'primary', onClick: (row) => void props.ctx.openView(row) },
+    canEdit
+      ? { key: '__edit', label: t('button.edit'), icon: Edit, type: 'primary', onClick: (row) => void props.ctx.openEdit(row) }
+      : { key: '__view', label: t('perm.detail'), icon: View, type: 'primary', onClick: (row) => void props.ctx.openView(row) },
   ];
-  // 整页只读（ReadOnlyEntityController）时后端没有写入端点，只保留查看
-  if (!flags.value.readOnly && permissions.canUpdate.value) {
-    actions.push({ key: '__edit', label: t('button.edit'), icon: Edit, type: 'primary', onClick: (row) => void props.ctx.openEdit(row) });
-  }
   if (!flags.value.readOnly && permissions.canDelete.value) {
     actions.push({ key: '__remove', label: t('button.delete'), icon: Delete, type: 'danger', onClick: (row) => void props.actions.removeRow(row) });
   }

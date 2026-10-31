@@ -131,7 +131,7 @@ const ctx = useCubeEngine({
 | `table` | `{ ctx, data, loading }` | `CubeTableGrid` | 整块换掉表格（卡片视图等） |
 | `default` | `{ visibleColumns, resetColumnVisibility }` | 按元数据生成列 | **业务自写列**，写了它生成列即让位 |
 | `col-<字段名>` | `{ row, column, value, index }` | 内置按控件渲染 | 单列单元格替换，如 `#col-Status` |
-| `row-actions` | `{ row, index, ctx }` | 查看 / 编辑 / 删除 | 操作列按钮整列替换；按钮形态随意（文字 / 文字+图标 / 纯图标），列宽按实测按钮宽度自适应，超过 3 个收进「更多」 |
+| `row-actions` | `{ row, index, ctx }` | 编辑 / 删除（无写权限时首键为查看） | 操作列按钮整列替换；按钮形态随意（文字 / 文字+图标 / 纯图标），列宽按实测按钮宽度自适应，超过 3 个收进「更多」 |
 | `empty` | — | 「暂无数据」/失败原因 | 空态替换 |
 | `footer` | `{ ctx, total, page, pageSize }` | `CubeTablePagination` | 整块换掉分页栏 |
 | `footer-extra` | `{ ctx }` | 无 | 在「共 N 条」旁追加（如已选条数） |
@@ -163,7 +163,7 @@ const ctx = useCubeEngine({
 
 操作列宽度按单行动作自适应，旧固定 168px 会把「删除」裁成只剩图标：
 
-- **≤3 个**动作全部直接显示，列宽逐个增长（3 个即默认列表的 查看/编辑/删除 → 208px）；
+- **≤3 个**动作全部直接显示，列宽逐个增长（2 个即默认列表的 编辑/删除 → 152px）；
 - **超过 3 个**只露前 3 个，第 4 个位置是「更多」下拉，后加的动作一律收进下拉、不再撑宽列；
 - 列宽取当前页各行动作数的最大值；行级 `visible(row)` 藏了动作的那一行不足 4 个时直接全显，不硬塞空的「更多」；
 - 页面显式传 `grid.actionWidth` **只作下限**：实测更宽就以实测为准，写小了也不会把按钮裁成省略号。
@@ -235,7 +235,7 @@ const ctx = useCubeEngine({
 | `exportFormat` | `string` | `'xlsx'` | 导出格式 |
 | `importAccept` | `string` | — | 导入文件类型限制 |
 | `confirmDelete` | `boolean` | — | 删除二次确认（不传跟随 `pageSetting.doubleDelete`） |
-| `extraRowActions` | `CubeRowAction[]` | `[]` | 操作列追加动作：排在内置 查看/编辑/删除 之后，参与列宽自适应与「更多」收起 |
+| `extraRowActions` | `CubeRowAction[]` | `[]` | 操作列追加动作：排在内置 编辑（无写权限时改为查看）/删除 之后，参与列宽自适应与「更多」收起 |
 | `grid` | `CubeGridFlags` | — | 勾选列 / 索引列 / 操作列 / 双击编辑；`grid.actionWidth` 显式指定时不再自适应 |
 
 与 MES 的**有意差异**（其余口径一致）：
