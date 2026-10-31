@@ -226,6 +226,12 @@ export function resolveExistingKey(key: string, model?: Record<string, unknown> 
   if (camel !== key && Object.prototype.hasOwnProperty.call(model, camel)) return camel;
   const pascal = key.charAt(0).toUpperCase() + key.slice(1);
   if (pascal !== key && Object.prototype.hasOwnProperty.call(model, pascal)) return pascal;
+
+  // 「ID」「IP」这类全大写缩写首尾转换后仍是自身，再按大小写不敏感扫描兜底（行数据键为 id/ip）
+  const lowerKey = key.toLowerCase();
+  for (const k in model) {
+    if (k.toLowerCase() === lowerKey && Object.prototype.hasOwnProperty.call(model, k)) return k;
+  }
   return key;
 }
 

@@ -95,7 +95,7 @@
           :key="f.field.name"
           :label="f.field.displayName ?? f.field.name"
         >
-          {{ detailData[f.field.name] }}
+          {{ getFieldValue(detailData, f.field.name) }}
         </n-descriptions-item>
       </n-descriptions>
     </n-modal>
@@ -106,7 +106,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, markRaw, h, watch, type Ref } from 'vue';
 import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type DataTableCreateSummary, type FormInst, type PaginationProps, type UploadCustomRequestOptions } from 'naive-ui';
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
-import { Auth, type DataField, toCamelCase } from '@newlifex/cube';
+import { Auth, type DataField, resolveModelKey } from '@newlifex/cube';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, getFieldValue, type FieldMapping } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
@@ -177,11 +177,8 @@ const editForm = ref<Record<string, any>>({});
 
 /** 字段在表单模型里的键：映射字段落到关联键（RoleName→RoleID），其余按 camelCase */
 function formKeyOf(f: FieldMapping) {
-  const key = f.field.mapField || f.field.name;
-  const camel = toCamelCase(key);
   const model = isEdit.value ? editForm.value : searchForm.value;
-  if (model && key in model) return key;
-  return camel;
+  return resolveModelKey(f.field, model);
 }
 const formFields = computed(() => (isEdit.value ? editFieldMappings.value : addFieldMappings.value));
 
@@ -203,7 +200,7 @@ const statSummary: DataTableCreateSummary | undefined = computed(() => {
       ...Object.fromEntries(
         listFields.value.map((m) => [
           m.field.name,
-          { value: stat[m.field.name] != null ? String(stat[m.field.name]) : '' },
+          { value: getFieldValue(stat, m.field.name) != null ? String(getFieldValue(stat, m.field.name)) : '' },
         ])
       ),
     };

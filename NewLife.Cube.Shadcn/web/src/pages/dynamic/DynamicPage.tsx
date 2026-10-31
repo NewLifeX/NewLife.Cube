@@ -332,7 +332,7 @@ export default function DynamicPage() {
                 <TableCell />
                 {listFields.map((f, idx) => (
                   <TableCell key={f.field.name} className="font-bold">
-                    {idx === 0 ? '合计' : (statData[f.field.name] != null ? String(statData[f.field.name]) : '')}
+                    {idx === 0 ? '合计' : (getFieldValue(statData, f.field.name) != null ? String(getFieldValue(statData, f.field.name)) : '')}
                   </TableCell>
                 ))}
                 <TableCell />
@@ -385,7 +385,7 @@ export default function DynamicPage() {
             {detailFields.map((f) => (
               <div key={f.field.name} className="flex gap-4 border-b py-2 last:border-0">
                 <span className="w-28 shrink-0 font-medium text-muted-foreground">{f.field.displayName ?? f.field.name}</span>
-                <span className="break-all">{String(detailData[f.field.name] ?? '')}</span>
+                <span className="break-all">{String(getFieldValue(detailData, f.field.name) ?? '')}</span>
               </div>
             ))}
           </div>

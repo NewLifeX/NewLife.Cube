@@ -62,7 +62,7 @@
     <t-dialog v-model:visible="showDetail" header="详情" :footer="false" width="600px">
       <t-descriptions :column="1" bordered>
         <t-descriptions-item v-for="f in detailFields" :key="f.name" :label="f.displayName || f.name">
-          {{ detailData[toCamelCase(f.name)] ?? '-' }}
+          {{ getFieldValue(detailData, f.name) ?? '-' }}
         </t-descriptions-item>
       </t-descriptions>
     </t-dialog>
@@ -82,7 +82,7 @@ import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
 import { Auth, type DataField } from '@newlifex/cube';
-import { toCamelCase, resolveColumnWidth, resolveColumnAlign, getFieldValue } from '@newlifex/cube';
+import { toCamelCase, resolveColumnWidth, resolveColumnAlign, getFieldValue, resolveModelKey } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import { Button as TButton } from 'tdesign-vue-next';
 import * as echarts from 'echarts';
@@ -92,7 +92,7 @@ const userStore = useUserStore();
 const typePath = computed(() => '/' + (route.params.type as string || ''));
 
 /** 字段在表单模型里的键：映射字段落到关联键（RoleName→RoleID），其余按 camelCase */
-const formKeyOf = (f: DataField) => toCamelCase(f.mapField || f.name);
+const formKeyOf = (f: DataField) => resolveModelKey(f, formData.value);
 
 // --- 权限控制 ---
 const menuPerms = computed(() => userStore.getMenuPermission(typePath.value));
@@ -160,12 +160,11 @@ const footData = computed(() => {
   if (!statData.value) return [];
   const row: Record<string, any> = {};
   for (const f of listFields.value) {
-    const key = toCamelCase(f.name);
-    row[key] = statData.value[f.name] ?? statData.value[key] ?? '';
+    row[f.name] = getFieldValue(statData.value, f.name) ?? '';
   }
   // 第一列显示"合计"
   const firstField = listFields.value[0];
-  if (firstField) row[toCamelCase(firstField.name)] = '合计';
+  if (firstField) row[firstField.name] = '合计';
   return [row];
 });
 

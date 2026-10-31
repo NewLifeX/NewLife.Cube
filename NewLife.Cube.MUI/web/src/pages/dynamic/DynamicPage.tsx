@@ -334,7 +334,7 @@ export default function DynamicPage() {
                 <TableCell padding="checkbox" />
                 {listFields.map((f, idx) => (
                   <TableCell key={f.field.name} sx={{ fontWeight: 'bold' }}>
-                    {idx === 0 ? '合计' : (statData[f.field.name] != null ? String(statData[f.field.name]) : '')}
+                    {idx === 0 ? '合计' : (getFieldValue(statData, f.field.name) != null ? String(getFieldValue(statData, f.field.name)) : '')}
                   </TableCell>
                 ))}
                 <TableCell />
@@ -385,7 +385,7 @@ export default function DynamicPage() {
               {detailFields.map((f) => (
                 <TableRow key={f.field.name}>
                   <TableCell sx={{ fontWeight: 'bold', width: 120 }}>{f.field.displayName ?? f.field.name}</TableCell>
-                  <TableCell>{String(detailData[f.field.name] ?? '')}</TableCell>
+                  <TableCell>{String(getFieldValue(detailData, f.field.name) ?? '')}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

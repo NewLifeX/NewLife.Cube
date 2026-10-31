@@ -117,7 +117,7 @@
             <tbody>
               <tr v-for="field in detailFields" :key="field.name">
                 <td class="font-weight-bold" style="width: 160px;">{{ field.displayName || field.name }}</td>
-                <td>{{ detailData[field.name] ?? '-' }}</td>
+                <td>{{ getFieldValue(detailData, field.name) ?? '-' }}</td>
               </tr>
             </tbody>
           </v-table>

@@ -90,8 +90,8 @@
     <div v-if="statData" style="padding: 8px 16px; background: var(--color-fill-2); border-radius: 4px; margin-top: -1px;">
       <a-space>
         <span style="font-weight: bold">合计</span>
-        <span v-for="f in listFields.filter(f => statData![f.name] != null)" :key="f.name" style="margin-left: 16px;">
-          {{ f.displayName || f.name }}：{{ statData[f.name] }}
+        <span v-for="f in listFields.filter(f => getFieldValue(statData, f.name) != null)" :key="f.name" style="margin-left: 16px;">
+          {{ f.displayName || f.name }}：{{ getFieldValue(statData, f.name) }}
         </span>
       </a-space>
     </div>
@@ -110,7 +110,7 @@
     <a-modal v-model:visible="detailVisible" title="详情" :width="640" :footer="false">
       <a-descriptions :column="1" bordered>
         <a-descriptions-item v-for="field in detailFields" :key="field.name" :label="field.displayName || field.name">
-          {{ detailData[field.name] ?? '-' }}
+          {{ getFieldValue(detailData, field.name) ?? '-' }}
         </a-descriptions-item>
       </a-descriptions>
     </a-modal>

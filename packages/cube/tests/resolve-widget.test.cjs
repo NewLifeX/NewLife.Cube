@@ -12,6 +12,8 @@ const {
   joinTimeSpan,
   mapValueKey,
   isNumericMapKey,
+  resolveExistingKey,
+  resolveModelKey,
 } = require('../dist/index.cjs');
 
 test('只读字段与主键映射为 readonly', () => {
@@ -275,4 +277,26 @@ test('映射键助手：mapValueKey 与 isNumericMapKey', () => {
   assert.equal(isNumericMapKey({ name: 'RoleName', mapTypeName: 'Int32' }), true);
   assert.equal(isNumericMapKey({ name: 'RoleName', mapTypeName: 'String' }), false);
   assert.equal(isNumericMapKey({ name: 'RoleName' }), false);
+});
+
+test('模型键归一：resolveExistingKey 与 resolveModelKey', () => {
+  // 精确命中优先
+  assert.equal(resolveExistingKey('RoleID', { RoleID: 3 }), 'RoleID');
+  // PascalCase → camelCase
+  assert.equal(resolveExistingKey('OnlineTime', { onlineTime: 60 }), 'onlineTime');
+  // camelCase → PascalCase
+  assert.equal(resolveExistingKey('onlineTime', { OnlineTime: 60 }), 'OnlineTime');
+  // 全大写缩写（ID/IP/URL）首尾转换无效，按大小写不敏感兜底
+  assert.equal(resolveExistingKey('ID', { id: 2 }), 'id');
+  assert.equal(resolveExistingKey('IP', { ip: '127.0.0.1' }), 'ip');
+  assert.equal(resolveExistingKey('ID', { iD: 2 }), 'iD');
+  // 模型为空或键不存在时返回原键
+  assert.equal(resolveExistingKey('Name', {}), 'Name');
+  assert.equal(resolveExistingKey('Name', null), 'Name');
+  assert.equal(resolveExistingKey('', { name: 'x' }), '');
+
+  // 映射字段取关联键（RoleName → RoleID），再按模型大小写归一
+  assert.equal(resolveModelKey({ name: 'RoleName', mapField: 'RoleID' }, { roleID: 3 }), 'roleID');
+  assert.equal(resolveModelKey({ name: 'RoleName', mapField: 'RoleID' }, { id: 3 }), 'RoleID');
+  assert.equal(resolveModelKey({ name: 'Name' }, { name: 'Stone' }), 'name');
 });

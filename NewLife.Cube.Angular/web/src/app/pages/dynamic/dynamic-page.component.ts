@@ -164,7 +164,7 @@ import * as echarts from 'echarts';
             <td></td>
             @for (field of listFields; track field.name; let idx = $index) {
               @if (field.visible !== false) {
-                <td>{{ idx === 0 ? '合计' : (statData[field.name] != null ? statData[field.name] : '') }}</td>
+                <td>{{ idx === 0 ? '合计' : (cellValue(statData, field) ?? '') }}</td>
               }
             }
             <td></td>
@@ -199,7 +199,7 @@ import * as echarts from 'echarts';
         <nz-descriptions nzBordered [nzColumn]="1">
           @for (field of detailFields; track field.name) {
             <nz-descriptions-item [nzTitle]="field.displayName || field.name">
-              {{ detailData[field.name] ?? '-' }}
+              {{ cellValue(detailData, field) ?? '-' }}
             </nz-descriptions-item>
           }
         </nz-descriptions>
@@ -482,7 +482,7 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
   }
 
   async handleDelete(row: Record<string, any>) {
-    await this.api.page.remove(this.typePath, row['id']);
+    await this.api.page.remove(this.typePath, this.rowId(row));
     this.message.success('删除成功');
     this.loadData();
   }

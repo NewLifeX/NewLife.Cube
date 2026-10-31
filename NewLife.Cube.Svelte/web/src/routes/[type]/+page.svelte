@@ -5,7 +5,7 @@
   import { getMenuPermission } from '$lib/stores/user';
   import FieldInput from '$lib/components/FieldInput.svelte';
   import { Auth, type DataField } from '@newlifex/cube';
-  import { toCamelCase, resolveColumnWidth, resolveColumnAlign, getFieldValue } from '@newlifex/cube';
+  import { toCamelCase, resolveColumnWidth, resolveColumnAlign, getFieldValue, resolveModelKey } from '@newlifex/cube';
   import { validateRequiredFields } from '@newlifex/cube';
   import * as echarts from 'echarts';
 
@@ -363,7 +363,7 @@
           <tr class="border-t" style="border-color: var(--border); background: var(--bg-secondary); font-weight: bold;">
             <td class="px-3 py-2.5"></td>
             {#each listFields as f, idx}
-              <td class="px-3 py-2.5">{idx === 0 ? '合计' : (statData[f.name] != null ? String(statData[f.name]) : '')}</td>
+              <td class="px-3 py-2.5">{idx === 0 ? '合计' : (getFieldValue(statData, f.name) != null ? String(getFieldValue(statData, f.name)) : '')}</td>
             {/each}
             <td class="px-3 py-2.5"></td>
           </tr>
@@ -397,7 +397,7 @@
         {#each editFields as f}
           <div>
             <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">{f.displayName || f.name}</label>
-            <FieldInput field={f} bind:value={formData[toCamelCase(f.mapField || f.name)]} />
+            <FieldInput field={f} bind:value={formData[resolveModelKey(f, formData)]} />
           </div>
         {/each}
       </div>
@@ -418,7 +418,7 @@
         {#each detailFields as f}
           <div class="flex">
             <span class="w-32 text-sm flex-shrink-0" style="color: var(--text-secondary)">{f.displayName || f.name}</span>
-            <span class="text-sm">{detailData[toCamelCase(f.name)] ?? '-'}</span>
+            <span class="text-sm">{getFieldValue(detailData, f.name) ?? '-'}</span>
           </div>
         {/each}
       </div>
