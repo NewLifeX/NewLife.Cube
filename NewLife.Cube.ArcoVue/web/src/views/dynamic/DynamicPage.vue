@@ -15,7 +15,7 @@
     <a-card v-if="searchFields.length" style="margin-bottom: 16px;">
       <a-form :model="searchForm" layout="inline" @submit="handleSearch">
         <a-form-item v-for="field in searchFields" :key="field.name" :label="field.displayName || field.name">
-          <FieldInput :field="field" :value="searchForm[field.name]" @update:value="(v: any) => (searchForm[field.name] = v)" />
+          <FieldInput :field="field" :value="searchForm[formKeyOf(field, searchForm)]" @update:value="(v: any) => (searchForm[formKeyOf(field, searchForm)] = v)" />
         </a-form-item>
         <a-form-item>
           <a-space>
@@ -101,7 +101,7 @@
       <a-alert v-if="formError" type="error" :title="formError" show-icon style="margin-bottom: 12px" />
       <a-form :model="formData" layout="vertical">
         <a-form-item v-for="field in formFields" :key="field.name" :label="field.displayName || field.name" :required="!!field.required">
-          <FieldInput :field="field" :value="formData[field.name]" @update:value="(v: any) => (formData[field.name] = v)" />
+          <FieldInput :field="field" :value="formData[formKeyOf(field, formData)]" @update:value="(v: any) => (formData[formKeyOf(field, formData)] = v)" />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -122,7 +122,7 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, m
 import { useRoute } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import { IconSearch, IconPlus, IconDelete, IconDown } from '@arco-design/web-vue/es/icon';
-import { Auth, type DataField } from '@newlifex/cube';
+import { Auth, type DataField, resolveModelKey } from '@newlifex/cube';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
@@ -164,6 +164,9 @@ const pagination = reactive({
 
 // 搜索
 const searchForm = reactive<Record<string, any>>({});
+
+/** 字段在模型里的读写键：映射字段落到关联键，并兼容 camelCase/PascalCase */
+const formKeyOf = (field: DataField, model: Record<string, any>) => resolveModelKey(field, model);
 
 // 表单弹窗
 const formVisible = ref(false);

@@ -21,7 +21,7 @@
       <v-form @submit.prevent="handleSearch">
         <v-row dense>
           <v-col v-for="field in searchFields" :key="field.name" cols="12" sm="6" md="3">
-            <FieldInput :field="field" :value="searchForm[field.name]" @update:value="(v: any) => (searchForm[field.name] = v)" />
+            <FieldInput :field="field" :value="searchForm[formKeyOf(field, searchForm)]" @update:value="(v: any) => (searchForm[formKeyOf(field, searchForm)] = v)" />
           </v-col>
           <v-col cols="12" sm="6" md="3" class="d-flex align-center ga-2">
             <v-btn type="submit" color="primary" prepend-icon="mdi-magnify">搜索</v-btn>
@@ -95,7 +95,7 @@
           <v-form>
             <v-row dense>
               <v-col v-for="field in formFields" :key="field.name" cols="12">
-                <FieldInput :field="field" :value="formData[field.name]" @update:value="(v: any) => (formData[field.name] = v)" />
+                <FieldInput :field="field" :value="formData[formKeyOf(field, formData)]" @update:value="(v: any) => (formData[formKeyOf(field, formData)] = v)" />
               </v-col>
             </v-row>
           </v-form>
@@ -147,7 +147,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, markRaw } from 'vue';
 import { useRoute } from 'vue-router';
-import { Auth, type DataField } from '@newlifex/cube';
+import { Auth, type DataField, resolveModelKey } from '@newlifex/cube';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
@@ -194,6 +194,9 @@ const statData = ref<Record<string, unknown> | null>(null);
 
 // 搜索
 const searchForm = reactive<Record<string, any>>({});
+
+/** 字段在模型里的读写键：映射字段落到关联键，并兼容 camelCase/PascalCase */
+const formKeyOf = (field: DataField, model: Record<string, any>) => resolveModelKey(field, model);
 
 // 表单弹窗
 const formDialogVisible = ref(false);

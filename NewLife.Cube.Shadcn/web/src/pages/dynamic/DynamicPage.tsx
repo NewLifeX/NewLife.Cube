@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import {
   Plus, Trash2, Download, Upload, Search, RefreshCw, Eye, Pencil, ChevronDown,
 } from 'lucide-react';
-import { Auth } from '@newlifex/cube';
+import { Auth, resolveModelKey } from '@newlifex/cube';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/cube';
 import { normalizeChartList, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
@@ -211,8 +211,8 @@ export default function DynamicPage() {
             <div key={f.field.name} className="min-w-40">
               <FieldInput
                 mapping={f}
-                value={searchForm[f.field.name] ?? ''}
-                onChange={(v) => setSearchForm((prev) => ({ ...prev, [f.field.name]: v }))}
+                value={searchForm[resolveModelKey(f.field, searchForm)] ?? ''}
+                onChange={(v) => setSearchForm((prev) => ({ ...prev, [resolveModelKey(f.field, prev)]: v }))}
               />
             </div>
           ))}
@@ -364,7 +364,7 @@ export default function DynamicPage() {
           ) : null}
           <div className="space-y-4 py-2">
             {formFields.map((f) => (
-              <FieldInput key={f.field.name} mapping={f} value={editForm[f.field.name] ?? ''} onChange={(v) => setEditForm((prev) => ({ ...prev, [f.field.name]: v }))} />
+              <FieldInput key={f.field.name} mapping={f} value={editForm[resolveModelKey(f.field, editForm)] ?? ''} onChange={(v) => setEditForm((prev) => ({ ...prev, [resolveModelKey(f.field, prev)]: v }))} />
             ))}
           </div>
           <DialogFooter>

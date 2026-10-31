@@ -15,7 +15,7 @@
     <n-card v-if="searchFields.length" size="small" style="margin-bottom: 16px">
       <n-form ref="searchFormRef" :model="searchForm" label-placement="left" inline>
         <n-form-item v-for="f in searchFields" :key="f.field.name" :label="f.field.displayName ?? f.field.name">
-          <field-input v-model:value="searchForm[f.field.name]" :mapping="f" style="width: 180px" />
+          <field-input v-model:value="searchForm[formKeyOf(f)]" :mapping="f" style="width: 180px" />
         </n-form-item>
         <n-form-item>
           <n-space>
@@ -82,7 +82,7 @@
           :path="f.field.name"
           :rule="f.field.required ? { required: true, message: `${f.field.displayName} 不能为空` } : undefined"
         >
-          <field-input v-model:value="editForm[f.field.name]" :mapping="f" />
+          <field-input v-model:value="editForm[formKeyOf(f)]" :mapping="f" />
         </n-form-item>
       </n-form>
     </n-modal>
@@ -106,7 +106,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, markRaw, h, watch, type Ref } from 'vue';
 import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type DataTableCreateSummary, type FormInst, type PaginationProps, type UploadCustomRequestOptions } from 'naive-ui';
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
-import { Auth, type DataField } from '@newlifex/cube';
+import { Auth, type DataField, toCamelCase } from '@newlifex/cube';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
@@ -174,6 +174,15 @@ const formVisible = ref(false);
 const isEdit = ref(false);
 const editFormRef = ref<FormInst | null>(null);
 const editForm = ref<Record<string, any>>({});
+
+/** 字段在表单模型里的键：映射字段落到关联键（RoleName→RoleID），其余按 camelCase */
+function formKeyOf(f: FieldMapping) {
+  const key = f.field.mapField || f.field.name;
+  const camel = toCamelCase(key);
+  const model = isEdit.value ? editForm.value : searchForm.value;
+  if (model && key in model) return key;
+  return camel;
+}
 const formFields = computed(() => (isEdit.value ? editFieldMappings.value : addFieldMappings.value));
 
 // --- 详情弹窗 ---
@@ -288,6 +297,7 @@ async function loadFields() {
   const editData = pageMeta.editForm ?? pageMeta.fields?.form?.editForm ?? [];
   const detailData = pageMeta.detail ?? pageMeta.fields?.form?.detail ?? [];
 
+  /** 字段在表单模型里的键：映射字段落到关联键（RoleName→RoleID），其余按 camelCase */
   listFields.value = resolveWidgets(listData);
   searchFields.value = resolveWidgets(searchData);
   addFieldMappings.value = resolveWidgets(addData);

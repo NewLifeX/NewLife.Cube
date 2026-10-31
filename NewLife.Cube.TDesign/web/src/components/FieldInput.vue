@@ -1,43 +1,301 @@
 <template>
-  <t-switch v-if="wt === 'switch'" :value="!!modelValue" @change="(v: boolean) => emit('update:modelValue', v)" />
-  <t-select v-else-if="wt === 'select'"
-    :value="modelValue" @change="(v: any) => emit('update:modelValue', v)"
-    :placeholder="'请选择' + (field.displayName || field.name)" clearable style="width: 100%">
+  <!-- 地区级联（ItemType=area/area1~4）：按层级渲染多级下拉，提交最后一级编号 -->
+  <div v-if="wt === 'area'" class="field-area">
+    <t-select
+      v-for="(levelOptions, level) in areaOptions"
+      :key="level"
+      :value="areaPath[level] ?? ''"
+      clearable
+      style="width: 100%; margin-bottom: 4px"
+      :placeholder="level === 0 ? '请选择省份' : '请选择下级'"
+      @change="(v: any) => onAreaChange(level, v)"
+    >
+      <t-option v-for="opt in levelOptions" :key="opt.id" :value="opt.id" :label="opt.name" />
+    </t-select>
+  </div>
+
+  <!-- 时长（ItemType=TimeSpan）：时:分:秒，对外仍是原始存储值 -->
+  <div v-else-if="wt === 'timeSpan'" class="field-timespan">
+    <t-input-number
+      v-for="(part, index) in spanPartsList"
+      :key="index"
+      :value="part.value"
+      :min="0"
+      :max="part.max"
+      :decimal-places="part.precision"
+      :placeholder="part.placeholder"
+      theme="normal"
+      style="width: 88px"
+      @change="(v: any) => onSpanChange(index, v)"
+    />
+  </div>
+
+  <t-switch v-else-if="wt === 'switch'" :value="!!modelValue" @change="(v: any) => emit('update:modelValue', v)" />
+
+  <t-select
+    v-else-if="isSelect"
+    :value="selectValue"
+    :multiple="isMulti"
+    clearable
+    style="width: 100%"
+    :placeholder="'请选择' + label"
+    @change="(v: any) => emit('update:modelValue', normalizeSelectOut(v))"
+  >
     <t-option v-for="opt in options" :key="opt.value" :value="opt.value" :label="opt.label" />
   </t-select>
-  <t-input-number v-else-if="wt === 'number'"
-    :value="modelValue" @change="(v: number) => emit('update:modelValue', v)"
-    :placeholder="'请输入' + (field.displayName || field.name)" theme="normal" style="width: 100%" />
-  <t-date-picker v-else-if="wt === 'datetime'"
-    :value="modelValue" @change="(v: any) => emit('update:modelValue', v)"
-    enable-time-picker :placeholder="'请选择' + (field.displayName || field.name)" style="width: 100%" />
-  <t-date-picker v-else-if="wt === 'date'"
-    :value="modelValue" @change="(v: any) => emit('update:modelValue', v)"
-    :placeholder="'请选择' + (field.displayName || field.name)" style="width: 100%" />
-  <t-textarea v-else-if="wt === 'textarea' || wt === 'html'"
-    :value="modelValue" @change="(v: string) => emit('update:modelValue', v)"
-    :placeholder="'请输入' + (field.displayName || field.name)" :autosize="{ minRows: 3 }" />
-  <t-input v-else-if="wt === 'password'" type="password"
-    :value="modelValue" @change="(v: string) => emit('update:modelValue', v)"
-    :placeholder="'请输入' + (field.displayName || field.name)" />
-  <span v-else-if="wt === 'readonly'" style="color: var(--td-text-color-secondary)">{{ modelValue ?? '-' }}</span>
-  <t-input v-else
-    :value="modelValue" @change="(v: string) => emit('update:modelValue', v)"
-    :placeholder="'请输入' + (field.displayName || field.name)" />
+
+  <t-input-number
+    v-else-if="wt === 'number' || wt === 'mapInput'"
+    :value="toNumber(modelValue)"
+    :decimal-places="wt === 'number' ? precisionOf : 0"
+    :placeholder="'请输入' + label"
+    theme="normal"
+    style="width: 100%"
+    @change="(v: any) => emit('update:modelValue', v ?? '')"
+  />
+
+  <t-date-picker
+    v-else-if="wt === 'datetime'"
+    :value="modelValue"
+    enable-time-picker
+    clearable
+    style="width: 100%"
+    :placeholder="'请选择' + label"
+    @change="(v: any) => emit('update:modelValue', v ?? '')"
+  />
+
+  <t-date-picker
+    v-else-if="wt === 'date'"
+    :value="modelValue"
+    clearable
+    style="width: 100%"
+    :placeholder="'请选择' + label"
+    @change="(v: any) => emit('update:modelValue', v ?? '')"
+  />
+
+  <t-time-picker
+    v-else-if="wt === 'time'"
+    :value="modelValue"
+    clearable
+    style="width: 100%"
+    :placeholder="'请选择' + label"
+    @change="(v: any) => emit('update:modelValue', v ?? '')"
+  />
+
+  <t-textarea
+    v-else-if="isTextarea"
+    :value="modelValue ?? ''"
+    :placeholder="'请输入' + label"
+    :autosize="{ minRows: 3 }"
+    @change="(v: any) => emit('update:modelValue', v)"
+  />
+
+  <t-input
+    v-else-if="wt === 'password'"
+    type="password"
+    :value="modelValue ?? ''"
+    :placeholder="'请输入' + label"
+    @change="(v: any) => emit('update:modelValue', v)"
+  />
+
+  <t-input
+    v-else-if="wt === 'color'"
+    :value="modelValue ?? ''"
+    placeholder="请输入颜色值，如 #0052d9"
+    @change="(v: any) => emit('update:modelValue', v)"
+  >
+    <template #prefix-icon>
+      <span class="field-color-dot" :style="{ background: modelValue || '#000000' }" />
+    </template>
+  </t-input>
+
+  <!-- 图片 / 附件：字段值即地址，给出预览与地址输入（上传由业务页处理） -->
+  <div v-else-if="wt === 'image'" class="field-image">
+    <img v-if="modelValue" :src="modelValue" alt="" class="field-image__preview" />
+    <t-input :value="modelValue ?? ''" placeholder="图片地址" @change="(v: any) => emit('update:modelValue', v)" />
+  </div>
+
+  <t-input
+    v-else-if="wt === 'file'"
+    :value="modelValue ?? ''"
+    placeholder="附件地址"
+    @change="(v: any) => emit('update:modelValue', v)"
+  />
+
+  <span v-else-if="wt === 'readonly'" class="field-readonly">{{ modelValue ?? '-' }}</span>
+
+  <t-input
+    v-else
+    :value="modelValue ?? ''"
+    :type="inputType"
+    :placeholder="'请输入' + label"
+    @change="(v: any) => emit('update:modelValue', v)"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { DataField } from '@newlifex/cube';
-import { resolveWidget } from '@newlifex/cube';
+import { computed, onMounted, ref, watch } from 'vue';
+import type { AreaOption, DataField, TimeSpanParts, TimeSpanUnit } from '@newlifex/cube';
+import {
+  createAreaCascade,
+  joinTimeSpan,
+  resolveWidget,
+  splitTimeSpan,
+  timeSpanUnitOfDescription,
+} from '@newlifex/cube';
+import { api } from '@/api';
 
-const props = defineProps<{ field: DataField; modelValue: any }>();
+const props = defineProps<{ field: DataField; modelValue: any; disabled?: boolean }>();
 const emit = defineEmits<{ 'update:modelValue': [v: any] }>();
 
-const wt = computed(() => resolveWidget(props.field).widget);
+const mapping = computed(() => resolveWidget(props.field));
+const wt = computed(() => mapping.value.widget);
+const label = computed(() => props.field.displayName || props.field.name);
+
+const isSelect = computed(() => ['select', 'lov', 'lovMulti', 'mapSelect'].includes(wt.value));
+const isMulti = computed(() => wt.value === 'lovMulti' || !!mapping.value.props?.multiple);
+const isTextarea = computed(() => ['textarea', 'html', 'markdown', 'code', 'json'].includes(wt.value));
+
+const inputType = computed(() => {
+  switch (wt.value) {
+    case 'email':
+      return 'email';
+    case 'phone':
+      return 'tel';
+    case 'url':
+      return 'url';
+    default:
+      return 'text';
+  }
+});
+
+const precisionOf = computed(() => Number(mapping.value.props?.precision ?? props.field.scale ?? 0) || 0);
+
+function toNumber(v: any): number | undefined {
+  if (v === null || v === undefined || v === '') return undefined;
+  const n = Number(v);
+  return Number.isNaN(n) ? undefined : n;
+}
 
 const options = computed(() => {
-  if (!props.field.dataSource) return [];
-  return Object.entries(props.field.dataSource).map(([value, label]) => ({ value, label }));
+  const ds = (mapping.value.props?.dataSource ?? props.field.dataSource) as Record<string, string> | undefined;
+  if (!ds) return [] as { value: string; label: string }[];
+  return Object.entries(ds).map(([value, text]) => ({ value, label: text }));
 });
+
+function toMultiArray(v: any): string[] {
+  if (v == null || v === '') return [];
+  if (Array.isArray(v)) return v.map(String);
+  const text = String(v).trim();
+  if (!text) return [];
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) return parsed.map(String);
+  } catch {
+    /* 非 JSON，按逗号串处理 */
+  }
+  return text.split(',').filter(Boolean);
+}
+
+const selectValue = computed(() => (isMulti.value ? toMultiArray(props.modelValue) : (props.modelValue ?? '')));
+
+function normalizeSelectOut(v: any): any {
+  if (!isMulti.value) return v ?? '';
+  const array = Array.isArray(v) ? v : toMultiArray(v);
+  return array.join(',');
+}
+
+// ── 时长 ──
+const spanUnit = computed<TimeSpanUnit>(
+  () => (mapping.value.props?.unit as TimeSpanUnit) ?? timeSpanUnitOfDescription(props.field.description),
+);
+const spanParts = ref<TimeSpanParts>(splitTimeSpan(props.modelValue, spanUnit.value));
+watch(
+  () => props.modelValue,
+  (v) => {
+    spanParts.value = splitTimeSpan(v, spanUnit.value);
+  },
+);
+
+const spanPartsList = computed(() => [
+  { value: spanParts.value.hours, max: undefined, precision: 0, placeholder: '时' },
+  { value: spanParts.value.minutes, max: 59, precision: 0, placeholder: '分' },
+  { value: spanParts.value.seconds, max: 59, precision: spanUnit.value === 'milliseconds' ? 3 : 0, placeholder: '秒' },
+]);
+
+const SPAN_KEYS: (keyof TimeSpanParts)[] = ['hours', 'minutes', 'seconds'];
+
+function onSpanChange(index: number, v: any) {
+  const next = { ...spanParts.value, [SPAN_KEYS[index]]: Number(v ?? 0) || 0 };
+  spanParts.value = next;
+  emit('update:modelValue', joinTimeSpan(next, spanUnit.value));
+}
+
+// ── 地区级联 ──
+const areaOptions = ref<AreaOption[][]>([]);
+const areaPath = ref<number[]>([]);
+let areaCascade: ReturnType<typeof createAreaCascade> | null = null;
+
+function applyArea(state: { options: AreaOption[][]; path: number[] }) {
+  areaOptions.value = state.options;
+  areaPath.value = state.path;
+}
+
+async function initArea(value: any) {
+  areaCascade ??= createAreaCascade(api.area, Number(mapping.value.props?.areaLevel ?? 3) || 3);
+  applyArea(await areaCascade.init(toNumber(value) ?? 0));
+}
+
+async function onAreaChange(level: number, v: any) {
+  if (!areaCascade) return;
+  const state = await areaCascade.selectLevel(level, v === '' || v == null ? null : Number(v));
+  applyArea(state);
+  emit('update:modelValue', state.value ?? '');
+}
+
+onMounted(() => {
+  if (wt.value === 'area') void initArea(props.modelValue);
+});
+
+watch(
+  () => props.modelValue,
+  (v) => {
+    if (wt.value !== 'area' || !areaCascade) return;
+    const current = areaCascade.snapshot.value;
+    if (Number(v ?? 0) !== Number(current ?? 0)) void initArea(v);
+  },
+);
 </script>
+
+<style scoped>
+.field-timespan {
+  display: flex;
+  gap: 6px;
+}
+
+.field-color-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--td-component-border);
+}
+
+.field-readonly {
+  color: var(--td-text-color-secondary);
+}
+
+.field-image {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.field-image__preview {
+  max-width: 72px;
+  max-height: 72px;
+  border-radius: 4px;
+  border: 1px solid var(--td-component-border);
+}
+</style>

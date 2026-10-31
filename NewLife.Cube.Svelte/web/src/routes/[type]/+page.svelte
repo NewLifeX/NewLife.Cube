@@ -397,7 +397,7 @@
         {#each editFields as f}
           <div>
             <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">{f.displayName || f.name}</label>
-            <FieldInput field={f} bind:value={formData[toCamelCase(f.name)]} />
+            <FieldInput field={f} bind:value={formData[toCamelCase(f.mapField || f.name)]} />
           </div>
         {/each}
       </div>

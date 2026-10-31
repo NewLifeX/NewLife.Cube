@@ -18,7 +18,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
-import { Auth, type DataField } from '@newlifex/cube';
+import { Auth, resolveModelKey, type DataField } from '@newlifex/cube';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
 import { normalizeChartList, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import { ApiService } from '../../services/api.service';
@@ -57,8 +57,8 @@ import * as echarts from 'echarts';
             <nz-form-item>
               <nz-form-label>{{ field.displayName || field.name }}</nz-form-label>
               <nz-form-control>
-                <app-field-input [field]="field" [value]="searchForm[field.name]"
-                  (valueChange)="searchForm[field.name] = $event"></app-field-input>
+                <app-field-input [field]="field" [value]="searchForm[formKeyOf(field, searchForm)]"
+                  (valueChange)="searchForm[formKeyOf(field, searchForm)] = $event"></app-field-input>
               </nz-form-control>
             </nz-form-item>
           }
@@ -184,8 +184,8 @@ import * as echarts from 'echarts';
             <nz-form-item>
               <nz-form-label [nzRequired]="!!field.required">{{ field.displayName || field.name }}</nz-form-label>
               <nz-form-control>
-                <app-field-input [field]="field" [value]="formData[field.name]"
-                  (valueChange)="formData[field.name] = $event"></app-field-input>
+                <app-field-input [field]="field" [value]="formData[formKeyOf(field, formData)]"
+                  (valueChange)="formData[formKeyOf(field, formData)] = $event"></app-field-input>
               </nz-form-control>
             </nz-form-item>
           }
@@ -212,6 +212,11 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
   @ViewChildren('chartContainer') chartContainers!: QueryList<ElementRef<HTMLDivElement>>;
 
   typePath = '';
+
+  /** 字段在模型里的读写键：映射字段落到关联键（如 RoleName→RoleID），并兼容大小写 */
+  formKeyOf(field: DataField, model: Record<string, any>): string {
+    return resolveModelKey(field, model);
+  }
   listFields: DataField[] = [];
   searchFields: DataField[] = [];
   addFields: DataField[] = [];

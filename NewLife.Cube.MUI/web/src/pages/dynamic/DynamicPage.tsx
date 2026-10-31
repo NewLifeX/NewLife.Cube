@@ -7,7 +7,7 @@ import {
   TableHead, TableRow, TablePagination, TextField, Toolbar, Tooltip, Typography, Alert,
 } from '@mui/material';
 import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon, ArrowDropDown } from '@mui/icons-material';
-import { Auth, type DataField } from '@newlifex/cube';
+import { Auth, resolveModelKey, type DataField } from '@newlifex/cube';
 import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
@@ -235,8 +235,8 @@ export default function DynamicPage() {
                 <FieldInput
                   key={f.field.name}
                   mapping={f}
-                  value={searchForm[f.field.name] ?? ''}
-                  onChange={(v) => setSearchForm((prev) => ({ ...prev, [f.field.name]: v }))}
+                  value={searchForm[resolveModelKey(f.field, searchForm)] ?? ''}
+                  onChange={(v) => setSearchForm((prev) => ({ ...prev, [resolveModelKey(f.field, prev)]: v }))}
                   label={f.field.displayName ?? f.field.name}
                   size="small"
                 />
@@ -363,8 +363,8 @@ export default function DynamicPage() {
               <FieldInput
                 key={f.field.name}
                 mapping={f}
-                value={editForm[f.field.name] ?? ''}
-                onChange={(v) => setEditForm((prev) => ({ ...prev, [f.field.name]: v }))}
+                value={editForm[resolveModelKey(f.field, editForm)] ?? ''}
+                onChange={(v) => setEditForm((prev) => ({ ...prev, [resolveModelKey(f.field, prev)]: v }))}
                 label={f.field.displayName ?? f.field.name}
               />
             ))}

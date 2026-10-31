@@ -91,6 +91,57 @@ for (const skin of chartSkins) {
   });
 }
 
+// ───────────────────── ItemType 控件全量对齐（MVC _Form_Item / _Form_String 口径） ─────────────────────
+
+/** 每个皮肤的字段渲染组件（控件映射的唯一落点） */
+const fieldInputFiles = {
+  NaiveUI: 'NewLife.Cube.NaiveUI/web/src/components/FieldInput.vue',
+  ArcoVue: 'NewLife.Cube.ArcoVue/web/src/components/FieldInput.vue',
+  TDesign: 'NewLife.Cube.TDesign/web/src/components/FieldInput.vue',
+  Vuetify: 'NewLife.Cube.Vuetify/web/src/components/FieldInput.vue',
+  MUI: 'NewLife.Cube.MUI/web/src/components/FieldInput.tsx',
+  Shadcn: 'NewLife.Cube.Shadcn/web/src/components/FieldInput.tsx',
+  Svelte: 'NewLife.Cube.Svelte/web/src/lib/components/FieldInput.svelte',
+  Angular: 'NewLife.Cube.Angular/web/src/app/components/field-input.component.ts',
+};
+
+/** 各皮肤字段渲染组件必须覆盖的 widget 分支（缺一即说明该 ItemType 会退化成文本框） */
+const requiredWidgetCases = [
+  'area',
+  'timeSpan',
+  'switch',
+  'number',
+  'mapInput',
+  'date',
+  'datetime',
+  'textarea',
+  'password',
+  'color',
+  'image',
+  'file',
+  'readonly',
+];
+
+for (const [skin, file] of Object.entries(fieldInputFiles)) {
+  test(`${skin}: 字段渲染覆盖全部 ItemType 控件（SKIN-6 / ItemType 全量对齐）`, () => {
+    const full = path.join(repoRoot, file);
+    assert.ok(fs.existsSync(full), `${skin}: 未找到字段渲染组件 ${file}`);
+    const text = fs.readFileSync(full, 'utf8');
+
+    assert.ok(
+      text.includes('resolveWidget') || text.includes('FieldMapping'),
+      `${skin}: 字段控件未走共享映射 resolveWidget`,
+    );
+    for (const widget of requiredWidgetCases) {
+      assert.ok(text.includes(`'${widget}'`), `${skin}: 字段渲染缺少 ${widget} 分支（该 ItemType 会退化成文本）`);
+    }
+    // 下拉类（select/lov/lovMulti/mapSelect）与地区/时长依赖共享能力
+    assert.ok(text.includes('isSelect') || text.includes("'select'"), `${skin}: 下拉类控件缺失`);
+    assert.ok(text.includes('createAreaCascade'), `${skin}: 地区级联未接入共享控制器`);
+    assert.ok(text.includes('splitTimeSpan') && text.includes('joinTimeSpan'), `${skin}: 时长控件未接入共享换算`);
+  });
+}
+
 /** 已提供找回密码的皮肤（八个 SPA 均已接入；冻结的 MVC 主题不参与对照） */
 const forgotPasswordSkins = ['NaiveUI', 'ArcoVue', 'TDesign', 'Shadcn', 'Vuetify', 'MUI', 'Svelte', 'Angular'];
 

@@ -48,7 +48,7 @@
     <t-dialog v-model:visible="showForm" :header="isEdit ? '编辑' : '新增'" :footer="false" width="600px">
       <t-form label-align="right" :label-width="100">
         <t-form-item v-for="f in editFields" :key="f.name" :label="f.displayName || f.name">
-          <FieldInput :field="f" v-model="formData[toCamelCase(f.name)]" />
+          <FieldInput :field="f" v-model="formData[formKeyOf(f)]" />
         </t-form-item>
       </t-form>
       <t-alert v-if="formError" theme="error" :message="formError" style="margin-top: 12px" />
@@ -90,6 +90,9 @@ import * as echarts from 'echarts';
 const route = useRoute();
 const userStore = useUserStore();
 const typePath = computed(() => '/' + (route.params.type as string || ''));
+
+/** 字段在表单模型里的键：映射字段落到关联键（RoleName→RoleID），其余按 camelCase */
+const formKeyOf = (f: DataField) => toCamelCase(f.mapField || f.name);
 
 // --- 权限控制 ---
 const menuPerms = computed(() => userStore.getMenuPermission(typePath.value));
