@@ -49,7 +49,6 @@ const resolvedFlags = computed(() =>
       batchDelete: props.flags.batchDelete,
       importFile: props.flags.importFile,
       exportFile: props.flags.exportFile,
-      downloadTemplate: props.flags.downloadTemplate,
       refresh: props.flags.refresh,
       advanced: props.flags.advanced,
     },

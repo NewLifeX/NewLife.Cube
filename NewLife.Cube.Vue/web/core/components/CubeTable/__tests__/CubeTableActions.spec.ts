@@ -46,7 +46,7 @@ const buttonByText = (wrapper: Awaited<ReturnType<typeof mountActions>>['wrapper
   wrapper.findAll('button').filter((b) => b.text().includes(label))[0];
 
 describe('CubeTableActions 按钮显隐', () => {
-  it('应该默认给添加/导入/导出，不给下载模板 当后端没表明确时', async () => {
+  it('应该默认给添加/导入/导出 当后端没表明确时', async () => {
     const { wrapper } = await mountActions();
     const text = wrapper.text();
     expect(text).toContain('新增');
@@ -54,8 +54,6 @@ describe('CubeTableActions 按钮显隐', () => {
     expect(text).toContain('导出');
     // 未勾选时不渲染批量条
     expect(wrapper.find('[data-role="batch-bar"]').exists()).toBe(false);
-    // 下载模板对应后端自定义 Action，默认不给（给了点了就报错）
-    expect(text).not.toContain('下载模板');
   });
 
   it('应该跟随后端 enableAdd 关添加 当控制器声明不可新增时', async () => {
@@ -81,14 +79,6 @@ describe('CubeTableActions 按钮显隐', () => {
     expect(text).not.toContain('导入');
     // 查询类动作不受只读影响
     expect(text).toContain('导出');
-  });
-
-  it('应该显示下载模板并把动作打到引擎 当页面打开该按钮时', async () => {
-    const { wrapper, ctx } = await mountActions({ flags: { downloadTemplate: true } });
-    const downloadTemplate = vi.fn(async () => 'tpl.xlsx');
-    ctx.downloadTemplate = downloadTemplate;
-    await buttonByText(wrapper, '下载模板').trigger('click');
-    expect(downloadTemplate).toHaveBeenCalled();
   });
 
   it('应该整行不渲染 当既无内置按钮也无业务按钮时', async () => {

@@ -341,7 +341,6 @@ export interface ToolbarFlagInput {
   batchDelete?: boolean;
   importFile?: boolean;
   exportFile?: boolean;
-  downloadTemplate?: boolean;
   refresh?: boolean;
   /** 是否显示「高级」菜单。默认 true */
   advanced?: boolean;
@@ -353,7 +352,6 @@ export interface ToolbarFlags {
   batchDelete: boolean;
   importFile: boolean;
   exportFile: boolean;
-  downloadTemplate: boolean;
   refresh: boolean;
   /** 是否显示「高级」菜单 */
   advanced: boolean;
@@ -379,8 +377,7 @@ export function dialogShapeFor(fieldCount: number): { width: string; columns: nu
  *
  * 优先级：显式 props > 后端 `pageSetting`（`enableAdd` / `enableSelect` / `isReadOnly`）> 默认。
  * `isReadOnly` 一票否决所有写入口（新增/批量删除），只留查询类动作。
- * 导入/导出/下载模板默认开启（对齐 `ListToolbar.vue`），后端未实现对应 Action 时由
- * 调用侧显式关掉，不做「请求失败再隐藏」的猜测。
+ * 导入/导出默认开启，后端未实现对应 Action 时由调用侧显式关掉，不做「请求失败再隐藏」的猜测。
  */
 export function resolveToolbarFlags(
   input: ToolbarFlagInput,
@@ -394,7 +391,6 @@ export function resolveToolbarFlags(
     batchDelete: input.batchDelete ?? (setting?.enableSelect !== false && permissions?.delete !== false),
     importFile: input.importFile ?? true,
     exportFile: input.exportFile ?? permissions?.export !== false,
-    downloadTemplate: input.downloadTemplate ?? false,
     refresh: input.refresh ?? true,
     advanced: input.advanced ?? true,
   };

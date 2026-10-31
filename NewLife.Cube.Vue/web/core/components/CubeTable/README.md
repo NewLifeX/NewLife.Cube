@@ -38,7 +38,6 @@
 
 表面只常驻 `新增` + 业务按钮；低频/危险操作收进工具栏右侧的「高级」下拉：
 
-- 下载导入模板（`showDownloadTemplate` 开启时）
 - 导入数据（未只读 + 新增权限）
 - 导出 Excel / Csv / Json / Xml / Zip
 - 删除全部（当前查询结果）：有查询条件、删除权限、总数 > 0 时出现
@@ -232,7 +231,6 @@ const ctx = useCubeEngine({
 | `columnsStorageKey` | `string` | `cube-table:columns:{apiPrefix}` | 迁移旧配置时可显式指定 |
 | `showAdd` / `showBatchDelete` | `boolean` | 跟随后端 | 添加按钮 / 选中态批量删除 |
 | `showImport` / `showExport` | `boolean` | `true` | 高级菜单中的导入 / 导出入口 |
-| `showDownloadTemplate` | `boolean` | `false` | 高级菜单中的下载模板（后端要有 `DownloadTemplate` Action） |
 | `showAdvanced` | `boolean` | `true` | 是否显示高级菜单；关闭后导入/导出/删除全部/开发工具入口都不显示 |
 | `exportFormat` | `string` | `'xlsx'` | 导出格式 |
 | `importAccept` | `string` | — | 导入文件类型限制 |

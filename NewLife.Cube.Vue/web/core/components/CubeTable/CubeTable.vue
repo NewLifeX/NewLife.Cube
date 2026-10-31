@@ -55,7 +55,6 @@ const props = withDefaults(defineProps<CubeTableProps>(), {
   showBatchDelete: undefined,
   showImport: undefined,
   showExport: undefined,
-  showDownloadTemplate: undefined,
   showAdvanced: undefined,
   exportFormat: 'xlsx',
   confirmDelete: undefined,
@@ -144,7 +143,6 @@ const metaMissing = computed(() => ctx.metaMissing?.value === true);
           batchDelete: showBatchDelete,
           importFile: showImport,
           exportFile: showExport,
-          downloadTemplate: showDownloadTemplate,
           advanced: showAdvanced,
         }"
         :metrics="metrics"

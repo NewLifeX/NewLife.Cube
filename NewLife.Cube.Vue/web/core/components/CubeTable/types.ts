@@ -151,7 +151,6 @@ export interface CubeToolbarFlags {
   batchDelete?: boolean;
   importFile?: boolean;
   exportFile?: boolean;
-  downloadTemplate?: boolean;
   refresh?: boolean;
   /** 是否显示「高级」菜单。默认 true */
   advanced?: boolean;
@@ -221,8 +220,6 @@ export interface CubeTableProps {
   showImport?: boolean;
   /** 导出按钮：不传默认开 */
   showExport?: boolean;
-  /** 下载模板按钮：不传默认关（后端需实现 `DownloadTemplate`） */
-  showDownloadTemplate?: boolean;
   /** 高级菜单：不传默认开；关掉后导入/导出/删除全部/开发工具入口都不显示 */
   showAdvanced?: boolean;
   /** 导出格式（xlsx / csv / json） */

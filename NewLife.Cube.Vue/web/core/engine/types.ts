@@ -275,8 +275,6 @@ export interface CubeEngineDeps {
    * 返回**原始响应体**（`ApiResponse` 形态），由引擎统一解析 code / message / 行数。
    */
   importFile?: (type: string, file: File) => Promise<unknown>;
-  /** 下载导入模板。默认实现走 `GET {type}/DownloadTemplate`（后端自定义 Action，可缺省） */
-  downloadTemplate?: (type: string) => Promise<Blob>;
   /** 批量删除。默认实现走 `DELETE {type}?ids=1,2,3`（后端 EntityController.DeleteAll） */
   deleteSelect?: (type: string, keys: (number | string)[]) => Promise<unknown>;
   /**
@@ -458,8 +456,6 @@ export interface CubeEngineContext {
   developAction: (act: DevelopAction) => Promise<boolean>;
   /** 导出（返回文件名，失败返回 null） */
   exportFile: (format?: string) => Promise<string | null>;
-  /** 下载导入模板（后端未实现该 Action 时返回 null 并提示） */
-  downloadTemplate: () => Promise<string | null>;
   /** 导入文件，返回后端结果（0 行由视图层降级为警示） */
   importFile: (file: File) => Promise<ImportResult | null>;
   /** 供插槽/自定义组件使用：手动把某个字段写入 searchModel 并查询 */

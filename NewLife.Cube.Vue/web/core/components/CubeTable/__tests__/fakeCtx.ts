@@ -113,7 +113,6 @@ export function makeFakeCtx(options: FakeCtxOptions = {}): CubeEngineContext {
     removeAll: () => Promise.resolve(true),
     developAction: () => Promise.resolve(true),
     exportFile: () => Promise.resolve('file.xlsx'),
-    downloadTemplate: () => Promise.resolve('tpl.xlsx'),
     importFile: () => Promise.resolve({ ok: true, message: '导入 1 行', rows: 1 }),
     setFilter: () => Promise.resolve(),
   };

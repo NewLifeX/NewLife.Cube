@@ -3,14 +3,14 @@
  * CubeTable 操作按钮组
  *
  * 默认（内联）模式由 `CubeTableToolbar` 承载，只放业务按钮、后端工具栏按钮、添加与批量条；
- * 导入/导出/下载模板/高级菜单由工具栏统一收纳。独立使用时保留原平铺按钮。
+ * 导入/导出/高级菜单由工具栏统一收纳。独立使用时保留原平铺按钮。
  * 一行都没有内容时整行不渲染，不留一条空白带。
  */
 import { computed, ref, useSlots, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
-import { Document, Download, Plus, Upload } from '@element-plus/icons-vue';
+import { Download, Plus, Upload } from '@element-plus/icons-vue';
 import request from '../../utils/request';
 import {
   buildToolbarPayload,
@@ -49,7 +49,6 @@ const flags = computed(() =>
       batchDelete: props.flags.batchDelete,
       importFile: props.flags.importFile,
       exportFile: props.flags.exportFile,
-      downloadTemplate: props.flags.downloadTemplate,
       advanced: props.flags.advanced,
     },
     props.ctx.pageSetting.value,
@@ -103,7 +102,7 @@ const visible = computed(() => {
 
   const hasStandaloneTools =
     Boolean(flags.value.exportFile) ||
-    (!flags.value.readOnly && Boolean(flags.value.importFile || flags.value.downloadTemplate));
+    (!flags.value.readOnly && Boolean(flags.value.importFile));
 
   return hasBusiness || hasPrimary || hasBatch || hasStandaloneTools;
 });
@@ -270,13 +269,6 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
           accept=".xlsx,.xls,.csv,.json,.zip"
           @change="actions.onImportFileChange"
         />
-        <el-button
-          v-if="flags.downloadTemplate"
-          :icon="Document"
-          @click="ctx.downloadTemplate()"
-        >
-          {{ t('grid.downloadTemplate') }}
-        </el-button>
         <el-button v-if="flags.importFile" :icon="Upload" :loading="busy" @click="actions.openFilePicker(fileInputRef)">
           {{ t('grid.import') }}
         </el-button>

@@ -144,28 +144,9 @@ protected virtual IEnumerable<Product> SearchAll()
 
 ## 5.2 数据导入
 
-### 导入模板下载
+### 导入模板
 
-提供标准导入模板，确保数据格式正确：
-
-```csharp
-[EntityAuthorize(PermissionFlags.Insert)]
-[DisplayName("下载导入模板")]
-public virtual ActionResult DownloadTemplate()
-{
-    // 创建空数据作为模板
-    var list = new List<Product>
-    {
-        new Product { Name = "示例产品", Code = "P001", Price = 99.00M }
-    };
-    
-    var fields = new[] { "Name", "Code", "Price", "CategoryId" };
-    var ms = list.Export(fields);
-    
-    return File(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
-        "产品导入模板.xlsx");
-}
-```
+框架不再提供独立的「下载导入模板」入口：导入按列头匹配字段，直接把**导出的 Excel/Csv** 改写成数据即可作为模板使用（导出列头与导入识别口径一致）。
 
 ### Excel 数据导入
 

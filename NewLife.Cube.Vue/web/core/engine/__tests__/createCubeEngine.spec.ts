@@ -99,7 +99,7 @@ function makeDeps(overrides: Partial<CubeEngineDeps> & { http?: ReturnType<typeo
   const getPage = overrides.getPage ?? vi.fn(async () => META);
   const notify = overrides.notify ?? makeNotify();
   // 除以上三项默认值外，其余可选依赖（getDetail / importFile / exportFile /
-  // downloadTemplate / deleteSelect）按原样注入，未被覆盖时保持 undefined 走引擎内置实现
+  // deleteSelect）按原样注入，未被覆盖时保持 undefined 走引擎内置实现
   const deps = {
     ...overrides,
     http,
@@ -543,15 +543,5 @@ describe('createCubeEngine 导入导出', () => {
     await ctx.searchByKeyword('阀');
     await ctx.exportFile('csv');
     expect(exportFile).toHaveBeenLastCalledWith(TYPE, { format: 'csv', q: '阀', Name: '泵' });
-  });
-
-  it('应该提示后端未实现该接口 当下载模板失败时', async () => {
-    const { deps, notify } = makeDeps({
-      downloadTemplate: vi.fn(async () => { throw new Error('404'); }),
-    });
-    const ctx = createCubeEngine({ routePath: ROUTE }, deps);
-    await ctx.init();
-    expect(await ctx.downloadTemplate()).toBeNull();
-    expect(notify.error).toHaveBeenCalledWith(t('engine.templateDownloadFailed'));
   });
 });

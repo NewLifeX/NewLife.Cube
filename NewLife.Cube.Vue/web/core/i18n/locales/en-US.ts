@@ -250,9 +250,6 @@ export default {
   'engine.backupExportSuccess': 'Backup exported',
   'engine.exportSuccess': 'Exported',
   'engine.exportFailed': 'Failed to export',
-  'engine.importTemplate': '{name} import template',
-  'engine.templateDownloadFailed':
-    'Failed to download the import template, please make sure the backend implements the DownloadTemplate endpoint',
   'engine.notFileStream': 'The export response is not a file stream',
   'engine.importFailed': 'Import failed',
   'engine.importSuccess': 'Imported',
@@ -268,7 +265,6 @@ export default {
   'grid.empty': 'No data',
   'grid.viewFile': 'View file',
   'grid.more': 'More',
-  'grid.downloadTemplate': 'Download template',
   'grid.import': 'Import',
   'grid.export': 'Export',
   'grid.batchDelete': 'Batch delete',

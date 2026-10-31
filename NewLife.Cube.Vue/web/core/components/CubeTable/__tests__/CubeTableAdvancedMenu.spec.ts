@@ -21,7 +21,6 @@ const FLAGS: ToolbarFlags = {
   batchDelete: true,
   importFile: true,
   exportFile: true,
-  downloadTemplate: false,
   refresh: true,
   advanced: true,
   readOnly: false,
@@ -70,7 +69,6 @@ describe('CubeTableAdvancedMenu 显隐', () => {
     expect(texts).toContain('导出 Json');
     expect(texts).toContain('导出 Xml');
     expect(texts).toContain('导出 Zip');
-    expect(texts).not.toContain('下载模板');
     expect(texts).not.toContain('删除全部（当前查询结果）');
     expect(texts).not.toContain('备份到服务器');
   });

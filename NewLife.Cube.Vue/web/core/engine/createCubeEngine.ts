@@ -650,26 +650,6 @@ export function createCubeEngine(
     }
   }
 
-  async function downloadTemplate(): Promise<string | null> {
-    try {
-      const blob = deps.downloadTemplate
-        ? await deps.downloadTemplate(type.value)
-        : await fetchBlob(`${type.value}/DownloadTemplate`, {});
-      const name = buildDownloadName(
-        t('engine.importTemplate', { name: entityNameFromPrefix(type.value) }),
-        dateStamp(),
-        inferBlobExtension(blob.type),
-      );
-      pendingBlob.value = { blob, name };
-      return name;
-    } catch (err) {
-      const message = t('engine.templateDownloadFailed');
-      error.value = extractMessage(err) ?? message;
-      deps.notify?.error?.(message);
-      return null;
-    }
-  }
-
   async function fetchBlob(url: string, params: Record<string, unknown>): Promise<Blob> {
     const res = await deps.http.get(url, { responseType: 'blob', params });
     if (res instanceof Blob) return res;
@@ -758,7 +738,6 @@ export function createCubeEngine(
     removeAll,
     developAction,
     exportFile,
-    downloadTemplate,
     importFile,
     setFilter,
   };

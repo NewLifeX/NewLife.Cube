@@ -2,21 +2,13 @@
 /**
  * 列表页「高级」菜单
  *
- * 收纳低频/危险操作：下载导入模板、导入、多格式导出、删除全部、开发工具。
+ * 收纳低频/危险操作：导入、多格式导出、删除全部、开发工具。
  * 业务自定义工具栏按钮不进入本菜单，仍平铺在操作区。
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessageBox } from 'element-plus';
-import {
-  ArrowDown,
-  Delete,
-  Document,
-  Download,
-  FolderOpened,
-  RefreshLeft,
-  Upload,
-} from '@element-plus/icons-vue';
+import { ArrowDown, Delete, Download, FolderOpened, RefreshLeft, Upload } from '@element-plus/icons-vue';
 import { hasActiveSearch } from '../../engine/logic';
 import { usePagePermissions } from '../../composables/usePagePermissions';
 import type { CubeEngineContext, DevelopAction } from '../../engine/types';
@@ -56,8 +48,7 @@ const visible = computed(
   () =>
     props.flags.advanced &&
     Boolean(
-      props.flags.downloadTemplate ||
-        canImport.value ||
+      canImport.value ||
         props.flags.exportFile ||
         canDeleteAll.value ||
         showDevelop.value,
@@ -111,10 +102,6 @@ async function develop(act: DevelopAction): Promise<void> {
 async function onCommand(command: string): Promise<void> {
   if (props.ctx.submitting.value) return;
 
-  if (command === 'template') {
-    await props.ctx.downloadTemplate();
-    return;
-  }
   if (command === 'import') {
     openFilePicker();
     return;
@@ -155,14 +142,6 @@ async function onCommand(command: string): Promise<void> {
     <template #dropdown>
       <el-dropdown-menu class="ctam-menu">
         <el-dropdown-item
-          v-if="flags.downloadTemplate"
-          command="template"
-          :icon="Document"
-          :disabled="ctx.submitting.value"
-        >
-          {{ t('grid.downloadTemplate') }}
-        </el-dropdown-item>
-        <el-dropdown-item
           v-if="canImport"
           command="import"
           :icon="Upload"
@@ -175,7 +154,7 @@ async function onCommand(command: string): Promise<void> {
           v-if="flags.exportFile"
           command="export:xlsx"
           :icon="Download"
-          divided
+          :divided="canImport"
           :disabled="ctx.submitting.value"
         >
           {{ t('grid.exportExcel') }}

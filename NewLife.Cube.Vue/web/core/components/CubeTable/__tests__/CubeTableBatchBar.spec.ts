@@ -25,7 +25,6 @@ const FLAGS: ToolbarFlags = {
   batchDelete: true,
   importFile: true,
   exportFile: true,
-  downloadTemplate: false,
   refresh: true,
   advanced: true,
   readOnly: false,

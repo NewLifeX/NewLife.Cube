@@ -121,12 +121,6 @@ export function createDefaultCubeEngineDeps(): CubeEngineDeps {
         responseType: 'blob',
       })) as unknown as Blob;
     },
-    downloadTemplate: async (type: string) => {
-      const { request } = await loadRequestLayer();
-      return (await request.get(`${type}/DownloadTemplate`, {
-        responseType: 'blob',
-      })) as unknown as Blob;
-    },
     importFile: async (type: string, file: File) => {
       const { cubeApi } = await loadRequestLayer();
       return (await cubeApi.page.importFile(type, file)) as unknown;

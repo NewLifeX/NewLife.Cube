@@ -15,7 +15,7 @@ using Xunit;
 
 namespace NewLife.Cube.Tests.Common;
 
-/// <summary>导出功能单元测试。验证 OnExportExcel/OnExportExcelTemplate 用 NewLife.Office ExcelWriter 生成真 xlsx（而非 CSV），且导出模板隐藏自动维护字段</summary>
+/// <summary>导出功能单元测试。验证 OnExportExcel 用 NewLife.Office ExcelWriter 生成真 xlsx（而非 CSV）</summary>
 public class ExportControllerTests
 {
     #region 测试实体
