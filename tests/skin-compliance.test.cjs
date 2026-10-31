@@ -64,6 +64,10 @@ for (const skin of Object.keys(skins)) {
     expectReference(skin, 'resolveColumnAlign', '列表页未接入共享列对齐解析');
   });
 
+  test(`${skin}: 列表页按字段名忽略大小写读取行值（SKIN-12）`, () => {
+    expectReference(skin, 'getFieldValue', '列表页未接入共享行值读取（元数据字段名为 PascalCase，接口行数据为 camelCase）');
+  });
+
   test(`${skin}: 工作台接真实聚合数据并支持卡片布局（SKIN-8/13）`, () => {
     expectReference(skin, 'createWorkbenchLoader', '工作台未接入共享数据加载器');
     expectReference(skin, 'createWidgetLayoutLoader', '工作台未接入卡片布局持久化');

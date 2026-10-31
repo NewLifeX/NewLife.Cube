@@ -122,7 +122,7 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, m
 import { useRoute } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import { IconSearch, IconPlus, IconDelete, IconDown } from '@arco-design/web-vue/es/icon';
-import { Auth, type DataField, resolveModelKey } from '@newlifex/cube';
+import { Auth, type DataField, resolveModelKey, getFieldValue } from '@newlifex/cube';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
@@ -206,6 +206,7 @@ const columns = computed(() => {
     .map((f) => ({
       title: f.displayName || f.name,
       dataIndex: f.name,
+      render: ({ record }: any) => cellText(record, f),
       ellipsis: true,
       tooltip: true,
       width: resolveColumnWidth(f),
@@ -214,6 +215,14 @@ const columns = computed(() => {
   cols.push({ title: '操作', dataIndex: 'operations', ellipsis: false, tooltip: false, width: 180 } as any);
   return cols;
 });
+
+/** 单元格文本：行键 camelCase、字段名 PascalCase，统一按大小写不敏感取值后翻译字典/布尔 */
+function cellText(record: Record<string, any>, f: DataField) {
+  const val = getFieldValue(record, f.name);
+  if (f.dataSource && Object.keys(f.dataSource).length > 0) return f.dataSource[String(val ?? '')] ?? String(val ?? '');
+  if (typeof val === 'boolean') return val ? '是' : '否';
+  return val == null ? '' : String(val);
+}
 
 /** 横向滚动兜底宽度：固定列按实际宽度，自适应列按 140px 估算 */
 const tableScrollX = computed(() =>

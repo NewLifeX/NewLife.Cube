@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon, ArrowDropDown } from '@mui/icons-material';
 import { Auth, resolveModelKey, type DataField } from '@newlifex/cube';
-import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/cube';
+import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, getFieldValue, type FieldMapping } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
 import api from '@/api';
@@ -155,14 +155,14 @@ export default function DynamicPage() {
   // CRUD
   const showAdd = () => { setIsEdit(false); setEditForm({}); setFormError(''); setFormOpen(true); };
   const showEdit = async (row: Record<string, any>) => {
-    const res = await api.page.getDetail(type, row[pkField]);
+    const res = await api.page.getDetail(type, getFieldValue(row, pkField) as any);
     setIsEdit(true);
     setEditForm({ ...(res.data as any) });
     setFormError('');
     setFormOpen(true);
   };
   const showDetail = async (row: Record<string, any>) => {
-    const res = await api.page.getDetail(type, row[pkField]);
+    const res = await api.page.getDetail(type, getFieldValue(row, pkField) as any);
     setDetailData((res.data as any) ?? {});
     setDetailOpen(true);
   };
@@ -305,7 +305,7 @@ export default function DynamicPage() {
           </TableHead>
           <TableBody>
             {data.map((row) => {
-              const id = row[pkField];
+              const id = getFieldValue(row, pkField) as string | number;
               return (
                 <TableRow key={id} hover selected={isSelected(id)}>
                   <TableCell padding="checkbox">
@@ -401,16 +401,16 @@ export default function DynamicPage() {
 
 /** 表格单元格渲染 */
 function renderCell(row: Record<string, any>, m: FieldMapping) {
-  const val = row[m.field.name];
+  const val = getFieldValue(row, m.field.name);
   if (m.widget === 'switch') {
     return <Chip label={val ? '是' : '否'} color={val ? 'success' : 'default'} size="small" />;
   }
   if (m.field.dataSource && Object.keys(m.field.dataSource).length) {
-    return m.field.dataSource[String(val ?? '')] ?? val;
+    return m.field.dataSource[String(val ?? '')] ?? String(val ?? '');
   }
   if (m.field.url) {
-    const href = m.field.url.replace(/\{(\w+)\}/g, (_, k) => row[k] ?? '');
-    return <a href={href} target={m.field.target ?? '_self'}>{val}</a>;
+    const href = m.field.url.replace(/\{(\w+)\}/g, (_, k) => String(getFieldValue(row, k) ?? ''));
+    return <a href={href} target={m.field.target ?? '_self'}>{String(val ?? '')}</a>;
   }
   return String(val ?? '');
 }

@@ -52,7 +52,7 @@
       :columns="tableColumns"
       :data="tableData"
       :loading="loading"
-      :row-key="(row: Record<string, any>) => row[pkField] ?? row['id']"
+      :row-key="(row: Record<string, any>) => getFieldValue(row, pkField) ?? getFieldValue(row, 'ID')"
       :checked-row-keys="checkedKeys"
       @update:checked-row-keys="(keys: any[]) => (checkedKeys = keys)"
       :pagination="pagination"
@@ -107,7 +107,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, markRaw, h, watch,
 import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type DataTableCreateSummary, type FormInst, type PaginationProps, type UploadCustomRequestOptions } from 'naive-ui';
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
 import { Auth, type DataField, toCamelCase } from '@newlifex/cube';
-import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/cube';
+import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, getFieldValue, type FieldMapping } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
 import api from '@/api';
@@ -228,13 +228,13 @@ const tableColumns = computed<DataTableColumn[]>(() => {
     // Boolean 字段用 Tag 显示
     if (m.widget === 'switch') {
       col.render = (row: Record<string, any>) =>
-        h(NTag, { type: row[m.field.name] ? 'success' : 'default', size: 'small' }, { default: () => (row[m.field.name] ? '是' : '否') });
+        h(NTag, { type: getFieldValue(row, m.field.name) ? 'success' : 'default', size: 'small' }, { default: () => (getFieldValue(row, m.field.name) ? '是' : '否') });
     }
 
     // 有 dataSource 的字段显示映射标签
     if (m.field.dataSource && Object.keys(m.field.dataSource).length > 0) {
       col.render = (row: Record<string, any>) => {
-        const val = String(row[m.field.name] ?? '');
+        const val = String(getFieldValue(row, m.field.name) ?? '');
         return m.field.dataSource![val] ?? val;
       };
     }
@@ -242,8 +242,8 @@ const tableColumns = computed<DataTableColumn[]>(() => {
     // 有 URL 的字段显示链接
     if (m.field.url) {
       col.render = (row: Record<string, any>) => {
-        const href = m.field.url!.replace(/\{(\w+)\}/g, (_, k) => row[k] ?? '');
-        return h('a', { href, target: m.field.target ?? '_self' }, { default: () => row[m.field.name] });
+        const href = m.field.url!.replace(/\{(\w+)\}/g, (_, k) => String(getFieldValue(row, k) ?? ''));
+        return h('a', { href, target: m.field.target ?? '_self' }, { default: () => String(getFieldValue(row, m.field.name) ?? '') });
       };
     }
 
@@ -349,7 +349,7 @@ function showAdd() {
 
 async function showEdit(row: Record<string, any>) {
   isEdit.value = true;
-  const id = row[pkField.value];
+  const id = getFieldValue(row, pkField.value) as any;
   const res = await api.page.getDetail(props.type, id);
   editForm.value = { ...(res.data as any) };
   formVisible.value = true;
@@ -387,7 +387,7 @@ async function handleSubmit() {
 
 // --- 详情 ---
 async function showDetail(row: Record<string, any>) {
-  const id = row[pkField.value];
+  const id = getFieldValue(row, pkField.value) as any;
   const res = await api.page.getDetail(props.type, id);
   detailData.value = (res.data as any) ?? {};
   detailVisible.value = true;
@@ -395,7 +395,7 @@ async function showDetail(row: Record<string, any>) {
 
 // --- 删除 ---
 async function handleDelete(row: Record<string, any>) {
-  const id = row[pkField.value];
+  const id = getFieldValue(row, pkField.value) as any;
   try {
     await api.page.remove(props.type, id);
     message.success('删除成功');

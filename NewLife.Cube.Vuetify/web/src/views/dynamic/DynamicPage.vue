@@ -58,7 +58,7 @@
     <v-data-table
       v-show="viewMode === 'table'"
       :headers="headers"
-      :items="tableData"
+      :items="tableItems"
       :loading="loading"
       show-select
       v-model="selected"
@@ -75,8 +75,8 @@
         <!-- 统计行 -->
         <div v-if="statData" class="d-flex ga-4 pa-2" style="background: #f5f5f5;">
           <span class="font-weight-bold">合计</span>
-          <span v-for="f in listFields.filter(f => statData![f.name] != null)" :key="f.name">
-            {{ f.displayName || f.name }}：{{ statData[f.name] }}
+          <span v-for="f in listFields.filter(f => getFieldValue(statData, f.name) != null)" :key="f.name">
+            {{ f.displayName || f.name }}：{{ getFieldValue(statData, f.name) }}
           </span>
         </div>
         <div class="d-flex justify-end align-center pa-2 ga-4">
@@ -149,7 +149,7 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, m
 import { useRoute } from 'vue-router';
 import { Auth, type DataField, resolveModelKey } from '@newlifex/cube';
 import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
-import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
+import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields, getFieldValue } from '@newlifex/cube';
 import * as echarts from 'echarts';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -243,6 +243,17 @@ function vuetifyAlign(align: 'left' | 'center' | 'right'): 'start' | 'center' | 
   if (align === 'center') return 'center';
   return 'start';
 }
+
+/** 表格行：行键为 camelCase，字段名为 PascalCase；补齐 PascalCase 键供 v-data-table 按 header.key 取值 */
+const tableItems = computed(() =>
+  (tableData.value ?? []).map((row: Record<string, any>) => {
+    const out: Record<string, any> = { ...row };
+    for (const f of listFields.value) {
+      if (!(f.name in out)) out[f.name] = getFieldValue(row, f.name);
+    }
+    return out;
+  }),
+);
 
 const headers = computed(() => {
   const cols = listFields.value

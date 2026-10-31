@@ -52,9 +52,25 @@ export const EXPORT_FORMATS: ExportFormat[] = [
 // ======================== 工具函数 ========================
 
 /** 大小写不敏感取值：行 JSON 键与模板占位符大小写可能不一致（后端 camelCase vs 元数据 PascalCase） */
-function getValueCaseInsensitive(row: Record<string, unknown>, key: string): unknown {
-  if (key in row) return row[key];
-  const lowerKey = key.toLowerCase();
+/**
+ * 读取数据行的字段值（字段名大小写不敏感）
+ *
+ * 行数据来自实体接口，键名是 camelCase（`id`/`onlineTime`）；字段元数据的 `name` 是 PascalCase（`ID`/`OnlineTime`）。
+ * 各皮肤的列表单元格、详情与表单回显都应经由此函数取值，避免某个皮肤按 `row[field.name]` 精确匹配导致整列空白。
+ *
+ * @param row - 数据行对象
+ * @param name - 字段名（PascalCase 或 camelCase 均可）
+ * @returns 字段值；未找到返回 undefined
+ *
+ * @example
+ * getFieldValue({ id: 42 }, 'ID') // 42
+ * getFieldValue({ onlineTime: 60 }, 'OnlineTime') // 60
+ */
+export function getFieldValue(row: Record<string, unknown> | null | undefined, name: string): unknown {
+  if (!row || !name) return undefined;
+  if (name in row) return row[name];
+
+  const lowerKey = name.toLowerCase();
   for (const k in row) {
     if (k.toLowerCase() === lowerKey) return row[k];
   }
@@ -74,7 +90,7 @@ function getValueCaseInsensitive(row: Record<string, unknown>, key: string): unk
  */
 export function resolveUrl(url: string, row: Record<string, unknown>): string {
   return url.replace(/\{(\w+)\}/g, (_, key: string) => {
-    const val = getValueCaseInsensitive(row, key);
+    const val = getFieldValue(row, key);
     return val !== undefined && val !== null ? encodeURIComponent(String(val)) : '';
   });
 }

@@ -5,7 +5,7 @@
   import { getMenuPermission } from '$lib/stores/user';
   import FieldInput from '$lib/components/FieldInput.svelte';
   import { Auth, type DataField } from '@newlifex/cube';
-  import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
+  import { toCamelCase, resolveColumnWidth, resolveColumnAlign, getFieldValue } from '@newlifex/cube';
   import { validateRequiredFields } from '@newlifex/cube';
   import * as echarts from 'echarts';
 
@@ -264,7 +264,7 @@
 
   // 字段取值
   function getValue(row: any, field: DataField): any {
-    return row[toCamelCase(field.name)];
+    return getFieldValue(row, field.name);
   }
 
   const totalPages = $derived(Math.ceil(total / pageSize) || 1);

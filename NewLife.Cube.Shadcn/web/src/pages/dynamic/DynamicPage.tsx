@@ -4,7 +4,7 @@ import {
   Plus, Trash2, Download, Upload, Search, RefreshCw, Eye, Pencil, ChevronDown,
 } from 'lucide-react';
 import { Auth, resolveModelKey } from '@newlifex/cube';
-import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, type FieldMapping } from '@newlifex/cube';
+import { resolveWidgets, resolveColumnWidth, resolveColumnAlign, getFieldValue, type FieldMapping } from '@newlifex/cube';
 import { normalizeChartList, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import * as echarts from 'echarts';
 import { Button } from '@/components/ui/button';
@@ -153,14 +153,14 @@ export default function DynamicPage() {
   // CRUD
   const showAdd = () => { setIsEdit(false); setEditForm({}); setFormError(''); setFormOpen(true); };
   const showEdit = async (row: Record<string, any>) => {
-    const res = await api.page.getDetail(type, row[pkField]);
+    const res = await api.page.getDetail(type, getFieldValue(row, pkField) as any);
     setIsEdit(true);
     setEditForm({ ...(res.data as any) });
     setFormError('');
     setFormOpen(true);
   };
   const showDetail = async (row: Record<string, any>) => {
-    const res = await api.page.getDetail(type, row[pkField]);
+    const res = await api.page.getDetail(type, getFieldValue(row, pkField) as any);
     setDetailData((res.data as any) ?? {});
     setDetailOpen(true);
   };
@@ -281,7 +281,7 @@ export default function DynamicPage() {
           </TableHeader>
           <TableBody>
             {data.map((row) => {
-              const id = row[pkField];
+              const id = getFieldValue(row, pkField) as string | number;
               return (
                 <TableRow key={id} data-state={selected.has(id) ? 'selected' : undefined}>
                   <TableCell>
@@ -399,16 +399,16 @@ export default function DynamicPage() {
 }
 
 function renderCell(row: Record<string, any>, m: FieldMapping) {
-  const val = row[m.field.name];
+  const val = getFieldValue(row, m.field.name);
   if (m.widget === 'switch') {
     return <Badge variant={val ? 'default' : 'secondary'}>{val ? '是' : '否'}</Badge>;
   }
   if (m.field.dataSource && Object.keys(m.field.dataSource).length) {
-    return m.field.dataSource[String(val ?? '')] ?? val;
+    return m.field.dataSource[String(val ?? '')] ?? String(val ?? '');
   }
   if (m.field.url) {
-    const href = m.field.url.replace(/\{(\w+)\}/g, (_, k) => row[k] ?? '');
-    return <a href={href} target={m.field.target ?? '_self'} className="text-primary underline">{val}</a>;
+    const href = m.field.url.replace(/\{(\w+)\}/g, (_, k) => String(getFieldValue(row, k) ?? ''));
+    return <a href={href} target={m.field.target ?? '_self'} className="text-primary underline">{String(val ?? '')}</a>;
   }
   return String(val ?? '');
 }

@@ -8,6 +8,7 @@ const {
   findMenu,
   getMenuPermission,
   resolveUrl,
+  getFieldValue,
   toCamelCase,
   buildExportUrl,
   decomposePowerOfTwo,
@@ -64,6 +65,17 @@ test('resolveUrl: 替换行数据占位符，字段名忽略大小写，缺字�
 
 test('resolveUrl: 占位值做 URL 编码', () => {
   assert.equal(resolveUrl('User/Detail?name={Name}', { Name: '大 石' }), `User/Detail?name=${encodeURIComponent('大 石')}`);
+});
+
+test('getFieldValue: 字段名大小写不敏感取值（列表单元格/详情/表单共用）', () => {
+  assert.equal(getFieldValue({ id: 42 }, 'ID'), 42);
+  assert.equal(getFieldValue({ onlineTime: 60 }, 'OnlineTime'), 60);
+  assert.equal(getFieldValue({ Name: 'Stone' }, 'name'), 'Stone');
+  assert.equal(getFieldValue({ id: 0 }, 'ID'), 0);
+  assert.equal(getFieldValue({ id: null }, 'ID'), null);
+  assert.equal(getFieldValue({ name: 'a' }, 'Missing'), undefined);
+  assert.equal(getFieldValue(null, 'ID'), undefined);
+  assert.equal(getFieldValue({ id: 1 }, ''), undefined);
 });
 
 test('toCamelCase: 下划线与连字符转小驼峰', () => {

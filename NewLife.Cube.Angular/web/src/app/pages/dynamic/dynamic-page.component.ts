@@ -19,7 +19,7 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { Auth, resolveModelKey, type DataField } from '@newlifex/cube';
-import { resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
+import { resolveColumnWidth, resolveColumnAlign, getFieldValue } from '@newlifex/cube';
 import { normalizeChartList, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import { ApiService } from '../../services/api.service';
 import { UserService } from '../../services/user.service';
@@ -137,12 +137,12 @@ import * as echarts from 'echarts';
         </tr>
       </thead>
       <tbody>
-        @for (row of basicTable.data; track row['id']) {
+        @for (row of basicTable.data; track rowId(row)) {
           <tr>
-            <td nzShowCheckbox [nzChecked]="checkedIds.has(row['id'])" (nzCheckedChange)="onItemChecked(row['id'], $event)"></td>
+            <td nzShowCheckbox [nzChecked]="checkedIds.has(rowId(row))" (nzCheckedChange)="onItemChecked(rowId(row), $event)"></td>
             @for (field of listFields; track field.name) {
               @if (field.visible !== false) {
-                <td [style.text-align]="columnAlign(field)">{{ row[field.name] }}</td>
+                <td [style.text-align]="columnAlign(field)">{{ cellValue(row, field) }}</td>
               }
             }
             <td>
@@ -279,6 +279,16 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
   }
 
   /** 列对齐，统一左/中/右 */
+  /** 读取行内字段值：行键为 camelCase，字段名为 PascalCase，统一走大小写不敏感取值 */
+  cellValue(row: Record<string, any>, field: DataField): any {
+    return getFieldValue(row, field.name);
+  }
+
+  /** 行主键。行数据主键键名可能是 id/ID，统一解析 */
+  rowId(row: Record<string, any>): any {
+    return getFieldValue(row, 'ID') ?? getFieldValue(row, 'id');
+  }
+
   columnAlign(field: DataField): 'left' | 'center' | 'right' {
     return resolveColumnAlign(field);
   }

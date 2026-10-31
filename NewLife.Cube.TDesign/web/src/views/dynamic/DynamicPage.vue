@@ -82,7 +82,7 @@ import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
 import { Auth, type DataField } from '@newlifex/cube';
-import { toCamelCase, resolveColumnWidth, resolveColumnAlign } from '@newlifex/cube';
+import { toCamelCase, resolveColumnWidth, resolveColumnAlign, getFieldValue } from '@newlifex/cube';
 import { normalizeChartList, shouldDisposeCharts, toggleListView, validateRequiredFields } from '@newlifex/cube';
 import { Button as TButton } from 'tdesign-vue-next';
 import * as echarts from 'echarts';
@@ -169,13 +169,27 @@ const footData = computed(() => {
   return [row];
 });
 
+/** 单元格文本：行键 camelCase、字段名 PascalCase，统一按大小写不敏感取值后翻译字典/布尔 */
+function cellText(row: Record<string, any>, f: DataField) {
+  const val = getFieldValue(row, f.name);
+  if (f.dataSource && Object.keys(f.dataSource).length > 0) return f.dataSource[String(val ?? '')] ?? String(val ?? '');
+  if (typeof val === 'boolean') return val ? '是' : '否';
+  return val == null ? '' : String(val);
+}
+
+/** 行主键：行数据键名可能是 id/ID */
+function rowId(row: Record<string, any>) {
+  return (getFieldValue(row, 'ID') ?? getFieldValue(row, 'id')) as number;
+}
+
 // Table columns
 const tableColumns = computed(() => {
   const cols: any[] = [{ colKey: 'row-select', type: 'multiple', width: 50 }];
   for (const f of listFields.value) {
     cols.push({
-      colKey: toCamelCase(f.name),
+      colKey: f.name,
       title: f.displayName || f.name,
+      cell: (_h: any, { row }: any) => cellText(row, f),
       ellipsis: true,
       width: resolveColumnWidth(f),
       align: resolveColumnAlign(f),
@@ -185,10 +199,10 @@ const tableColumns = computed(() => {
     colKey: 'op', title: '操作', width: 180, fixed: 'right',
     cell: (_h: any, { row }: any) => {
       const btns = [
-        h(TButton, { theme: 'primary', variant: 'text', size: 'small', onClick: () => handleDetail(row.id) }, () => '查看'),
+        h(TButton, { theme: 'primary', variant: 'text', size: 'small', onClick: () => handleDetail(rowId(row)) }, () => '查看'),
       ];
-      if (canEdit.value) btns.push(h(TButton, { theme: 'primary', variant: 'text', size: 'small', onClick: () => handleEditById(row.id) }, () => '编辑'));
-      if (canDelete.value) btns.push(h(TButton, { theme: 'danger', variant: 'text', size: 'small', onClick: () => confirmDelete(row.id) }, () => '删除'));
+      if (canEdit.value) btns.push(h(TButton, { theme: 'primary', variant: 'text', size: 'small', onClick: () => handleEditById(rowId(row)) }, () => '编辑'));
+      if (canDelete.value) btns.push(h(TButton, { theme: 'danger', variant: 'text', size: 'small', onClick: () => confirmDelete(rowId(row)) }, () => '删除'));
       return h('div', { style: 'display: flex; gap: 8px' }, btns);
     },
   });
