@@ -23,10 +23,11 @@ test.describe('动态页（/meta 驱动）', () => {
     // 未勾选时批量条不占位
     await expect(page.locator('[data-role="batch-bar"]')).toHaveCount(0);
 
-    // 高级菜单打开后有导出格式等菜单项
+    // 高级菜单打开后有导出格式等菜单项（页面顶部还有语言切换下拉，需按可见 popper 取）
     await page.locator('[data-role="advanced"]').click();
-    await expect(page.locator('.el-dropdown-menu__item').first()).toBeVisible();
-    expect(await page.locator('.el-dropdown-menu__item').count()).toBeGreaterThanOrEqual(5);
+    const menu = page.locator('.el-dropdown__popper:visible');
+    await expect(menu.locator('.el-dropdown-menu__item').first()).toBeVisible();
+    expect(await menu.locator('.el-dropdown-menu__item').count()).toBeGreaterThanOrEqual(5);
     await page.keyboard.press('Escape');
 
     // 勾选后出现批量条与批量按钮
