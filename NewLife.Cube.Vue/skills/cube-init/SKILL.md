@@ -93,8 +93,10 @@ export const config: EnvConfig = {
   },
   auth: {
     oauthUrl: '/login',
+  },
+  user: {
     getUserInfoAxiosConfig: {
-      url: '/Admin/User/Info',
+      url: '/Auth/Info',
       method: 'GET',
     },
   },
