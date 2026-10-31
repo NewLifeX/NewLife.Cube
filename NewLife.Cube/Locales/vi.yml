@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Trang bắt đầu. Trang nội dung đầu tiên mở sau khi vào bảng điều khiển quản trị"
 "Theme. Content page theme, ACE/layui": "Chủ đề. Chủ đề trang nội dung, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Giao diện khung. Bố cục khung ngoài, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "Skin giao diện SPA. Khớp với tên gói skin, ví dụ Vue/React; để trống sẽ tự động chọn (ưu tiên Vue)"
 "Login tip. Empty hides the tip on the sign-in page": "Gợi ý đăng nhập. Để trống sẽ ẩn gợi ý trên trang đăng nhập"
 "Login logo. Empty uses the default logo": "Logo đăng nhập. Để trống sẽ dùng logo mặc định"
 "Login background. Image URL; empty uses the default background": "Nền đăng nhập. URL hình ảnh; để trống sẽ dùng nền mặc định"

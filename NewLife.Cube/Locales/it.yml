@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Pagina iniziale. Prima pagina di contenuto aperta dopo l'ingresso nella console di amministrazione"
 "Theme. Content page theme, ACE/layui": "Tema. Tema delle pagine di contenuto, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Aspetto. Layout della cornice esterna, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "Skin front-end SPA. Corrisponde al nome del pacchetto skin, ad esempio Vue/React; vuoto seleziona automaticamente (Vue per primo)"
 "Login tip. Empty hides the tip on the sign-in page": "Suggerimento di accesso. Vuoto nasconde il suggerimento nella pagina di accesso"
 "Login logo. Empty uses the default logo": "Logo di accesso. Vuoto usa il logo predefinito"
 "Login background. Image URL; empty uses the default background": "Sfondo di accesso. URL dell'immagine; vuoto usa lo sfondo predefinito"

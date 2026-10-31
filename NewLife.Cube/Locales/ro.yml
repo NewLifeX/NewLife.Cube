@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Pagina de start. Prima pagină de conținut deschisă după intrarea în consola de administrare"
 "Theme. Content page theme, ACE/layui": "Temă. Tema paginii de conținut, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Aspect. Aspectul cadrului exterior, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "Skin front-end SPA. Se potrivește cu numele pachetului de skin, de exemplu Vue/React; gol selectează automat (Vue primul)"
 "Login tip. Empty hides the tip on the sign-in page": "Sfat de autentificare. Gol ascunde sfatul de pe pagina de autentificare"
 "Login logo. Empty uses the default logo": "Sigla de autentificare. Gol folosește sigla implicită"
 "Login background. Image URL; empty uses the default background": "Fundalul autentificării. URL-ul imaginii; gol folosește fundalul implicit"

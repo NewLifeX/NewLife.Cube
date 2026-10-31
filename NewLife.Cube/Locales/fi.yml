@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Aloitussivu. Ensimmäinen sisältösivu, joka avataan hallintakonsoliin siirtymisen jälkeen"
 "Theme. Content page theme, ACE/layui": "Teema. Sisältösivun teema, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Ulkoasu. Ulkokehyksen asettelu, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPA-käyttöliittymäteema. Vastaa teemapaketin nimeä, esim. Vue/React; tyhjä valitsee automaattisesti (Vue ensin)"
 "Login tip. Empty hides the tip on the sign-in page": "Kirjautumisvihje. Tyhjä piilottaa vihjeen kirjautumissivulta"
 "Login logo. Empty uses the default logo": "Kirjautumislogo. Tyhjä käyttää oletuslogoa"
 "Login background. Image URL; empty uses the default background": "Kirjautumistausta. Kuvan URL; tyhjä käyttää oletustaustaa"

@@ -536,6 +536,7 @@
 "Start page. First content page opened after entering the admin console": "Startseite. Erste Inhaltsseite, die nach dem Aufruf der Verwaltungskonsole geöffnet wird"
 "Theme. Content page theme, ACE/layui": "Design. Design der Inhaltsseite, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Skin. Layout des äußeren Rahmens, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPA-Frontend-Skin. Entspricht dem Namen des Skin-Pakets, z. B. Vue/React; leer wählt automatisch (Vue zuerst)"
 "Login tip. Empty hides the tip on the sign-in page": "Anmeldehinweis. Leer blendet den Hinweis auf der Anmeldeseite aus"
 "Login logo. Empty uses the default logo": "Anmeldelogo. Leer verwendet das Standardlogo"
 "Login background. Image URL; empty uses the default background": "Anmeldehintergrund. Bild-URL; leer verwendet den Standardhintergrund"

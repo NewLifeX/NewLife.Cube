@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Kezdőoldal. A felügyeleti konzol megnyitása után elsőként megnyitott tartalomoldal"
 "Theme. Content page theme, ACE/layui": "Téma. A tartalomoldal témája, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Kinézet. A külső keret elrendezése, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "SPA front-end skin. Egyezik a skin csomag nevével, például Vue/React; üres esetén automatikus kiválasztás (először Vue)"
 "Login tip. Empty hides the tip on the sign-in page": "Bejelentkezési tipp. Üres érték esetén a tipp elrejtve a bejelentkezési oldalon"
 "Login logo. Empty uses the default logo": "Bejelentkezési logó. Üres érték esetén az alapértelmezett logó"
 "Login background. Image URL; empty uses the default background": "Bejelentkezési háttér. Kép URL; üres érték esetén az alapértelmezett háttér"

@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "עמוד התחלה. עמוד התוכן הראשון שנפתח לאחר הכניסה לקונסולת הניהול"
 "Theme. Content page theme, ACE/layui": "ערכת עיצוב. ערכת העיצוב של עמוד התוכן, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "סקין. פריסת המסגרת החיצונית, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "סקין חזית SPA. תואם לשם חבילת הסקין, כגון Vue/React; ריק בוחר אוטומטית (Vue תחילה)"
 "Login tip. Empty hides the tip on the sign-in page": "רמז התחברות. ריק מסתיר את הרמז בעמוד ההתחברות"
 "Login logo. Empty uses the default logo": "לוגו התחברות. ריק משתמש בלוגו ברירת המחדל"
 "Login background. Image URL; empty uses the default background": "רקע התחברות. כתובת URL של תמונה; ריק משתמש ברקע ברירת המחדל"

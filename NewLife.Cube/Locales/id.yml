@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Halaman awal. Halaman konten pertama yang dibuka setelah masuk konsol admin"
 "Theme. Content page theme, ACE/layui": "Tema. Tema halaman konten, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Kulit. Tata letak bingkai luar, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "Kulit front-end SPA. Cocok dengan nama paket kulit, seperti Vue/React; kosong memilih otomatis (Vue lebih dulu)"
 "Login tip. Empty hides the tip on the sign-in page": "Petunjuk login. Kosong menyembunyikan petunjuk di halaman masuk"
 "Login logo. Empty uses the default logo": "Logo login. Kosong menggunakan logo default"
 "Login background. Image URL; empty uses the default background": "Latar belakang login. URL gambar; kosong menggunakan latar belakang default"

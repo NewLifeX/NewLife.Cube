@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Úvodní stránka. První stránka s obsahem otevřená po vstupu do konzoly správy"
 "Theme. Content page theme, ACE/layui": "Motiv. Motiv stránky s obsahem, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Vzhled. Rozvržení vnějšího rámce, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "Skin SPA front-endu. Odpovídá názvu balíčku skinu, např. Vue/React; prázdné pole vybere automaticky (nejprve Vue)"
 "Login tip. Empty hides the tip on the sign-in page": "Nápověda k přihlášení. Prázdná hodnota skryje nápovědu na přihlašovací stránce"
 "Login logo. Empty uses the default logo": "Logo přihlášení. Prázdná hodnota použije výchozí logo"
 "Login background. Image URL; empty uses the default background": "Pozadí přihlášení. URL obrázku; prázdná hodnota použije výchozí pozadí"

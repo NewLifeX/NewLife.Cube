@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "الصفحة الأولى. أول صفحة محتوى تُفتح بعد دخول وحدة تحكم الإدارة"
 "Theme. Content page theme, ACE/layui": "السمة. سمة صفحة المحتوى، ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "المظهر. تخطيط الإطار الخارجي، ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "مظهر SPA. يطابق اسم حزمة المظهر مثل Vue/React؛ فارغ يعني الاختيار التلقائي (Vue أولًا)"
 "Login tip. Empty hides the tip on the sign-in page": "تلميح تسجيل الدخول. فارغ يخفي التلميح في صفحة تسجيل الدخول"
 "Login logo. Empty uses the default logo": "شعار تسجيل الدخول. فارغ يستخدم الشعار الافتراضي"
 "Login background. Image URL; empty uses the default background": "خلفية تسجيل الدخول. عنوان URL للصورة؛ فارغ يستخدم الخلفية الافتراضية"

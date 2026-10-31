@@ -64,10 +64,15 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- 将 wwwroot 静态文件嵌入程序集 -->
+  <!-- 将 wwwroot 静态文件嵌入程序集。sourcemap 仅用于本地调试，不随包分发（占原体积约 3/4） -->
   <ItemGroup>
-    <EmbeddedResource Include="wwwroot\**\*" />
+    <EmbeddedResource Include="wwwroot\**\*" Exclude="wwwroot\**\*.map" />
   </ItemGroup>
+
+  <!-- 打包前校验前端产物，避免把没有内置前端的空壳包发到 NuGet -->
+  <Target Name="VerifySpaAssets" BeforeTargets="GenerateNuspec" Condition="'$(IsPackable)' == 'true'">
+    <Error Condition="!Exists('wwwroot\index.html')" Text="未找到 wwwroot/index.html。请先在仓库根目录执行 pnpm build &amp;&amp; pnpm build:vue 构建前端，再打包。" />
+  </Target>
 
   <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />

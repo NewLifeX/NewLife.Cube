@@ -542,6 +542,7 @@
 "Start page. First content page opened after entering the admin console": "Начальная страница. Первая страница содержимого, открываемая после входа в консоль администрирования"
 "Theme. Content page theme, ACE/layui": "Тема. Тема страницы содержимого, ACE/layui"
 "Skin. Outer frame layout, ACE/layui": "Скин. Макет внешнего фрейма, ACE/layui"
+"SPA front-end skin. Matches the skin package name such as Vue/React; empty auto-selects (Vue first)": "Скин интерфейса SPA. Соответствует имени пакета скина, например Vue/React; пусто — автоматический выбор (сначала Vue)"
 "Login tip. Empty hides the tip on the sign-in page": "Подсказка на странице входа. Пустое значение скрывает подсказку на странице входа"
 "Login logo. Empty uses the default logo": "Логотип страницы входа. Пустое значение — логотип по умолчанию"
 "Login background. Image URL; empty uses the default background": "Фон страницы входа. URL изображения; пустое значение — фон по умолчанию"
