@@ -17,14 +17,18 @@ internal static class PageMetaBuilder
     #region 视图
     /// <summary>构建自描述字段数组</summary>
     /// <param name="fields">字段集合</param>
+    /// <param name="skip">需要跳过的字段判定。为空时输出全部字段</param>
     /// <returns>字段字典数组，含 name 与 virtual 标记</returns>
-    public static List<IDictionary<String, Object>> BuildFields(IEnumerable<DataField> fields)
+    public static List<IDictionary<String, Object>> BuildFields(IEnumerable<DataField> fields, Func<DataField, Boolean> skip = null)
     {
         var list = new List<IDictionary<String, Object>>();
         if (fields == null) return list;
 
         foreach (var field in fields)
         {
+            // 敏感字段（密码等）不具备只读展示语义，列表/详情/编辑表单按判定跳过
+            if (skip != null && skip(field)) continue;
+
             var dic = field.ToDictionary();
             // 非实体列（链接列、虚拟查询项）由前端只读渲染或交给渲染器
             if (field.Field == null) dic["virtual"] = true;
@@ -57,10 +61,11 @@ internal static class PageMetaBuilder
     /// <summary>构建搜索区查询项</summary>
     /// <param name="fields">搜索字段集合</param>
     /// <param name="factory">实体工厂，用于识别主时间字段；为空时不生成时间区间</param>
+    /// <param name="skip">需要跳过的字段判定。为空时输出全部字段</param>
     /// <returns>查询项数组。Q 收敛为 keyword，主时间字段收敛为 dtStart/dtEnd 区间</returns>
-    public static List<IDictionary<String, Object>> BuildSearch(IEnumerable<DataField> fields, IEntityFactory factory = null)
+    public static List<IDictionary<String, Object>> BuildSearch(IEnumerable<DataField> fields, IEntityFactory factory = null, Func<DataField, Boolean> skip = null)
     {
-        var list = BuildFields(fields);
+        var list = BuildFields(fields, skip);
         foreach (var dic in list)
         {
             if (dic.TryGetValue("name", out var name) && String.Equals(name as String, "Q", StringComparison.OrdinalIgnoreCase))
@@ -168,6 +173,27 @@ internal static class PageMetaBuilder
             var y = target[i];
             if (!String.Equals(x.Name, y.Name, StringComparison.OrdinalIgnoreCase)) return false;
             if (!DictionaryEquals(x.ToDictionary(), y.ToDictionary())) return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>判断两个已构建的字段输出是否完全一致</summary>
+    /// <param name="source">基准字段输出</param>
+    /// <param name="target">目标字段输出</param>
+    /// <returns>名称顺序与属性均一致时返回 true</returns>
+    public static Boolean SameFields(IList<IDictionary<String, Object>> source, IList<IDictionary<String, Object>> target)
+    {
+        if (ReferenceEquals(source, target)) return true;
+        if (source == null || target == null) return false;
+        if (source.Count != target.Count) return false;
+
+        for (var i = 0; i < source.Count; i++)
+        {
+            var x = source[i];
+            var y = target[i];
+            if (!String.Equals(x.TryGetValue("name", out var xn) ? xn as String : null, y.TryGetValue("name", out var yn) ? yn as String : null, StringComparison.OrdinalIgnoreCase)) return false;
+            if (!DictionaryEquals(x, y)) return false;
         }
 
         return true;

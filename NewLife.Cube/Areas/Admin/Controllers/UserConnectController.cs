@@ -18,6 +18,8 @@ public class UserConnectController : EntityController<UserConnect, UserConnectMo
     {
         ListFields.RemoveField("AccessToken", "RefreshToken", "Avatar", "UpdateUserID");
         ListFields.RemoveCreateField();
+        // 第三方令牌只写不读，编辑表单不展示，避免详情回包带出令牌
+        EditFormFields.RemoveField("AccessToken", "RefreshToken");
 
         // 提供者列，增加查询
         {
@@ -52,6 +54,9 @@ public class UserConnectController : EntityController<UserConnect, UserConnectMo
 
     /// <summary>构造</summary>
     public UserConnectController() => PageSetting.EnableAdd = false;
+
+    /// <summary>第三方访问令牌与刷新令牌属于敏感字段，不向客户端下发取值</summary>
+    protected override String[] ExtraSecretFields => ["AccessToken", "RefreshToken"];
 
     /// <summary>搜索数据集</summary>
     /// <param name="p"></param>

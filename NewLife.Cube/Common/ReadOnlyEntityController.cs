@@ -68,6 +68,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var list = SearchData(p).ToList();
 
+        // 密码等敏感字段只写不读，列表返回前统一清空
+        foreach (var entity in list) OnHideSecrets(entity);
+
         // 复刻 MVC ListField 按行计算值：虚拟字段/GetValue 字段写入实体扩展，随行 JSON 内联输出
         OnFillListValues(list);
 
@@ -129,8 +132,63 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
 
+        // 密码等敏感字段只写不读，详情返回前清空
+        OnHideSecrets(entity);
+
         //return entity.ToOkApiResponse();
         return new ApiResponse<TEntity> { Data = entity };
+    }
+    #endregion
+
+    #region 敏感字段
+    /// <summary>补充需要隐藏的敏感字段名（密码之外的密钥、令牌等）。默认空，子类按需重写</summary>
+    protected virtual String[] ExtraSecretFields => [];
+
+    /// <summary>判断字段是否为不允许下发取值的敏感字段。默认识别密码类字段，子类可补充</summary>
+    /// <param name="field">字段元数据</param>
+    /// <returns>是否敏感</returns>
+    protected virtual Boolean IsSecretField(DataField field) => field.IsSecret || IsSecretName(field.Name);
+
+    /// <summary>判断字段名是否属于敏感字段</summary>
+    /// <param name="name">字段名</param>
+    /// <returns>是否敏感</returns>
+    protected Boolean IsSecretName(String name) => DataField.IsSecretName(name) || ExtraSecretFields.Any(e => e.EqualIgnoreCase(name));
+
+    /// <summary>判断值是否为空。敏感字段留空表示不修改</summary>
+    /// <param name="value">字段值</param>
+    /// <returns>空值返回 true</returns>
+    protected static Boolean IsEmpty(Object value) => value == null || value is String str && str.Length == 0;
+
+    private String[] _secretNames;
+    /// <summary>当前实体的敏感字段名。密码类字段与子类补充字段，值一律不向客户端输出</summary>
+    private String[] GetSecretNames()
+    {
+        if (_secretNames != null) return _secretNames;
+
+        var names = new List<String>();
+        foreach (var field in Factory.Fields)
+        {
+            if (IsSecretName(field.Name) || field.Field?.ItemType.EqualIgnoreCase("password") == true) names.Add(field.Name);
+        }
+
+        return _secretNames = names.ToArray();
+    }
+
+    /// <summary>隐藏实体中的敏感字段值。密码等字段只写不读，接口返回前统一清空</summary>
+    /// <param name="entity">实体对象</param>
+    protected virtual void OnHideSecrets(TEntity entity)
+    {
+        if (entity == null) return;
+
+        // 用属性反射清空：手写实体未必重写索引器，索引器写入只落扩展字典，改不到真实属性
+        var type = typeof(TEntity);
+        foreach (var name in GetSecretNames())
+        {
+            var pi = type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            if (pi == null || !pi.CanWrite) continue;
+
+            pi.SetValue(entity, pi.PropertyType.IsValueType ? Activator.CreateInstance(pi.PropertyType) : null);
+        }
     }
     #endregion
 
@@ -184,25 +242,27 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var list = OnGetFields(ViewKinds.List, null);
         // 配置星尘地址时自动为 TraceId 生成追踪链接
         PageMetaBuilder.ApplyTraceUrl(list, CubeSetting.Current.StarWeb);
-        var form = OnGetFields(ViewKinds.EditForm, null);
-        var add = OnGetFields(ViewKinds.AddForm, null);
-        var detail = OnGetFields(ViewKinds.Detail, null);
-        var search = OnGetFields(ViewKinds.Search, null);
+
+        // 密码等敏感字段只在新增/编辑表单出现（编辑时留空表示不修改），列表/详情/搜索一律不下发
+        Func<DataField, Boolean> hideSecret = IsSecretField;
+        var listDic = PageMetaBuilder.BuildFields(list, hideSecret);
+        var formDic = PageMetaBuilder.BuildFields(OnGetFields(ViewKinds.EditForm, null));
+        var addDic = PageMetaBuilder.BuildFields(OnGetFields(ViewKinds.AddForm, null));
+        var detailDic = PageMetaBuilder.BuildFields(OnGetFields(ViewKinds.Detail, null), hideSecret);
+        var searchDic = PageMetaBuilder.BuildSearch(OnGetFields(ViewKinds.Search, null), EnableTimeRange ? Factory : null, hideSecret);
 
         var data = new Dictionary<String, Object>
         {
             ["entity"] = PageMetaBuilder.BuildEntity(Factory.EntityType, Factory),
             ["setting"] = setting,
-            ["list"] = PageMetaBuilder.BuildFields(list),
-            ["form"] = PageMetaBuilder.BuildFields(form),
-            ["search"] = PageMetaBuilder.BuildSearch(search, EnableTimeRange ? Factory : null),
+            ["list"] = listDic,
+            ["form"] = formDic,
+            ["search"] = searchDic,
         };
 
         // add/detail 与 form 完全一致时省略，消费端回退 form
-        if (!PageMetaBuilder.SameFields(form, add))
-            data["add"] = PageMetaBuilder.BuildFields(add);
-        if (!PageMetaBuilder.SameFields(form, detail))
-            data["detail"] = PageMetaBuilder.BuildFields(detail);
+        if (!PageMetaBuilder.SameFields(formDic, addDic)) data["add"] = addDic;
+        if (!PageMetaBuilder.SameFields(formDic, detailDic)) data["detail"] = detailDic;
 
         // 工具栏自定义按钮。内置按钮由 setting 控制，这里只下发后端声明的按钮
         if (PageSetting.EnableToolbar)
@@ -397,6 +457,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var fs = new List<FieldItem>();
         foreach (var fi in source)
         {
+            // 密码等敏感字段不导出，避免哈希随文件外泄
+            if (IsSecretName(fi.Name)) continue;
             if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
             if (!fi.IsDataObjectField)
             {
@@ -507,7 +569,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [NonAction]
     protected List<DataField> GetExportFields(IList<FieldItem> fs, IEnumerable<TEntity> list)
     {
-        var fields = fs.Select(e => new DataField(e)).ToList();
+        // 密码等敏感字段不导出，避免哈希随文件外泄
+        var fields = fs.Where(e => !IsSecretName(e.Name)).Select(e => new DataField(e)).ToList();
         foreach (var field in fields) field.Localize();
 
         if (list.FirstOrDefault() is IExtend ext)
@@ -532,6 +595,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var name = MakeExportFileName(".json");
         var list = ExportData().ToList();
 
+        // 密码等敏感字段只写不读，导出前清空取值
+        foreach (var entity in list) OnHideSecrets(entity);
+
         var json = list.ToJson(true);
         return new FileContentResult(json.GetBytes(), "application/json") { FileDownloadName = name };
     }
@@ -543,6 +609,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     {
         var name = MakeExportFileName(".xml");
         var list = ExportData().ToList();
+
+        // 密码等敏感字段只写不读，导出前清空取值
+        foreach (var entity in list) OnHideSecrets(entity);
 
         // 实体列表转 Xml（对齐 MVC OnExportXml：IEntity.ToXml / IList.ToXml），此前误用 ToJson 输出 JSON
         var xml = list.ToXml();

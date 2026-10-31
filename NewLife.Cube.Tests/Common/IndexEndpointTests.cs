@@ -27,6 +27,12 @@ public class IndexEndpointTests
         [DisplayName("名称")]
         [DataObjectField(false, false, true, 50)]
         public String? Name { get => _Name; set { if (_Name != value) { OnPropertyChanging("Name", value); _Name = value; OnPropertyChanged("Name"); } } }
+
+        private String? _Password;
+        /// <summary>密码</summary>
+        [DisplayName("密码")]
+        [DataObjectField(false, false, true, 200)]
+        public String? Password { get => _Password; set { if (_Password != value) { OnPropertyChanging("Password", value); _Password = value; OnPropertyChanged("Password"); } } }
     }
 
     /// <summary>测试控制器。用内存行替代数据库查询</summary>
@@ -59,7 +65,7 @@ public class IndexEndpointTests
         return controller;
     }
 
-    private static IndexTestEntity CreateRow(Int32 id) => new() { Id = id, Name = "行" + id };
+    private static IndexTestEntity CreateRow(Int32 id) => new() { Id = id, Name = "行" + id, Password = "$sha512$测试哈希" };
 
     [Fact(DisplayName = "列表：返回数据行与分页总数")]
     public void Index_ReturnsRowsAndTotal()
@@ -109,5 +115,18 @@ public class IndexEndpointTests
         Assert.Equal(0, rs.Code);
         Assert.Empty(rs.Data);
         Assert.Equal(0, rs.Page.TotalCount);
+    }
+
+    [Fact(DisplayName = "列表：密码等敏感字段返回前清空")]
+    public void Index_HidesPassword()
+    {
+        var controller = Create();
+        controller.Rows.AddRange([CreateRow(1)]);
+
+        var rs = controller.Index();
+
+        var row = Assert.Single(rs.Data);
+        Assert.Equal("行1", row.Name);
+        Assert.Null(row.Password);
     }
 }

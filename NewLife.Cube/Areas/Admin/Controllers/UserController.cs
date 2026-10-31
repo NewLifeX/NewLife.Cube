@@ -106,6 +106,19 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         }
 
         {
+            // 生日只有年月日，ItemType=date 让前端用纯日期选择器并按 yyyy-MM-dd 显示与提交
+            foreach (var df in new[] { AddFormFields.GetField("Birthday"), EditFormFields.GetField("Birthday"), DetailFields.GetField("Birthday") })
+            {
+                if (df != null) df.ItemType = "date";
+            }
+        }
+
+        {
+            // 密码只写不读：新增表单保留以设置初始密码，编辑表单移除，改由修改密码/重置密码接口处理
+            EditFormFields.RemoveField("Password");
+        }
+
+        {
             var df = ListFields.AddListField("Link", "Logins");
             //df.Header = "链接";
             df.HeaderTitle = "Third-party sign-in links";
@@ -136,6 +149,13 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         }
 
         {
+            // 主要角色 RoleName 通过 Map 指向 RoleID：显式数据源让前端在该字段位置渲染下拉并提交 RoleID。
+            // 启用角色排前，历史已停用但仍被用户占用的角色也保留，避免编辑时角色显示为空
+            var df = AddFormFields.GetField("RoleName");
+            if (df != null) df.DataSource = _ => Role.FindAllWithCache().OrderByDescending(e => e.Enable).ThenByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+        }
+
+        {
             var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
             df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             AddFormFields.RemoveField("RoleNames");
@@ -144,6 +164,12 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         //    var df = AddFormFields.GetField("RegisterTime");
         //    df.DataVisible = (e, f) => f.Name != "RegisterTime";
         //}
+
+        {
+            // 主要角色 RoleName 通过 Map 指向 RoleID：显式数据源让前端在该字段位置渲染下拉并提交 RoleID
+            var df = EditFormFields.GetField("RoleName");
+            if (df != null) df.DataSource = _ => Role.FindAllWithCache().OrderByDescending(e => e.Enable).ThenByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+        }
 
         {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
@@ -484,7 +510,12 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         // 头像上传已拆分为独立接口 Attachments（POST /Admin/User/attachments），
         // 本接口仅负责文本字段更新（昵称/邮箱/手机等）以及 avatar 字段回填。
         // 前端在上传头像后，将 Attachments 返回的文件路径回填到 avatar 字段再调用本接口持久化。
+        // 资料编辑不走密码流程：清除 Password 脏标记，防止构造请求绕过密码哈希直接明文入库
+        entity.Dirtys["Password"] = false;
         user.Update();
+
+        // 密码等敏感字段只写不读，响应前清空
+        user["Password"] = null;
 
         return Json(0, null, user);
     }
@@ -589,6 +620,12 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
 
         // 第三方绑定
         var ucs = UserConnect.FindAllByUserID(user.ID);
+        // 第三方令牌只写不读，绑定列表只回传展示信息
+        foreach (var uc in ucs)
+        {
+            uc.AccessToken = null;
+            uc.RefreshToken = null;
+        }
         var ms = OAuthConfig.GetValids(tenantContext.TenantId, GrantTypes.AuthorizationCode);
 
         var model = new BindsModel

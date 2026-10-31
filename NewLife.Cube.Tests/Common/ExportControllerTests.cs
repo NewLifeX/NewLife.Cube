@@ -68,6 +68,13 @@ public class ExportControllerTests
         [DataObjectField(false, false, false, 0)]
         public ExportKind Kind { get => (ExportKind)_Kind; set { if (OnPropertyChanging("Kind", value)) { _Kind = (Int32)value; OnPropertyChanged("Kind"); } } }
 
+        private String _Password = null!;
+        /// <summary>密码</summary>
+        [DisplayName("密码")]
+        [Description("密码")]
+        [DataObjectField(false, false, false, 200)]
+        public String Password { get => _Password; set { if (OnPropertyChanging("Password", value)) { _Password = value; OnPropertyChanged("Password"); } } }
+
         /// <summary>索引器重写：按字段名读写私有字段</summary>
         public override Object? this[String name]
         {
@@ -78,6 +85,7 @@ public class ExportControllerTests
                 "Amount" => _Amount,
                 "CreateTime" => _CreateTime,
                 "Kind" => _Kind,
+                "Password" => _Password,
                 _ => base[name],
             };
             set
@@ -89,6 +97,7 @@ public class ExportControllerTests
                     case "Amount": _Amount = value.ToDecimal(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "Kind": _Kind = value.ToInt(); break;
+                    case "Password": _Password = value + ""; break;
                     default: base[name] = value; break;
                 }
             }
@@ -224,6 +233,22 @@ public class ExportControllerTests
         var ctrl = CreateController();
 
         Assert.Throws<ArgumentOutOfRangeException>(() => ctrl.Export("BadFormat"));
+    }
+
+    [Fact(DisplayName = "导出跳过密码等敏感字段 且 Json 不包含密码值")]
+    public void Export_SkipsSecretFields()
+    {
+        var ctrl = CreateController();
+        ctrl.Data[0].Password = "$sha512$secret";
+
+        var fields = ctrl.TestGetExportFields(ExportTestEntity.Meta.Factory.AllFields, ctrl.Data);
+        Assert.DoesNotContain(fields, f => f.Name.EqualIgnoreCase("Password"));
+
+        var result = ctrl.Export("Json");
+        var fr = Assert.IsType<FileContentResult>(result);
+        var text = fr.FileContents.ToStr();
+        Assert.DoesNotContain("$sha512$", text);
+        Assert.Contains("张三", text);
     }
 
     [Fact(DisplayName = "Export_Csv_英文表头且枚举导出数字")]

@@ -39,10 +39,14 @@ public partial class EntityController<TEntity, TModel>
         try
         {
             act = ProcessDelete(entity);
+            // 密码等敏感字段只写不读，响应前清空
+            OnHideSecrets(entity);
             return new ApiResponse<TEntity> { Code = 0, Message = L.T("{0} succeeded!", act), Data = entity };
         }
         catch (Exception ex)
         {
+            // 密码等敏感字段只写不读，失败回包同样清空
+            OnHideSecrets(entity);
             return BuildFailResponse(ex, act, entity);
         }
     }
@@ -151,6 +155,8 @@ public partial class EntityController<TEntity, TModel>
                 {
                     var firstMsg = fieldErrors[0].Message;
                     WriteLog("Add", false, firstMsg);
+                    // 密码等敏感字段只写不读，失败回包同样清空
+                    OnHideSecrets(entity);
                     return new ApiResponse<TEntity>
                     {
                         Code = Models.CubeCode.ParamError.ToInt(),
@@ -171,12 +177,18 @@ public partial class EntityController<TEntity, TModel>
 
             if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
 
+            // 密码等敏感字段只写不读，响应前清空
+            OnHideSecrets(entity);
+
             return new ApiResponse<TEntity> { Code = 0, Message = L.T("Add succeeded!"), Data = entity };
         }
         catch (Exception ex)
         {
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Factory.Unique.Name] = 0;
+
+            // 密码等敏感字段只写不读，失败回包同样清空
+            OnHideSecrets(entity);
 
             return BuildFailResponse(ex, L.T("Add"), entity);
         }
@@ -227,6 +239,8 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
+            // 密码等敏感字段只写不读，失败回包同样清空
+            OnHideSecrets(entity);
             return BuildFailResponse(ex, L.T("Save"), entity);
         }
 
@@ -249,6 +263,9 @@ public partial class EntityController<TEntity, TModel>
             var pi = type.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             if (pi == null || !pi.CanRead || !pi.CanWrite) continue;
 
+            // 敏感字段留空表示不修改：编辑表单不回填密码，原样提交会把库中密码清空
+            if (IsSecretName(fi.Name) && IsEmpty(pi.GetValue(source))) continue;
+
             pi.SetValue(target, pi.GetValue(source));
         }
     }
@@ -270,6 +287,9 @@ public partial class EntityController<TEntity, TModel>
             var tpi = targetType.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             var spi = modelType.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             if (tpi == null || !tpi.CanWrite || spi == null || !spi.CanRead) continue;
+
+            // 敏感字段留空表示不修改：编辑表单不回填密码，原样提交会把库中密码清空
+            if (IsSecretName(fi.Name) && IsEmpty(spi.GetValue(model))) continue;
 
             tpi.SetValue(target, spi.GetValue(model));
         }
@@ -339,6 +359,9 @@ public partial class EntityController<TEntity, TModel>
             await BindAttachments(entity);
 
             OnUpdate(entity);
+
+            // 密码等敏感字段只写不读，响应前清空
+            OnHideSecrets(entity);
 
             return new ApiResponse<TEntity> { Code = 0, Message = L.T("Save succeeded!"), Data = entity };
         }

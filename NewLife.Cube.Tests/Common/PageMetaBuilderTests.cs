@@ -164,4 +164,47 @@ public class PageMetaBuilderTests
         Assert.True(PageMetaBuilder.SameFields(form, same));
         Assert.False(PageMetaBuilder.SameFields(form, changed));
     }
+
+    [Fact(DisplayName = "敏感字段按判定跳过，不下发到前端")]
+    public void BuildFields_SkipsSecretFields()
+    {
+        var fields = new List<DataField>
+        {
+            Form("Name", "姓名"),
+            Form("Password", "密码"),
+            Form("AccessToken", "访问令牌"),
+        };
+
+        var list = PageMetaBuilder.BuildFields(fields, e => e.IsSecret || e.Name == "AccessToken");
+
+        var only = Assert.Single(list);
+        Assert.Equal("Name", only["name"]);
+    }
+
+    [Fact(DisplayName = "密码字段自动标记 ItemType=password，其余敏感前缀不误判")]
+    public void ToDictionary_PasswordFieldGetsPasswordItemType()
+    {
+        var password = Form("Password", "密码");
+        Assert.True(password.IsSecret);
+        Assert.Equal("password", password.ToDictionary()["itemType"]);
+
+        var explicitType = Form("Password", "密码");
+        explicitType.ItemType = "password";
+        Assert.True(explicitType.IsSecret);
+
+        var secret = Form("AppSecret", "应用密钥");
+        Assert.False(secret.IsSecret);
+        Assert.False(secret.ToDictionary().ContainsKey("itemType"));
+    }
+
+    [Fact(DisplayName = "已构建字段输出一致时省略 add/detail")]
+    public void SameFields_BuiltDictionaries()
+    {
+        var form = PageMetaBuilder.BuildFields([Form("Name", "姓名")]);
+        var same = PageMetaBuilder.BuildFields([Form("Name", "姓名")]);
+        var withPassword = PageMetaBuilder.BuildFields([Form("Name", "姓名"), Form("Password", "密码")]);
+
+        Assert.True(PageMetaBuilder.SameFields(form, same));
+        Assert.False(PageMetaBuilder.SameFields(form, withPassword));
+    }
 }

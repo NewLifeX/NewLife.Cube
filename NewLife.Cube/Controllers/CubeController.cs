@@ -402,9 +402,9 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         if (r == null) return Json(500, null, L.T("Region not found."));
 
         if (r.ID == 0)
-            return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.ID, e.Name, e.FullName, BigArea = e.GetBig() }).ToArray());
+            return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.ID, e.Name, e.FullName, e.ParentID, e.Level, BigArea = e.GetBig() }).ToArray());
         else
-            return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.ID, e.Name, e.FullName }).ToArray());
+            return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.ID, e.Name, e.FullName, e.ParentID, e.Level }).ToArray());
     }
 
     /// <summary>获取地区父级</summary>
@@ -724,6 +724,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         {
             if (list == null || list.Count == 0) return null;
             var menuList = (from menu in list
+                            let source = menu.DisplayName.IsNullOrEmpty() ? menu.Name : menu.DisplayName
                             select new ViewModels.MenuTree
                             {
                                 ID = menu.ID,
@@ -735,7 +736,10 @@ public class CubeController(PageService pageService, TokenService tokenService, 
                                 Visible = menu.Visible,
                                 NewWindow = menu.NewWindow,
                                 ParentID = menu.ParentID,
-                                Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
+                                Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu),
+                                // 拼音按库中源文显示名计算，英文界面下也能用中文拼音搜索
+                                PinYin = NewLife.Common.PinYin.Get(source),
+                                Initials = NewLife.Common.PinYin.GetFirst(source),
                             }).ToList();
             return menuList.Count > 0 ? menuList : null;
         }, menus);

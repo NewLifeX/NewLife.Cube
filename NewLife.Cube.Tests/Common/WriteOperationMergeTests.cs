@@ -43,6 +43,12 @@ public class WriteOperationMergeTests
         [DisplayName("备注")]
         [DataObjectField(false, false, true, 200)]
         public String? Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+
+        private String? _Password;
+        /// <summary>密码</summary>
+        [DisplayName("密码")]
+        [DataObjectField(false, false, true, 200)]
+        public String? Password { get => _Password; set { if (OnPropertyChanging("Password", value)) { _Password = value; OnPropertyChanged("Password"); } } }
     }
 
     private class MergeTestModel
@@ -50,6 +56,7 @@ public class WriteOperationMergeTests
         public Int32 Id { get; set; }
         public String? Name { get; set; }
         public String? Remark { get; set; }
+        public String? Password { get; set; }
     }
 
     private class EntityMergeController : EntityController<MergeTestEntity>
@@ -124,6 +131,22 @@ public class WriteOperationMergeTests
 
         Assert.Equal("A", target.Name);
         Assert.Equal("keep", target.Remark);
+    }
+
+    [Fact(DisplayName = "敏感字段提交空值表示不修改，保留库中原密码")]
+    public void Copy_EmptySecret_KeepsStoredValue()
+    {
+        var controller = Create(() => new ModelMergeController());
+        var target = new MergeTestEntity { Id = 1, Password = "已保存的哈希" };
+        var model = new MergeTestModel { Id = 1, Password = "" };
+
+        controller.Copy(target, model, new HashSet<String>(StringComparer.OrdinalIgnoreCase) { "password" });
+
+        Assert.Equal("已保存的哈希", target.Password);
+
+        // 提交非空密码时正常覆盖
+        controller.Copy(target, new MergeTestModel { Id = 1, Password = "新密码" }, new HashSet<String>(StringComparer.OrdinalIgnoreCase) { "password" });
+        Assert.Equal("新密码", target.Password);
     }
 
     [Fact(DisplayName = "能从请求 JSON 解析出实际提交的顶层字段名")]

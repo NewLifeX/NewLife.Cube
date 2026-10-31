@@ -115,6 +115,10 @@ public class DataField : IDictionarySource
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String MapField { get; set; }
 
+    /// <summary>映射字段类型名。关联键是整型时可退回数字输入，并据此补「无」选项</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public String MapTypeName { get; set; }
+
     /// <summary>取值字段。列表单元格优先取该字段值，为空时回退到本字段。如名称列优先显示昵称：Name.ValueField=DisplayName</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String ValueField { get; set; }
@@ -171,6 +175,8 @@ public class DataField : IDictionarySource
         if (!Category.IsNullOrEmpty()) dic["category"] = Category;
         if (!TypeName.IsNullOrEmpty()) dic["typeName"] = TypeName;
         if (!ItemType.IsNullOrEmpty()) dic["itemType"] = ItemType;
+        // 密码类字段未显式声明 ItemType 时自动标记为 password，前端渲染遮蔽输入
+        else if (IsSecretName(Name)) dic["itemType"] = "password";
         if (Length > 0) dic["length"] = Length;
         if (Precision > 0) dic["precision"] = Precision;
         if (Scale > 0) dic["scale"] = Scale;
@@ -185,6 +191,7 @@ public class DataField : IDictionarySource
         if (!Extended2.IsNullOrEmpty()) dic["extended2"] = Extended2;
         if (!Extended3.IsNullOrEmpty()) dic["extended3"] = Extended3;
         if (!MapField.IsNullOrEmpty()) dic["mapField"] = MapField;
+        if (!MapTypeName.IsNullOrEmpty()) dic["mapTypeName"] = MapTypeName;
         if (!ValueField.IsNullOrEmpty()) dic["valueField"] = ValueField;
         if (!LovCode.IsNullOrEmpty()) dic["lovCode"] = LovCode;
 
@@ -254,6 +261,36 @@ public class DataField : IDictionarySource
                 dic["lovCode"] = "Enum." + Type.FullName;
                 dic["parentField"] = parentType.Name;
             }
+        }
+        else if (this is FormField && !MapField.IsNullOrEmpty() && MapProvider != null)
+        {
+            // 映射字段（如 RoleName 指向 RoleID）：表单下发关联表数据源，前端在关联键位置渲染下拉
+            try
+            {
+                var mapFact = MapProvider.EntityType == null ? null : EntityFactory.CreateFactory(MapProvider.EntityType);
+                // 关联表过大时不下发下拉数据源（与 MVC _Form_Map 同口径），前端退回键值输入
+                if (mapFact != null && mapFact.Session.Count <= CubeSetting.Current.MaxDropDownList)
+                {
+                    var map = MapProvider.GetDataSource();
+                    if (map != null && map.Count > 0)
+                    {
+                        var sds = new Dictionary<String, String>();
+
+                        // 整型关联键补「无」选项，允许清空关联（同 MVC _Form_Map）
+                        var keyName = MapProvider.Key;
+                        if (keyName.IsNullOrEmpty()) keyName = mapFact.Unique?.Name;
+                        var keyType = keyName.IsNullOrEmpty() ? null : mapFact.Table.FindByName(keyName)?.Type;
+                        if (keyType != null && Type.GetTypeCode(keyType) is TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.Byte) sds["0"] = L.T("<none>");
+
+                        foreach (var item in map)
+                        {
+                            if (item.Key != null) sds[item.Key + ""] = item.Value + "";
+                        }
+                        dic["dataSource"] = sds;
+                    }
+                }
+            }
+            catch { /* 关联表不可用时降级为键值输入 */ }
         }
 
         // 子类扩展字段
@@ -337,6 +374,12 @@ public class DataField : IDictionarySource
         {
             MapField = field.Map.Name;
             MapProvider = field.Map.Provider;
+
+            // 关联键类型：数据源不可用时前端据此退回键值输入
+            var mapFact = MapProvider?.EntityType == null ? null : EntityFactory.CreateFactory(MapProvider.EntityType);
+            var mapKey = MapProvider?.Key;
+            if (mapKey.IsNullOrEmpty()) mapKey = mapFact?.Unique?.Name;
+            MapTypeName = mapKey.IsNullOrEmpty() ? null : mapFact?.Table.FindByName(mapKey)?.Type?.Name;
         }
 
         if (dc != null)
@@ -553,6 +596,14 @@ public class DataField : IDictionarySource
     /// <summary>是否附件列</summary>
     /// <returns></returns>
     public Boolean IsAttachment() => ItemType.EqualIgnoreCase("file", "image") || ItemType.StartsWithIgnoreCase("file-", "image-");
+
+    /// <summary>是否敏感字段。密码类字段只允许写入，值不允许下发到前端</summary>
+    public Boolean IsSecret => ItemType.EqualIgnoreCase("password") || IsSecretName(Name);
+
+    /// <summary>判断字段名是否为密码类敏感字段。名称以 Password 结尾</summary>
+    /// <param name="name">字段名</param>
+    /// <returns>是否敏感</returns>
+    public static Boolean IsSecretName(String name) => !name.IsNullOrEmpty() && name.EndsWith("Password", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>格式化数据用于显示</summary>
     /// <param name="value"></param>

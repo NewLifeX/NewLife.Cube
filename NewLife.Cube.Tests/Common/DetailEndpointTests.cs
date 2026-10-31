@@ -25,6 +25,12 @@ public class DetailEndpointTests
         [DisplayName("名称")]
         [DataObjectField(false, false, true, 50)]
         public String? Name { get => _Name; set { if (_Name != value) { OnPropertyChanging("Name", value); _Name = value; OnPropertyChanged("Name"); } } }
+
+        private String? _Password;
+        /// <summary>密码</summary>
+        [DisplayName("密码")]
+        [DataObjectField(false, false, true, 200)]
+        public String? Password { get => _Password; set { if (_Password != value) { OnPropertyChanging("Password", value); _Password = value; OnPropertyChanged("Password"); } } }
     }
 
     /// <summary>测试控制器。用内存行替代数据库</summary>
@@ -38,7 +44,7 @@ public class DetailEndpointTests
             var id = key.ToInt();
             if (!Rows.Contains(id)) return null!;
 
-            var entity = new DetailTestEntity { Id = id, Name = "行" + id };
+            var entity = new DetailTestEntity { Id = id, Name = "行" + id, Password = "$sha512$测试哈希" };
             // 索引器的写操作落在扩展字典上，IsNullKey 依赖它判断主键是否为空
             entity["Id"] = id;
 
@@ -73,6 +79,17 @@ public class DetailEndpointTests
         Assert.Equal(5, rs.Data.Id);
         Assert.Equal("行5", rs.Data.Name);
         Assert.Equal(1, controller.ValidCalls);
+    }
+
+    [Fact(DisplayName = "详情：密码等敏感字段返回前清空")]
+    public void Detail_HidesPassword()
+    {
+        var controller = Create(5);
+
+        var rs = controller.Detail("5");
+
+        Assert.Equal("行5", rs.Data.Name);
+        Assert.Null(rs.Data.Password);
     }
 
     [Fact(DisplayName = "详情：主键为空抛参数异常")]
