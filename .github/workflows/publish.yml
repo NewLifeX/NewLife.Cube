@@ -5,6 +5,11 @@ on:
     tags: [ v* ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 jobs:
   test:
     name: test gate
@@ -68,7 +73,12 @@ jobs:
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Swagger/NewLife.Cube.Swagger.csproj
         dotnet pack --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Vue/NewLife.Cube.Vue.csproj
 
+    - name: NuGet login (OIDC)
+      id: nuget-login
+      uses: NuGet/login@v1
+      with:
+        user: NewLife
     - name: Publish
       run: |
         dotnet nuget push ./out/*.nupkg --skip-duplicate --source https://nuget.pkg.github.com/NewLifeX/index.json --api-key ${{ github.token }}
-        dotnet nuget push ./out/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.nugetKey }}
+        dotnet nuget push ./out/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
