@@ -1,0 +1,247 @@
+/* ============================================================
+   cube-density.css — 组件尺寸契约（声明层 + 读取层，自包含）
+   ------------------------------------------------------------
+   Element Plus 有一批尺寸没有 token，只写死在组件 CSS 里：
+     .el-button{height:32px}                        按钮高（is-circle 的 width 同样是写死的）
+     .el-table .el-table__cell{padding:8px 0}       单元格内边距（--small 4 / --large 12）
+     .el-table .cell{line-height:23px}              单元格行高
+     .el-form-item{margin-bottom:18px}              表单项行距（--large 22）
+     .el-select__wrapper{min-height:32/24/40px}     下拉框本体高（不读 --el-component-size）
+     .el-select-dropdown__item{height:34px}         下拉选项行高
+     .el-switch{height:32px}                        开关高
+
+   本文件做两件事：
+     1) 在第 1 节声明这些尺寸的契约变量，**默认值 = EP 原生外观**；
+     2) 在第 2~7 节把 EP 写死的规则改成读契约变量，并给它足够特异性。
+   因此本文件可以无条件全局引入 —— 宿主不重写变量时视觉零变化；
+   宿主只要在更高层（例如 html.some-layout-active）重写这几个变量，
+   全站组件就整体缩放，页面级 / 组件级都不必再写覆盖样式。
+
+   为什么选择器带 `html` 前缀：
+     EP 的写死规则特异性多为 (0,1,0)~(0,2,0)，这里统一抬到 (0,2,1) 以上，
+     保证「变量一旦被重写就一定生效」，且不依赖样式加载顺序。
+     代价是必须显式放行 EP 自己的尺寸变体（--small / --large），见第 4 节。
+
+   与 cube-layout-vars.css 的关系：
+     本文件不依赖它。布局变量那 100+ 条默认值目前仍是「死声明」
+     （无人 import），单独接入需要一次独立的布局视觉回归，
+     不要为了密度功能顺带把那个文件点亮。
+   ============================================================ */
+
+/* ── 1. 契约变量默认值 ─────────────────────────────────────── */
+
+:root {
+  /* EP 把这两个变量只声明在组件根上（.el-card / .el-pagination），:root 里没有。
+     第 2 节用 `inherit` 把它们的「就近声明」接回父级，因此这里必须补一份默认值 ——
+     否则 inherit 解析到 guaranteed-invalid，卡片内边距会归零、分页按钮会塌陷。
+     语义上这仍是一份值，不是两份：宿主覆盖时覆盖的也是同名的这一个变量。 */
+  --el-card-padding: 20px;
+  --el-pagination-button-height: 32px;
+  --el-pagination-button-width: 32px;
+  --el-pagination-button-height-small: 24px;
+  --el-pagination-button-width-small: 24px;
+  --el-pagination-button-height-large: 40px;
+  --el-pagination-button-width-large: 40px;
+
+  /* 档位索引：宿主的「一个数控制全站」旋钮，自行用 calc 派生尺寸。
+     Cube 自身不消费它 —— 它是框架与宿主之间的一个约定名，
+     不是框架行为开关；改了它而宿主没派生，不会发生任何变化。 */
+  --cube-density-index: 0;
+
+  /* 按钮高：与 EP 原生 32 / 24 / 40 一致 */
+  --cube-button-height: 32px;
+  --cube-button-height-small: 24px;
+  --cube-button-height-large: 40px;
+
+  /* 表格表头高：Cube 列表组件的历史值（EP 无此概念，自然高度约 39px） */
+  --cube-table-header-height: 48px;
+
+  /* 数据行高**故意不设全局默认**：
+     CubeTable 历史 58px、宿主同类列表组件（如 SmartMES 的 ListPage）历史 48px，
+     二者不同，给任何一方做默认都会让另一方回归。
+     各消费端写 `var(--cube-table-row-height, 自身历史值)` 回落；
+     宿主在更高层给值后，所有列表行高才会统一跟随。 */
+
+  /* 单元格纵向内边距（EP 写死 8px 0；height 只是最小高度，故需同源派生）。
+     th 与 td 共用一份：EP 本来就把同一条 padding 应用到 `.el-table__cell`，
+     而单元格高度由 height 主导，表头/数据行给不同值并不会真的产生差异，
+     分两个变量只会日后漂移。
+     --small / --large 必须与 EP 的 4 / 12 对齐，
+     否则第 4 节抬特异性后会把 EP 的尺寸变体抹平成同一个值。 */
+  --cube-table-cell-padding-y: 8px;
+  --cube-table-cell-padding-y-small: 4px;
+  --cube-table-cell-padding-y-large: 12px;
+
+  /* 单元格行高（EP 写死 23px；宿主可用无单位倍数，随字号缩放） */
+  --cube-table-cell-line-height: 23px;
+
+  /* 单元格内媒体（图片 / 头像 / 开关 / 复选框）高度上限，none = 不限制 */
+  --cube-table-cell-media-size: none;
+
+  /* 下拉选项行高（EP 写死 34px，只随字号变、不随尺寸变） */
+  --cube-select-option-height: 34px;
+
+  /* 下拉框本体高度（EP 写死 32 / 24 / 40，**完全不读 --el-component-size**，
+     所以不接管的话它会与按钮/输入框高度错开） */
+  --cube-select-height: 32px;
+  --cube-select-height-small: 24px;
+  --cube-select-height-large: 40px;
+
+  /* 下拉框纵向内边距：EP 的大号档是 8px + line-height 24 = 40px，
+     min-height 压不住内容高度，必须同源收窄 padding 才能落回目标高度。
+     （small 档内容只有 2×2+20=24，低于 min-height，无需接管） */
+  --cube-select-padding-y: 4px;
+  --cube-select-padding-y-large: 8px;
+
+  /* 开关高度（EP 写死 32px，--large 40px，无 small 变体） */
+  --cube-switch-height: 32px;
+  --cube-switch-height-large: 40px;
+
+  /* 表单项行距（EP 写死 18px，large 档 22px） */
+  --cube-form-item-gap: 18px;
+  --cube-form-item-gap-large: 22px;
+}
+
+/* ── 2. 就近声明的官方 token：接回父级 ─────────────────────── */
+
+html .el-card {
+  --el-card-padding: inherit;
+}
+
+html .el-pagination {
+  --el-pagination-button-height: inherit;
+  --el-pagination-button-width: inherit;
+  --el-pagination-button-height-small: inherit;
+  --el-pagination-button-width-small: inherit;
+  --el-pagination-button-height-large: inherit;
+  --el-pagination-button-width-large: inherit;
+}
+
+/* ── 3. 按钮高度 ─────────────────────────────────────────────
+   .el-button{height:32px} 写死，--small / --large 读 --el-button-size（24 / 40）。
+   三档各自改读契约变量；is-link 保持 auto 高度（EP 自己也这么写）。 */
+
+html .el-button:not(.is-link) {
+  height: var(--cube-button-height);
+}
+
+html .el-button.el-button--small:not(.is-link) {
+  height: var(--cube-button-height-small);
+}
+
+html .el-button.el-button--large:not(.is-link) {
+  height: var(--cube-button-height-large);
+}
+
+/* 圆形按钮的宽度是另一处写死值（.el-button.is-circle{width:32px}，
+   EP 只有 --small / --large 才读 --el-button-size）。只改高不改宽会变成椭圆，
+   这里让宽高同源。 */
+html .el-button.is-circle:not(.is-link) {
+  width: var(--cube-button-height);
+}
+
+html .el-button.el-button--small.is-circle:not(.is-link) {
+  width: var(--cube-button-height-small);
+}
+
+html .el-button.el-button--large.is-circle:not(.is-link) {
+  width: var(--cube-button-height-large);
+}
+
+/* ── 4. 表格：单元格内边距 / 行高 ───────────────────────────
+   EP 的默认值写在 `.el-table .el-table__cell`(0,2,0)，
+   尺寸变体写在 `.el-table--small / --large .el-table__cell`(0,2,0，源序在后)。
+   这里抬到 (0,2,1)+ 后会把变体一起压掉，所以必须按尺寸分三组分别放行。 */
+
+html .el-table:not(.el-table--small):not(.el-table--large) .el-table__cell {
+  padding: var(--cube-table-cell-padding-y) 0;
+}
+
+html .el-table--small .el-table__cell {
+  padding: var(--cube-table-cell-padding-y-small) 0;
+}
+
+html .el-table--large .el-table__cell {
+  padding: var(--cube-table-cell-padding-y-large) 0;
+}
+
+/* EP 写死 23px，字号变化后会挤，改由契约变量控制 */
+html .el-table .cell {
+  line-height: var(--cube-table-cell-line-height);
+}
+
+/* ── 5. 表格单元格内的行内媒体 ───────────────────────────────
+   目标是「媒体不把行撑高」，所以只约束高度上限。
+   宽度不碰：非方形缩略图若两个轴都收会被压成正方形（cover 裁切或 fill 拉伸），
+   而宽度本来就撑不高行。.el-avatar 本身就是方形，两轴都收无副作用。 */
+
+html .el-table .cell .el-avatar {
+  vertical-align: middle;
+  max-width: var(--cube-table-cell-media-size);
+  max-height: var(--cube-table-cell-media-size);
+}
+
+/* vertical-align 去掉 inline-block 的基线间隙（22px 头像会占掉 27px 行高） */
+html .el-table .cell .el-image {
+  vertical-align: middle;
+  max-height: var(--cube-table-cell-media-size);
+}
+
+/* 内层用 contain 保证「只收高」不会把图片拉变形；
+   页面显式写了 fit 的（inline style）优先，不受本行影响。 */
+html .el-table .cell .el-image .el-image__inner {
+  object-fit: contain;
+}
+
+/* 开关 / 复选框本身是固定高度，收到内容区以内即可 */
+html .el-table .cell .el-switch,
+html .el-table .cell .el-checkbox {
+  max-height: var(--cube-table-cell-media-size);
+}
+
+/* ── 6. 下拉框本体 / 下拉选项 / 开关 ───────────────────────
+   el-select 的下拉被 Teleport 到 body，但仍在 html 之下，能命中本规则；
+   EP 把下拉框的 min-height 写成 32 / 24 / 40（不读 --el-component-size），
+   下拉选项 height 写死 34px，开关写死 32px —— 都不接管就会与按钮/输入框错开。 */
+
+html .el-select__wrapper {
+  min-height: var(--cube-select-height);
+  padding-top: var(--cube-select-padding-y);
+  padding-bottom: var(--cube-select-padding-y);
+}
+
+/* small 档的 padding 由 EP 自己的 (0,2,0) 规则胜出，只接管 min-height */
+html .el-select--small .el-select__wrapper {
+  min-height: var(--cube-select-height-small);
+}
+
+html .el-select--large .el-select__wrapper {
+  min-height: var(--cube-select-height-large);
+  padding-top: var(--cube-select-padding-y-large);
+  padding-bottom: var(--cube-select-padding-y-large);
+}
+
+html .el-select-dropdown__item {
+  height: var(--cube-select-option-height);
+  line-height: var(--cube-select-option-height);
+}
+
+html .el-switch {
+  height: var(--cube-switch-height);
+}
+
+html .el-switch--large {
+  height: var(--cube-switch-height-large);
+}
+
+/* ── 7. 表单项行距 ──────────────────────────────────────────── */
+
+html .el-form-item {
+  margin-bottom: var(--cube-form-item-gap);
+}
+
+/* EP 的 large 档单独写死 22px，需要同样接管
+   （嵌套表单项的 `.el-form-item .el-form-item{margin-bottom:0}` 特异性更高，不受影响） */
+html .el-form-item.el-form-item--large {
+  margin-bottom: var(--cube-form-item-gap-large);
+}

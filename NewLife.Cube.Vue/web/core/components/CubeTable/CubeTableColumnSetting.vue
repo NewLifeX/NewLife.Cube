@@ -46,31 +46,34 @@ function move(index: number, delta: number): void {
       <el-button class="ctcs-trigger" :icon="Setting" circle :title="t('grid.columnSetting')" />
     </template>
     <div class="ctcs-title">{{ t('grid.visibleColumns') }}</div>
-    <div v-for="(item, index) in items" :key="item.key" class="ctcs-item">
-      <el-checkbox
-        :model-value="visibility[item.key] !== false"
-        @change="(v: unknown) => emit('set', item.key, v === true)"
-      >
-        {{ item.label }}
-      </el-checkbox>
-      <span class="ctcs-actions">
-        <el-button
-          link
-          size="small"
-          :icon="ArrowUp"
-          :disabled="index === 0"
-          :title="t('grid.moveUp')"
-          @click="move(index, -1)"
-        />
-        <el-button
-          link
-          size="small"
-          :icon="ArrowDown"
-          :disabled="index === items.length - 1"
-          :title="t('grid.moveDown')"
-          @click="move(index, 1)"
-        />
-      </span>
+    <!-- 列数多 + 大字号时整体高度会超出视口，列表区单独滚动，标题与底部操作常驻 -->
+    <div class="ctcs-list">
+      <div v-for="(item, index) in items" :key="item.key" class="ctcs-item">
+        <el-checkbox
+          :model-value="visibility[item.key] !== false"
+          @change="(v: unknown) => emit('set', item.key, v === true)"
+        >
+          {{ item.label }}
+        </el-checkbox>
+        <span class="ctcs-actions">
+          <el-button
+            link
+            size="small"
+            :icon="ArrowUp"
+            :disabled="index === 0"
+            :title="t('grid.moveUp')"
+            @click="move(index, -1)"
+          />
+          <el-button
+            link
+            size="small"
+            :icon="ArrowDown"
+            :disabled="index === items.length - 1"
+            :title="t('grid.moveDown')"
+            @click="move(index, 1)"
+          />
+        </span>
+      </div>
     </div>
     <div class="ctcs-footer">
       <el-button link type="primary" @click="emit('reset')">{{ t('grid.resetDefault') }}</el-button>
@@ -83,6 +86,19 @@ function move(index: number, delta: number): void {
   font-size: 12px;
   color: var(--el-text-color-secondary);
   padding-bottom: 6px;
+}
+/* 列数多 + 大字号时整体高度会超出视口：列表区限高滚动，标题/底部操作常驻。
+   上限同时受两个条件约束：
+     - 60vh：小屏/大字号下不超过视口，保证滚动条本身可见可拖；
+     - 520px：大屏下不铺满整屏，列少时又不会平白出现滚动条（19 列约 494px）。
+   触发按钮在表格工具栏，面板向下展开，因此实际可用高度已由这两个上限覆盖。 */
+.ctcs-list {
+  max-height: min(520px, 60vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* 滚动时留一点右侧空隙，避免滚动条压住行内按钮 */
+  margin-right: -4px;
+  padding-right: 4px;
 }
 .ctcs-item {
   display: flex;

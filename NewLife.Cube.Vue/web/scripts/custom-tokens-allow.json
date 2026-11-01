@@ -12,6 +12,32 @@
     "--ease",
     "--layout-nav-height",
     "--ai-primary",
-    "--ai-secondary"
+    "--ai-secondary",
+
+    "--cube-density-index",
+
+    "--cube-button-height",
+    "--cube-button-height-small",
+    "--cube-button-height-large",
+
+    "--cube-table-header-height",
+    "--cube-table-row-height",
+    "--cube-table-cell-padding-y",
+    "--cube-table-cell-padding-y-small",
+    "--cube-table-cell-padding-y-large",
+    "--cube-table-cell-line-height",
+    "--cube-table-cell-media-size",
+
+    "--cube-select-option-height",
+    "--cube-select-height",
+    "--cube-select-height-small",
+    "--cube-select-height-large",
+    "--cube-select-padding-y",
+    "--cube-select-padding-y-large",
+    "--cube-switch-height",
+    "--cube-switch-height-large",
+
+    "--cube-form-item-gap",
+    "--cube-form-item-gap-large"
   ]
 }

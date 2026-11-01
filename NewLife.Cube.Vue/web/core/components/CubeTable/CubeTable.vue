@@ -256,12 +256,15 @@ const metaMissing = computed(() => ctx.metaMissing?.value === true);
   --el-table-header-bg-color: var(--el-fill-color-light);
   --el-table-row-hover-bg-color: var(--el-color-primary-light-9);
 }
+/* 表头高 / 行高由 --cube-table-* 契约变量控制（见 cube-density.css），
+   宿主按密度重写变量即可整体缩放，无需再写覆盖样式。
+   两个变量都带本组件的历史值做 fallback：变量缺失时退回原样而不是塌成 auto。 */
 .ct-table-wrap :deep(th.el-table__cell) {
-  height: 48px;
+  height: var(--cube-table-header-height, 48px);
   color: var(--el-text-color-primary);
   font-weight: 500;
 }
 .ct-table-wrap :deep(td.el-table__cell) {
-  height: 58px;
+  height: var(--cube-table-row-height, 58px);
 }
 </style>
