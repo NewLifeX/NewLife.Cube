@@ -101,7 +101,7 @@ public static partial class MenuHelper
             {
                 var method = fullName[(p + 1)..];
                 var controller = ResolveMenuType(fullName[..p]);
-                if (controller != null && HasPublicInstanceMethod(controller, method)) type = controller;
+                if (controller != null && FindPublicInstanceMethod(controller, method) != null) type = controller;
             }
         }
 
@@ -111,18 +111,27 @@ public static partial class MenuHelper
         return type;
     }
 
-    /// <summary>控制器是否存在指定名称的 public 实例 Action（含重载，避免 GetMethod 抛 AmbiguousMatchException）</summary>
-    static Boolean HasPublicInstanceMethod(Type controller, String methodName)
+    /// <summary>按名称查找 public 实例 Action（含重载；优先带 DisplayName 的方法，避免 GetMethod 抛 AmbiguousMatchException）</summary>
+    /// <param name="controller">控制器类型</param>
+    /// <param name="methodName">Action 方法名</param>
+    /// <returns>匹配的方法，未找到返回 null</returns>
+    internal static MethodInfo? FindPublicInstanceMethod(Type controller, String methodName)
     {
-        if (controller == null || methodName.IsNullOrEmpty()) return false;
+        if (controller == null || methodName.IsNullOrEmpty()) return null;
 
         const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
+        MethodInfo? fallback = null;
         foreach (var method in controller.GetMethods(flags))
         {
-            if (method.Name == methodName) return true;
+            if (method.Name != methodName) continue;
+
+            if (fallback == null) fallback = method;
+
+            var name = method.GetDisplayName();
+            if (!name.IsNullOrEmpty()) return method;
         }
 
-        return false;
+        return fallback;
     }
     #endregion
 }
