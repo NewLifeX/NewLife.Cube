@@ -445,7 +445,11 @@ export function createCubeEngine(
       const raw = deps.getDetail ? await deps.getDetail(type.value, id) : await fetchDetail(type.value, id);
       // 详情回包期间若弹窗已被关掉（用户手快），就不要再把值灌回一个已关闭的模型
       if (!dialogVisible.value || formMode.value !== mode) return;
-      const merged = normalizeDetailBooleans(raw ?? {}, fields.value);
+      // 详情回包对布尔字段会同时带 camelCase/PascalCase 两个键（如 visible + Visible）。
+      // 必须先清洗再灌入表单：否则 FormContent 按字段名命中 PascalCase 键回写，
+      // 提交时 cleanRowForUpdate 又会丢弃 PascalCase 键，用户改的值被旧 camelCase 键覆盖
+      // → 接口返回成功但库内未变（菜单可见性即为此类）。
+      const merged = cleanRowForUpdate(normalizeDetailBooleans(raw ?? {}, fields.value));
       Object.assign(formModel, merged);
       // 详情接口可能不返回主键，而 PUT 需要它定位记录
       if (resolveRowId(formModel, idKey.value) === undefined) formModel[idKey.value] = id;

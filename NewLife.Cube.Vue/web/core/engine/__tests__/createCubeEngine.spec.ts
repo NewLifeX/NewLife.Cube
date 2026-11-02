@@ -482,6 +482,26 @@ describe('createCubeEngine 表单提交', () => {
     expect(notify.success).toHaveBeenCalledWith(t('engine.updateSuccess'));
   });
 
+  it('应该只保留 camelCase 布尔键 当详情同时下发 PascalCase 副本时', async () => {
+    const { deps, http } = makeDeps({
+      getDetail: async () => ({ id: 5, name: 'a', enable: true, Enable: 1 }),
+    });
+    const ctx = createCubeEngine({ routePath: ROUTE }, deps);
+    await ctx.init();
+    await ctx.openEdit({ id: 5 });
+
+    // 表单模型只剩 camelCase 键，字段组件按 resolveKey 回写同一键
+    expect(ctx.formModel.enable).toBe(true);
+    expect('Enable' in ctx.formModel).toBe(false);
+
+    // 模拟开关关闭：新值不能被详情里的旧 PascalCase 副本吃掉（否则接口成功但库内不变）
+    ctx.formModel.enable = false;
+    expect(await ctx.submitForm()).toBe(true);
+    const put = lastCall(http, 'put');
+    expect(put?.data).toMatchObject({ id: 5, enable: false });
+    expect(put?.data).not.toHaveProperty('Enable');
+  });
+
   it('应该只关闭弹窗 当查看模式提交时', async () => {
     const { deps, http } = makeDeps();
     const ctx = createCubeEngine({ routePath: ROUTE }, deps);
