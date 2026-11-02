@@ -46,6 +46,7 @@ public static class CubeOpenApiExtensions
 #if NET10_0_OR_GREATER
         services.ConfigureAll<OpenApiOptions>(options =>
         {
+            options.AddSchemaTransformer(new EnumDescriptionOpenApiSchemaTransformer());
             options.AddOperationTransformer(new EntryXmlCommentOperationTransformer());
             options.AddSchemaTransformer(new EntryXmlCommentSchemaTransformer());
         });
