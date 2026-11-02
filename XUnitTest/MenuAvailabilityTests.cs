@@ -30,6 +30,10 @@ public class MenuAvailabilityTests
     [Fact(DisplayName = "当前宿主存在的控制器方法：可用")]
     public void ExistingControllerAction_Available() => Assert.True(MenuHelper.IsMenuAvailable($"{_controller}.Index"));
 
+    [Fact(DisplayName = "存在 Action 重载的控制器方法：可用且不抛歧义异常")]
+    public void ExistingControllerAction_WithOverloads_Available() =>
+        Assert.True(MenuHelper.IsMenuAvailable($"{_controller}.Info"));
+
     [Fact(DisplayName = "当前宿主不存在的控制器（API 版值集管理）：不可用")]
     public void MissingController_Unavailable() => Assert.False(MenuHelper.IsMenuAvailable("NewLife.Cube.Areas.Admin.Controllers.LovController"));
 

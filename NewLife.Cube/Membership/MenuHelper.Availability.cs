@@ -101,7 +101,7 @@ public static partial class MenuHelper
             {
                 var method = fullName[(p + 1)..];
                 var controller = ResolveMenuType(fullName[..p]);
-                if (controller != null && controller.GetMethod(method, BindingFlags.Public | BindingFlags.Instance) != null) type = controller;
+                if (controller != null && HasPublicInstanceMethod(controller, method)) type = controller;
             }
         }
 
@@ -109,6 +109,20 @@ public static partial class MenuHelper
         if (type != null) _types[fullName] = type;
 
         return type;
+    }
+
+    /// <summary>控制器是否存在指定名称的 public 实例 Action（含重载，避免 GetMethod 抛 AmbiguousMatchException）</summary>
+    static Boolean HasPublicInstanceMethod(Type controller, String methodName)
+    {
+        if (controller == null || methodName.IsNullOrEmpty()) return false;
+
+        const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
+        foreach (var method in controller.GetMethods(flags))
+        {
+            if (method.Name == methodName) return true;
+        }
+
+        return false;
     }
     #endregion
 }
