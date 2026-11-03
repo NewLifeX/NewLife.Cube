@@ -350,7 +350,7 @@ public List<Menu> GetDynamicMenus()
 - **MVC 版**：与左侧菜单相同的 `MenuHelper.FilterAvailable` + `IMenuFactory.GetMySubMenus(..., user, true)` 权限链路；开启多租户时按 `MenuHelper.CheckVisible(menu, isTenant)` 过滤租户/后台菜单。
 - **API 版**：直接使用 `/Cube/MenuTree` 返回的菜单树，该接口已按当前用户角色过滤。
 
-同时排除 `Visible=false` 的隐藏菜单、无 `Url` 的分类节点，以及本站未部署控制器的菜单（`IsMenuAvailable`）。搜索不会额外暴露 `FullName`、权限子项等内部结构。
+隐藏菜单（`Visible=false`，如基本设置/系统设置/星尘设置等设置页、用户在线等内部页）同样参与搜索：它们不显示在导航里，但页面真实存在且可被链接打开，因此也应能被搜到并直接跳转。仅排除无 `Url` 的分类节点，以及本站未部署控制器的菜单（`IsMenuAvailable`）。搜索不会额外暴露 `FullName`、权限子项等内部结构。
 
 ### 匹配规则
 
