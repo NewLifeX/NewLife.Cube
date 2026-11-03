@@ -10,6 +10,7 @@ using NewLife.Model;
 using NewLife.Remoting;
 using NewLife.Security;
 using NewLife.Serialization;
+using XCode;
 using XCode.Membership;
 using IActionFilter = Microsoft.AspNetCore.Mvc.Filters.IActionFilter;
 
@@ -348,6 +349,16 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
         var type = GetType();
         if (type.BaseType.IsGenericType) type = type.BaseType.GetGenericArguments().FirstOrDefault();
+
+        // 设置页的配置类没有实体表，日志类别取类型显示名，必须按当前语言翻译后写入；
+        // 否则写进数据库的是特性上的源文（英文），之后切换语言也不会变化
+        if (type != null && !typeof(IEntity).IsAssignableFrom(type))
+        {
+            var category = L.T(type.GetDisplayName() ?? type.GetDescription() ?? type.Name);
+            LogProvider.Provider?.WriteLog(category, action, success, remark, 0, null, UserHost);
+
+            return;
+        }
 
         LogProvider.Provider?.WriteLog(type, action, success, remark, 0, null, UserHost);
     }

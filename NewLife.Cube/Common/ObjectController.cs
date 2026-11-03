@@ -143,6 +143,14 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         // 构造修改日志
         var sb = new StringBuilder();
         var cfg = Value;
+
+        // 字段名取表单同款本地化显示名。特性上的显示名是源文（英文），直接写入会让日志永远与界面语言不一致
+        var names = new Dictionary<String, String>();
+        foreach (var item in DataField.Localize(GetMembers(obj.GetType())))
+        {
+            if (!item.Name.IsNullOrEmpty()) names[item.Name] = item.DisplayName;
+        }
+
         foreach (var pi in obj.GetType().GetProperties(true))
         {
             if (!pi.CanWrite) continue;
@@ -153,7 +161,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
             {
                 if (sb.Length > 0) sb.Append(", ");
 
-                var name = pi.GetDisplayName();
+                if (!names.TryGetValue(pi.Name, out var name) || name.IsNullOrEmpty()) name = pi.GetDisplayName();
                 if (name.IsNullOrEmpty()) name = pi.Name;
                 sb.AppendFormat("{0}:{1}=>{2}", name, v2, v1);
             }
