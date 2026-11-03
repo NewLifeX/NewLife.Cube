@@ -43,6 +43,10 @@ import App from './App.vue';
 import router from './router';
 import i18n, { getEpLocale } from './i18n';
 import './global.css';
+/* 组件尺寸契约：声明默认值（= EP 原生外观）+ 把 EP 写死的尺寸读成变量。
+   自包含，不依赖 cube-layout-vars.css（那个文件的默认值目前仍未启用，
+   接入需要独立做一次布局视觉回归，不要顺带点亮）。 */
+import './cube-density.css';
 import {
   appProvide,
   hasProvided,

@@ -35,6 +35,9 @@ public static class SwaggerService
             foreach (var xmlFile in XmlCommentFiles.Collect())
                 options.IncludeXmlComments(xmlFile, true);
 
+            // 枚举 [Description] 取值表：运行时 Swagger UI / Scalar 读 Swashbuckle 的 /swagger/*.json
+            options.SchemaFilter<EnumDescriptionSchemaFilter>();
+
             var asm = AssemblyX.Entry;
             // 文档标题默认读项目系统展示名（SysConfig.DisplayName，即 LoginConfig 返回给前端的同源字段），
             // 未配置时回退框架原名，零侵入兼容既有宿主；项目入口只需设置 DisplayName 一处

@@ -119,7 +119,7 @@ public static partial class MenuHelper
         if (!typeName.IsNullOrEmpty() && fullName.Length > typeName.Length + 1 && fullName.StartsWith(typeName + "."))
         {
             var methodName = fullName[(typeName.Length + 1)..];
-            var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
+            var method = FindPublicInstanceMethod(type, methodName);
             if (method != null)
             {
                 var name = method.GetDisplayName();
