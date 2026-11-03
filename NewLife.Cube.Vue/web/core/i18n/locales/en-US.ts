@@ -366,6 +366,27 @@ export default {
   'route.default': 'Default page',
 
   // Parameters (Admin/Parameter)
+  'parameterAdmin.subtitle':
+    'Manage key-value settings by category and name. User 0 is system-wide; use Long value for large text.',
+  'parameterAdmin.tipTitle': 'How it works',
+  'parameterAdmin.tipBody':
+    'Category + Name uniquely identifies a row. System settings and feature flags live here; restart or follow module docs if changes are not hot-reloaded.',
+  'parameterAdmin.systemScope': 'System',
+  'parameterAdmin.userScope': 'User #{id}',
+  'parameterAdmin.copyValue': 'Copy',
+  'parameterAdmin.copySuccess': 'Copied to clipboard',
+  'parameterAdmin.categoryNav': 'Categories',
+  'parameterAdmin.categoryTotal': '{count} groups',
+  'parameterAdmin.allCategories': 'All categories',
+  'parameterAdmin.filterCategory': 'Filter categories',
+  'parameterAdmin.systemOnly': 'System scope only (user 0)',
+  'parameterAdmin.searchPlaceholder': 'Search name or value',
+  'parameterAdmin.addInCategory': 'Add in this category',
+  'parameterAdmin.panelAll': 'All parameters',
+  'parameterAdmin.panelCategory': 'Category · {name}',
+  'parameterAdmin.panelCountAll': '{count} entries total',
+  'parameterAdmin.panelCountFiltered': '{count} in current filter',
+  'parameterAdmin.uncategorized': '(Uncategorized)',
 
   // User connections
 

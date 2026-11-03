@@ -30,6 +30,8 @@ const viewComponentCache = new Map<string, ComponentLoader>();
 const allViewModules = import.meta.glob([
   '/apps/*/src/views/**/index.vue',
   '/@newlifex/cube-vue/core/apps/*/src/views/**/index.vue',
+  // cube-vue 包内微应用（宿主以 link/npm 接入时，宿主 apps/ 可能只有业务子应用，须从此处收集 cube-admin 等内置视图）
+  '../../apps/*/src/views/**/index.vue',
 ], { eager: false });
 
 /**
