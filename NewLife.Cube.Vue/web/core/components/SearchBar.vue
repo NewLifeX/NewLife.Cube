@@ -382,18 +382,32 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   gap: 8px;
   padding: 9px 12px;
   border: 1px solid var(--el-border-color);
-  border-radius: var(--radius-sm, 8px);
+  border-radius: 999px;
   background: var(--el-fill-color-light);
-  transition: border-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
+
+  &:hover {
+    border-color: var(--el-border-color-darker);
+  }
 
   &:focus-within {
     border-color: var(--el-color-primary);
+    background: var(--el-bg-color-overlay);
+    box-shadow: 0 0 0 3px var(--el-color-primary-light-8);
+
+    .ms-icon {
+      color: var(--el-color-primary);
+    }
   }
 }
 
 .ms-icon {
   color: var(--el-text-color-secondary);
   flex-shrink: 0;
+  transition: color 0.2s;
 }
 
 .ms-input {
@@ -457,7 +471,12 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   cursor: pointer;
   transition: background 0.12s;
 
-  &.is-active {
+  &:hover {
+    background: var(--el-fill-color-light);
+  }
+
+  &.is-active,
+  &.is-active:hover {
     background: var(--el-color-primary-light-9);
   }
 }
@@ -471,8 +490,9 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   text-overflow: ellipsis;
 
   mark {
-    padding: 0;
-    background: var(--el-color-warning-light-7);
+    padding: 0 1px;
+    border-radius: 3px;
+    background: var(--el-color-primary-light-8);
     color: inherit;
   }
 }
@@ -500,22 +520,33 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   background: var(--el-fill-color-light);
   border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-sm, 8px);
-  padding: 7px 10px;
+  padding: 7px 8px 7px 10px;
   width: 100%;
   box-sizing: border-box;
   transition:
     border-color 0.2s,
-    background 0.2s;
+    background-color 0.2s,
+    box-shadow 0.2s;
+
+  &:hover {
+    border-color: var(--el-border-color);
+  }
 
   &.focused,
   &:focus-within {
     border-color: var(--el-color-primary);
+    box-shadow: 0 0 0 3px var(--el-color-primary-light-8);
+
+    .sb-icon {
+      color: var(--el-color-primary);
+    }
   }
 }
 
 .sb-icon {
   color: var(--el-text-color-secondary);
   flex-shrink: 0;
+  transition: color 0.2s;
 }
 
 .sb-input {
@@ -536,29 +567,33 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
 .sb-clear {
   background: none;
   border: none;
-  padding: 2px;
+  padding: 0;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
   color: var(--el-text-color-secondary);
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: 50%;
   transition:
     color 0.15s,
-    background 0.15s;
+    background-color 0.15s;
 
   &:hover {
     color: var(--el-text-color-primary);
-    background: var(--el-fill-color-light);
+    background: var(--el-fill-color);
   }
 }
 
 /* ── 结果面板 ── */
 .sb-results {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
+  padding: 6px;
   background: var(--el-bg-color-overlay);
   border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-md, 10px);
@@ -588,16 +623,16 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 14px;
+  padding: 8px 10px;
   background: none;
   border: none;
-  border-bottom: 1px solid var(--el-border-color-light);
+  border-radius: var(--radius-sm, 8px);
   cursor: pointer;
   text-align: left;
   transition: background 0.1s;
 
-  &:last-child {
-    border-bottom: none;
+  & + & {
+    margin-top: 2px;
   }
 
   &:hover {
