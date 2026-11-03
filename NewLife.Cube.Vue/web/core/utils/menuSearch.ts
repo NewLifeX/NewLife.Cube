@@ -15,9 +15,9 @@ export function getSearchTokens(keyword?: string): string[] {
     .filter((token) => token.length > 0);
 }
 
-/** 是否参与搜索：隐藏菜单不参与，无路径的分类节点也不参与 */
+/** 是否参与搜索：隐藏菜单同样参与（隐藏页可被链接打开，也应可被搜到），无路径的分类节点不参与 */
 export function isSearchableMenu(menu: FlatMenuItem): boolean {
-  return menu.visible !== false && Boolean(menu.path);
+  return Boolean(menu.path);
 }
 
 /**
@@ -33,20 +33,6 @@ export function getMenuPath(menus: FlatMenuItem[], menu: FlatMenuItem): string {
     new Map(menus.map((item) => [item.id, item])),
     menu,
   ).path;
-}
-
-/** 祖级中是否存在隐藏菜单。隐藏父菜单的整棵子树不属于导航 */
-function hasHiddenAncestor(map: Map<string, FlatMenuItem>, menu: FlatMenuItem): boolean {
-  const visited = new Set<string>();
-  let current = menu.parentId ? map.get(menu.parentId) : undefined;
-
-  while (current && !visited.has(current.id)) {
-    if (current.visible === false) return true;
-    visited.add(current.id);
-    current = current.parentId ? map.get(current.parentId) : undefined;
-  }
-
-  return false;
 }
 
 /** 菜单路径及其拼音。pinyin/initials 由后端的库中源文显示名计算 */
@@ -134,7 +120,7 @@ export function searchMenus(
   const pathMap = new Map(menus.map((item) => [item.id, item]));
   const results: MenuSearchResult[] = [];
   for (const menu of menus) {
-    if (!isSearchableMenu(menu) || hasHiddenAncestor(pathMap, menu)) continue;
+    if (!isSearchableMenu(menu)) continue;
 
     // 父级显示名/拼音也参与匹配：输入“系统 用户”或“xitong yh”可命中“系统管理 › 用户”
     const info = getMenuPathInfo(pathMap, menu);
@@ -179,7 +165,7 @@ export function searchMenus(
 /**
  * 最近使用的菜单
  *
- * 按 recentUrls 顺序映射为可搜索菜单，去重并跳过已失效/隐藏的菜单。
+ * 按 recentUrls 顺序映射为可搜索菜单，去重并跳过已失效的菜单。
  * @param menus 平铺菜单
  * @param recentUrls 最近使用的菜单 URL，最近的在前
  * @param limit 最大返回条数
@@ -195,7 +181,7 @@ export function getRecentMenus(
   const pathMap = new Map(menus.map((item) => [item.id, item]));
   const byUrl = new Map<string, FlatMenuItem>();
   for (const menu of menus) {
-    if (!isSearchableMenu(menu) || hasHiddenAncestor(pathMap, menu)) continue;
+    if (!isSearchableMenu(menu)) continue;
     if (!byUrl.has(menu.path)) byUrl.set(menu.path, menu);
   }
 

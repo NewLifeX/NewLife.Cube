@@ -443,7 +443,8 @@ public static partial class MenuHelper
         return att.Mode.Has(MenuModes.Admin) || !att.Mode.Has(MenuModes.Tenant);
     }
 
-    /// <summary>构建菜单搜索数据。遍历权限过滤后的菜单树，收集可见且带链接的菜单项</summary>
+    /// <summary>构建菜单搜索数据。遍历权限过滤后的菜单树，收集带链接的菜单项</summary>
+    /// <remarks>隐藏菜单（Visible=false，如设置页、内部页）同样参与搜索，它们不显示在导航里但页面真实存在且可被链接打开</remarks>
     /// <param name="menus">顶层菜单，已按权限与租户过滤</param>
     /// <param name="getChildren">获取子菜单，已按权限与租户过滤；返回空表示无子菜单</param>
     /// <param name="modules">用户模块字典，键为顶层菜单名；不在字典中的顶层菜单归入 base</param>
@@ -459,7 +460,7 @@ public static partial class MenuHelper
         {
             foreach (var menu in items)
             {
-                if (menu == null || !menu.Visible) continue;
+                if (menu == null) continue;
                 if (menu.ID > 0 && !visited.Add(menu.ID)) continue;
 
                 var name = GetDisplayName(menu) ?? menu.Name;
@@ -505,7 +506,7 @@ public static partial class MenuHelper
 
         foreach (var menu in menus)
         {
-            if (menu == null || !menu.Visible) continue;
+            if (menu == null) continue;
 
             var module = modules != null && modules.ContainsKey(menu.Name) ? menu.Name : "base";
             Walk([menu], module, null, null);
