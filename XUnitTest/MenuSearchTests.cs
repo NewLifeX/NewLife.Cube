@@ -48,8 +48,8 @@ public class MenuSearchTests
     }
 
     [Fact]
-    [DisplayName("收集可见且有链接的菜单，保留层级路径与模块")]
-    public void BuildSearchMenus_CollectsVisibleUrls_WithModuleAndPath()
+    [DisplayName("收集带链接的菜单（含隐藏菜单），保留层级路径与模块")]
+    public void BuildSearchMenus_CollectsUrls_WithModuleAndPath()
     {
         var system = Menu(1, "ZxSystem", "ZxSystem");
         var user = Menu(2, "ZxUser", "ZxUsers", "~/Admin/User");
@@ -71,8 +71,8 @@ public class MenuSearchTests
 
         var list = Build([system, tools], children, modules);
 
-        Assert.Equal(4, list.Count);
-        Assert.DoesNotContain(list, e => e.ID == 4);
+        Assert.Equal(5, list.Count);
+        Assert.Contains(list, e => e.ID == 4);
         Assert.DoesNotContain(list, e => e.ID == 5);
 
         var userItem = list.First(e => e.ID == 2);
@@ -89,6 +89,25 @@ public class MenuSearchTests
         var logItem = list.First(e => e.ID == 8);
         Assert.Equal("base", logItem.Module);
         Assert.True(logItem.NewWindow);
+    }
+
+    [Fact]
+    [DisplayName("隐藏菜单（如星尘设置）参与搜索并可直达页面")]
+    public void BuildSearchMenus_IncludesHiddenMenus()
+    {
+        var admin = Menu(1, "Admin", "系统管理");
+        var star = Menu(2, "Star", "星尘设置", "/Admin/Star", visible: false);
+
+        var children = new Dictionary<Int32, IList<IMenu>>
+        {
+            [1] = [star],
+        };
+
+        var list = Build([admin], children, null);
+
+        var item = Assert.Single(list);
+        Assert.Equal("/Admin/Star", item.Url);
+        Assert.Equal("系统管理 / 星尘设置", item.Path);
     }
 
     [Fact]

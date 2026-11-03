@@ -29,22 +29,22 @@ const menus: FlatMenuItem[] = [
 ];
 
 describe('menuSearch', () => {
-  it('隐藏菜单与无路径菜单不参与搜索', () => {
+  it('隐藏菜单参与搜索，无路径菜单不参与搜索', () => {
     expect(isSearchableMenu(menu('1', 'A', 'A', '/A'))).toBe(true);
-    expect(isSearchableMenu(menu('1', 'A', 'A', '/A', null, false))).toBe(false);
+    expect(isSearchableMenu(menu('1', 'A', 'A', '/A', null, false))).toBe(true);
     expect(isSearchableMenu(menu('1', 'A', 'A'))).toBe(false);
 
     const results = searchMenus(menus, 'hidden');
-    expect(results).toEqual([]);
+    expect(results.map((e) => e.menu.id)).toEqual(['4']);
   });
 
-  it('隐藏父菜单的整棵子树不参与搜索', () => {
+  it('隐藏父菜单下的子菜单仍参与搜索', () => {
     const list = [
       menu('1', 'HiddenGroup', 'Hidden group', '/HiddenGroup', null, false),
       menu('2', 'VisibleChild', 'Visible child', '/HiddenGroup/Child', '1'),
     ];
 
-    expect(searchMenus(list, 'visible')).toEqual([]);
+    expect(searchMenus(list, 'visible').map((e) => e.menu.id)).toEqual(['2']);
   });
 
   it('按显示名、菜单名、URL 匹配且忽略大小写', () => {
