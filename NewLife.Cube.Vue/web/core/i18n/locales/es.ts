@@ -347,6 +347,7 @@ export default {
   'route.login': 'Iniciar sesión',
   'route.activate': 'Activación de cuenta',
   'route.security': 'Centro de seguridad',
+  'route.profile': 'Perfil',
   'route.unauthorized': 'No autorizado',
   'route.loading': 'Cargando',
   'route.default': 'Página predeterminada',
@@ -650,6 +651,25 @@ export default {
   // Configuración de XCode
 
   // Estadísticas de usuarios
+
+  // Centro personal
+  'profile.title': 'Perfil',
+  'profile.basic': 'Información básica',
+  'profile.displayName': 'Nombre visible',
+  'profile.role': 'Rol',
+  'profile.online': 'En línea',
+  'profile.offline': 'Desconectado',
+  'profile.enabled': 'Habilitado',
+  'profile.disabled': 'Deshabilitado',
+  'profile.contact': 'Contacto',
+  'profile.securityManage': 'Gestionar en el centro de seguridad',
+  'profile.loginInfo': 'Actividad de inicio de sesión',
+  'profile.logins': 'Número de inicios de sesión',
+  'profile.lastLogin': 'Último inicio de sesión',
+  'profile.lastLoginIP': 'IP del último inicio de sesión',
+  'profile.registerTime': 'Fecha de registro',
+  'profile.registerIP': 'IP de registro',
+  'profile.loadFailed': 'Error al cargar la información del usuario',
 
   // Centro de seguridad
   'security.title': 'Centro de seguridad',

@@ -346,6 +346,7 @@ export default {
   'route.login': '로그인',
   'route.activate': '계정 활성화',
   'route.security': '보안 센터',
+  'route.profile': '프로필',
   'route.unauthorized': '권한 없음',
   'route.loading': '로딩 중',
   'route.default': '기본 페이지',
@@ -650,6 +651,25 @@ export default {
   // XCode 설정
 
   // 사용자 통계
+
+  // 개인 센터
+  'profile.title': '프로필',
+  'profile.basic': '기본 정보',
+  'profile.displayName': '표시 이름',
+  'profile.role': '역할',
+  'profile.online': '온라인',
+  'profile.offline': '오프라인',
+  'profile.enabled': '사용',
+  'profile.disabled': '사용 안 함',
+  'profile.contact': '연락처',
+  'profile.securityManage': '보안 센터에서 관리',
+  'profile.loginInfo': '로그인 정보',
+  'profile.logins': '로그인 횟수',
+  'profile.lastLogin': '마지막 로그인',
+  'profile.lastLoginIP': '마지막 로그인 IP',
+  'profile.registerTime': '등록 시간',
+  'profile.registerIP': '등록 IP',
+  'profile.loadFailed': '사용자 정보를 불러오지 못했습니다',
 
   // 보안 센터
   'security.title': '보안 센터',
