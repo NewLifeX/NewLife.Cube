@@ -6,8 +6,9 @@ using Xunit;
 namespace NewLife.Cube.Tests.Common;
 
 /// <summary>
-/// DEVOPS-5 发布前测试门禁测试。守护 CI 工作流中"发布前必须跑测试"的步骤，
-/// 防止后续调整流水线时把测试门禁悄悄删掉。
+/// CI 门禁测试。发布流水线（publish/publish-beta）只负责构建、打包、推送，
+/// 测试门禁统一由 test.yml 承担（push/PR 触发，多平台矩阵 + 前端 i18n + E2E）。
+/// 这里守护"测试工作流真的会跑后端测试"，防止调整流水线时把测试门禁整体删掉。
 /// </summary>
 public class CiGateTests
 {
@@ -33,19 +34,17 @@ public class CiGateTests
         return File.ReadAllText(file);
     }
 
-    [Fact(DisplayName = "发布门禁_发布流水线包含后端测试步骤")]
-    public void PublishWorkflows_RunBackendTests()
+    [Fact(DisplayName = "CI_测试工作流覆盖两个后端测试工程")]
+    public void TestWorkflow_CoversBackendTests()
     {
         var dir = FindWorkflowDir();
         if (dir == null) return;
 
-        foreach (var name in new[] { "publish.yml", "publish-beta.yml" })
-        {
-            var yml = ReadWorkflow(dir, name);
+        var yml = ReadWorkflow(dir, "test.yml");
 
-            Assert.Contains("dotnet test", yml);
-            Assert.Contains("NewLife.Cube.Tests", yml);
-        }
+        Assert.Contains("XUnitTest/XUnitTest.csproj", yml);
+        Assert.Contains("NewLife.Cube.Tests/NewLife.Cube.Tests.csproj", yml);
+        Assert.Contains("dotnet test", yml);
     }
 
     [Fact(DisplayName = "发布门禁_共享包发布前运行前端包测试")]
