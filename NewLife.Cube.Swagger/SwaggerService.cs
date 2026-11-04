@@ -126,6 +126,11 @@ public static class SwaggerService
     /// <returns></returns>
     public static IApplicationBuilder UseCubeSwagger(this IApplicationBuilder app, String? routePrefix = null)
     {
+        // Basic 认证守卫必须**先于** UseSwagger/UseSwaggerUI 注册：SwaggerUI 页面与静态资源由外层管道直接服务，
+        // 若守卫注册在其后（例如只放在 UseCubeScalar 里），/swagger 请求会在命中守卫前就被 200 服务掉，导致拦截失效。
+        // /scalar 的守卫在 UseCubeScalar 内自带（其端点仅在该分支注册），两者互不重叠、不重复认证。
+        app.UseDocumentationBasicAuth(path => IsSwaggerDocumentationPath(path));
+
         app.UseSwagger();
         //app.UseSwaggerUI();
         app.UseSwaggerUI(options =>
@@ -176,20 +181,9 @@ public static class SwaggerService
     /// <returns></returns>
     public static WebApplication UseCubeScalar(this WebApplication app, String? title = null)
     {
-        app.UseWhen(ctx => IsProtectedDocumentationPath(ctx.Request.Path), branch =>
+        app.UseWhen(ctx => IsScalarDocumentationPath(ctx.Request.Path), branch =>
         {
-            branch.Use(async (ctx, next) =>
-            {
-                var userName = app.Configuration["Swagger:UserName"] ?? "newlife";
-                var password = app.Configuration["Swagger:Password"] ?? "newlife@2026";
-                if (!VerifyBasicAuth(ctx, userName, password))
-                {
-                    ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    ctx.Response.Headers.WWWAuthenticate = "Basic realm=\"Scalar\"";
-                    return;
-                }
-                await next();
-            });
+            branch.UseDocumentationBasicAuth(IsScalarDocumentationPath);
 
             branch.Use(async (ctx, next) =>
             {
@@ -229,11 +223,31 @@ public static class SwaggerService
         return app;
     }
 
-    private static Boolean IsProtectedDocumentationPath(PathString path)
+    private static void UseDocumentationBasicAuth(this IApplicationBuilder app, Func<PathString, Boolean> isProtected)
     {
-        return path.StartsWithSegments("/scalar", StringComparison.OrdinalIgnoreCase) ||
-            (path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase) && path.Value!.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
+        var cfg = app.ApplicationServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+        app.UseWhen(ctx => isProtected(ctx.Request.Path), branch =>
+        {
+            branch.Use(async (ctx, next) =>
+            {
+                var userName = cfg["Swagger:UserName"] ?? "newlife";
+                var password = cfg["Swagger:Password"] ?? "newlife@2026";
+                if (!VerifyBasicAuth(ctx, userName, password))
+                {
+                    ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    ctx.Response.Headers.WWWAuthenticate = "Basic realm=\"API Docs\"";
+                    return;
+                }
+                await next();
+            });
+        });
     }
+
+    private static Boolean IsSwaggerDocumentationPath(PathString path)
+        => path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase);
+
+    private static Boolean IsScalarDocumentationPath(PathString path)
+        => path.StartsWithSegments("/scalar", StringComparison.OrdinalIgnoreCase);
 
     private static Boolean VerifyBasicAuth(HttpContext context, String userName, String password)
     {
