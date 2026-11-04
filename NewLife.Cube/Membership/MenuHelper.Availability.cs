@@ -40,12 +40,10 @@ public static partial class MenuHelper
         // 区域根节点保存命名空间，是否可用由子菜单决定
         else if (fullName.EndsWith(".Controllers"))
             available = true;
+        // 其余都是方法级菜单：ResolveMenuType 已按“控制器存在且方法存在”解析，
+        // 解析不到就说明方法已被删除/改名，不能再退回只看控制器（否则点开就是 404）
         else
-        {
-            // 方法级菜单，去掉方法名后再解析控制器
-            var p = fullName.LastIndexOf('.');
-            available = p > 0 && ResolveMenuType(fullName[..p]) != null;
-        }
+            available = false;
 
         return _available[fullName] = available;
     }
