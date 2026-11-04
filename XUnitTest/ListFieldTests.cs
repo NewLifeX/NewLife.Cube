@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
+using NewLife.Cube;
 using NewLife.Cube.ViewModels;
+using XCode.Membership;
 using Xunit;
 
 namespace XUnitTest;
@@ -79,6 +81,44 @@ public class ListFieldTests
 
         field.Header = "用户";
         Assert.Equal("用户", field.Header);
+    }
+
+    [Fact]
+    [DisplayName("控制器用显示名作单元格模板时，列头仍取字段默认显示名")]
+    public void Localize_TemplateDisplayName_KeepsDefaultHeader()
+    {
+        var fi = User.Meta.Factory.Table.FindByName("Name")!;
+
+        // 同一字段不做模板改造时的列头，作为基准
+        var normal = new ListField();
+        normal.Fill(fi);
+        normal.Localize();
+        Assert.False(String.IsNullOrEmpty(normal.Header));
+
+        // 控制器把 DisplayName 改作单元格文字模板，列头不应跟着变成模板原文
+        var field = new ListField();
+        field.Fill(fi);
+        field.DisplayName = "{Name}";
+        field.Localize();
+
+        Assert.Equal("{Name}", field.DisplayName);
+        Assert.NotEqual("{Name}", field.Header);
+        Assert.Equal(normal.Header, field.Header);
+    }
+
+    [Fact]
+    [DisplayName("控制器自定义列头按当前语言翻译")]
+    public void Localize_CustomHeader_Translated()
+    {
+        var fi = User.Meta.Factory.Table.FindByName("Name")!;
+
+        var field = new ListField();
+        field.Fill(fi);
+        field.Header = "节点";
+        field.DisplayName = "{Name}";
+        field.Localize();
+
+        Assert.Equal(CubeLocalization.T("节点"), field.Header);
     }
 
     [Theory]
