@@ -351,6 +351,26 @@ export default {
   'route.default': '預設頁面',
 
   // 參數管理（Admin/Parameter）
+  'parameterAdmin.subtitle': '依「類別 + 名稱」維護系統與使用者級鍵值；使用者 0 表示全域設定，長文字寫入長數值欄。',
+  'parameterAdmin.tipTitle': '使用說明',
+  'parameterAdmin.tipBody':
+    '同一 Category 下 Name 唯一識別一筆設定。系統設定、功能開關等執行期參數存於此表；若模組未支援熱更新，修改後需重啟服務或依模組說明刷新。',
+  'parameterAdmin.systemScope': '系統全域',
+  'parameterAdmin.userScope': '使用者 #{id}',
+  'parameterAdmin.copyValue': '複製',
+  'parameterAdmin.copySuccess': '已複製到剪貼簿',
+  'parameterAdmin.categoryNav': '類別',
+  'parameterAdmin.categoryTotal': '{count} 類',
+  'parameterAdmin.allCategories': '全部類別',
+  'parameterAdmin.filterCategory': '篩選類別',
+  'parameterAdmin.systemOnly': '僅系統級（使用者 0）',
+  'parameterAdmin.searchPlaceholder': '搜尋名稱或數值',
+  'parameterAdmin.addInCategory': '在本類別下新增',
+  'parameterAdmin.panelAll': '全部參數',
+  'parameterAdmin.panelCategory': '類別 · {name}',
+  'parameterAdmin.panelCountAll': '共 {count} 條設定',
+  'parameterAdmin.panelCountFiltered': '目前篩選 {count} 條',
+  'parameterAdmin.uncategorized': '（未分類）',
 
   // 使用者連線管理
 

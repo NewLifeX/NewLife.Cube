@@ -365,6 +365,28 @@ export default {
   'route.loading': '加载中',
   'route.default': '默认页面',
 
+  // 字典参数（Admin/Parameter）
+  'parameterAdmin.subtitle': '按「类别 + 名称」维护系统与用户级键值；用户 0 表示全局配置，长文本写入长数值列。',
+  'parameterAdmin.tipTitle': '使用说明',
+  'parameterAdmin.tipBody':
+    '同一 Category 下 Name 唯一标识一条配置。系统设置、功能开关等运行时参数存于此表；若模块未支持热更新，修改后需重启服务或按模块说明刷新。',
+  'parameterAdmin.systemScope': '系统全局',
+  'parameterAdmin.userScope': '用户 #{id}',
+  'parameterAdmin.copyValue': '复制',
+  'parameterAdmin.copySuccess': '已复制到剪贴板',
+  'parameterAdmin.categoryNav': '类别',
+  'parameterAdmin.categoryTotal': '{count} 类',
+  'parameterAdmin.allCategories': '全部类别',
+  'parameterAdmin.filterCategory': '筛选类别',
+  'parameterAdmin.systemOnly': '仅系统级（用户 0）',
+  'parameterAdmin.searchPlaceholder': '搜索名称或数值',
+  'parameterAdmin.addInCategory': '在本类别下新增',
+  'parameterAdmin.panelAll': '全部参数',
+  'parameterAdmin.panelCategory': '类别 · {name}',
+  'parameterAdmin.panelCountAll': '共 {count} 条配置',
+  'parameterAdmin.panelCountFiltered': '当前筛选 {count} 条',
+  'parameterAdmin.uncategorized': '（未分类）',
+
   // 用户连接管理
 
   // 审计日志
