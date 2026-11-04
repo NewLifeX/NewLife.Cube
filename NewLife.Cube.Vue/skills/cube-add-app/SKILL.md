@@ -27,16 +27,16 @@ description: |
 
 ```json
 {
-  "name": "ioc",
-  "packageName": "/apps/ioc"
+  "name": "biz",
+  "packageName": "/apps/biz"
 }
 ```
 
 | packageName  | 解析结果                      |
 | ------------ | ----------------------------- |
-| `/apps/ioc`  | `{root}/apps/ioc/src/main.ts` |
-| `apps/ioc`   | `{root}/apps/ioc/src/main.ts` |
-| `./apps/ioc` | `{root}/apps/ioc/src/main.ts` |
+| `/apps/biz`  | `{root}/apps/biz/src/main.ts` |
+| `apps/biz`   | `{root}/apps/biz/src/main.ts` |
+| `./apps/biz` | `{root}/apps/biz/src/main.ts` |
 
 ### 2. 外部包引用（@scope/name 格式）
 
@@ -85,9 +85,9 @@ description: |
 ```json
 [
   {
-    "name": "ioc",
-    "prefix": "/ioc",
-    "packageName": "/apps/ioc"
+    "name": "biz",
+    "prefix": "/biz",
+    "packageName": "/apps/biz"
   },
   {
     "name": "cube-admin",

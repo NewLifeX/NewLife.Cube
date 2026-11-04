@@ -36,7 +36,7 @@ LovController
   └─ BatchLabel   ◄──── POST ──────  fetchBatchLabel()
 
 ILovListDataProxy (默认 DefaultLovListDataProxy)
-  └─ ListData 经此接口转发外部请求（HTTP 客户端），可经 IOC 覆盖自定义实现
+  └─ ListData 经此接口转发外部请求（HTTP 客户端），可在宿主 API 中覆盖自定义实现
 
 前端取数分支（LovSelectTable.fetchListData）：
   ├─ shouldDirectRequest(config) == true  → fetchLovListDataDirect() 前端直连 requestUrl
@@ -392,7 +392,7 @@ resolveLovType('List.xxx')  // => 'LIST'
 ```
 后端：[LovList(LovCode="List.Xxx", RequestUrl="https://external/api", ProxyRequest=true)]
 前端：shouldDirectRequest=false → fetchLovListData() → 后端 /Admin/Lov/ListData → ILovListDataProxy 转发
-→ 外部地址隐藏、规避跨域；可 IOC 覆盖 DefaultLovListDataProxy 自定义转发
+→ 外部地址隐藏、规避跨域；可在宿主 API 覆盖 DefaultLovListDataProxy 自定义转发
 ```
 
 ## 红线 / 禁止自行发挥

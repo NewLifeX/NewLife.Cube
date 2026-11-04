@@ -15,7 +15,7 @@
  * 它请求 `GET {type}/{id}`，由后端 `ReadOnlyEntityController.Detail`
  * （`[HttpGet(".../{id}")]`，主键取自路径）承接。
  *
- * 只用 api-core 时，`{type}` 传 `apiPrefix`（`/api/ioc/{area}/{controller}`）即可：
+ * 只用 api-core 时，`{type}` 传 `apiPrefix`（如 `/api/Admin/Role`，即网关前缀 + 区域 + 控制器）即可：
  * api-core 内部 `resolveRequestUrl` 会剥离 url 自带的 `/api` 再统一补回，
  * 传带或不带 `/api` 前缀都能得到同一最终地址。
  *
