@@ -296,6 +296,38 @@ public class DataFieldLocalizationTests
         }
     }
 
+    [Fact(DisplayName = "控制器把显示名用作单元格模板时，列头仍取字段默认显示名")]
+    public void LocalizedTemplateColumn_KeepsDefaultHeader()
+    {
+        var prev = Localization.Culture;
+        var culture = CultureInfo.GetCultureInfo("sw");
+        try
+        {
+            var item = EntityFactory.CreateFactory(typeof(User)).Fields.First(e => e.Name == nameof(User.Name));
+            var field = new ListField();
+            field.Fill(item);
+
+            Localization.Register(culture, new Dictionary<String, String> { ["名称"] = "Name" }, overwrite: true);
+            Localization.Culture = culture;
+
+            // 控制器把 DisplayName 改作单元格文字模板（星尘列表的 {Name} 写法），列头不应跟着变成模板原文
+            field.DisplayName = "{Name}";
+            field.Localize();
+
+            Assert.Equal("{Name}", field.DisplayName);
+            Assert.Equal("Name", field.Header);
+
+            // 单元格仍按模板取属性值
+            var entity = new User { Name = "alice" };
+            Assert.Equal("alice", field.GetLinkName(entity));
+        }
+        finally
+        {
+            Localization.Culture = prev;
+            Localization.Unregister(culture);
+        }
+    }
+
     private static Boolean ContainsCjk(String text)
     {
         if (text.IsNullOrEmpty()) return false;

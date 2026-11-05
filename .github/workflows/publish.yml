@@ -10,27 +10,13 @@ permissions:
   packages: write
   id-token: write
 
+# 发布链路只做「构建 → 打包 → 推送」，不再重复跑全量单测：
+#   * 打 tag 是人工动作，前提是 test.yml 在该提交上已转绿；发布流程重跑一遍既慢又会
+#     被环境性用例随机拖红，导致打了 tag 却发不出包；
+#   * 编译错误仍由 build-publish 的 Build 步骤拦截（全解决方案 Release 构建）；
+#   * 需要资产级验证时用 workflow_dispatch 触发 test.yml，而不是把发布绑在它上面。
 jobs:
-  test:
-    name: test gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup dotNET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 10.x
-        cache: true
-        cache-dependency-path: '**/*.csproj'
-    - name: Test
-      run: |
-        dotnet test XUnitTest/XUnitTest.csproj -c Release --nologo
-        dotnet test NewLife.Cube.Tests/NewLife.Cube.Tests.csproj -c Release --nologo
-
   build-publish:
-    needs: test
     runs-on: ubuntu-latest
 
     steps:

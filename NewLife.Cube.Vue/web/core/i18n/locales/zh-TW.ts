@@ -345,6 +345,7 @@ export default {
   'route.login': '登入',
   'route.activate': '帳號啟用',
   'route.security': '安全中心',
+  'route.profile': '個人中心',
   'route.unauthorized': '未授權',
   'route.loading': '載入中',
   'route.default': '預設頁面',
@@ -699,6 +700,25 @@ export default {
   // XCode 設定
 
   // 使用者統計
+
+  // 個人中心
+  'profile.title': '個人中心',
+  'profile.basic': '基本資料',
+  'profile.displayName': '顯示名稱',
+  'profile.role': '角色',
+  'profile.online': '線上',
+  'profile.offline': '離線',
+  'profile.enabled': '已啟用',
+  'profile.disabled': '已停用',
+  'profile.contact': '聯絡方式',
+  'profile.securityManage': '前往安全中心管理',
+  'profile.loginInfo': '登入資訊',
+  'profile.logins': '登入次數',
+  'profile.lastLogin': '上次登入',
+  'profile.lastLoginIP': '上次登入 IP',
+  'profile.registerTime': '註冊時間',
+  'profile.registerIP': '註冊 IP',
+  'profile.loadFailed': '載入使用者資料失敗',
 
   // 安全中心
   'security.title': '安全中心',

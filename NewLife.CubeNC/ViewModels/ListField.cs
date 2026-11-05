@@ -92,15 +92,30 @@ public class ListField : DataField
     /// <summary>按当前语言本地化列头。基类只翻译 DisplayName/Description，列头需要额外处理</summary>
     public override void Localize()
     {
+        // 列头仍取字段默认显示名时，控制器可能已把 DisplayName 改作单元格文字模板（如 {Name}），
+        // 此时不能跟随 DisplayName，否则列头会显示模板原文
+        var isDefaultHeader = !Header.IsNullOrEmpty() && Field != null && Header == Field.DisplayName;
+
         base.Localize();
 
-        // 默认列头跟随已本地化的显示名；控制器自定义列头单独翻译
-        if (!Header.IsNullOrEmpty() && Field != null && Header == Field.DisplayName)
-            Header = DisplayName;
+        // 默认列头取字段默认显示名的译文；控制器自定义列头单独翻译
+        if (isDefaultHeader)
+            Header = IsDefaultDisplayName ? DisplayName : GetDefaultDisplayName();
         else if (!Header.IsNullOrEmpty())
             Header = L.T(Header);
 
         if (!HeaderTitle.IsNullOrEmpty()) HeaderTitle = L.T(HeaderTitle);
+    }
+
+    /// <summary>获取字段默认显示名的译文。DisplayName 被控制器改作单元格模板时，列头仍取字段默认显示名</summary>
+    private String GetDefaultDisplayName()
+    {
+        if (Field == null) return Header;
+
+        var field = new DataField(Field);
+        field.Localize();
+
+        return field.DisplayName;
     }
 
     ///// <summary>克隆</summary>

@@ -26,27 +26,14 @@ permissions:
   packages: write
   id-token: write
 
+# 发布链路只做「构建 → 打包 → 推送」，不再重复跑全量单测：
+#   * 质量门禁统一由 test.yml 承担（push/PR 触发，6 平台单测 + 前端 i18n + E2E）；
+#   * 这里再跑一遍单测要 30~40 分钟，且会被环境性用例（SQLite 锁、端口、时区、网络）
+#     随机拖红——测试红了但产物没问题时，beta 一样发不出去，等于把发布卡在无关失败上；
+#   * 编译错误仍由下面 build-publish 的 Build 步骤拦截（全解决方案 Release 构建）。
+# 需要更强保证时，先让 test.yml 在 master 上转绿再合并/触发发布，而不是在发布里重跑。
 jobs:
-  test:
-    name: test gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup dotNET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 10.x
-        cache: true
-        cache-dependency-path: '**/*.csproj'
-    - name: Test
-      run: |
-        dotnet test XUnitTest/XUnitTest.csproj -c Release --nologo
-        dotnet test NewLife.Cube.Tests/NewLife.Cube.Tests.csproj -c Release --nologo
-
   build-publish:
-    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -89,12 +76,15 @@ jobs:
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Swagger/NewLife.Cube.Swagger.csproj
         dotnet pack --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Vue/NewLife.Cube.Vue.csproj
 
+    # PR 只做构建/打包验证（能编译、能出包），绝不推送：发布必须来自 master push 或手工触发
     - name: NuGet login (OIDC)
       id: nuget-login
+      if: github.event_name != 'pull_request'
       uses: NuGet/login@v1
       with:
         user: NewLife
     - name: Publish
+      if: github.event_name != 'pull_request'
       run: |
         dotnet nuget push ./out/*.nupkg --skip-duplicate --source https://nuget.pkg.github.com/NewLifeX/index.json --api-key ${{ github.token }}
         dotnet nuget push ./out/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
