@@ -22,8 +22,8 @@ export interface LovEnumOption {
 }
 
 /**
- * LovSelect 对外（v-model）输出的值类型（承 ADR-064）。
- * - `auto`（默认）：ENUM 型值集出**数字**（后端枚举 Int32 落库、对外数字码 ADR-061），LIST 型保持行数据原生类型；
+ * LovSelect 对外（v-model）输出的值类型（按 valueType 归一）。
+ * - `auto`（默认）：ENUM 型值集出**数字**（后端枚举以 Int32 落库、对外为数字码），LIST 型保持行数据原生类型；
  * - `number`：无论 ENUM/LIST，一律把值转成数字；
  * - `string`：无论 ENUM/LIST，一律把值转成字符串（回退旧行为，供个别需字符串码的存量场景显式声明）。
  */
@@ -183,9 +183,9 @@ export interface LovSelectProps {
   size?: 'large' | 'default' | 'small';
   /** 是否多选 */
   multiple?: boolean;
-  /** 级联父级值：非空时 ENUM 选项按 option.parent 过滤（承 ADR-063） */
+  /** 级联父级值：非空时 ENUM 选项按 option.parent 过滤 */
   parent?: string | number;
-  /** 输出值类型：auto=ENUM 出数字·LIST 原生；number/string=强制。默认 auto（承 ADR-064） */
+  /** 输出值类型：auto=ENUM 出数字·LIST 原生；number/string=强制。默认 auto */
   valueType?: LovValueType;
 }
 

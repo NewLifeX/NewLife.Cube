@@ -364,7 +364,7 @@ test('插槽动作-文字+图标：前 3 个直显，第 4 个进更多且回调
 test('插槽动作-纯文字：显式 actionWidth 150 只作下限，实测更宽则撑开', async ({ page }) => {
   await openStory(page, 'CubeTable/RowActionsSlotText');
 
-  // 复刻「规则配置」页：页面写死 150，列宽必须被撑到装得下 3 个文字按钮 + 「更多」
+  // 复刻业务列表页：页面写死 150，列宽必须被撑到装得下 3 个文字按钮 + 「更多」
   const width = await actionColumnWidth(page);
   expect(width).toBeGreaterThan(150);
   expect(await actionCellOverflow(page)).toBeLessThanOrEqual(0);

@@ -241,7 +241,7 @@ const ROW_EXTRA_ACTIONS: CubeRowAction[] = [
  * 由页面自己写按钮——正是 `#row-actions` 在业务页里的真实用法。
  *
  * @param actions 插槽体：返回本行的操作按钮（4 个以上即触发「更多」收起）
- * @param grid 表格区开关（纯文字变体用它复刻规则配置页的 `actionWidth: 150`）
+ * @param grid 表格区开关（纯文字变体用它复刻业务列表页的 `actionWidth: 150`）
  */
 function slotActionsStory(
   actions: (ctx: CubeEngineContext) => VNodeChild[],
@@ -268,7 +268,7 @@ const slotTextIcon = slotActionsStory((ctx) => [
 ]);
 
 /**
- * 形态二：纯文字（复刻「规则配置」页）：按钮只写文字，页面又显式给了 `actionWidth: 150`。
+ * 形态二：纯文字（复刻业务列表页）：按钮只写文字，页面又显式给了 `actionWidth: 150`。
  * 150 对 3 个文字按钮 + 「更多」明显不够，正是要靠实测把列撑开的那条路径。
  */
 const slotText = slotActionsStory(
@@ -278,7 +278,7 @@ const slotText = slotActionsStory(
     h(ElButton, { link: true, type: 'primary' }, () => '删除'),
     h(ElButton, { link: true, type: 'danger', onClick: () => ctx.openCreate() }, () => '归档'),
   ],
-  // 与规则配置页同参：不勾选、显式 150；150 现在只作下限
+  // 与业务列表页同参：不勾选、显式 150；150 现在只作下限
   { selection: false, actionWidth: 150 },
 );
 
@@ -319,7 +319,7 @@ export const stories = [
   // 测试状态：外部插槽动作 · 文字+图标 —— 4 个动作，前 3 个直显、「归档」进「更多」
   { id: 'CubeTable/RowActionsSlotTextIcon', component: slotTextIcon, props: { context: engine() } },
 
-  // 测试状态：外部插槽动作 · 纯文字（规则配置页同款）—— 显式 actionWidth 150，实测更宽则撑开
+  // 测试状态：外部插槽动作 · 纯文字（业务列表页同款）—— 显式 actionWidth 150，实测更宽则撑开
   { id: 'CubeTable/RowActionsSlotText', component: slotText, props: { context: engine() } },
 
   // 测试状态：外部插槽动作 · 纯图标 —— 5 个动作，后 2 个进「更多」

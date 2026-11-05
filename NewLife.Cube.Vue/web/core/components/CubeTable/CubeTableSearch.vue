@@ -208,7 +208,8 @@ function fieldDescription(field: FieldMeta): string {
             v-else-if="c.kind === 'lov' || c.kind === 'lovMulti'"
             v-model="ctx.searchModel[c.key] as string | number | string[] | undefined"
             class="cts-ctl"
-            :code="c.field.lovCode ?? ''"
+            :code="c.field.lovCode"
+            :options="c.field.dataSource"
             :multiple="c.kind === 'lovMulti'"
           />
 

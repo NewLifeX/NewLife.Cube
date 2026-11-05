@@ -8,12 +8,38 @@ import {
   resolveSelectedLabel,
 } from '@newlifex/cube-vue/core/components/LovSelect/lovStore';
 
-/** LovSelect 对外 emit 的 modelValue 类型（多选可为 string[] 或 number[]·承 ADR-064） */
+/** LovSelect 对外 emit 的 modelValue 类型（多选可为 string[] 或 number[]） */
 export type LovValue = string | number | Array<string | number> | undefined;
 
+/**
+ * 本地选项归一：dataSource 键值对 → {value,label} 列表；已归一列表去空保留。
+ *
+ * @param src dataSource 键值对或显式选项列表
+ * @returns 归一后的选项（键保留字符串，由 valueType 归一决定最终类型）
+ */
+export function normalizeStaticOptions(src?: LovStaticOptions): LovEnumOption[] {
+  if (!src) return [];
+  if (Array.isArray(src)) {
+    return src
+      .filter((o) => o != null && o.value != null)
+      .map((o) => ({ value: String(o.value), label: o.label == null ? String(o.value) : String(o.label) }));
+  }
+  return Object.entries(src).map(([value, label]) => ({ value, label: String(label ?? value) }));
+}
+
+/**
+ * 本地选项：后端元数据下发的 dataSource 键值对，或显式 {value,label} 列表。
+ * 无值集编码时用本地选项直接渲染，不请求元数据。
+ */
+export type LovStaticOptions =
+  | Record<string, string>
+  | Array<{ value: string | number; label: string }>;
+
 export interface UseLovSelectOptions {
-  /** 值集编码（响应式） */
-  code: Ref<string>;
+  /** 值集编码（响应式；与 staticOptions 二选一，均有值时以编码远程拉取为准） */
+  code: Ref<string | undefined>;
+  /** 本地选项（响应式，可选）。无值集编码时直接以 ENUM 态渲染，不发请求 */
+  staticOptions?: Ref<LovStaticOptions | undefined>;
   /** 当前值（响应式） */
   modelValue: Ref<LovValue>;
   /** 是否多选（响应式） */
@@ -21,7 +47,7 @@ export interface UseLovSelectOptions {
   /** 级联父级值（响应式，可选）。非空时按 option.parent 过滤 ENUM 选项，父变则清空不再合法的子选择 */
   parent?: Ref<string | number | undefined>;
   /**
-   * 输出值类型（响应式，可选·承 ADR-064）。
+   * 输出值类型（响应式，可选）。
    * auto（默认）=ENUM 出数字·LIST 原生；number/string=强制归一。
    * 归一同时作用于「下拉选项 value」与「外部传入 modelValue」，保证选中/回显/emit 三者类型一致。
    */
@@ -39,7 +65,7 @@ export interface UseLovSelectReturn {
   lovMeta: Ref<LovMetaItem | null>;
   resolvedType: Ref<'ENUM' | 'LIST' | null>;
   options: Ref<LovEnumOption[]>;
-  /** 按 parent 过滤 + 按 valueType 归一后的可选项（渲染 el-option 用·无 parent 时=全量·承 ADR-064） */
+  /** 按 parent 过滤 + 按 valueType 归一后的可选项（渲染 el-option 用·无 parent 时=全量） */
   filteredOptions: ComputedRef<LovSelectOption[]>;
   selectedValue: Ref<string | number | undefined>;
   selectedValues: Ref<Array<string | number>>;
@@ -76,6 +102,7 @@ export interface UseLovSelectReturn {
  *  - watch 留在 hook 内（类型解析、code 切换重载、modelValue 回显），属于可测的纯逻辑。
  *  - 不含 onMounted，加载动作由组件在 onMounted 中显式调用 loadMeta()。
  */
+
 export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
   const loading = ref(false);
   const lovMeta = ref<LovMetaItem | null>(null);
@@ -92,7 +119,7 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
   );
   const options = ref<LovEnumOption[]>([]);
 
-  // ── 输出值类型归一（承 ADR-064）：同一 mode 同时作用于「选项 value」与「外部 modelValue」，
+  // ── 输出值类型归一：同一 mode 同时作用于「选项 value」与「外部 modelValue」，
   //    保证 el-select 选中匹配 / 回显 / emit 三者类型一致。auto：ENUM→number，LIST→native。
   function outputMode(): 'number' | 'string' | 'native' {
     const v = opts.valueType?.value ?? 'auto';
@@ -151,13 +178,24 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
         }
       }
     }
-    // meta 解析完成后，若外部已传 modelValue：按 valueType 归一后同步选择态并回显（承 ADR-064）
+    // meta 解析完成后，若外部已传 modelValue：按 valueType 归一后同步选择态并回显
     syncFromModelValue();
   }
 
   async function loadMeta() {
     const code = opts.code.value;
-    if (!code) return;
+
+    // 本地选项模式：无值集编码但有本地选项时直接以 ENUM 态渲染，不发任何请求
+    if (!code) {
+      const local = normalizeStaticOptions(opts.staticOptions?.value);
+      if (local.length) {
+        lovMeta.value = null;
+        resolvedType.value = 'ENUM';
+        options.value = local;
+        syncFromModelValue();
+      }
+      return;
+    }
 
     // 测试注入模式：绕过 lovStore，直接调用 fetchMeta
     if (opts.fetchMeta) {
@@ -230,7 +268,7 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
       registerSelectedRow(code, row, { valueField, labelField });
     }
 
-    const out = coerce(val); // 承 ADR-064：按 valueType 归一 LIST 选中值
+    const out = coerce(val); // 按 valueType 归一 LIST 选中值
     selectedValue.value = out;
     displayText.value = row[labelField] != null ? String(row[labelField]) : String(val ?? '');
     dialogVisible.value = false;
@@ -239,7 +277,7 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
 
   function onTableMultiConfirm(vals: string[]): LovValue {
     const m = outputMode();
-    const out = vals.map((v) => applyMode(v, m)); // 承 ADR-064：按 valueType 归一多选值
+    const out = vals.map((v) => applyMode(v, m)); // 按 valueType 归一多选值
     selectedValues.value = out;
     dialogVisible.value = false;
     // 异步补全 displayText（lovStore 会在 listData 加载后自动映射 label）
@@ -257,6 +295,8 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
   function updateDisplayText() {
     if (resolvedType.value !== 'LIST' || opts.modelValue.value == null) return;
     const code = opts.code.value;
+    // LIST 只能由远程值集产生，无编码时无从解析标签
+    if (!code) return;
     const val = opts.modelValue.value;
     // 空串/空数组同属「未选中」，不解析 label（否则会把空值当成待翻译的原始值）
     if (val === '' || (Array.isArray(val) && val.length === 0)) {
@@ -312,6 +352,13 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
       loadMeta();
     }
   });
+
+  // 本地选项异步到位（元数据晚于挂载）时重算；有值集编码时以远程为准，不覆写
+  if (opts.staticOptions) {
+    watch(opts.staticOptions, () => {
+      if (!opts.code.value) loadMeta();
+    }, { deep: true });
+  }
 
   watch(opts.modelValue, () => {
     syncFromModelValue();

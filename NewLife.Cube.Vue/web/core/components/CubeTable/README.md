@@ -208,7 +208,7 @@ const ctx = useCubeEngine({
 ```
 
 画廊里三种形态各有变体可对照：`CubeTable/RowActionsSlotTextIcon`、
-`CubeTable/RowActionsSlotText`（规则配置页同款，显式 150）、`CubeTable/RowActionsSlotIcon`。
+`CubeTable/RowActionsSlotText`（业务列表页同款，显式 150）、`CubeTable/RowActionsSlotIcon`。
 
 ---
 

@@ -18,11 +18,12 @@
  *  5. 事件动作返回值（onEnumChange / onEnumMultiChange / onTableSelect / onTableMultiConfirm）
  *  6. 生产路径：loadMeta 委托 lovStore.getMeta
  *  7. 生产路径：onTableSelect 登记选中行到 lovStore.registerSelectedRow
+ *  8. 本地选项模式：无值集编码时直接渲染、不发请求
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { effectScope, ref, type EffectScope } from 'vue';
 import { flushPromises } from '@vue/test-utils';
-import { useLovSelect, type UseLovSelectOptions } from './useLovSelect';
+import { useLovSelect, normalizeStaticOptions, type UseLovSelectOptions } from './useLovSelect';
 import type { LovMetaResponse, LovMetaItem, LovListMeta } from '../../types/lov';
 // 桩掉 request 避免加载 universal-cookie 等缺失依赖（即便 lovStore 被 mock，导入链仍可能触发）
 vi.mock('@newlifex/cube-vue/core/utils/request', () => ({
@@ -171,7 +172,7 @@ describe('useLovSelect（逻辑/事件层）', () => {
     expect(api.options.value).toHaveLength(0);
   });
 
-  it('modelValue 回显：同步到内部选择状态（ENUM auto→归一为数字·ADR-064）', async () => {
+  it('modelValue 回显：同步到内部选择状态（ENUM auto→归一为数字）', async () => {
     const { api, modelValue } = setup();
     await api.loadMeta();
     modelValue.value = '1';
@@ -244,7 +245,7 @@ describe('useLovSelect（逻辑/事件层）', () => {
   });
 });
 
-describe('useLovSelect 级联（parent 过滤 + 父变清子 · ADR-063）', () => {
+describe('useLovSelect 级联（parent 过滤 + 父变清子）', () => {
   let scope: EffectScope | null = null;
   afterEach(() => {
     scope?.stop();
@@ -255,13 +256,13 @@ describe('useLovSelect 级联（parent 过滤 + 父变清子 · ADR-063）', () 
     return {
       meta: [
         {
-          lovCode: 'Enum.Test.OrderType',
+          lovCode: 'Enum.Test.Category',
           type: 'ENUM',
-          name: '工单类型',
+          name: '示例分类',
           options: [
-            { value: '1', label: '产线停机', parent: '1' },
-            { value: '2', label: '设备故障', parent: '1' },
-            { value: '3', label: '例行维保', parent: '2' },
+            { value: '1', label: '类别一', parent: '1' },
+            { value: '2', label: '类别二', parent: '1' },
+            { value: '3', label: '类别三', parent: '2' },
           ],
         },
       ],
@@ -270,7 +271,7 @@ describe('useLovSelect 级联（parent 过滤 + 父变清子 · ADR-063）', () 
   }
 
   function setupCascade(parentVal?: number) {
-    const code = ref('Enum.Test.OrderType');
+    const code = ref('Enum.Test.Category');
     const modelValue = ref<string | number | string[] | undefined>(undefined);
     const multiple = ref(false);
     const parent = ref<string | number | undefined>(parentVal);
@@ -306,7 +307,7 @@ describe('useLovSelect 级联（parent 过滤 + 父变清子 · ADR-063）', () 
   });
 });
 
-describe('useLovSelect 输出值类型 valueType（承 ADR-064）', () => {
+describe('useLovSelect 输出值类型 valueType（强制归一）', () => {
   let scope: EffectScope | null = null;
   afterEach(() => {
     scope?.stop();
@@ -383,5 +384,104 @@ describe('useLovSelect 输出值类型 valueType（承 ADR-064）', () => {
     const { api } = setupList('number');
     await api.loadMeta();
     expect(api.onTableSelect({ id: '7', name: '张三' })).toBe(7);
+  });
+});
+
+describe('useLovSelect 本地选项模式（无值集编码）', () => {
+  let scope: EffectScope | null = null;
+  afterEach(() => {
+    scope?.stop();
+    scope = null;
+  });
+
+  function setupLocal(
+    staticOptions: Record<string, string> | Array<{ value: string | number; label: string }>,
+    initial?: string | number | string[],
+    multipleValue = false,
+    codeValue?: string,
+  ) {
+    const code = ref<string | undefined>(codeValue);
+    const modelValue = ref<string | number | string[] | undefined>(initial);
+    const multiple = ref(multipleValue);
+    const options = ref(staticOptions);
+    const fetchMeta = vi.fn(async () => enumMetaResponse());
+    scope = effectScope();
+    const api = scope.run(() =>
+      useLovSelect({ code, modelValue, multiple, staticOptions: options, fetchMeta }),
+    )!;
+    return { api, modelValue, options, fetchMeta };
+  }
+
+  it('无编码 + 键值对选项：直接以 ENUM 态渲染，且不请求元数据', async () => {
+    const { api, fetchMeta } = setupLocal({ '0': '草稿', '1': '启用' });
+    await api.loadMeta();
+    expect(api.resolvedType.value).toBe('ENUM');
+    expect(api.lovMeta.value).toBeNull();
+    expect(api.filteredOptions.value).toEqual([
+      { value: 0, label: '草稿' },
+      { value: 1, label: '启用' },
+    ]);
+    expect(fetchMeta).not.toHaveBeenCalled();
+  });
+
+  it('无编码 + 显式选项列表：非数字值保持原样', async () => {
+    const { api } = setupLocal([
+      { value: 'A', label: '甲' },
+      { value: 'B', label: '乙' },
+    ]);
+    await api.loadMeta();
+    expect(api.filteredOptions.value).toEqual([
+      { value: 'A', label: '甲' },
+      { value: 'B', label: '乙' },
+    ]);
+  });
+
+  it('外部传入字符串值：按 auto 归一为数字并回显', async () => {
+    const { api, modelValue } = setupLocal({ '0': '草稿', '1': '启用' }, '1');
+    await api.loadMeta();
+    expect(api.selectedValue.value).toBe(1);
+    modelValue.value = '0';
+    await flushPromises();
+    expect(api.selectedValue.value).toBe(0);
+  });
+
+  it('多选：数组回显归一为数字', async () => {
+    const { api } = setupLocal({ '0': '草稿', '1': '启用' }, ['0', '1'], true);
+    await api.loadMeta();
+    expect(api.selectedValues.value).toEqual([0, 1]);
+  });
+
+  it('选项晚于挂载到位：到位后重算并渲染', async () => {
+    const { api, options } = setupLocal({});
+    await api.loadMeta();
+    expect(api.resolvedType.value).toBeNull();
+    options.value = { '0': '草稿' };
+    await flushPromises();
+    expect(api.resolvedType.value).toBe('ENUM');
+    expect(api.filteredOptions.value).toEqual([{ value: 0, label: '草稿' }]);
+  });
+
+  it('同时有编码与本地选项：以远程元数据为准', async () => {
+    const { api, fetchMeta } = setupLocal({ '0': '本地草稿' }, undefined, false, 'Enum.Test.Status');
+    await api.loadMeta();
+    expect(fetchMeta).toHaveBeenCalledWith('Enum.Test.Status');
+    expect(api.filteredOptions.value).toEqual([
+      { value: 0, label: '草稿' },
+      { value: 1, label: '启用' },
+    ]);
+  });
+
+  it('normalizeStaticOptions 归一两种入参形态', () => {
+    expect(normalizeStaticOptions(undefined)).toEqual([]);
+    expect(normalizeStaticOptions({ a: '甲' })).toEqual([{ value: 'a', label: '甲' }]);
+    expect(
+      normalizeStaticOptions([
+        { value: 1, label: '乙' },
+        { value: 2, label: '丙' },
+      ]),
+    ).toEqual([
+      { value: '1', label: '乙' },
+      { value: '2', label: '丙' },
+    ]);
   });
 });

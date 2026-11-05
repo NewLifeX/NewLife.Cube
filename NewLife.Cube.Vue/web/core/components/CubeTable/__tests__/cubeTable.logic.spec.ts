@@ -122,16 +122,16 @@ describe('CubeTable/logic 搜索控件显示态', () => {
     expect(control.kind).toBe('text');
   });
 
-  it('应该升级为下拉并数字化键值 当字段带内联字典时', () => {
+  it('应该按本地选项渲染 Lov 并数字化键值 当字段带内联字典时', () => {
     const control = buildSearchControl(FIELDS.dict);
-    expect(control.kind).toBe('dict');
+    expect(control.kind).toBe('lov');
     expect(control.options).toEqual([
       { label: '小时', value: 1 },
       { label: '班次', value: 2 },
     ]);
   });
 
-  it('应该升级为多选下拉 当内联字典字段声明多选时', () => {
+  it('应该按本地选项渲染多选 Lov 当内联字典字段声明多选时', () => {
     // 角色组搜索：后端 ItemType=multipleSelect + dataSource，必须给多选，否则只能筛一个角色
     const control = buildSearchControl({
       name: 'RoleID',
@@ -141,7 +141,7 @@ describe('CubeTable/logic 搜索控件显示态', () => {
       multiple: true,
       dataSource: { '1': '管理员', '3': '普通用户' },
     });
-    expect(control.kind).toBe('dictMulti');
+    expect(control.kind).toBe('lovMulti');
     expect(control.span).toBe(2);
     expect(control.options).toEqual([
       { label: '管理员', value: 1 },

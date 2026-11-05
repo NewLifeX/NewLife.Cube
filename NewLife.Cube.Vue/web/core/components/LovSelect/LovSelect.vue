@@ -41,7 +41,7 @@
     <LovSelectTable
       v-if="resolvedType === 'LIST'"
       v-model:dialog-visible="dialogVisible"
-      :lov-code="code"
+      :lov-code="props.code ?? ''"
       :lov-meta="listMeta"
       :inline-enums="metaInlineEnums"
       :translate-cache="translateCache"
@@ -97,13 +97,16 @@ import { toRef, computed, onMounted, ref, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Search } from '@element-plus/icons-vue';
 import LovSelectTable from '../LovSelectTable/index.vue';
-import { useLovSelect, type LovValue } from './useLovSelect';
+import { useLovSelect, type LovValue, type LovStaticOptions } from './useLovSelect';
 import { getSelectedLabel } from '@newlifex/cube-vue/core/components/LovSelect/lovStore';
 import type { LovValueType } from '@newlifex/cube-vue/core/types/lov';
 
 const props = withDefaults(
   defineProps<{
-    code: string;
+    /** 值集编码；与 options 二选一 */
+    code?: string;
+    /** 本地选项（后端 dataSource 或显式列表）；无 code 时直接渲染，不发请求 */
+    options?: LovStaticOptions;
     type?: string;
     modelValue?: string | number | string[];
     placeholder?: string;
@@ -114,7 +117,7 @@ const props = withDefaults(
     multiple?: boolean;
     /** 级联父级值：非空时 ENUM 选项按 option.parent 过滤（父变自动清空子选择） */
     parent?: string | number;
-    /** 输出值类型：auto=ENUM 出数字·LIST 原生；number/string=强制归一（承 ADR-064） */
+    /** 输出值类型：auto=ENUM 出数字·LIST 原生；number/string=强制归一 */
     valueType?: LovValueType;
     /** 列表型弹窗：每页条数，默认 10 */
     pageSize?: number;
@@ -161,6 +164,7 @@ const {
   openDialog,
 } = useLovSelect({
   code: toRef(props, 'code'),
+  staticOptions: toRef(props, 'options'),
   modelValue: toRef(props, 'modelValue'),
   multiple: toRef(props, 'multiple'),
   parent: toRef(props, 'parent'),
@@ -182,7 +186,7 @@ const listSelectValue = computed(() =>
 const listTags = computed(() => {
   // 响应式依赖：LIST meta 加载完成后重算，确保下方 translateCache 已填充 inlineEnums
   void listMeta.value;
-  const code = props.code;
+  const code = props.code ?? '';
   const fill = (v: string | number | undefined): string => {
     if (v == null || v === '') return '';
     let label = getSelectedLabel(code, v);

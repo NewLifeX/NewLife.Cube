@@ -4,7 +4,7 @@
  * 规则（优先级）：
  *   1. ItemType 优先于 TypeName（后端显式声明想要的控件，如 image / json / color / mail …）
  *   2. Guid → readonly，且永不进搜索（主键 Id 仍走数值编辑）
- *   3. 枚举 / singleSelect / multipleSelect → 一律走 LOV（lovCode 由后端下发），单选 lov / 多选 lovMulti
+ *   3. 枚举 / singleSelect / multipleSelect → 一律走 LOV：有 lovCode 远程拉值集，仅有 dataSource 时用本地选项，单选 lov / 多选 lovMulti
  *   4. 数值（Int32/Int64/Decimal/Double/Single）→ inputNumber
  *   5. 大文本（String 且 Length >= 300）→ textarea
  *   6. 未知类型兜底 input，永不白屏
@@ -209,8 +209,8 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   // Guid / 主键：上游已过滤，这里兜底不进搜索
   if (typeName === 'Guid') return 'text';
 
-  // LOV 驱动
-  if (field.lovCode) {
+  // LOV 驱动：优先值集编码（远程拉取），其次后端已下发的 dataSource（本地选项）
+  if (field.lovCode || hasDataSource(field)) {
     return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
   }
 

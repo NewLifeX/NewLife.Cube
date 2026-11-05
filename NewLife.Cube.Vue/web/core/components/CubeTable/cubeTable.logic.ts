@@ -114,16 +114,9 @@ export function buildSearchControl(field: FieldMeta): CubeSearchControl {
   const itemType = (field.itemType ?? '').trim().toLowerCase();
   if (kind === 'datetimeRange' && itemType === 'date') kind = 'dateRange';
 
-  // `resolveSearchControl` 对 `typeName === 'Enum'` 也返回 lov，但那种字段常常没有 lovCode
-  // （后端只在显式配置值集时才下发）。没有码值就无从选择，降级成文本框，
-  // 免得渲染出一个永远选不出东西的空 LOV。
-  if ((kind === 'lov' || kind === 'lovMulti') && !field.lovCode) kind = 'text';
-
-  // resolveSearchControl 不认 dataSource，字典枚举会落到 text —— 这里按同一份 dataSource 升级为下拉；
-  // 多选字典（如角色组搜索）必须给多选，否则只能筛一个角色
-  if (kind === 'text' && !field.lovCode && hasDataSource(field)) {
-    kind = field.multiple || itemType === 'multipleselect' ? 'dictMulti' : 'dict';
-  }
+  // 值集/字典驱动的下拉：有 lovCode 走远程值集，只有 dataSource 时用本地选项。
+  // 两者都无则降级文本框，免得渲染出一个永远选不出东西的空 LOV。
+  if ((kind === 'lov' || kind === 'lovMulti') && !field.lovCode && !hasDataSource(field)) kind = 'text';
 
   const isRange = kind === 'numberRange' || kind === 'timeRange';
   // 范围类拆成两个后缀键（与 `ListSearchBar.vue:166/173/207/215` 一致），
@@ -134,7 +127,7 @@ export function buildSearchControl(field: FieldMeta): CubeSearchControl {
     key: isRange ? `${field.name}_min` : field.name,
     maxKey: isRange ? `${field.name}_max` : null,
     options:
-      kind === 'dict' || kind === 'dictMulti'
+      kind === 'lov' || kind === 'lovMulti'
         ? dictOptions(field)
         : kind === 'switch'
           ? BOOLEAN_FILTER_OPTIONS
