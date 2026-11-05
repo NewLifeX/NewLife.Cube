@@ -12,13 +12,14 @@
  */
 import { computed, ref, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ArrowDown, ArrowUp, Filter, Search } from '@element-plus/icons-vue';
+import { ArrowDown, ArrowUp, Filter, QuestionFilled, Search } from '@element-plus/icons-vue';
 import LovSelect from '../LovSelect/index.vue';
 import AreaSelect from '../AreaSelect/index.vue';
 import { areaLevel } from '../../utils/fieldControl';
 import { buildSearchControls, showSearchToggle } from './cubeTable.logic';
 import { resolveFieldRenderer } from '../../engine/fieldRenderers';
 import type { CubeEngineContext } from '../../engine/types';
+import type { FieldMeta } from '../../types/field';
 import type { CubeSearchControl } from './types';
 
 const props = withDefaults(
@@ -50,6 +51,11 @@ const fieldRendererOf = (control: CubeSearchControl) => resolveFieldRenderer(con
 function onRendererValue(control: CubeSearchControl, value: unknown): void {
   // 用 Object.assign 而不是直接下标赋值：后者会被 vue/no-mutating-props 判为改 prop
   Object.assign(props.ctx.searchModel, { [control.key]: value });
+}
+
+/** 字段说明（与 FormContent label Tooltip 同口径：FieldMeta.description） */
+function fieldDescription(field: FieldMeta): string {
+  return (field.description ?? '').trim();
 }
 </script>
 
@@ -86,7 +92,19 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
           </div>
         </div>
         <div v-for="c in expanded ? controls : controls.slice(0, 1)" :key="c.key" class="cts-item cts-cell">
-          <span class="cts-label">{{ c.field.displayName || c.field.name }}</span>
+          <span class="cts-label">
+            {{ c.field.displayName || c.field.name }}
+            <el-tooltip
+              v-if="fieldDescription(c.field)"
+              :content="fieldDescription(c.field)"
+              placement="top"
+              :show-after="200"
+            >
+              <el-icon class="cts-help" :aria-label="fieldDescription(c.field)" tabindex="0">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
+          </span>
 
           <!-- 字段级渲染器：后端声明 view，前端按名注册；未注册时回退内置控件 -->
           <component
@@ -292,10 +310,23 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
   width: 100%;
 }
 .cts-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
   white-space: nowrap;
   min-width: 3em;
+}
+.cts-help {
+  color: var(--el-text-color-placeholder);
+  font-size: 14px;
+  cursor: help;
+  outline: none;
+}
+.cts-help:hover,
+.cts-help:focus-visible {
+  color: var(--el-color-primary);
 }
 .cts-range {
   display: flex;
