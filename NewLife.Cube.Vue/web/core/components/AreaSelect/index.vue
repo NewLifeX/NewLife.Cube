@@ -43,16 +43,31 @@ const emit = defineEmits<{
 }>();
 
 const selected = ref<number[]>([]);
-const loading = ref(false);
+/**
+ * 级联选项必须是稳定引用。
+ * 模板里写空数组会在重绘时变成新引用，el-cascader 会拆掉 store 再调一次 lazyLoad。
+ */
+const cascaderOptions: AreaOption[] = [];
+/** 同一父级只发一次子级请求。级联在空结果时会反复 lazyLoad，这里把后续调用并到同一次响应 */
+const childRequests = new Map<number, Promise<AreaOption[]>>();
 
 /** 拉取直接子级。childLevel 由级联深度推导，后端未返回 level 时同样能正确判定叶子 */
-async function fetchChildren(parentId: number, childLevel: number): Promise<AreaOption[]> {
-  const res = await request({
+function fetchChildren(parentId: number, childLevel: number): Promise<AreaOption[]> {
+  const pending = childRequests.get(parentId);
+  if (pending) return pending;
+
+  const task = request({
     url: '/Cube/AreaChilds',
     method: 'get',
     params: { id: parentId },
-  });
-  return toAreaOptions(normalizeAreaResponse(res), props.level, childLevel);
+  })
+    .then((res) => toAreaOptions(normalizeAreaResponse(res), props.level, childLevel))
+    .catch((err) => {
+      childRequests.delete(parentId);
+      throw err;
+    });
+  childRequests.set(parentId, task);
+  return task;
 }
 
 /** el-cascader lazy 配置 */
@@ -64,15 +79,11 @@ const cascaderProps = {
     const id = Number(node?.value ?? 0);
     // 根节点（level=0）展开得到第 1 级，其余子级 = 当前节点层级 + 1
     const level = (node?.level ?? 0) + 1;
-    loading.value = true;
     fetchChildren(id, level)
       .then((options) => resolve(options))
       .catch((err) => {
         console.error('[AreaSelect] Failed to load child areas:', err);
         resolve([]);
-      })
-      .finally(() => {
-        loading.value = false;
       });
   },
 };
@@ -110,9 +121,13 @@ watch(
 );
 
 function onChange(value: unknown): void {
-  const ids = Array.isArray(value) ? value.map(Number) : [];
+  const ids = Array.isArray(value) ? value.map(Number).filter((id) => Number.isFinite(id) && id > 0) : [];
   selected.value = ids;
-  emit('update:modelValue', ids.length ? ids[ids.length - 1] : undefined);
+  const next = ids.length ? ids[ids.length - 1] : undefined;
+  const current = Number(props.modelValue);
+  const alreadyEmpty = next == null && (props.modelValue == null || props.modelValue === '' || !current);
+  if (alreadyEmpty || (next != null && current === next)) return;
+  emit('update:modelValue', next);
 }
 </script>
 
@@ -120,9 +135,9 @@ function onChange(value: unknown): void {
   <el-cascader
     v-model="selected"
     class="area-select"
-    :options="[]"
+    :options="cascaderOptions"
     :props="cascaderProps"
-    :disabled="disabled || loading"
+    :disabled="disabled"
     :placeholder="placeholder ?? i18n.global.t('form.placeholderArea')"
     clearable
     @update:model-value="onChange"

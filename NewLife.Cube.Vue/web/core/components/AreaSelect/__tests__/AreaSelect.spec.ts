@@ -73,6 +73,36 @@ describe('AreaSelect 组件', () => {
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([undefined]);
   });
 
+  it('同一父级被反复 lazyLoad 时只请求一次 AreaChilds', async () => {
+    requestStub.mockClear();
+    requestStub.mockResolvedValue({ data: [] });
+    const wrapper = mount(AreaSelect, {
+      props: { modelValue: null, level: 4 },
+      global: { plugins: [ElementPlus] },
+    });
+    await nextTick();
+
+    const lazyLoad = wrapper.findComponent({ name: 'ElCascader' }).props('props').lazyLoad as (
+      node: { value?: unknown; level?: number },
+      resolve: (options?: unknown[]) => void,
+    ) => void;
+
+    let resolved = 0;
+    for (let i = 0; i < 5; i++) {
+      lazyLoad({ value: 0, level: 0 }, () => {
+        resolved += 1;
+      });
+    }
+
+    await vi.waitFor(() => expect(resolved).toBe(5));
+    const areaCalls = requestStub.mock.calls.filter(
+      (call) => (call[0] as { url?: string })?.url === '/Cube/AreaChilds',
+    );
+    expect(areaCalls).toHaveLength(1);
+    expect(areaCalls[0][0]).toMatchObject({ params: { id: 0 } });
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  });
+
   it('应该按级联深度判定叶子 当后端子级没有返回 level 时', async () => {
     requestStub.mockClear();
     requestStub.mockResolvedValue({ data: [{ id: 310100, name: '市辖区' }] });
