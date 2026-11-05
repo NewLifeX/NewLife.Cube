@@ -82,7 +82,10 @@ jobs:
       if: github.event_name != 'pull_request'
       uses: NuGet/login@v1
       with:
-        user: NewLife
+        # 必须是 nuget.org 上“创建该策略”的账号用户名（个人账号），不是组织名、也不是邮箱。
+        # 我们的策略是 BigStone 创建、包主（Package owner）为组织 NewLife，
+        # 填 NewLife 会报 401：No matching trust policy owned by user 'NewLife'。
+        user: BigStone
     - name: Publish
       if: github.event_name != 'pull_request'
       run: |
