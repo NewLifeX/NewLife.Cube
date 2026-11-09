@@ -8,6 +8,7 @@
  * 4. 禁用（详情）模式直接通过
  * 5. 用户修改字段后错误提示立即清除
  * 6. requiredWhen 动态必填生效
+ * 7. Tab 分组下错误落在非当前页签时自动切换并展示提示
  *
  * 运行：pnpm test:unit core/views/components/FormContent.validation.spec.ts
  */
@@ -100,5 +101,27 @@ describe('FormContent 必填校验', () => {
       global: { plugins: [ElementPlus, testI18n] },
     });
     expect((on.vm as unknown as { validate: () => boolean }).validate()).toBe(false);
+  });
+
+  it('Tab 分组下必填错误落在其他页签时自动切换并展示提示', async () => {
+    const fields: FieldMeta[] = [
+      { name: 'Name', displayName: '名称', typeName: 'String', category: '基本信息' },
+      { name: 'Level', displayName: '级别', typeName: 'String', category: '高级设置' },
+    ];
+    const wrapper = mount(FormContent, {
+      props: { fields, modelValue: { Name: '已填' } },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+
+    // 初始停在第一个页签，高级设置的错误本来不可见
+    expect(wrapper.find('.el-tabs__item.is-active').text()).toBe('基本信息');
+    expect((wrapper.vm as unknown as { validate: () => boolean }).validate()).toBe(false);
+    await wrapper.vm.$nextTick();
+
+    // 自动切到首个错误字段所在页签，且提示可见
+    expect(wrapper.find('.el-tabs__item.is-active').text()).toBe('高级设置');
+    const errors = wrapper.findAll('.fmc-error');
+    expect(errors.length).toBe(1);
+    expect(errors[0].text()).toContain('级别');
   });
 });
