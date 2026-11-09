@@ -101,6 +101,7 @@ export {
   dictOptions,
   isExpandableCell,
   isOverflowTooltipCell,
+  shouldShowOverflowTooltip,
   layoutMeasuredActions,
   layoutRowActions,
   linkTemplateHasValue,

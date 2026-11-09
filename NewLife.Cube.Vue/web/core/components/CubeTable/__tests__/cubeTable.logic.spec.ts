@@ -42,6 +42,7 @@ import {
   dialogShapeFor,
   isExpandableCell,
   isOverflowTooltipCell,
+  shouldShowOverflowTooltip,
   layoutMeasuredActions,
   layoutRowActions,
   normalizeMulti,
@@ -485,6 +486,15 @@ describe('CubeTable/logic 单元格渲染', () => {
     expect(isOverflowTooltipCell(view(FIELDS.count).control)).toBe(true);
     expect(isOverflowTooltipCell(view(FIELDS.avatar).control)).toBe(false);
     expect(isOverflowTooltipCell(view(FIELDS.enable).control)).toBe(false);
+  });
+
+  it('应该让字段显式声明覆盖溢出提示默认 当自定义插槽自带提示时', () => {
+    // 未声明：按 control 默认（text 开）
+    expect(shouldShowOverflowTooltip(view(FIELDS.name))).toBe(true);
+    // 显式 false：文本列也关（字典参数 Value/LongValue 插槽自带 el-tooltip，防双气泡叠加）
+    expect(shouldShowOverflowTooltip(view({ ...FIELDS.name, overflowTooltip: false }))).toBe(false);
+    // 显式 true：非文本列也可开
+    expect(shouldShowOverflowTooltip(view({ ...FIELDS.enable, overflowTooltip: true }))).toBe(true);
   });
 
   it('应该折叠空白后截断 当摘要富文本时', () => {

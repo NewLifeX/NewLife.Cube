@@ -30,6 +30,8 @@ export interface FieldPresetPatch {
   renderer?: string;
   /** 是否隐藏 */
   hidden?: boolean;
+  /** 溢出提示开关：false 关闭引擎列的 show-overflow-tooltip */
+  overflowTooltip?: boolean;
   /** 行/模型级显示条件 */
   visibleWhen?: (model: Record<string, unknown>) => boolean;
   /** 行/模型级必填条件 */
@@ -106,6 +108,7 @@ function applyFieldPatch(field: FieldMeta, patch: FieldPresetPatch): FieldMeta {
   if (patch.fixed !== undefined) next.fixed = patch.fixed;
   if (patch.renderer !== undefined) next.view = patch.renderer;
   if (patch.hidden !== undefined) next.hidden = patch.hidden;
+  if (patch.overflowTooltip !== undefined) next.overflowTooltip = patch.overflowTooltip;
   if (patch.visibleWhen !== undefined) next.visibleWhen = patch.visibleWhen;
   if (patch.requiredWhen !== undefined) next.requiredWhen = patch.requiredWhen;
   return next;

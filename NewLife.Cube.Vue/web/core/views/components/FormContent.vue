@@ -230,6 +230,8 @@ function isEmptyValue(value: unknown): boolean {
  *
  * 表单提交前由父组件通过 `defineExpose` 调用；返回 false 时父组件应中止提交。
  * 仅校验当前可见字段，禁用（详情）模式直接通过。
+ * Tab 分组下只渲染当前分组，其他页签的错误不可见；命中错误时自动切到
+ * 首个错误字段所在页签，保证提示可见并引导用户回到出错处。
  *
  * @returns 是否全部通过
  */
@@ -244,6 +246,13 @@ function validate(): boolean {
     }
   }
   errors.value = next;
+  if (useTabs.value && Object.keys(next).length > 0) {
+    const firstError = visibleFields.value.find((field) => next[field.name]);
+    if (firstError) {
+      const hit = groups.value.find((group) => group.fields.some((f) => f.name === firstError.name));
+      if (hit) activeGroupKey.value = tabNameOf(hit);
+    }
+  }
   return Object.keys(next).length === 0;
 }
 

@@ -27,6 +27,9 @@ registerPagePreset(PARAMETER_ROUTE, {
       Remark: { hidden: true },
       UpdateUser: { hidden: true },
       UpdateTime: { width: 168 },
+      // 插槽自带 el-tooltip 展示完整值；关掉引擎溢出提示，避免双气泡叠加（innerText 还会混入「复制数值」按钮文案）
+      Value: { overflowTooltip: false },
+      LongValue: { overflowTooltip: false },
     },
     order: ['Name', 'Value', 'LongValue', 'Kind', 'Enable', 'UserID', 'UpdateTime'],
   },
