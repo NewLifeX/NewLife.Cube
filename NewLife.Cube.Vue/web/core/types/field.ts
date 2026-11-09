@@ -127,6 +127,8 @@ export interface FieldMeta {
   fixed?: 'left' | 'right';
   /** 是否隐藏。preset 覆盖 */
   hidden?: boolean;
+  /** 溢出提示开关。preset 覆盖：false 关闭引擎 show-overflow-tooltip（自定义插槽自带 el-tooltip 时防双提示叠加） */
+  overflowTooltip?: boolean;
   /** 行/模型级显示条件。preset 覆盖 */
   visibleWhen?: (model: Record<string, unknown>) => boolean;
   /** 行/模型级必填条件。preset 覆盖 */

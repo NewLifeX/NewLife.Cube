@@ -978,6 +978,15 @@ export function isOverflowTooltipCell(control: ListControlType): boolean {
   return OVERFLOW_TOOLTIP_CONTROLS.has(control);
 }
 
+/**
+ * 列溢出提示最终口径：字段显式声明 `overflowTooltip` 时覆盖按 control 的默认判定。
+ * 自定义插槽自带 el-tooltip 的列（如字典参数 Value/LongValue）传 false，
+ * 避免引擎 show-overflow-tooltip 与插槽提示叠加成双气泡。
+ */
+export function shouldShowOverflowTooltip(column: { control: ListControlType; field: FieldMeta }): boolean {
+  return column.field.overflowTooltip ?? isOverflowTooltipCell(column.control);
+}
+
 /** 表格区开关入参 */
 export interface GridFlagInput {
   selection?: boolean;

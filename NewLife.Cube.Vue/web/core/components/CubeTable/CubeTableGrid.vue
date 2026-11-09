@@ -48,7 +48,7 @@ import {
   cellTitle,
   isExpandableCell,
   linkTemplateHasValue,
-  isOverflowTooltipCell,
+  shouldShowOverflowTooltip,
   layoutMeasuredActions,
   layoutRowActions,
   MAX_DIRECT_ACTIONS,
@@ -374,7 +374,7 @@ function summaryMethod({ columns: tableColumns }: { columns: Array<{ property?: 
         :align="column.align"
         :fixed="column.fixed"
         :class-name="column.field.class"
-        :show-overflow-tooltip="isOverflowTooltipCell(column.control)"
+        :show-overflow-tooltip="shouldShowOverflowTooltip(column)"
       >
         <template v-if="$slots[slotName(column)]" #default="scope">
           <slot
