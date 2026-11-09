@@ -141,6 +141,29 @@ public class ApiContractTests
             cfg.Language = oldLanguage;
         }
     }
+
+    [Fact(DisplayName = "默认语言_配置后生效但不锁定界面")]
+    public void DefaultLanguage_WhenConfigured()
+    {
+        var cfg = NewLife.Setting.Current;
+        var oldLanguage = cfg.Language;
+        var oldDefault = cfg.DefaultLanguage;
+        try
+        {
+            cfg.Language = "";
+            cfg.DefaultLanguage = "zh-Hans";
+            Assert.Equal(CubeLocalization.NormalizeCulture("zh-Hans"), CubeLocalization.GetDefaultLanguage());
+            Assert.Null(CubeLocalization.GetForcedLanguage());
+
+            cfg.DefaultLanguage = "xx-Unknown";
+            Assert.Null(CubeLocalization.GetDefaultLanguage());
+        }
+        finally
+        {
+            cfg.Language = oldLanguage;
+            cfg.DefaultLanguage = oldDefault;
+        }
+    }
     #endregion
 
     #region 辅助

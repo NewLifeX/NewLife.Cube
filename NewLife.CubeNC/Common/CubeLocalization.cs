@@ -24,13 +24,23 @@ public static class CubeLocalization
     #region 方法
     /// <summary>获取基本设置中的界面语言</summary>
     /// <returns>配置的语言名称；未配置时返回空</returns>
-    /// <remarks>语言统一由 NewLife.Setting.Language 控制，魔方不再单独维护语言配置。留空表示自动跟随请求语言，指定受支持语言表示全站锁定。</remarks>
+    /// <remarks>语言统一由 NewLife.Setting 控制，魔方不再单独维护语言配置。留空表示自动跟随请求语言，指定受支持语言表示全站锁定。</remarks>
     public static String GetConfiguredLanguage() => NewLife.Setting.Current?.Language;
+
+    /// <summary>获取基本设置中的默认语言</summary>
+    /// <returns>配置的语言名称；未配置时返回空</returns>
+    /// <remarks>默认语言只做请求与日志兜底，不锁定界面；环境变量优先于配置文件。</remarks>
+    public static String GetConfiguredDefaultLanguage() => NewLife.Setting.Current?.DefaultLanguage;
 
     /// <summary>获取锁定的界面语言。配置了受支持的界面语言时返回该语言，否则返回 null</summary>
     /// <returns>受支持的锁定语言；未配置或语言不受支持时返回 null</returns>
-    /// <remarks>基本设置中的界面语言一经指定即全站生效，忽略 ?lang / Cookie / Accept-Language</remarks>
-    public static String? GetForcedLanguage() => NormalizeCulture(GetConfiguredLanguage());
+    /// <remarks>基本设置中的界面语言一经指定即全站生效，忽略 ?lang / Cookie / Accept-Language；环境变量优先于配置文件</remarks>
+    public static String? GetForcedLanguage() => NormalizeCulture(NewLife.Setting.Current?.GetEffectiveLanguage());
+
+    /// <summary>获取站点默认语言。请求没有受支持语言时回退到该语言</summary>
+    /// <returns>受支持的默认语言；未配置或语言不受支持时返回 null</returns>
+    /// <remarks>默认语言不锁定界面，请求语言优先；环境变量优先于配置文件</remarks>
+    public static String? GetDefaultLanguage() => NormalizeCulture(NewLife.Setting.Current?.GetEffectiveDefaultLanguage());
 
     /// <summary>翻译指定文本</summary>
     /// <param name="template">英文原文模板</param>
@@ -90,9 +100,9 @@ public static class CubeLocalization
             options.SupportedCultures = cultures;
             options.SupportedUICultures = cultures;
 
-            // 锁定语言同时作为默认语言，请求无语言来源时也回退到该语言
-            var forced = GetForcedLanguage();
-            if (forced != null) options.SetDefaultCulture(forced);
+            // 锁定语言优先；未锁定时使用站点默认语言，请求无语言来源时回退到该语言
+            var fallback = GetForcedLanguage() ?? GetDefaultLanguage();
+            if (fallback != null) options.SetDefaultCulture(fallback);
 
             options.RequestCultureProviders =
             [
@@ -114,11 +124,12 @@ public static class CubeLocalization
     /// </remarks>
     public static IApplicationBuilder UseCubeLocalization(this IApplicationBuilder app)
     {
-        // 服务端日志与配置注释使用宿主语言，避免同一日志文件随请求语言混杂。
+        // 服务端日志与配置注释使用站点默认语言，避免同一日志文件随请求语言混杂。
         // 配置受支持的界面语言时，界面与日志同时锁定为该语言。
         var autoLog = CultureInfo.CurrentUICulture;
         Localization.SetLanguage(GetForcedLanguage());
-        Localization.LogCulture ??= autoLog;
+        Localization.SetDefaultLanguage(GetDefaultLanguage());
+        if (Localization.LogCulture == null) Localization.LogCulture = Localization.DefaultCulture ?? autoLog;
 
         app.UseRequestLocalization();
 
@@ -134,11 +145,11 @@ public static class CubeLocalization
                 CultureInfo.CurrentUICulture = culture;
             }
 
-            // 运行期由强制切换为自动时清除进程级语言，恢复请求语言与启动时的日志语言
+            // 运行期由强制切换为自动时清除进程级语言，恢复请求语言与站点默认/启动时的日志语言
             if (forced != Localization.ForcedLanguage)
             {
                 Localization.SetLanguage(forced);
-                if (forced == null) Localization.LogCulture = autoLog;
+                if (forced == null) Localization.LogCulture = Localization.DefaultCulture ?? autoLog;
             }
 
             return next();

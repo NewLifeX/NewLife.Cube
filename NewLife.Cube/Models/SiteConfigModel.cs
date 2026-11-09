@@ -143,9 +143,10 @@ public class SiteConfigModel
 
     private SiteLanguageModel BuildLanguage()
     {
-        // 合并优先级：租户默认语言 → 站点默认语言 → 英文
+        // 合并优先级：租户默认语言 → 锁定语言 → 站点默认语言 → 英文
         var siteDefault = CubeLocalization.NormalizeCulture(_options?.DefaultLanguage)
-            ?? CubeLocalization.NormalizeCulture(NewLife.Setting.Current?.Language)
+            ?? CubeLocalization.GetForcedLanguage()
+            ?? CubeLocalization.GetDefaultLanguage()
             ?? "en-US";
         var current = CubeLocalization.NormalizeCulture(CultureInfo.CurrentUICulture.Name) ?? siteDefault;
 

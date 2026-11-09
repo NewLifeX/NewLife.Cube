@@ -14,6 +14,7 @@ using Xunit;
 namespace NewLife.Cube.Tests.Common;
 
 /// <summary>站点配置接口测试</summary>
+[Collection("ConfigLocalization")]
 public class SiteConfigTests
 {
     [Fact]
@@ -105,6 +106,35 @@ public class SiteConfigTests
 
         Assert.IsType<EmptyResult>(cached);
         Assert.Equal(304, http.Response.StatusCode);
+    }
+
+    [Fact]
+    [DisplayName("站点配置默认语言来自 DefaultLanguage 且不锁定界面")]
+    public void SiteConfig_DefaultLanguage_Should_Not_Lock()
+    {
+        var cfg = NewLife.Setting.Current;
+        var oldLanguage = cfg.Language;
+        var oldDefault = cfg.DefaultLanguage;
+        var oldCulture = Localization.Culture;
+        var oldLog = Localization.LogCulture;
+        try
+        {
+            cfg.Language = "";
+            cfg.DefaultLanguage = "zh-CN";
+            cfg.ApplyLanguage();
+
+            var model = new SiteConfigModel(null);
+            Assert.Equal("zh-CN", model.Language.Default);
+            Assert.False(model.Language.Locked);
+        }
+        finally
+        {
+            cfg.Language = oldLanguage;
+            cfg.DefaultLanguage = oldDefault;
+            cfg.ApplyLanguage();
+            Localization.Culture = oldCulture;
+            Localization.LogCulture = oldLog;
+        }
     }
 
     [Fact]

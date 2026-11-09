@@ -95,6 +95,32 @@ public class CubeLocalizationTests
         Assert.Equal(3, options.RequestCultureProviders.Count);
     }
 
+    [Fact(DisplayName = "请求本地化_未锁定时默认语言作为无请求语言回退")]
+    public void BuildOptions_DefaultLanguage()
+    {
+        var cfg = NewLife.Setting.Current;
+        var oldLanguage = cfg.Language;
+        var oldDefault = cfg.DefaultLanguage;
+        try
+        {
+            cfg.Language = "";
+            cfg.DefaultLanguage = "zh-CN";
+
+            var services = new ServiceCollection();
+            services.AddCubeLocalization();
+
+            using var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
+
+            Assert.Equal("zh-CN", options.DefaultRequestCulture.UICulture.Name);
+        }
+        finally
+        {
+            cfg.Language = oldLanguage;
+            cfg.DefaultLanguage = oldDefault;
+        }
+    }
+
     [Theory(DisplayName = "语言归一化 - 裸语言码、区域与旧版别名")]
     [InlineData("en", "en-US")]
     [InlineData("zh-Hant", "zh-TW")]
