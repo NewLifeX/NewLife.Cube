@@ -10,7 +10,7 @@ namespace NewLife.Cube;
 /// <remarks>
 /// 复用 NewLife.Core 的本地化能力：英文为源文与兜底，<c>Locales/*.yml</c> 在编译期生成语言表。
 /// 请求语言优先取 <c>?lang=</c>，其次 Cookie，最后 <c>Accept-Language</c>；
-/// 未显式指定时跟随 <see cref="CultureInfo.CurrentUICulture"/>。
+/// 都没有受支持语言时回退 <see cref="NewLife.Setting.DefaultLanguage"/>（运行期修改即时生效），仍未配置则跟随 <see cref="CultureInfo.CurrentUICulture"/>。
 /// 基本设置指定了受支持的界面语言时全站锁定，忽略上述来源；留空表示自动跟随请求语言。
 /// </remarks>
 public static class CubeLocalization
@@ -100,7 +100,8 @@ public static class CubeLocalization
             options.SupportedCultures = cultures;
             options.SupportedUICultures = cultures;
 
-            // 锁定语言优先；未锁定时使用站点默认语言，请求无语言来源时回退到该语言
+            // 锁定语言优先；未锁定时使用站点默认语言，请求无语言来源时回退到该语言。
+            // 此处是启动快照，运行期修改默认语言由末尾的 ConfiguredDefaultLanguageRequestCultureProvider 兜底。
             var fallback = GetForcedLanguage() ?? GetDefaultLanguage();
             if (fallback != null) options.SetDefaultCulture(fallback);
 
@@ -109,6 +110,7 @@ public static class CubeLocalization
                 new NormalizedQueryStringRequestCultureProvider { QueryStringKey = "lang", UIQueryStringKey = "lang" },
                 new NormalizedCookieRequestCultureProvider { CookieName = ".AspNet.Culture" },
                 new NormalizedAcceptLanguageHeaderRequestCultureProvider(),
+                new ConfiguredDefaultLanguageRequestCultureProvider(),
             ];
         });
 
@@ -202,6 +204,21 @@ internal class NormalizedCookieRequestCultureProvider : CookieRequestCultureProv
     /// <returns>语言结果</returns>
     public override async Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
         => CubeLocalization.Normalize(await base.DetermineProviderCultureResult(httpContext));
+}
+
+/// <summary>站点默认语言来源。运行期修改默认语言后无需重启即可作为回退生效</summary>
+/// <remarks>请求自身带受支持语言时优先用请求语言，本来源只在没有其它来源时生效</remarks>
+internal class ConfiguredDefaultLanguageRequestCultureProvider : RequestCultureProvider
+{
+    /// <summary>读取站点默认语言</summary>
+    /// <param name="httpContext">HTTP 上下文</param>
+    /// <returns>语言结果；未配置默认语言时返回 null</returns>
+    public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
+    {
+        var name = CubeLocalization.GetDefaultLanguage();
+
+        return Task.FromResult(name == null ? null : new ProviderCultureResult(name));
+    }
 }
 
 /// <summary>归一化 Accept-Language 语言来源。支持 en、de-AT 等非支持列表中的语言</summary>

@@ -34,12 +34,11 @@ internal static class Program
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("SingleFile", "IL3000", Justification = "该调用正是 AOT 判别本身")]
     private static Int32 Main()
     {
         // NativeAOT 判真：原生发布件入口 Assembly.Location 为空
-#pragma warning disable IL3000 // 该调用正是 AOT 判别本身
         Console.WriteLine($"AOT={(typeof(Program).Assembly.Location.IsNullOrEmpty() ? "yes" : "no")}");
-#pragma warning restore IL3000
 
         // 1. 本地化：英文源文、简体、繁体、未知语言回退
         var old = Localization.Culture;
@@ -57,6 +56,15 @@ internal static class Program
             Check("locale-hi", Localization.Translate("MFA is not enabled on this system.") == "इस सिस्टम पर MFA सक्षम नहीं है।", Localization.Translate("MFA is not enabled on this system."));
             Localization.Culture = new CultureInfo("sw-KE");
             Check("locale-fallback", Localization.Translate("Operation succeeded") == "Operation succeeded");
+
+            // 1b. 站点默认语言（Core 12.0.2026.1109 起）：只做请求兜底，不锁定界面
+            var applied = Localization.SetDefaultLanguage("de-DE");
+            Check("locale-default-language", applied == "de-DE" && Localization.DefaultCulture?.Name == "de-DE", applied);
+            var normalized = CubeLocalization.NormalizeCulture("de-AT");
+            Check("locale-normalize", normalized == "de-DE", normalized);
+            var options = CubeLocalization.GetLanguageOptions();
+            Check("locale-options", options.Count == CubeLocalization.SupportedCultures.Length + 1, $"{options.Count}/{CubeLocalization.SupportedCultures.Length}");
+            Localization.SetDefaultLanguage(null);
         }
         catch (CultureNotFoundException)
         {

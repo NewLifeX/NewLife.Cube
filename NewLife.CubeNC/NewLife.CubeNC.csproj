@@ -61,11 +61,11 @@
     <PackageReference Include="NewLife.AI" Version="1.7.2026.1024" />
     <PackageReference Include="NewLife.Core" Version="12.0.2026.1109" />
     <PackageReference Include="NewLife.IP" Version="2.6.2026.1024" />
-    <PackageReference Include="NewLife.Office" Version="1.5.2026.1024" />
+    <PackageReference Include="NewLife.Office" Version="1.5.2026.1103-beta0424" />
     <!-- Stardust 传递依赖 NewLife.Remoting，最小版本 3.9.2026.901 面向 Core 11 构建，与 Core 12 不兼容；显式提升到 Core 12 版本 -->
-    <PackageReference Include="NewLife.Remoting" Version="4.0.2026.1024" />
+    <PackageReference Include="NewLife.Remoting" Version="4.0.2026.1109-beta0753" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1024" />
-    <PackageReference Include="NewLife.XCode" Version="12.3.2026.1024" />
+    <PackageReference Include="NewLife.XCode" Version="12.3.2026.1108-beta1704" />
   </ItemGroup>
 
   <ItemGroup>

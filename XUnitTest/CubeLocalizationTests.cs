@@ -5,7 +5,9 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NewLife;
@@ -92,7 +94,7 @@ public class CubeLocalizationTests
         var options = provider.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
 
         Assert.Equal(CubeLocalization.SupportedCultures.Length, options.SupportedUICultures.Count);
-        Assert.Equal(3, options.RequestCultureProviders.Count);
+        Assert.Equal(4, options.RequestCultureProviders.Count);
     }
 
     [Fact(DisplayName = "请求本地化_未锁定时默认语言作为无请求语言回退")]
@@ -118,6 +120,45 @@ public class CubeLocalizationTests
         {
             cfg.Language = oldLanguage;
             cfg.DefaultLanguage = oldDefault;
+        }
+    }
+
+    [Fact(DisplayName = "请求本地化_运行期修改默认语言无需重启")]
+    public async Task BuildOptions_DefaultLanguageChangedAtRuntime()
+    {
+        var cfg = NewLife.Setting.Current;
+        var oldLanguage = cfg.Language;
+        var oldDefault = cfg.DefaultLanguage;
+        var oldCulture = Localization.Culture;
+        var oldLog = Localization.LogCulture;
+        try
+        {
+            cfg.Language = "";
+            cfg.DefaultLanguage = "zh-CN";
+            cfg.ApplyLanguage();
+
+            var services = new ServiceCollection();
+            services.AddCubeLocalization();
+
+            using var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
+            Assert.Equal("zh-CN", options.DefaultRequestCulture.UICulture.Name);
+
+            // 运行期改默认语言：启动时写入的 DefaultRequestCulture 是快照，回退来源改为读取最新配置
+            cfg.DefaultLanguage = "de-DE";
+            cfg.ApplyLanguage();
+
+            var result = await options.RequestCultureProviders[^1].DetermineProviderCultureResult(new DefaultHttpContext());
+
+            Assert.Equal("de-DE", result?.UICultures?[0]);
+        }
+        finally
+        {
+            cfg.Language = oldLanguage;
+            cfg.DefaultLanguage = oldDefault;
+            cfg.ApplyLanguage();
+            Localization.Culture = oldCulture;
+            Localization.LogCulture = oldLog;
         }
     }
 

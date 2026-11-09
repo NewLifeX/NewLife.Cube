@@ -114,10 +114,11 @@ public class LocalizationTests
 
         var options = provider.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
         Assert.Equal(32, options.SupportedUICultures.Count);
-        Assert.Equal(3, options.RequestCultureProviders.Count);
+        Assert.Equal(4, options.RequestCultureProviders.Count);
         Assert.IsAssignableFrom<QueryStringRequestCultureProvider>(options.RequestCultureProviders[0]);
         Assert.IsAssignableFrom<CookieRequestCultureProvider>(options.RequestCultureProviders[1]);
         Assert.IsAssignableFrom<RequestCultureProvider>(options.RequestCultureProviders[2]);
+        Assert.IsAssignableFrom<RequestCultureProvider>(options.RequestCultureProviders[3]);
     }
 
     [Fact(DisplayName = "多语言 - 语言名称归一化")]
