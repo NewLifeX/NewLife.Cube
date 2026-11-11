@@ -175,4 +175,17 @@ public class ProjectionContractTests
 
         Assert.False(row.ContainsKey("AvatarImage"));
     }
+
+    [Fact(DisplayName = "投影：映射字段同时下发关联键，供表单回显")]
+    public void Project_IncludesMapKey()
+    {
+        var controller = Create();
+        var entity = CreateRow(1);
+        var field = new DataField { Name = "Name", MapField = "Remark" };
+
+        var row = controller.Project(entity, [field]);
+
+        Assert.Equal("行1", row["Name"]);
+        Assert.Equal("备注1", row["Remark"]);
+    }
 }
