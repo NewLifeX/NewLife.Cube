@@ -94,7 +94,7 @@ const dashboardData = {
     },
   ],
   quickLinks: [{ name: '用户管理', url: '/Admin/User' }],
-  profile: { displayName: '管理员', roleNames: 'Administrators', logins: 12 },
+  profile: { displayName: '管理员', roleNames: 'Administrators', logins: 12, online: true },
   sysInfo: { 操作系统: 'Windows 11' },
 };
 
@@ -135,7 +135,15 @@ describe('PageHome — 工作台真实数据渲染', () => {
   it('渲染欢迎横幅、KPI 与全部内容卡 当 Dashboard 返回聚合数据', async () => {
     const { wrapper } = await mountHome();
 
+    const profileCard = wrapper.findAll('[data-cy="workbench-widget"]')[0];
+    expect(profileCard?.attributes('style') ?? '').toContain('--wb-span: 4');
+    expect(profileCard?.attributes('style') ?? '').not.toContain('grid-column');
     expect(wrapper.find('[data-cy="workbench-banner"]').text()).toContain('管理员');
+    expect(wrapper.find('[data-cy="workbench-banner"]').text()).not.toContain('Administrators');
+    expect(wrapper.find('[data-cy="workbench-banner"]').find('[data-cy="profile-presence"]').exists()).toBe(false);
+    expect(wrapper.find('[data-cy="profile-roles"]').text()).toBe('Administrators / 运营');
+    expect(wrapper.find('[data-cy="profile-presence"]').classes()).toContain('is-online');
+    expect(wrapper.find('[data-cy="profile-presence"]').text()).toContain('在线');
     expect(wrapper.find('[data-cy="workbench-kpi-UserCount"]').text()).toContain('12');
     expect(wrapper.find('[data-cy="workbench-kpi-UserCount"]').text()).toContain('用户总数');
     expect(wrapper.findAll('[data-cy="workbench-widget"]')).toHaveLength(5);
@@ -145,6 +153,40 @@ describe('PageHome — 工作台真实数据渲染', () => {
     expect(wrapper.text()).toContain('2026-10-20 06:00:00');
     expect(wrapper.text()).toContain('Windows 11');
     expect(wrapper.find('a[href="/Admin/Index/Main"]').text()).toBe('查看完整服务器信息 »');
+
+    wrapper.unmount();
+  });
+
+  it('个人信息卡把角色放在展示名下，离线状态在右侧 当部件 roleNames 为空且 online 为 false', async () => {
+    const widgets = dashboardData.widgets.map((widget) => {
+      if (widget.name !== 'Profile') return widget;
+      return {
+        ...widget,
+        data: { ...(widget.data as object), roleNames: '', online: false },
+      };
+    });
+    h.getAction.mockImplementation((action: string) => {
+      if (action === 'Dashboard') {
+        return Promise.resolve({
+          code: 0,
+          message: '',
+          data: { ...dashboardData, widgets },
+        });
+      }
+      return Promise.resolve({
+        code: 0,
+        message: '',
+        data: { xs: ['10:00:00'], series: [[10], [20]], memUsed: 512, memTotal: 1024 },
+      });
+    });
+    const { wrapper } = await mountHome();
+
+    expect(wrapper.find('[data-cy="profile-roles"]').text()).toBe('Administrators');
+    const presence = wrapper.find('[data-cy="profile-presence"]');
+    expect(presence.classes()).toContain('is-offline');
+    expect(presence.classes()).not.toContain('is-online');
+    expect(presence.text()).toContain('离线');
+    expect(wrapper.find('[data-cy="workbench-banner"]').text()).not.toContain('离线');
 
     wrapper.unmount();
   });

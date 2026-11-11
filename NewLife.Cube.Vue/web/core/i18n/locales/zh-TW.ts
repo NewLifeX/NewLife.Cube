@@ -1416,6 +1416,7 @@ export default {
 
   'objectPage.settings': '設定',
 
+  'workbench.memory': '記憶體',
   'workbench.monitorChartLabel': 'CPU 與記憶體使用率曲線',
   'workbench.waitingMonitorData': '等待監控資料…',
 

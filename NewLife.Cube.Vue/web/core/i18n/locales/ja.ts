@@ -1253,6 +1253,7 @@ export default {
   'listChart.empty': 'グラフのデータがありません',
   'listChart.loadFailed': 'グラフの読み込みに失敗しました',
   'objectPage.settings': '設定',
+  'workbench.memory': 'メモリ',
   'workbench.monitorChartLabel': 'CPU とメモリ使用量のグラフ',
   'workbench.waitingMonitorData': '監視データを待機しています...',
   'layout.topMenu': 'トップメニュー',

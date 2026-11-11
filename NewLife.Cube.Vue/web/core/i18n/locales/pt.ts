@@ -1253,6 +1253,7 @@ export default {
   'listChart.empty': 'Sem dados de gráfico',
   'listChart.loadFailed': 'Falha ao carregar os gráficos',
   'objectPage.settings': 'Configurações',
+  'workbench.memory': 'Memória',
   'workbench.monitorChartLabel': 'Gráfico de uso de CPU e memória',
   'workbench.waitingMonitorData': 'Aguardando dados de monitoramento...',
   'layout.topMenu': 'Menu superior',

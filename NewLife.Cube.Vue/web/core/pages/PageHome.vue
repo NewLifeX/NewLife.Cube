@@ -90,9 +90,6 @@ const hasContent = computed(() => kpis.value.length > 0 || (data.value?.widgets?
 const displayName = computed(
   () => data.value?.user?.displayName || data.value?.profile?.displayName || data.value?.user?.name || '-',
 );
-const roleText = computed(() =>
-  normalizeRoles(data.value?.user?.roles ?? data.value?.profile?.roleNames).join(' / '),
-);
 const today = computed(() =>
   new Date().toLocaleDateString(undefined, {
     year: 'numeric',
@@ -123,7 +120,26 @@ function isMonitor(widget: WorkbenchWidget): boolean {
 }
 
 function cardStyle(cols?: number): Record<string, string> {
-  return { gridColumn: `span ${normalizeCols(cols)}` };
+  // 用变量而不是行内 grid-column，窄屏媒体查询才能改成半行或通栏
+  return { '--wb-span': String(normalizeCols(cols)) };
+}
+
+/** 个人信息卡的角色名。部件未带 roleNames 时，用 Dashboard 用户角色补上 */
+function presentWidget(widget: WorkbenchWidget): WorkbenchWidget {
+  if (widget.name !== 'Profile' || !widget.data || typeof widget.data !== 'object' || Array.isArray(widget.data)) {
+    return widget;
+  }
+
+  const record = widget.data as Record<string, unknown>;
+  const roleNames = record.roleNames;
+  if (normalizeRoles(typeof roleNames === 'string' || Array.isArray(roleNames) ? roleNames : undefined).length) {
+    return widget;
+  }
+
+  const names = normalizeRoles(data.value?.user?.roles);
+  if (!names.length) return widget;
+
+  return { ...widget, data: { ...record, roleNames: names.join(',') } };
 }
 
 function openKpi(kpi: WorkbenchKpi): void {
@@ -257,7 +273,6 @@ onUnmounted(stopMonitorPolling);
           <p class="wb-date"><el-icon><Calendar /></el-icon>{{ today }}</p>
         </div>
         <div class="wb-banner-actions">
-          <el-tag v-if="roleText" type="primary" effect="plain">{{ roleText }}</el-tag>
           <el-button :type="layoutEditing ? 'primary' : 'default'" @click="layoutEditing = !layoutEditing">
             {{ layoutEditing ? t('workbench.finishLayout') : t('workbench.editLayout') }}
           </el-button>
@@ -360,7 +375,7 @@ onUnmounted(stopMonitorPolling);
           </template>
 
           <WorkbenchMonitor v-if="isMonitor(widget)" :points="monitorPoints" />
-          <WorkbenchWidgetBody v-else :widget="widget" />
+          <WorkbenchWidgetBody v-else :widget="presentWidget(widget)" />
         </el-card>
       </section>
 
@@ -426,7 +441,7 @@ onUnmounted(stopMonitorPolling);
 /* ── KPI 指标行 ── */
 .wb-kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(168px, 100%), 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -576,6 +591,7 @@ onUnmounted(stopMonitorPolling);
 }
 
 .wb-card {
+  grid-column: span var(--wb-span, 6);
   min-width: 0;
   border-radius: 10px;
 }

@@ -1318,6 +1318,7 @@ export default {
 
   'objectPage.settings': 'الإعدادات',
 
+  'workbench.memory': 'الذاكرة',
   'workbench.monitorChartLabel': 'مخطط استخدام المعالج والذاكرة',
   'workbench.waitingMonitorData': 'جارٍ انتظار بيانات المراقبة...',
 

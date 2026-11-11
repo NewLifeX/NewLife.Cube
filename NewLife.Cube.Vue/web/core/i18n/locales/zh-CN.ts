@@ -1430,6 +1430,7 @@ export default {
 
   'objectPage.settings': '设置',
 
+  'workbench.memory': '内存',
   'workbench.monitorChartLabel': 'CPU 与内存使用率曲线',
   'workbench.waitingMonitorData': '等待监控数据…',
 
