@@ -210,6 +210,25 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     expect(emitted.RoleName).toBeUndefined();
   });
 
+  it('映射字段只有展示名、没有关联键时，按名称反查回显', async () => {
+    const meta = fm({
+      name: 'RoleName',
+      displayName: '角色',
+      typeName: 'String',
+      mapField: 'RoleID',
+      mapTypeName: 'Int32',
+      dataSource: { '0': '（无）', '1': '管理员', '3': '普通用户' },
+    });
+    const w = mount(FormContent, {
+      props: { fields: [meta], modelValue: { roleName: '普通用户' } },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+    await flushPromises();
+
+    const select = w.findComponent({ name: 'ElSelect' });
+    expect(select.props('modelValue')).toBe(3);
+  });
+
   it('字典多选（角色组）→ el-select multiple，逗号串回显为同型数组', async () => {
     const meta = fm({
       name: 'RoleIds',

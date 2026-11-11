@@ -111,6 +111,30 @@ export function mapValueKey(field: FieldMeta): string {
   return field.mapField || field.name;
 }
 
+/**
+ * 映射下拉的回显值。优先读关联键，缺键时用展示名反查 dataSource。
+ * 纯数字键转 number，与选项值类型对齐。
+ *
+ * @param field 字段元数据
+ * @param read 按模型键取值（调用方负责大小写翻转）
+ * @returns 与选项同型的值；两边都空时返回 undefined
+ */
+export function resolveMapSelectValue(field: FieldMeta, read: (key: string) => unknown): string | number | undefined {
+  const raw = read(mapValueKey(field));
+  const ds = field.dataSource ?? {};
+  if (raw !== null && raw !== undefined && raw !== '') {
+    const text = String(raw);
+    if (text in ds) return enumOptionValue(text);
+    if (typeof raw === 'number' || typeof raw === 'string') return raw;
+    return undefined;
+  }
+
+  const label = read(field.name);
+  if (label === null || label === undefined || label === '') return undefined;
+  const hit = Object.entries(ds).find(([, name]) => String(name) === String(label));
+  return hit ? enumOptionValue(hit[0]) : undefined;
+}
+
 /** 映射键是否为数值类型。无数据源时据此退回数字输入而非文本 */
 export function isNumericMapKey(field: FieldMeta): boolean {
   return NUMERIC_TYPES.has((field.mapTypeName ?? '').trim());
@@ -333,11 +357,11 @@ export function serializeSubmitModel(
   const multiNames = new Set(
     fields
       .filter((f) => f.multiple || f.itemType === 'multipleSelect')
-      .map((f) => f.name),
+      .map((f) => f.name.toLowerCase()),
   );
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(model)) {
-    if (multiNames.has(k) && Array.isArray(v)) {
+    if (multiNames.has(k.toLowerCase()) && Array.isArray(v)) {
       out[k] = (v as unknown[]).map(String).join(',');
     } else {
       out[k] = v;

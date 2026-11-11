@@ -20,6 +20,8 @@ import {
   isPercentItemType,
   mapValueKey,
   normalizeEmptyTextValues,
+  resolveMapSelectValue,
+  serializeSubmitModel,
   parseDecimalItemType,
   resolveControl,
   resolveSearchControl,
@@ -473,6 +475,17 @@ describe('映射字段与字典多选', () => {
     const field = f({ name: 'RoleName', typeName: 'String', mapField: 'RoleID', dataSource: roleOptions });
     expect(isRequiredField(field)).toBe(false);
   });
+
+  it('映射下拉有关联键时按选项类型回显', () => {
+    const field = f({ name: 'RoleName', typeName: 'String', mapField: 'RoleID', dataSource: roleOptions });
+    expect(resolveMapSelectValue(field, (key) => (key === 'RoleID' ? 3 : undefined))).toBe(3);
+    expect(resolveMapSelectValue(field, (key) => (key === 'RoleID' ? '3' : undefined))).toBe(3);
+  });
+
+  it('映射下拉缺关联键时用展示名反查', () => {
+    const field = f({ name: 'RoleName', typeName: 'String', mapField: 'RoleID', dataSource: roleOptions });
+    expect(resolveMapSelectValue(field, (key) => (key === 'RoleName' ? '普通用户' : undefined))).toBe(3);
+  });
 });
 
 describe('时长字段（ItemType=TimeSpan）', () => {
@@ -523,5 +536,20 @@ describe('normalizeEmptyTextValues 提交前空串归一', () => {
     expect(out).toEqual({ name: 'cube', remark: null });
     expect(out).not.toBe(model);
     expect(model.name).toBe('cube');
+  });
+});
+
+describe('serializeSubmitModel 多选字段名大小写', () => {
+  it('字段名 PascalCase 与模型键 camelCase 不区分大小写，数组收成逗号串', () => {
+    const fields = [f({ name: 'RoleIds', typeName: 'String', multiple: true })];
+    const out = serializeSubmitModel({ roleIds: [1, 3], name: 'a' }, fields);
+
+    expect(out.roleIds).toBe('1,3');
+    expect(out.name).toBe('a');
+  });
+
+  it('多选值不是数组时原样透传', () => {
+    const fields = [f({ name: 'RoleIds', typeName: 'String', multiple: true })];
+    expect(serializeSubmitModel({ roleIds: ',1,3,' }, fields).roleIds).toBe(',1,3,');
   });
 });

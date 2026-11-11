@@ -21,6 +21,7 @@ import {
   isPercentItemType,
   mapValueKey,
   resolveControl,
+  resolveMapSelectValue,
   resolveNumberPrecision,
   resolveNumberStep,
 } from '../../utils/fieldControl';
@@ -471,7 +472,7 @@ function toMultiSelectValue(field: FieldMeta, val: unknown): Array<string | numb
             class="fmc-select"
             :placeholder="hintOf(field, 'form.placeholderSelect')"
             :disabled="props.disabled"
-            :model-value="asScalar(getValue(mapKeyOf(field)))"
+            :model-value="resolveMapSelectValue(field, getValue)"
             @update:model-value="(v: string | number) => updateField(mapKeyOf(field), v)"
           >
             <el-option
