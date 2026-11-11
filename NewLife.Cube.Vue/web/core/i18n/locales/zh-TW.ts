@@ -147,6 +147,13 @@ export default {
   'role.loadMenuFailed': '載入選單樹失敗',
   'role.loadDetailFailed': '取得角色詳情失敗',
 
+  // 用戶管理 · 設定角色
+  'userAdmin.setRole': '設定角色',
+  'userAdmin.primaryRole': '角色',
+  'userAdmin.roleGroup': '角色組',
+  'userAdmin.rolePlaceholder': '請選擇角色',
+  'userAdmin.roleGroupPlaceholder': '請選擇角色組',
+
   // 部門管理
   'dept.title': '部門管理',
   'dept.add': '新增部門',
