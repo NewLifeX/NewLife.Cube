@@ -326,7 +326,19 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
                 else
                     entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
 
-            if (!entity.RoleIds.IsNullOrEmpty()) entity.RoleIds = entity.RoleIds == "-1" ? null : entity.RoleIds.Replace(",-1,", ",");
+            if (!entity.RoleIds.IsNullOrEmpty())
+            {
+                // 角色组存库为包裹逗号，搜索按 ",id," 包含匹配。提交可能是 "1,3"，这里统一归一；无有效编号视为空。
+                var ids = entity.RoleIds.SplitAsInt();
+                var list = new List<Int32>();
+                foreach (var id in ids)
+                {
+                    if (id > 0 && !list.Contains(id)) list.Add(id);
+                }
+
+                var normalized = list.Count == 0 ? null : "," + String.Join(",", list) + ",";
+                if (!String.Equals(entity.RoleIds, normalized, StringComparison.Ordinal)) entity.RoleIds = normalized;
+            }
         }
 
         return base.Valid(entity, type, post);
