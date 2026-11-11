@@ -456,6 +456,10 @@ function rowClassName(row: { row: Record<string, unknown> }): string {
   margin-bottom: 16px;
   align-items: center;
 }
+/* 间距只走 flex gap：清掉 EP 相邻按钮默认 margin-left，避免输入框→搜索→重置间隙一宽一窄 */
+.lst-search-bar :deep(.el-button) {
+  margin-left: 0;
+}
 .lst-pagination {
   display: flex;
   justify-content: flex-end;
@@ -474,6 +478,9 @@ function rowClassName(row: { row: Record<string, unknown> }): string {
 .lst-footer-buttons {
   display: flex;
   gap: 8px;
+}
+.lst-footer-buttons :deep(.el-button) {
+  margin-left: 0;
 }
 
 :deep(.lst-row--selected) {
