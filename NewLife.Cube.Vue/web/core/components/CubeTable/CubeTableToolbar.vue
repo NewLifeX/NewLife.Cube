@@ -105,10 +105,10 @@ const visible = computed(
       />
       <slot name="toolbar-extra" :ctx="ctx" />
       <slot name="column-setting" />
+      <!-- 矩形图标钮（非 circle），与「高级」等同尺寸同圆角 -->
       <el-button
         v-if="showRefresh"
         :icon="Refresh"
-        circle
         :title="t('grid.refresh')"
         @click="ctx.refresh()"
       />
@@ -127,7 +127,7 @@ const visible = computed(
   padding: 8px 20px;
   box-sizing: border-box;
   border-bottom: 1px solid var(--el-border-color-lighter);
-  background: var(--el-bg-color-overlay);
+  background: transparent;
 }
 .ctt-actions {
   display: flex;
@@ -142,5 +142,9 @@ const visible = computed(
   gap: 8px;
   margin-left: auto;
   flex-shrink: 0;
+}
+/* 间距只走 flex gap：清掉 EP「相邻按钮」默认 margin-left，避免高级/齿轮/刷新三钮间隙一宽一窄 */
+.ctt-controls :deep(.el-button) {
+  margin-left: 0;
 }
 </style>

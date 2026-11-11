@@ -43,7 +43,8 @@ function move(index: number, delta: number): void {
   <el-popover placement="bottom-end" :width="220" trigger="click">
     <!-- 不套 el-tooltip：它的触发指令落在 fragment 根上会告警并失效，按钮自身的 title 已够用 -->
     <template #reference>
-      <el-button class="ctcs-trigger" :icon="Setting" circle :title="t('grid.columnSetting')" />
+      <!-- 矩形图标钮（非 circle），与工具栏「高级」「刷新」同尺寸同圆角 -->
+      <el-button class="ctcs-trigger" :icon="Setting" :title="t('grid.columnSetting')" />
     </template>
     <div class="ctcs-title">{{ t('grid.visibleColumns') }}</div>
     <!-- 列数多 + 大字号时整体高度会超出视口，列表区单独滚动，标题与底部操作常驻 -->

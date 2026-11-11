@@ -2,7 +2,7 @@
 /**
  * CubeTable —— 一个组件就是一个列表页
  *
- * 从上到下固定四段：搜索条件 → 表格工具栏（操作 + 指标 + 视图控制）→ 表格 → 分页。
+ * 从上到下固定四段（同属一张主面板卡片）：搜索条件 → 工具栏（操作 + 指标 + 视图控制）→ 表格 → 分页。
  * 页面不滚动，只有表格数据区滚动（`.ct-panel` + `el-table height=100%`）。
  *
  * 上下文三级解析：`:context` 外部指定 → `inject(CubeEngineKey)` 父级已建 → 按当前路由自建。
@@ -118,23 +118,23 @@ const metaMissing = computed(() => ctx.metaMissing?.value === true);
     <!-- ⓪ 页头：框架默认页传标题，业务自绘页面一般不用 -->
     <slot name="header" :ctx="ctx" />
 
-    <!-- ① 搜索条件：关键字行 + 可展开条件面板。
-         #search-bar / #search-advanced 是 MES 口径的「换内容」，#search 是 Cube 扩展的「换整块」 -->
-    <template v-if="showSearch || slots.search || slots['search-bar']">
-      <slot name="search" :ctx="ctx">
-        <CubeTableSearch :ctx="ctx" :placeholder="searchPlaceholder ?? t('userSearch.keyword')">
-          <template v-if="slots['search-bar']" #bar="scope">
-            <slot name="search-bar" v-bind="scope" />
-          </template>
-          <template v-if="slots['search-advanced']" #advanced="scope">
-            <slot name="search-advanced" v-bind="scope" />
-          </template>
-        </CubeTableSearch>
-      </slot>
-    </template>
-
-    <!-- ②③④ 主面板：合并工具栏（操作 + 指标 + 视图控制）→ 表格 → 分页 -->
+    <!-- ①②③④ 主面板：搜索 + 工具栏 + 表格 + 分页合为一张卡
+         （筛选与操作栏不再各套一层卡片边框） -->
     <div class="ct-panel">
+      <!-- 搜索条件：关键字行 + 可展开条件。#search-bar / #search-advanced 换内容，#search 换整块 -->
+      <template v-if="showSearch || slots.search || slots['search-bar']">
+        <slot name="search" :ctx="ctx">
+          <CubeTableSearch :ctx="ctx" :placeholder="searchPlaceholder ?? t('userSearch.keyword')">
+            <template v-if="slots['search-bar']" #bar="scope">
+              <slot name="search-bar" v-bind="scope" />
+            </template>
+            <template v-if="slots['search-advanced']" #advanced="scope">
+              <slot name="search-advanced" v-bind="scope" />
+            </template>
+          </CubeTableSearch>
+        </slot>
+      </template>
+
       <CubeTableToolbar
         :ctx="ctx"
         :actions="actions"
@@ -219,7 +219,7 @@ const metaMissing = computed(() => ctx.metaMissing?.value === true);
 </template>
 
 <style scoped>
-/* 列表页骨架：与 MES ListPage 同一套尺寸（页高 100%、内边距 12px、三段卡片）。
+/* 列表页骨架：页高 100%、内边距 12px；搜索+工具栏+表格+分页同属一张 `.ct-panel` 卡。
    滚动模型契约：`.cube-table` 靠 `height:100%` 撑满，要求宿主内容区给确定高度
    （如 `height:100vh; overflow:hidden`，框架 TopMenu 即如此）；宿主未给定时百分比高度
    不生效，整页会随内容撑高。overflow:hidden 在定高下兜住组件自身不外溢滚动条。 */

@@ -3,7 +3,7 @@
  * CubeTable 搜索区（一体式，对应 MES ListPage 的 `.search-wrap`）
  *
  * 常驻每行三列的栅格（`.cts-grid`）：第一格关键字框，第三格（第一行行尾）固定放
- * 「展开/收起 + 重置 + 搜索」——展开态也钉在第一行，不随条件流到尾部；
+ * 「查询 + 重置 + 更多/收起」——展开态也钉在第一行，不随条件流到尾部；
  * 其余每格一个搜索条件，从第二格起自动铺格、满行换行（收起态只渲染第一个条件，
  * 第一行即 关键字 + 首个条件 + 动作钮）；不再单独出条件面板，
  * 只有业务页用 `#advanced` 自带面板时才渲染面板区域。
@@ -12,7 +12,7 @@
  */
 import { computed, ref, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ArrowDown, ArrowUp, Filter, QuestionFilled, Search } from '@element-plus/icons-vue';
+import { ArrowDown, ArrowUp, QuestionFilled, Search } from '@element-plus/icons-vue';
 import LovSelect from '../LovSelect/index.vue';
 import AreaSelect from '../AreaSelect/index.vue';
 import { areaLevel } from '../../utils/fieldControl';
@@ -78,17 +78,17 @@ function fieldDescription(field: FieldMeta): string {
         <!-- 动作格 DOM 在条件之前，配合显式钉格（第一行第三列）：自动流的条件会跳过它，
              展开后按钮始终在第一行行尾而不是条件最后面 -->
         <div class="cts-cell cts-cell--end">
-          <button v-if="showSearchControls" type="button" class="cts-toggle" @click="toggle">
-            <el-icon :size="15"><Filter /></el-icon>
-            <span>{{ expanded ? t('search.collapse') : t('search.expand') }}</span>
-            <el-icon :size="14">
-              <ArrowUp v-if="expanded" />
-              <ArrowDown v-else />
-            </el-icon>
-          </button>
+          <!-- 顺序与形态对齐设计稿：查询(主色) → 重置 → 更多∨（有条件时） -->
           <div class="cts-actions">
+            <el-button type="primary" @click="ctx.search()">{{ t('search.query') }}</el-button>
             <el-button @click="ctx.resetSearch()">{{ t('button.reset') }}</el-button>
-            <el-button type="primary" @click="ctx.search()">{{ t('button.search') }}</el-button>
+            <el-button v-if="showSearchControls" class="cts-toggle" @click="toggle">
+              <span>{{ expanded ? t('search.less') : t('search.more') }}</span>
+              <el-icon class="el-icon--right">
+                <ArrowUp v-if="expanded" />
+                <ArrowDown v-else />
+              </el-icon>
+            </el-button>
           </div>
         </div>
         <div v-for="c in expanded ? controls : controls.slice(0, 1)" :key="c.key" class="cts-item cts-cell">
@@ -228,13 +228,11 @@ function fieldDescription(field: FieldMeta): string {
 </template>
 
 <style scoped>
-/* 一体式卡片：搜索栏与业务自带面板无缝衔接（收起时只有第一行三格） */
+/* 嵌在 `.ct-panel` 内：不再自带卡片边框；底部分隔线与下方工具栏/表格分开 */
 .cts-wrap {
   flex-shrink: 0;
-  margin-bottom: 8px;
-  background: var(--el-bg-color-overlay);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
+  background: transparent;
+  border-bottom: 1px solid var(--el-border-color-lighter);
   overflow: hidden;
 }
 /* 常驻三列栅格：收起态只铺第一行（关键字+首个条件+动作格），展开逐行铺满三列换行；
@@ -271,28 +269,9 @@ function fieldDescription(field: FieldMeta): string {
 .cts-input :deep(.el-input__inner) {
   font-size: 13px;
 }
-/* 展开/收起：胶囊按钮，常驻动作格靠右位 */
+/* 展开/收起：与同排重置/搜索共用 el-button 默认尺寸与圆角；类名供测试定位 */
 .cts-toggle {
-  height: 30px;
-  padding: 0 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
   flex-shrink: 0;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 15px;
-  background: var(--el-bg-color-overlay);
-  color: var(--el-text-color-regular);
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-.cts-toggle:hover {
-  background: var(--el-color-primary-light-9);
-  border-color: var(--el-color-primary);
-  color: var(--el-color-primary);
 }
 .cts-panel {
   padding: 16px 16px 4px;
@@ -344,7 +323,7 @@ function fieldDescription(field: FieldMeta): string {
   flex: 0 0 auto;
   color: var(--el-text-color-secondary);
 }
-/* 动作格：显式钉死第一行最右列（三列/两列通吃），展开收起+重置/搜索整体靠右，
+/* 动作格：显式钉死第一行最右列（三列/两列通吃），查询/重置/更多整体靠右，
    不随条件流到最后一行 */
 .cts-cell--end {
   grid-row: 1;
@@ -358,5 +337,9 @@ function fieldDescription(field: FieldMeta): string {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+/* 取消 el-button 默认相邻 margin，间距统一走 flex gap */
+.cts-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>
