@@ -102,7 +102,7 @@ router.beforeEach(async (to, from, next) => {
       } catch (error) {
         // 获取用户信息失败，可能是token无效，跳转到登录页
         console.error('Failed to get user info:', error);
-        next({ path: loginPageUrl });
+        next({ path: loginPageUrl, query: { redirect: to.fullPath || '/' } });
         return;
       }
     }

@@ -116,18 +116,18 @@ describe('request.ts — cube-vue 请求层 UI 逻辑', () => {
   });
 
   describe('redirectToLogin', () => {
-    it('默认跳转到 reLoginParams.loginPageUrl 并带 redirect_uri', () => {
+    it('默认跳转到 reLoginParams.loginPageUrl 并带 redirect', () => {
       setPath('/dashboard');
       request.redirectToLogin();
       expect(h.removeAccessToken).toHaveBeenCalled();
       expect(h.removeAllCookie).toHaveBeenCalled();
-      expect(h.gotoPage).toHaveBeenCalledWith(expect.stringContaining('/login?redirect_uri='));
+      expect(h.gotoPage).toHaveBeenCalledWith(expect.stringContaining('/login?redirect='));
     });
 
     it('传入 loginPageUrl 参数时使用该地址', () => {
       setPath('/dashboard');
       request.redirectToLogin({ loginPageUrl: '/custom-login' });
-      expect(h.gotoPage).toHaveBeenCalledWith(expect.stringContaining('/custom-login?redirect_uri='));
+      expect(h.gotoPage).toHaveBeenCalledWith(expect.stringContaining('/custom-login?redirect='));
     });
   });
 
@@ -149,7 +149,7 @@ describe('request.ts — cube-vue 请求层 UI 逻辑', () => {
     it('自身 401（/Auth/Info）且不在登录页 → 跳登录页', () => {
       setPath('/dashboard');
       opts.onUnauthorized('/Auth/Info');
-      expect(h.gotoPage).toHaveBeenCalledWith(expect.stringContaining('/login?redirect_uri='));
+      expect(h.gotoPage).toHaveBeenCalledWith(expect.stringContaining('/login?redirect='));
     });
 
     it('自身 401 但已在登录页 → 不重复跳转', () => {
