@@ -76,6 +76,10 @@ public class CubeController(PageService pageService, TokenService tokenService, 
             return;
         }
 
+        // Image/File 的分享令牌在 CheckAttachmentAccess 校验。它是 8 位 UserToken，Url=attachment:{id}。
+        // 基类 LoadToken 只保留三段 JWT，非 JWT 会在进动作前抛认证失败。
+        if (descriptor != null && descriptor.ActionName.EqualIgnoreCase(nameof(Image), nameof(File))) return;
+
         base.OnActionExecuting(context);
     }
 
