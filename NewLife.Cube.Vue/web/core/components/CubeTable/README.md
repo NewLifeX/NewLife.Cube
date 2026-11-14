@@ -295,6 +295,9 @@ const ctx = useCubeEngine({
   （`ListTableContent.vue` 这两个坑都在，本组件修掉了，没有回改旧组件。）
 - **必填口径只有一个来源**：`core/utils/fieldControl.ts` 的 `isRequiredField()`，
   没有往 `FieldMeta` 里加草案设想的 `required` 同义字段。
+  内置两例外：Boolean 开关恒有值；XCode 审计 auto-fill 列（CreateUserID/CreateTime/CreateIP/
+  UpdateUserID/UpdateTime/UpdateIP，精确名大小写不敏感）由后端落库自动填充，不产客户端必填
+  ——否则「用户不可见却必填」死锁新增（区域级多个页面同因）。
 
 ---
 

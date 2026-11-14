@@ -553,3 +553,35 @@ describe('serializeSubmitModel 多选字段名大小写', () => {
     expect(serializeSubmitModel({ roleIds: ',1,3,' }, fields).roleIds).toBe(',1,3,');
   });
 });
+
+describe('isRequiredField（必填判定）', () => {
+  it('审计 auto-fill 列不产必填（XCode 服务端自动填充）', () => {
+    // 后端 /meta 对审计列不下发 readOnly/nullable 标记，前端若按「非可空即必填」判定，
+    // 用户看不到字段（扩展分组）也会被提交校验拦死。六列由 XCode EntityModules 落库时自动填充。
+    expect(isRequiredField(f({ name: 'CreateUserID', typeName: 'Int32' }))).toBe(false);
+    expect(isRequiredField(f({ name: 'CreateTime', typeName: 'DateTime' }))).toBe(false);
+    expect(isRequiredField(f({ name: 'CreateIP', typeName: 'String' }))).toBe(false);
+    expect(isRequiredField(f({ name: 'UpdateUserID', typeName: 'Int32' }))).toBe(false);
+    expect(isRequiredField(f({ name: 'UpdateTime', typeName: 'DateTime' }))).toBe(false);
+    expect(isRequiredField(f({ name: 'UpdateIP', typeName: 'String' }))).toBe(false);
+  });
+
+  it('审计列判定大小写不敏感且为精确名匹配', () => {
+    expect(isRequiredField(f({ name: 'createuserid', typeName: 'Int32' }))).toBe(false);
+    expect(isRequiredField(f({ name: 'CREATEUSERID', typeName: 'Int32' }))).toBe(false);
+    // 精确名匹配：仅前缀命中不算审计列，业务列不受影响
+    expect(isRequiredField(f({ name: 'CreateUserIDEx', typeName: 'Int32' }))).toBe(true);
+    expect(isRequiredField(f({ name: 'CreateTimeStr', typeName: 'String' }))).toBe(true);
+  });
+
+  it('Boolean 例外保留（开关恒有值，false=默认态）', () => {
+    expect(isRequiredField(f({ name: 'Enable', typeName: 'Boolean' }))).toBe(false);
+  });
+
+  it('业务列口径不动（nullable 缺省仍判必填）', () => {
+    expect(isRequiredField(f({ name: 'Name', typeName: 'String' }))).toBe(true);
+    expect(isRequiredField(f({ name: 'Name', typeName: 'String', nullable: true }))).toBe(false);
+    expect(isRequiredField(f({ name: 'Id', typeName: 'Int32', primaryKey: true }))).toBe(false);
+    expect(isRequiredField(f({ name: 'Code', typeName: 'String' }))).toBe(true);
+  });
+});
