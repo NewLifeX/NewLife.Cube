@@ -61,12 +61,12 @@ test('默认态-完整列表页结构', async ({ page }) => {
   // 值集列翻成标签（不是码值）、布尔列是开关、日期列已格式化、空值给占位
   const firstRow = table(page).locator('.el-table__row').first();
   await expect(firstRow).toContainText('注塑机 A');
-  // Status=1 → 值集标签 Enabled 必须出现在这一行（只写 toContainText 会被同名列头混过去）
-  // 断言取英文标签：ct/mocks/lovStore.ts 的值集桩是 Draft/Enabled/Disabled，
+  // Status=1 → 值集标签「启用」必须出现在这一行（只写 toContainText 会被同名列头混过去）
+  // 断言取中文标签：ct/mocks/lovStore.ts 的值集桩是 草稿/启用/禁用（与 ct/main.ts 钉 zh-CN 一致），
   // 显示标签而非码值 '1' 才证明「码值→标签」这条翻译链路真的走了。
-  await expect(firstRow).toContainText('Enabled');
-  await expect(table(page).locator('.el-table__row').nth(1)).toContainText('Disabled');
-  await expect(table(page).locator('.el-table__row').nth(2)).toContainText('Draft');
+  await expect(firstRow).toContainText('启用');
+  await expect(table(page).locator('.el-table__row').nth(1)).toContainText('禁用');
+  await expect(table(page).locator('.el-table__row').nth(2)).toContainText('草稿');
   await expect(firstRow).toContainText('2026-10-19 08:30:00');
   await expect(firstRow).toContainText('2026-10-18');
   await expect(firstRow).toContainText('—');
