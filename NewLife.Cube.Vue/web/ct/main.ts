@@ -7,6 +7,8 @@ import { stories } from './stories';
 // 组件内部用 `useI18n()` 取文案（如 CubeTable 的按钮与表头），未安装会在 setup 抛
 // 「Need to install with `app.use` function」→ 整页白屏、CT 全部超时。
 // 语言固定中文：基线是按中文文案生成的，跟随浏览器语言会让同一份基线在英文环境变红。
+// CubeTable 是双轨取词（useI18n() 走 app 插件实例、cubeTable.logic.ts 走 i18n.global
+// 硬单例）：setLanguage 治单例轨、下方 app.use(i18n) 治插件轨，两处都要钉才齐。
 setLanguage('zh-CN');
 
 const registry = new Map<string, { component: unknown; props?: Record<string, unknown> }>();
@@ -37,7 +39,7 @@ function unmountCurrent() {
 // 与真实弹窗打开行为一致（避免改组件源码加 immediate）。
 (window as unknown as Record<string, unknown>).mountStory = (id: string, props?: Record<string, unknown>) => {
   const s = registry.get(id);
-    if (!s) throw new Error(`Unknown story: ${id}`);
+  if (!s) throw new Error(`Unknown story: ${id}`);
   unmountCurrent();
   mountEl = document.createElement('div');
   mountEl.classList.add('gal-preview');
@@ -47,6 +49,7 @@ function unmountCurrent() {
     render: () => h(s.component as never, currentProps as never),
   });
   currentApp.use(ElementPlus);
+  // 治插件轨取词（单例轨已由文件头 setLanguage 钉 zh-CN，见上）
   currentApp.use(i18n);
   currentApp.mount(mountEl);
 };
