@@ -310,7 +310,9 @@ var field = new FormField
 };
 ```
 
-> **密码只写不读**：`ItemType = "password"` 表示只写字段（`pass/password/pwd/secret` 及 `NewPassword`/`LoginPwd` 这类后缀命名由框架自动归一为该标记）。`/meta` 不会把它下发到列表、详情与搜索；新增/编辑表单保留遮蔽输入，编辑时取值为空、留空提交即保持原密码。实体接口按字段集合投影回包，只写字段不参与投影，导出也跳过该列。密码有专用修改接口的页面可再把字段从 `EditFormFields` 移除（如用户管理）。
+> **密码只写不读**：`ItemType = "password"` 表示只写字段（`pass/password/pwd` 及 `NewPassword`/`LoginPwd` 这类后缀命名由框架自动归一为该标记）。`/meta` 不会把它下发到列表、详情与搜索；新增/编辑表单保留遮蔽输入，编辑时取值为空、留空提交即保持原密码。实体接口按字段集合投影回包，只写字段不参与投影，导出也跳过该列。密码有专用修改接口的页面可再把字段从 `EditFormFields` 移除（如用户管理）。
+>
+> **密钥默认可读**：`Secret`/`AppSecret`/`Token` 等密钥字段不再按名称归为只写，列表与详情正常下发；它们进入审计日志时由 XCode `LogProvider` 统一脱敏（`XCode:LogMaskSensitive`，默认启用）。确需对前端隐藏的密钥，请显式标注 `ItemType = "password"` 或从字段集合移除。
 
 ### 下拉选择 / 单选 / 多选
 

@@ -604,13 +604,14 @@ public class DataField : IDictionarySource
     /// <summary>是否只写字段。ItemType=password 表示写入专用，取值不允许下发到前端</summary>
     public Boolean IsWriteOnly => ItemType.EqualIgnoreCase("password");
 
-    /// <summary>判断字段名是否为密码类字段。沿用 MVC 约定：pass/password/pwd/secret，以及 NewPassword 这类后缀写法</summary>
+    /// <summary>判断字段名是否为密码类字段。沿用 MVC 约定：pass/password/pwd，以及 NewPassword 这类后缀写法</summary>
+    /// <remarks>只识别口令，不把 Secret/Token 等密钥字段一并视为只写；确需隐藏的密钥请显式标注 ItemType=password</remarks>
     /// <param name="name">字段名</param>
     /// <returns>是否密码类字段</returns>
     public static Boolean IsPasswordName(String name)
     {
         if (name.IsNullOrEmpty()) return false;
-        if (name.EqualIgnoreCase("pass", "password", "pwd", "secret")) return true;
+        if (name.EqualIgnoreCase("pass", "password", "pwd")) return true;
 
         // NewPassword / OldPassword / LoginPwd 等派生命名同样是密码，取值不得回传
         return name.EndsWith("Password", StringComparison.OrdinalIgnoreCase) || name.EndsWith("Pwd", StringComparison.OrdinalIgnoreCase);

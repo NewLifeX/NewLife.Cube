@@ -207,7 +207,8 @@ public class PageMetaBuilderTests
         Assert.True(DataField.IsPasswordName("NewPassword"));
         Assert.True(DataField.IsPasswordName("OldPassword"));
         Assert.True(DataField.IsPasswordName("LoginPwd"));
-        Assert.True(DataField.IsPasswordName("secret"));
+        Assert.False(DataField.IsPasswordName("secret"));
+        Assert.False(DataField.IsPasswordName("Secret"));
         Assert.False(DataField.IsPasswordName("AppSecret"));
         Assert.False(DataField.IsPasswordName("Name"));
         Assert.False(DataField.IsPasswordName(""));
