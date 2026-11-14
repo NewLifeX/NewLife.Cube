@@ -800,6 +800,9 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         }
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath)) return NotFound(L.T("Attachment file does not exist."));
 
+        // 竞速下载按响应头中的预期哈希选择源节点，缺失时即使返回200也不会选中。
+        Response.SetFileHashHeaders(att.Hash);
+
         if (!att.ContentType.IsNullOrEmpty())
             return PhysicalFile(filePath, att.ContentType, att.FileName);
         else
@@ -853,6 +856,9 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         }
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath)) return NotFound(L.T("Attachment file does not exist."));
 
+        // 与 Image 保持相同的文件哈希响应，复用框架现有格式。
+        Response.SetFileHashHeaders(att.Hash);
+
         if (!att.ContentType.IsNullOrEmpty() && !att.ContentType.EqualIgnoreCase("application/octet-stream"))
             return PhysicalFile(filePath, att.ContentType, att.FileName);
         else
@@ -885,6 +891,9 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         if (!shareToken.IsNullOrEmpty())
         {
             var ut = UserToken.FindByToken(shareToken);
+            // 只追加到当前请求埋点，不新增网络请求，不记录令牌原文。
+            var tokenResult = GetAttachmentTokenResult(ut, att.Id, DateTime.Now);
+            DefaultSpan.Current?.AppendTag(new { attachmentId = att.Id, attachmentTokenResult = tokenResult, tokenPresent = true });
             if (ut != null && ut.Enable && ut.Expire > DateTime.Now && ut.Url.EqualIgnoreCase($"attachment:{att.Id}"))
             {
                 // 更新使用统计
@@ -902,10 +911,16 @@ public class CubeController(PageService pageService, TokenService tokenService, 
                 return null;
             }
         }
+        else
+            DefaultSpan.Current?.AppendTag(new { attachmentId = att.Id, attachmentTokenResult = "token_missing", tokenPresent = false });
 
         // 其余分类需要登录
         var user = ManageProvider.User;
-        if (user == null) return StatusCode(401);
+        if (user == null)
+        {
+            DefaultSpan.Current?.AppendTag(new { attachmentId = att.Id, attachmentAccess = "unauthorized", httpStatus = 401 });
+            return StatusCode(401);
+        }
 
         // 检查仅所有者可访问的分类：必须是上传人本人
         if (!set.OwnerOnlyAttachmentCategories.IsNullOrEmpty())
@@ -916,6 +931,15 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         }
 
         return null;
+    }
+
+    internal static String GetAttachmentTokenResult(UserToken token, Int64 attachmentId, DateTime now)
+    {
+        if (token == null) return "token_not_found";
+        if (!token.Enable) return "token_disabled";
+        if (token.Expire <= now) return "token_expired";
+        if (!token.Url.EqualIgnoreCase($"attachment:{attachmentId}")) return "attachment_mismatch";
+        return "accepted";
     }
     #endregion
 }

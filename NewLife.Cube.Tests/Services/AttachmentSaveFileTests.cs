@@ -17,6 +17,36 @@ namespace NewLife.Cube.Tests.Services;
 /// </summary>
 public class AttachmentSaveFileTests : IDisposable
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AttachmentDownload_ReturnsHashHeaders(Boolean image)
+    {
+        AttachmentProvider.Provider = new AttachmentProvider();
+        var att = new Attachment { Category = "WorkOrder", Title = "hash", UploadTime = DateTime.Now };
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes("file race hash regression"));
+        Assert.True(await att.SaveFile(stream, null, "race.png"));
+        var oldValidate = CubeSetting.Current.ValidateAttachment;
+        CubeSetting.Current.ValidateAttachment = false;
+        try
+        {
+            var http = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+            var controller = new NewLife.Cube.Controllers.CubeController(null!, null!, Array.Empty<Microsoft.AspNetCore.Routing.EndpointDataSource>())
+            {
+                ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext { HttpContext = http },
+            };
+            var result = image ? await controller.Image(att.Id + ".png") : await controller.File(att.Id + ".png");
+            Assert.IsType<Microsoft.AspNetCore.Mvc.PhysicalFileResult>(result);
+            Assert.Equal("MD5:" + att.Hash, http.Response.Headers["X-File-Hash"].ToString());
+            Assert.Equal(att.Hash, http.Response.Headers["X-Content-MD5"].ToString());
+        }
+        finally
+        {
+            CubeSetting.Current.ValidateAttachment = oldValidate;
+            att.Delete();
+        }
+    }
+
     // 静态共享：Attachment.Meta 静态缓存绑定首次访问的连接，所有测试方法必须共用同一SQLite库
     private static readonly String _dbFile = Path.Combine(Path.GetTempPath(), $"CubeAttDb_{Guid.NewGuid():N}.db");
     private static readonly String _uploadDir = Path.Combine(Path.GetTempPath(), $"CubeAttUp_{Guid.NewGuid():N}");
