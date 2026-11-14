@@ -183,7 +183,7 @@ public static class ManagerProviderHelper
         if (!jwt.TryDecode(token, out var msg))
         {
             span?.AppendTag(L.TLog("Invalid token: {0}", msg));
-            XTrace.WriteLine(L.TLog("Invalid token: {0}, token={1}", msg, token));
+            XTrace.WriteLine(L.TLog("Invalid token: {0}", msg));
 
             return (null, jwt);
         }
@@ -826,7 +826,7 @@ public static class ManagerProviderHelper
 
             if (!jwt.TryDecode(token, out var msg))
             {
-                XTrace.WriteLine(L.TLog("Invalid token: {0}, token={1}", msg, token));
+                XTrace.WriteLine(L.TLog("Invalid token: {0}", msg));
                 throw new Exception(msg);
             }
 

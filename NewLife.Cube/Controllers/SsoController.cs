@@ -793,13 +793,14 @@ public class SsoController : ControllerBaseX
         {
             msg = ex.GetTrue().Message;
 
-            XTrace.WriteLine($"UserInfo {access_token}");
+            XTrace.WriteLine($"UserInfo user={user} msg={msg}");
             XTrace.WriteException(ex);
             return SsoJsonError(ex);
         }
         finally
         {
-            _tokenService.WriteLog("UserInfo {0} access_token={1} msg={2}", user, access_token, msg);
+            // 日志不得记录 access_token 明文
+            _tokenService.WriteLog("UserInfo {0} msg={1}", user, msg);
         }
     }
 
@@ -830,7 +831,8 @@ public class SsoController : ControllerBaseX
         }
         catch (Exception ex)
         {
-            XTrace.WriteLine($"RefreshToken client_id={client_id} grant_type={grant_type} refresh_token={refresh_token}");
+            // 日志不得记录 refresh_token 明文（长时效凭据）
+            XTrace.WriteLine($"RefreshToken client_id={client_id} grant_type={grant_type}");
             XTrace.WriteException(ex);
             return SsoJsonError(ex);
         }

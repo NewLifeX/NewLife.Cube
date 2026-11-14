@@ -113,7 +113,8 @@ public class TokenService : ITokenService
         if (log == null) throw new ArgumentOutOfRangeException(nameof(code), L.T("Invalid code."));
         if (log.UpdateTime.AddMinutes(1) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), L.T("The code has expired."));
 
-        WriteLog("Token appid={0} code={1} token={2} {3}", log.AppName, code, log.AccessToken, log.CreateUser);
+        // 日志不得记录令牌明文
+        WriteLog("Token appid={0} code={1} {2}", log.AppName, code, log.CreateUser);
 
         log.Action = nameof(GetToken);
         log.Update();
@@ -173,7 +174,8 @@ public class TokenService : ITokenService
 
             if (!jwt.TryDecode(token, out var msg))
             {
-                XTrace.WriteLine("Invalid token: {0}, token={1}", msg, token);
+                // 日志不得记录令牌明文
+                XTrace.WriteLine("Invalid token: {0}", msg);
                 throw new Exception(msg);
             }
 
