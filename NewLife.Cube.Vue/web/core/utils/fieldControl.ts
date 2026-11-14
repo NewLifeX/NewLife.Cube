@@ -111,6 +111,30 @@ export function mapValueKey(field: FieldMeta): string {
   return field.mapField || field.name;
 }
 
+/**
+ * 映射下拉的回显值。优先读关联键，缺键时用展示名反查 dataSource。
+ * 纯数字键转 number，与选项值类型对齐。
+ *
+ * @param field 字段元数据
+ * @param read 按模型键取值（调用方负责大小写翻转）
+ * @returns 与选项同型的值；两边都空时返回 undefined
+ */
+export function resolveMapSelectValue(field: FieldMeta, read: (key: string) => unknown): string | number | undefined {
+  const raw = read(mapValueKey(field));
+  const ds = field.dataSource ?? {};
+  if (raw !== null && raw !== undefined && raw !== '') {
+    const text = String(raw);
+    if (text in ds) return enumOptionValue(text);
+    if (typeof raw === 'number' || typeof raw === 'string') return raw;
+    return undefined;
+  }
+
+  const label = read(field.name);
+  if (label === null || label === undefined || label === '') return undefined;
+  const hit = Object.entries(ds).find(([, name]) => String(name) === String(label));
+  return hit ? enumOptionValue(hit[0]) : undefined;
+}
+
 /** 映射键是否为数值类型。无数据源时据此退回数字输入而非文本 */
 export function isNumericMapKey(field: FieldMeta): boolean {
   return NUMERIC_TYPES.has((field.mapTypeName ?? '').trim());
@@ -299,10 +323,36 @@ export function isFullWidthControl(control: ControlType): boolean {
 }
 
 /**
+ * XCode 审计 auto-fill 列名单（精确名，匹配时大小写不敏感）。
+ *
+ * 这些列由 XCode 实体基类在落库时自动填充（创建人/创建时间/创建 IP/更新人/更新时间/更新 IP），
+ * /meta 因后端未标注 readOnly 而表现为 required；客户端必须整体排除出必填校验集，
+ * 否则表单出现「用户不可见却必填」的死锁（区域级多个页面同因）。
+ * 名单为精确名匹配：前缀命中（如 CreateUserIDEx）不算。
+ */
+export const SERVER_AUDIT_FILL_FIELDS: ReadonlySet<string> = new Set([
+  'createuserid',
+  'createtime',
+  'createip',
+  'updateuserid',
+  'updatetime',
+  'updateip',
+]);
+
+/** 判断字段是否为服务端审计 auto-fill 列（精确名，大小写不敏感） */
+export function isServerAuditFillField(field: FieldMeta): boolean {
+  return SERVER_AUDIT_FILL_FIELDS.has(field.name.trim().toLowerCase());
+}
+
+/**
  * 判断字段是否必填（表单星号展示与提交前校验共用同一判定，避免两处口径漂移）。
  *
  * 规则：非可空 且 非主键 且 控件不是只读 —— 与 FormContent 的必填星号保持一致。
- * 例外：Boolean 开关天然有值（false=否 即默认态），无需强制用户操作，故不计必填。
+ * 例外一：Boolean 开关天然有值（false=否 即默认态），无需强制用户操作，故不计必填。
+ * 例外二：XCode 审计 auto-fill 列（CreateUserID/CreateTime/CreateIP/UpdateUserID/
+ * UpdateTime/UpdateIP，精确名大小写不敏感）由后端落库时自动填充，
+ * 元数据不携带 readOnly 标记；若按「非可空即必填」判定，用户在扩展分组看不到
+ * 这些字段也会被提交校验拦死，故一律不产客户端必填。
  *
  * @param field 字段元数据
  * @returns true 表示必填
@@ -312,6 +362,8 @@ export function isRequiredField(field: FieldMeta): boolean {
   if (field.typeName === 'Boolean') return false;
   // 映射字段（RoleName→RoleID）的取值取决于关联键，虚拟属性不可空不代表必须选择，与 MVC _Form_Map 同口径
   if (field.mapField) return false;
+  // 审计 auto-fill 列由服务端填充，客户端不产必填（见 isServerAuditFillField）
+  if (isServerAuditFillField(field)) return false;
   return !field.nullable && !field.primaryKey && resolveControl(field) !== 'readonly';
 }
 
@@ -333,11 +385,11 @@ export function serializeSubmitModel(
   const multiNames = new Set(
     fields
       .filter((f) => f.multiple || f.itemType === 'multipleSelect')
-      .map((f) => f.name),
+      .map((f) => f.name.toLowerCase()),
   );
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(model)) {
-    if (multiNames.has(k) && Array.isArray(v)) {
+    if (multiNames.has(k.toLowerCase()) && Array.isArray(v)) {
       out[k] = (v as unknown[]).map(String).join(',');
     } else {
       out[k] = v;

@@ -1406,6 +1406,7 @@ export default {
   'objectPage.settings': 'Configuración',
 
   // Panel de trabajo (complemento)
+  'workbench.memory': 'Memoria',
   'workbench.monitorChartLabel': 'Gráfico de uso de CPU y memoria',
   'workbench.waitingMonitorData': 'Esperando datos de supervisión...',
   'workbench.loadFailed': 'No se pudieron cargar los datos del panel de trabajo',

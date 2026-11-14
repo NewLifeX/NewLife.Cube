@@ -74,6 +74,13 @@ partial class ReadOnlyEntityController<TEntity>
 
             visible.Add(df.Name);
             row[camelCase ? ToCamelCase(df.Name) : df.Name] = GetProjectValue(entity, df);
+
+            // 映射列（RoleName→RoleID）只下发展示名时，表单按 mapField 回显为空。缺键才补关联值，不覆盖已有列。
+            if (!df.MapField.IsNullOrEmpty())
+            {
+                var mapKey = camelCase ? ToCamelCase(df.MapField) : df.MapField;
+                if (!row.ContainsKey(mapKey)) row[mapKey] = GetProjectValue(entity, new DataField { Name = df.MapField });
+            }
         }
 
         // 扩展值（虚拟列计算结果等）随行内联；只补字段集合内、尚未取到值的键

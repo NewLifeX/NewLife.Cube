@@ -128,6 +128,9 @@ public static class FileStorageExtensions
 /// <summary>魔方文件分布式存储</summary>
 public class CubeFileStorage : DefaultFileStorage
 {
+    // 基类从实例属性读取下载地址。并发拉取时不能互相改掉对方的 token。
+    private readonly SemaphoreSlim _pullGate = new(1, 1);
+
     /// <summary>实例化魔方文件分布式存储</summary>
     /// <param name="setting">魔方设置</param>
     /// <param name="serviceProvider">服务提供者</param>
@@ -207,5 +210,57 @@ public class CubeFileStorage : DefaultFileStorage
             if (list.Count < page.PageSize) break;
             page.PageIndex++;
         }
+    }
+
+    /// <summary>按附件校验配置，为非公开分类附上短时分享令牌后再拉取。</summary>
+    /// <param name="file">待拉取文件</param>
+    /// <param name="sourceNode">提供文件的节点</param>
+    /// <param name="cancellationToken">取消标记</param>
+    protected override async Task FetchFileAsync(IFileInfo file, String sourceNode, CancellationToken cancellationToken)
+    {
+        var shareUrl = ResolvePullUrl(file);
+
+        // 不带令牌的拉取也要进同一把锁。否则并发时会读到别人刚写上 token 的 DownloadUri。
+        await _pullGate.WaitAsync(cancellationToken);
+        var oldUri = DownloadUri;
+        try
+        {
+            if (!shareUrl.IsNullOrEmpty()) DownloadUri = shareUrl;
+            await base.FetchFileAsync(file, sourceNode, cancellationToken);
+        }
+        finally
+        {
+            DownloadUri = oldUri;
+            _pullGate.Release();
+        }
+    }
+
+    /// <summary>开启附件校验且分类不在公开列表时，节点互拉需要短时令牌。</summary>
+    /// <param name="validateAttachment">是否校验附件访问</param>
+    /// <param name="publicCategories">公开分类，逗号分隔</param>
+    /// <param name="category">附件分类</param>
+    /// <returns>需要附带短时令牌时为 true</returns>
+    internal static Boolean NeedSyncPullToken(Boolean validateAttachment, String publicCategories, String category)
+    {
+        if (!validateAttachment) return false;
+        if (publicCategories.IsNullOrEmpty()) return true;
+
+        var cats = publicCategories.Split(',');
+        return !cats.Any(c => c.Trim().EqualIgnoreCase(category));
+    }
+
+    private static String ResolvePullUrl(IFileInfo file)
+    {
+        if (file == null || file.Id <= 0) return null;
+
+        var att = Attachment.FindById(file.Id);
+        if (att == null) return null;
+
+        var set = CubeSetting.Current;
+        if (!NeedSyncPullToken(set.ValidateAttachment, set.PublicAttachmentCategories, att.Category)) return null;
+
+        var share = ViewHelper.GetAttachmentShareUrl(att, att.CreateUserID);
+        if (share.IsNullOrEmpty() || share.IndexOf("token=", StringComparison.OrdinalIgnoreCase) < 0) return null;
+        return share;
     }
 }

@@ -1253,6 +1253,7 @@ export default {
   'listChart.empty': 'Keine Diagrammdaten',
   'listChart.loadFailed': 'Diagramme konnten nicht geladen werden',
   'objectPage.settings': 'Einstellungen',
+  'workbench.memory': 'Speicher',
   'workbench.monitorChartLabel': 'Diagramm für CPU- und Speichernutzung',
   'workbench.waitingMonitorData': 'Warten auf Überwachungsdaten...',
   'layout.topMenu': 'Obenmenü',

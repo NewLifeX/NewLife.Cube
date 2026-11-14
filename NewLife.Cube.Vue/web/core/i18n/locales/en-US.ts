@@ -162,6 +162,13 @@ export default {
   'role.loadMenuFailed': 'Failed to load the menu tree',
   'role.loadDetailFailed': 'Failed to load role details',
 
+  // 用户管理 · 设置角色
+  'userAdmin.setRole': 'Set roles',
+  'userAdmin.primaryRole': 'Role',
+  'userAdmin.roleGroup': 'Role group',
+  'userAdmin.rolePlaceholder': 'Select a role',
+  'userAdmin.roleGroupPlaceholder': 'Select roles',
+
   // 部门管理
   'dept.title': 'Department management',
   'dept.add': 'Add department',
@@ -1437,6 +1444,7 @@ export default {
 
   'objectPage.settings': 'Settings',
 
+  'workbench.memory': 'Memory',
   'workbench.monitorChartLabel': 'CPU and memory usage chart',
   'workbench.waitingMonitorData': 'Waiting for monitoring data...',
 

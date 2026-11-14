@@ -162,6 +162,13 @@ export default {
   'role.loadMenuFailed': '加载菜单树失败',
   'role.loadDetailFailed': '获取角色详情失败',
 
+  // 用户管理 · 设置角色
+  'userAdmin.setRole': '设置角色',
+  'userAdmin.primaryRole': '角色',
+  'userAdmin.roleGroup': '角色组',
+  'userAdmin.rolePlaceholder': '请选择角色',
+  'userAdmin.roleGroupPlaceholder': '请选择角色组',
+
   // 部门管理
   'dept.title': '部门管理',
   'dept.add': '新增部门',
@@ -1430,6 +1437,7 @@ export default {
 
   'objectPage.settings': '设置',
 
+  'workbench.memory': '内存',
   'workbench.monitorChartLabel': 'CPU 与内存使用率曲线',
   'workbench.waitingMonitorData': '等待监控数据…',
 

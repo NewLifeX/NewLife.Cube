@@ -75,7 +75,13 @@ beforeEach(() => {
 describe('CubeTable 五段结构', () => {
   it('应该按「搜索→工具栏→表格→分页」自上而下排 当用默认区块时', async () => {
     const { wrapper } = await mountHost();
-    const selectors = ['.cts-wrap', '.ct-panel .ctt', '.ct-panel .ct-table-wrap', '.ct-panel .ctp'];
+    // 四段同属 `.ct-panel` 一张卡（筛选不再单独成卡）
+    const selectors = [
+      '.ct-panel .cts-wrap',
+      '.ct-panel .ctt',
+      '.ct-panel .ct-table-wrap',
+      '.ct-panel .ctp',
+    ];
     const nodes = selectors.map((sel) => {
       const found = wrapper.find(sel);
       expect(found.exists(), sel).toBe(true);
@@ -88,6 +94,8 @@ describe('CubeTable 五段结构', () => {
     }
     // 操作栏合并进工具栏，不再是独立一行
     expect(wrapper.find('.ctt .cta').exists()).toBe(true);
+    // 搜索是面板子节点，不是 `.cube-table` 下与面板平级的第二张卡
+    expect(wrapper.find('.cube-table > .cts-wrap').exists()).toBe(false);
   });
 
   it('应该渲染全套默认区块的内容 当页面自带引擎时', async () => {

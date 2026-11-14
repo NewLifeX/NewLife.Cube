@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 # 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
 ################################################################################
 
@@ -87,3 +87,9 @@ xcodetool.exe
 NewLife.Cube.Vue/web/scripts/element-tokens.json
 Doc/Architecture/
 .DS_Store
+
+# pnpm workspace：权威 lockfile 仅在仓库根（pnpm-workspace.yaml 的全部成员共用）。
+# 子包/皮肤目录独立 install 绕过 workspace 时生成的 pnpm-lock.yaml 是异常产物：
+# 依赖树与根 lockfile 漂移、且不参与 workspace 解析，不入库；根 lockfile 反排除保留。
+pnpm-lock.yaml
+!/pnpm-lock.yaml

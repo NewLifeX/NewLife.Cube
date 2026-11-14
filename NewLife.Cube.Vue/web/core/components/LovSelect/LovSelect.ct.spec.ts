@@ -86,7 +86,8 @@ test('ListMulti 选择后回显文本(不应是数字)', async ({ page }) => {
   const rows = page.locator('.el-table__row');
   await rows.nth(0).locator('.el-checkbox').click(); // 勾选「管理员」
   await rows.nth(1).locator('.el-checkbox').click(); // 勾选「普通用户」
-  await page.locator('.el-dialog .el-button:has-text("确定")').click();
+  // footer 主按钮实际文本为「确认」（LovSelectTable footer，DOM 实锤），非「确定」
+  await page.locator('.el-dialog .el-button:has-text("确认")').click();
   await page.waitForSelector('.el-dialog', { state: 'hidden' });
 
   // 回显标签必须包含文本 label，不得只是数字 id（缺陷态下 .el-select__selection 显示 1/2）

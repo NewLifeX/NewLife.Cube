@@ -44,6 +44,12 @@ export default defineConfig({
       // 具体路径放前面，优先于父级别名
       { find: '@newlifex/cube-vue/core/utils/request', replacement: fileURLToPath(new URL('./mocks/request.ts', import.meta.url)) },
       { find: '@newlifex/cube-vue/core/utils/lov-api', replacement: fileURLToPath(new URL('./mocks/lov-api.ts', import.meta.url)) },
+      // 组件内「相对导入」的 utils/request / lov-api（如 AreaSelect 的 `../../utils/request`）
+      // 与包名导入同语义：CT 下统一走桩。曾实测相对导入绕过别名 → 真 axios
+      // 打到 vite dev（200 HTML fallback → 归一空数组 → 面板「暂无数据」假缺陷态）。
+      // 仅影响 CT 构建（生产构建不用本配置）。
+      { find: /.*utils\/request$/, replacement: fileURLToPath(new URL('./mocks/request.ts', import.meta.url)) },
+      { find: /.*utils\/lov-api$/, replacement: fileURLToPath(new URL('./mocks/lov-api.ts', import.meta.url)) },
       // 项目源码别名（与 web/vite.config.ts 一致）
       { find: '@newlifex/cube-vue', replacement: fileURLToPath(new URL('../', import.meta.url)) },
     ],

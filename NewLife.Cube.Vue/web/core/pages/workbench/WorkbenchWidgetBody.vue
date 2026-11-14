@@ -33,6 +33,8 @@ const profile = computed(() => payload.value as WorkbenchProfile);
 const profileName = computed(() => profile.value.displayName || profile.value.name || '-');
 const profileInitial = computed(() => Array.from(profileName.value)[0] || '?');
 const roles = computed(() => normalizeRoles(profile.value.roleNames));
+const roleText = computed(() => roles.value.join(' / '));
+const profileOnline = computed(() => profile.value.online === true);
 
 const quickLinks = computed<WorkbenchQuickLink[]>(() => {
   const data = payload.value as QuickLinkWidgetData;
@@ -69,12 +71,16 @@ const plainText = computed(() => {
           <el-avatar :size="48" class="wb-avatar">{{ profileInitial }}</el-avatar>
           <div class="wb-profile-title">
             <div class="wb-profile-name">{{ profileName }}</div>
-            <div class="wb-profile-meta">
-              <el-tag v-if="profile.online" type="success" size="small" effect="plain">{{ t('workbench.online') }}</el-tag>
-              <el-tag v-else type="info" size="small" effect="plain">{{ t('workbench.offline') }}</el-tag>
-              <el-tag v-for="role in roles" :key="role" size="small" effect="plain">{{ role }}</el-tag>
-            </div>
+            <p v-if="roleText" class="wb-profile-role" data-cy="profile-roles">{{ roleText }}</p>
           </div>
+          <span
+            class="wb-presence"
+            :class="profileOnline ? 'is-online' : 'is-offline'"
+            data-cy="profile-presence"
+          >
+            <i class="wb-presence-dot" aria-hidden="true" />
+            <span>{{ profileOnline ? t('workbench.online') : t('workbench.offline') }}</span>
+          </span>
         </div>
         <dl class="wb-kv">
           <dt>{{ t('workbench.loginCount') }}</dt>
@@ -168,17 +174,46 @@ const plainText = computed(() => {
   font-weight: 600;
 }
 
+.wb-profile-title {
+  min-width: 0;
+  flex: 1;
+}
+
 .wb-profile-name {
   font-size: 16px;
   font-weight: 600;
   color: var(--el-text-color-primary);
 }
 
-.wb-profile-meta {
-  display: flex;
-  flex-wrap: wrap;
+.wb-profile-role {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--el-text-color-secondary);
+}
+
+.wb-presence {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
-  margin-top: 6px;
+  margin-left: auto;
+  flex: none;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--el-text-color-regular);
+  white-space: nowrap;
+}
+
+.wb-presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--el-text-color-placeholder);
+  flex: none;
+}
+
+.wb-presence.is-online .wb-presence-dot {
+  background: var(--el-color-success);
 }
 
 .wb-kv {
@@ -206,7 +241,7 @@ const plainText = computed(() => {
 
 .wb-links {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
   gap: 8px;
 }
 
@@ -240,7 +275,7 @@ const plainText = computed(() => {
 
 .wb-loginlog {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: 16px;
 }
 

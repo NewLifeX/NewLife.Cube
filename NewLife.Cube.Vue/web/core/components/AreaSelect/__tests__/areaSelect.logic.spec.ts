@@ -4,7 +4,7 @@
  * 覆盖 ApiResponse / 裸数组归一、目标层级叶子判定、父级路径排序。
  */
 import { describe, expect, it } from 'vitest';
-import { areaPathIds, normalizeAreaResponse, toAreaOptions } from '../areaSelect.logic';
+import { areaPathIds, createLazyGuard, normalizeAreaResponse, toAreaOptions } from '../areaSelect.logic';
 
 describe('AreaSelect/logic', () => {
   it('应兼容 ApiResponse 信封与裸数组', () => {
@@ -67,5 +67,39 @@ describe('AreaSelect/logic', () => {
       { id: 2, name: '市', level: 2 },
     ]);
     expect(path).toEqual([1, 2, 3]);
+  });
+});
+
+describe('AreaSelect/logic createLazyGuard（风暴短路守卫）', () => {
+  it('同一节点只放行首次请求，mark 后即短路', () => {
+    const guard = createLazyGuard();
+    expect(guard.canLoad(0)).toBe(true);
+    guard.mark(0);
+    expect(guard.canLoad(0)).toBe(false);
+    // 重复 mark 幂等
+    guard.mark(0);
+    expect(guard.canLoad(0)).toBe(false);
+  });
+
+  it('不同节点互不影响', () => {
+    const guard = createLazyGuard();
+    guard.mark(0);
+    expect(guard.canLoad(0)).toBe(false);
+    expect(guard.canLoad(110000)).toBe(true);
+  });
+
+  it('负数与非整数编号同样可守卫（防御 0/NaN 根级重复拉取）', () => {
+    const guard = createLazyGuard();
+    expect(guard.canLoad(Number.NaN)).toBe(true);
+    guard.mark(Number.NaN);
+    expect(guard.canLoad(Number.NaN)).toBe(false);
+  });
+
+  it('guard 实例相互独立（每个 AreaSelect 实例各自守卫，不跨实例误伤）', () => {
+    const a = createLazyGuard();
+    const b = createLazyGuard();
+    a.mark(5);
+    expect(a.canLoad(5)).toBe(false);
+    expect(b.canLoad(5)).toBe(true);
   });
 });

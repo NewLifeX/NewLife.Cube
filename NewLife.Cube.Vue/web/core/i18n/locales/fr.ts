@@ -1395,6 +1395,7 @@ export default {
 
   'objectPage.settings': 'Paramètres',
 
+  'workbench.memory': 'Mémoire',
   'workbench.monitorChartLabel': 'Graphique d\'utilisation CPU et mémoire',
   'workbench.waitingMonitorData': 'En attente des données de surveillance...',
 

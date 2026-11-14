@@ -68,13 +68,22 @@ export function redirectToLogin({ loginPageUrl: loginPageUrl2 }: { loginPageUrl?
   }
 
   const loginPath = LOGIN_URL;
+  const redirectParam = /^\/Sso\/Login(?:[/?]|$)/i.test(loginPath) ? 'redirect_uri' : 'redirect';
+  if (redirectParam === 'redirect') {
+    try {
+      const target = new URL(decodeURIComponent(cacheLocation), window.location.origin);
+      cacheLocation = encodeURIComponent(target.origin === window.location.origin ? target.pathname + target.search : '/');
+    } catch {
+      cacheLocation = encodeURIComponent('/');
+    }
+  }
 
   // 构建重定向URL
   const redirectParams = getSession('templateParams') || '';
   if (loginPath.includes('?')) {
-    gotoPage(`${loginPath}&redirect_uri=${cacheLocation}${redirectParams}`);
+    gotoPage(`${loginPath}&${redirectParam}=${cacheLocation}${redirectParams}`);
   } else {
-    gotoPage(`${loginPath}?redirect_uri=${cacheLocation}${redirectParams}`);
+    gotoPage(`${loginPath}?${redirectParam}=${cacheLocation}${redirectParams}`);
   }
 }
 

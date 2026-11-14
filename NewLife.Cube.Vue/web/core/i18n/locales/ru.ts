@@ -1253,6 +1253,7 @@ export default {
   'listChart.empty': 'Нет данных для диаграмм',
   'listChart.loadFailed': 'Не удалось загрузить диаграммы',
   'objectPage.settings': 'Настройки',
+  'workbench.memory': 'Память',
   'workbench.monitorChartLabel': 'График использования CPU и памяти',
   'workbench.waitingMonitorData': 'Ожидание данных мониторинга...',
   'layout.topMenu': 'Верхнее меню',

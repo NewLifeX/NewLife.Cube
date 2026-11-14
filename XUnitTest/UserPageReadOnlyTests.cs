@@ -87,6 +87,17 @@ public class UserPageReadOnlyTests : IDisposable
         Assert.True((Boolean)InvokeValid(user)!);
     }
 
+    [Fact(DisplayName = "保存时角色组归一为逗号包裹")]
+    public void SystemRole_RoleIdsWrapped()
+    {
+        var user = CreateUser(true);
+        user.RoleIds = "1,3";
+        ManageProvider.Provider = new StubProvider { Mock = user };
+
+        Assert.True((Boolean)InvokeValid(user)!);
+        Assert.Equal(",1,3,", user.RoleIds);
+    }
+
     private static Object? InvokeImport(IList<IEntity> list)
     {
         var controller = (UserController)RuntimeHelpers.GetUninitializedObject(typeof(UserController));

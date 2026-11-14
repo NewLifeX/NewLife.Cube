@@ -48,10 +48,10 @@ const table = (page: import('@playwright/test').Page) => page.locator('.cube-tab
 test('默认态-完整列表页结构', async ({ page }) => {
   await openStory(page, 'CubeTable/Default');
 
-  // 自上而下：搜索栏 → 合并工具栏/表格/分页主面板
-  const sections = page.locator('.cube-table > *');
-  await expect(sections.nth(0)).toHaveClass(/cts-wrap/);
-  await expect(sections.nth(1)).toHaveClass(/ct-panel/);
+  // 自上而下：一张主面板内「搜索 → 工具栏 → 表格 → 分页」
+  await expect(page.locator('.cube-table > .ct-panel')).toBeVisible();
+  await expect(page.locator('.cube-table > .cts-wrap')).toHaveCount(0);
+  await expect(page.locator('.ct-panel .cts-wrap')).toBeVisible();
   // 操作栏已合并进工具栏，不再是独立一行
   await expect(page.locator('.ct-panel .ctt .cta.cta--inline')).toBeVisible();
   await expect(page.locator('.ct-panel .ctt [data-role="advanced"]')).toBeVisible();
@@ -61,12 +61,12 @@ test('默认态-完整列表页结构', async ({ page }) => {
   // 值集列翻成标签（不是码值）、布尔列是开关、日期列已格式化、空值给占位
   const firstRow = table(page).locator('.el-table__row').first();
   await expect(firstRow).toContainText('注塑机 A');
-  // Status=1 → 值集标签 Enabled 必须出现在这一行（只写 toContainText 会被同名列头混过去）
-  // 断言取英文标签：ct/mocks/lovStore.ts 的值集桩是 Draft/Enabled/Disabled，
+  // Status=1 → 值集标签「启用」必须出现在这一行（只写 toContainText 会被同名列头混过去）
+  // 断言取中文标签：ct/mocks/lovStore.ts 的值集桩是 草稿/启用/禁用（与 ct/main.ts 钉 zh-CN 一致），
   // 显示标签而非码值 '1' 才证明「码值→标签」这条翻译链路真的走了。
-  await expect(firstRow).toContainText('Enabled');
-  await expect(table(page).locator('.el-table__row').nth(1)).toContainText('Disabled');
-  await expect(table(page).locator('.el-table__row').nth(2)).toContainText('Draft');
+  await expect(firstRow).toContainText('启用');
+  await expect(table(page).locator('.el-table__row').nth(1)).toContainText('禁用');
+  await expect(table(page).locator('.el-table__row').nth(2)).toContainText('草稿');
   await expect(firstRow).toContainText('2026-10-19 08:30:00');
   await expect(firstRow).toContainText('2026-10-18');
   await expect(firstRow).toContainText('—');
@@ -156,9 +156,9 @@ test('搜索-收起态第一行三格，展开后每行三列栅格', async ({ p
   await openStory(page, 'CubeTable/Default');
 
   const search = page.locator('.cts-wrap');
-  // 收起态：第一行三格 = 关键字 + 第一个条件 + 动作钮（展开/重置/搜索），其余条件不渲染
+  // 收起态：第一行三格 = 关键字 + 第一个条件 + 动作钮（查询/重置/更多），其余条件不渲染
   await expect(search.locator('.cts-item')).toHaveCount(1);
-  await expect(search.locator('.cts-toggle')).toContainText('展开');
+  await expect(search.locator('.cts-toggle')).toContainText('更多');
   await expect(search.locator('.cts-actions')).toHaveCount(1);
   await expect(search).toHaveScreenshot();
 
@@ -172,7 +172,7 @@ test('搜索-收起态第一行三格，展开后每行三列栅格', async ({ p
   await expect(grid.locator('> *').first()).toHaveClass(/cts-input/);
   await expect(grid.locator('> *').nth(1)).toHaveClass(/cts-cell--end/);
   await expect(grid.locator('> *').nth(2)).toHaveClass(/cts-item/);
-  await expect(grid.locator('> .cts-cell--end').getByRole('button', { name: '搜索' })).toBeVisible();
+  await expect(grid.locator('> .cts-cell--end').getByRole('button', { name: '查询' })).toBeVisible();
   // 展开后动作格仍钉在第一行行尾（与关键字同 y、在最右列），不随条件流到尾行
   const box = (sel: string) => grid.locator(sel).boundingBox().then((b) => ({ x: b!.x, y: Math.round(b!.y) }));
   const inputBox = await box('> .cts-input');
@@ -430,12 +430,12 @@ test('滚动模型-表格填满宿主视口且只有表体内滚，展开筛选�
     .evaluate((el) => el.scrollHeight - el.clientHeight);
   expect(overflow).toBeGreaterThan(0);
 
-  // 展开筛选：搜索区变高、表格面板变矮，分页仍在视口内（自适应）
-  const panelBefore = await root.locator('.ct-panel').evaluate((el) => el.clientHeight);
+  // 展开筛选：搜索在面板内变高 → 表格区变矮，分页仍在视口内（自适应）
+  const tableBefore = await root.locator('.ct-table-wrap').evaluate((el) => el.clientHeight);
   await root.locator('.cts-toggle').click();
   await expect(root.locator('.cts-item')).not.toHaveCount(1);
-  const panelAfter = await root.locator('.ct-panel').evaluate((el) => el.clientHeight);
+  const tableAfter = await root.locator('.ct-table-wrap').evaluate((el) => el.clientHeight);
   const bottomAfter = await root.locator('.ctp').evaluate((el) => el.getBoundingClientRect().bottom);
-  expect(panelAfter).toBeLessThan(panelBefore);
+  expect(tableAfter).toBeLessThan(tableBefore);
   expect(bottomAfter).toBeLessThanOrEqual(vh + 1);
 });

@@ -1365,6 +1365,7 @@ export default {
 
   'objectPage.settings': '설정',
 
+  'workbench.memory': '메모리',
   'workbench.monitorChartLabel': 'CPU 및 메모리 사용률 차트',
   'workbench.waitingMonitorData': '모니터링 데이터를 기다리는 중...',
 

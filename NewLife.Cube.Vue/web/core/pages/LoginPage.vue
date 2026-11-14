@@ -64,8 +64,8 @@
           </p>
         </div>
 
-        <!-- 登录/注册 Tab -->
-        <div v-if="showPasswordForm || showRegister" class="login-tabs">
+        <!-- 登录/注册页签：未开放注册时只剩登录，不画页签 -->
+        <div v-if="showRegister" class="login-tabs">
           <button
             type="button"
             class="login-tab"

@@ -49,7 +49,8 @@ const visible = computed(
     <div class="ctm-controls">
       <slot name="extra" :ctx="ctx" />
       <slot name="column-setting" />
-      <el-button v-if="showRefresh" :icon="Refresh" circle :title="t('grid.refresh')" @click="ctx.refresh()" />
+      <!-- 矩形图标钮（非 circle），与合并工具栏刷新同口径 -->
+      <el-button v-if="showRefresh" :icon="Refresh" :title="t('grid.refresh')" @click="ctx.refresh()" />
     </div>
   </div>
 </template>

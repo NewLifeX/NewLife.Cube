@@ -2,7 +2,7 @@
  * `CubeTableSearch` 组件渲染测试
  *
  * 结构对齐 MES ListPage 的一体式搜索区：常驻每行三列的栅格，收起态第一行 =
- * 关键字 + 第一个条件 + 「展开/收起、重置、搜索」，展开把其余条件铺进后续行，
+ * 关键字 + 第一个条件 + 「查询、重置、更多/收起」，展开把其余条件铺进后续行，
  * 而动作格（钉在第一行最右列）不随条件流到尾部。
  * 断言点：展开入口的有无、条件按元数据出控件、范围类拆两格、内联字典出下拉、
  * 动作格查/重置打到引擎、插槽整块接管。
@@ -119,9 +119,9 @@ describe('CubeTableSearch 一体式结构', () => {
     expect(wrapper.findAll('.cts-item')).toHaveLength(1);
     expect(wrapper.text()).toContain('条件0');
     expect(wrapper.text()).not.toContain('条件1');
-    expect(wrapper.find('.cts-toggle').text()).toContain('展开');
-    // 动作格常驻：重置/搜索不收进展开态
-    expect(wrapper.findAll('.cts-actions button')).toHaveLength(2);
+    expect(wrapper.find('.cts-toggle').text()).toContain('更多');
+    // 动作格常驻三钮：查询 / 重置 / 更多
+    expect(wrapper.findAll('.cts-actions button')).toHaveLength(3);
   });
 
   it('应该把全部条件铺进栅格并切成「收起」文案 当点了展开按钮时', async () => {
@@ -135,7 +135,7 @@ describe('CubeTableSearch 一体式结构', () => {
     expect(wrapper.find('.cts-toggle').text()).toContain('收起');
   });
 
-  it('应该栅格格序为 关键字 → 动作格(展开收起+重置+搜索) → 条件 当收起与展开时', async () => {
+  it('应该栅格格序为 关键字 → 动作格(查询+重置+更多) → 条件 当收起与展开时', async () => {
     const { wrapper } = await mountSearch(MANY);
     for (const _round of [0, 1]) {
       const cells = wrapper.find('.cts-grid').element.children;
@@ -143,8 +143,8 @@ describe('CubeTableSearch 一体式结构', () => {
       // 动作格 DOM 紧随关键字：配合 CSS 钉格（第一行第三列），展开后不随条件流到尾行
       const end = cells[1]!;
       expect(end.classList.contains('cts-cell--end')).toBe(true);
-      expect(end.children[0]!.classList.contains('cts-toggle')).toBe(true);
-      expect(end.children[1]!.classList.contains('cts-actions')).toBe(true);
+      expect(end.children[0]!.classList.contains('cts-actions')).toBe(true);
+      expect(end.querySelector('.cts-toggle')).not.toBeNull();
       expect(cells[2]!.classList.contains('cts-item')).toBe(true);
       await expand(wrapper);
     }
@@ -248,7 +248,7 @@ describe('CubeTableSearch 动作', () => {
     const { wrapper } = await mountSearch([FIELDS.name], { search, resetSearch });
     await expand(wrapper);
     const buttons = wrapper.findAll('.cts-actions button');
-    await buttons.find((b) => b.text().includes('搜索'))!.trigger('click');
+    await buttons.find((b) => b.text().includes('查询'))!.trigger('click');
     await buttons.find((b) => b.text().includes('重置'))!.trigger('click');
     expect(search).toHaveBeenCalledTimes(1);
     expect(resetSearch).toHaveBeenCalledTimes(1);

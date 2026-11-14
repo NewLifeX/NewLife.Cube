@@ -152,7 +152,8 @@ async function onCommand(command: string): Promise<void> {
 
 <template>
   <el-dropdown v-if="visible" trigger="click" :disabled="ctx.submitting.value" @command="onCommand">
-    <el-button size="small" data-role="advanced">
+    <!-- 默认尺寸，与工具栏齿轮/刷新及搜索区按钮同高同圆角 -->
+    <el-button data-role="advanced">
       {{ t('grid.advanced') }}
       <el-icon class="el-icon--right"><ArrowDown /></el-icon>
     </el-button>

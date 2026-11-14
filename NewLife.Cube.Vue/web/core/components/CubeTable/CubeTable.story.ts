@@ -34,6 +34,10 @@ const META: CubePageMeta = {
     { name: 'Remark', displayName: '备注', typeName: 'String', nullable: true },
   ],
   search: [
+    // kind=keyword：normalizePageMeta 从 search 里认 kind='keyword' 为关键字查询项
+    // （fieldMeta.ts:103），schemaReady 后引擎按它决定是否随请求发 q——缺了它
+    // fill 关键字回车后桩收不到 q，列表不收窄
+    { name: 'q', kind: 'keyword', displayName: '关键字', typeName: 'String' },
     { name: 'Name', displayName: '名称', typeName: 'String', length: 50 },
     { name: 'Status', displayName: '状态', typeName: 'String', lovCode: 'Demo.Status' },
     { name: 'Level', displayName: '级别', typeName: 'String', dataSource: { '1': '甲', '2': '乙' } },
@@ -139,7 +143,14 @@ function buildEngine(options: EngineOptions = {}): CubeEngineContext {
   let rows = makeRows().slice(0, options.rows ?? 3);
   const setting = { ...META.setting, isReadOnly: options.readOnly ? true : undefined };
   const allSearch = META.search ?? [];
-  const search = options.searchLimit === undefined ? allSearch : allSearch.slice(0, options.searchLimit);
+  // keyword 查询项归一时不生成普通条件框（fieldMeta.ts），但 normalizePageMeta 必须能
+  // 在 search 里看到 kind='keyword' 才会启用关键字框并随请求发 q——所以切片只对非
+  // keyword 条件计数，keyword 项无条件保留
+  const searchable = allSearch.filter((f) => f.kind !== 'keyword');
+  const search =
+    options.searchLimit === undefined
+      ? allSearch
+      : [...searchable.slice(0, options.searchLimit), ...allSearch.filter((f) => f.kind === 'keyword')];
 
   const getPage = async () => {
     if (options.failMeta) throw new Error('元数据接口不可用（CT 桩）');

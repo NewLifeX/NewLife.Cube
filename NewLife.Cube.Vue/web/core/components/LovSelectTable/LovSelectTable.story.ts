@@ -50,10 +50,12 @@ export const stories = [
   // 测试状态：多选 + 已通过 modelValue=[1,2] 回显，对应行勾选 + 底部「已选 2 项」
   { id: 'LovSelectTable/MultiEcho', component: LovSelectTable, props: { ...base, multiple: true, modelValue: [1, 2] } },
 
-  // 测试状态：多选 + 分页（23 条/2 页）+ 跨页回显已选（modelValue=[1,2,21,22] 横跨两页），
-  // 验证「点击回显时已选不正确 / 翻页后已选不正确 / 翻页后勾选才更新」根因 C2 已修复：
-  // 打开后统计「已选 4 项」、翻到第 2 页勾选与统计保持、翻回第 1 页保持。
-  { id: 'LovSelectTable/PagedMultiEcho', component: LovSelectTable, props: { ...pagedBase, multiple: true, modelValue: [1, 2, 21, 22] } },
+  // 测试状态：多选 + 分页（23 条，组件默认每页 10 条 → 共 3 页，第 1 页=1..10、第 2 页=11..20）
+  // + 跨页回显已选（modelValue=[1,2,11,12] 横跨第 1/2 两页），
+  // 验证「点击回显时已选不正确 / 翻页后已选不正确 / 翻页后勾选才更新」缺陷已修复：
+  // 打开后统计「已选 4 项」、翻到第 2 页 11,12 勾选与统计保持、翻回第 1 页保持。
+  // 注：组件 pageSize 有 props 契约默认 10（LovSelectTable.vue），mock 的「每页 20」不成立。
+  { id: 'LovSelectTable/PagedMultiEcho', component: LovSelectTable, props: { ...pagedBase, multiple: true, modelValue: [1, 2, 11, 12] } },
 
   // 测试状态：多选 + 分页（23 条/2 页）+ 跨页选中，底部「已选 N 项」统计（翻页左下角统计要正常）
   { id: 'LovSelectTable/PagedMultiSelection', component: LovSelectTable, props: { ...pagedBase, multiple: true } },
