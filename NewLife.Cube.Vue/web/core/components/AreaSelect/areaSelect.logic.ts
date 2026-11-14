@@ -76,3 +76,31 @@ export function areaPathIds(nodes: AreaNode[]): number[] {
     .sort((a, b) => a.level - b.level)
     .map((node) => node.id);
 }
+
+/**
+ * 懒加载短路守卫。
+ *
+ * el-cascader lazy 模式下，lazyLoad 失败/空结果后重渲染会再次触发同一节点的
+ * lazyLoad；接口缺失（如 404）时会形成 404→resolve([])→重渲染→重拉 的请求
+ * 风暴，饿死渲染进程主线程（document.fonts.ready 兜底 timer 均不触发，
+ * playwright 截图 waiting for fonts 超时）。守卫保证同一节点编号只放行
+ * 首次请求，失败/空结果 mark 后短路。
+ */
+export interface LazyGuard {
+  /** 该节点编号是否还允许发起请求 */
+  canLoad(id: number): boolean;
+  /** 标记节点已请求过（失败或空结果），后续 canLoad 返回 false */
+  mark(id: number): void;
+}
+
+export function createLazyGuard(): LazyGuard {
+  const tried = new Set<number>();
+  return {
+    canLoad(id: number): boolean {
+      return !tried.has(id);
+    },
+    mark(id: number): void {
+      tried.add(id);
+    },
+  };
+}
