@@ -24,9 +24,9 @@ jobs:
             os: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup dotNET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: |
           6.x
@@ -53,13 +53,13 @@ jobs:
             os: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
         node-version: 24
     - name: Setup pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@v6
     # 在仓库根安装：NewLife.Cube.Vue/web 是根工作区成员，目录内没有独立 lockfile
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
@@ -97,9 +97,9 @@ jobs:
             experimental: true
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup dotNET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 10.x
         cache: true
@@ -110,7 +110,7 @@ jobs:
       run: dotnet test NewLife.Cube.Tests/NewLife.Cube.Tests.csproj -c Release --nologo --logger "trx;LogFileName=CubeTests-${{ matrix.name }}.trx" --results-directory TestResults
     - name: Upload Test Results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: test-results-${{ matrix.name }}
         path: TestResults/*.trx
@@ -131,9 +131,9 @@ jobs:
     continue-on-error: true
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup dotNET (host, for build)
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 10.x
         cache: true
@@ -143,7 +143,7 @@ jobs:
         dotnet build AotSmoke/AotSmoke.csproj -c Release --nologo
         dotnet build WebSmoke/WebSmoke.csproj -c Release --nologo
     - name: Set up QEMU (arm)
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
       with:
         platforms: arm
     - name: Smoke (linux-arm) in arm32 Container
@@ -169,9 +169,9 @@ jobs:
     continue-on-error: true
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup dotNET (host, for build)
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 10.x
         cache: true
@@ -181,7 +181,7 @@ jobs:
         dotnet build AotSmoke/AotSmoke.csproj -c Release --nologo
         dotnet build WebSmoke/WebSmoke.csproj -c Release --nologo
     - name: Set up QEMU (s390x)
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
       with:
         platforms: s390x
     - name: Smoke (linux-s390x) in s390x Container
@@ -206,9 +206,9 @@ jobs:
     continue-on-error: true
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup dotNET (host, for build)
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 10.x
         cache: true
@@ -218,7 +218,7 @@ jobs:
         dotnet build AotSmoke/AotSmoke.csproj -c Release --nologo
         dotnet build WebSmoke/WebSmoke.csproj -c Release --nologo
     - name: Set up QEMU (riscv64)
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
       with:
         platforms: riscv64
     - name: Download RISC-V .NET SDK (community build)
@@ -256,9 +256,9 @@ jobs:
     continue-on-error: true
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup dotNET (host, for build)
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 10.x
         cache: true
@@ -268,7 +268,7 @@ jobs:
         dotnet build AotSmoke/AotSmoke.csproj -c Release --nologo
         dotnet build WebSmoke/WebSmoke.csproj -c Release --nologo
     - name: Set up QEMU (loong64)
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
       with:
         platforms: loong64
     - name: Download Loongson .NET SDK (linux-loongarch64)
@@ -317,9 +317,9 @@ jobs:
             experimental: true
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup dotNET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 10.x
         cache: true
@@ -342,7 +342,7 @@ jobs:
       run: dotnet test E2EMvcTest/E2EMvcTest.csproj -c Release --nologo --logger "trx;LogFileName=E2E-${{ matrix.name }}.trx" --results-directory TestResults
     - name: Upload E2E artifacts
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: e2e-${{ matrix.name }}
         path: |
@@ -358,7 +358,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Check locales
       shell: pwsh
       run: |
@@ -406,11 +406,11 @@ jobs:
     timeout-minutes: 30
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: pnpm/action-setup@v4
+    - uses: actions/checkout@v7
+    - uses: pnpm/action-setup@v6
       with:
         version: 9.15.0
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v7
       with:
         node-version: 24
         cache: pnpm
@@ -442,7 +442,7 @@ jobs:
         pnpm --filter ./NewLife.Cube.Shadcn/web run test:unit
         pnpm --filter ./NewLife.Cube.Svelte/web run test:unit
     - name: Use Node 22 for native TS test runner
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
         node-version: 22
     - name: Skin unit tests (Angular)
@@ -455,17 +455,17 @@ jobs:
     timeout-minutes: 40
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup dotNET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 10.x
         cache: true
         cache-dependency-path: '**/*.csproj'
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v6
       with:
         version: 9.15.0
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v7
       with:
         node-version: 24
         cache: pnpm
@@ -495,7 +495,7 @@ jobs:
       run: pnpm --filter ./NewLife.Cube.Vue/web run test:e2e
     - name: Upload e2e artifacts
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: vue-e2e
         path: |
@@ -516,11 +516,11 @@ jobs:
         skin: [NaiveUI, ArcoVue, Vuetify, TDesign, MUI, Shadcn, Angular, Svelte]
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: pnpm/action-setup@v4
+    - uses: actions/checkout@v7
+    - uses: pnpm/action-setup@v6
       with:
         version: 9.15.0
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v7
       with:
         node-version: 24
         cache: pnpm
@@ -541,9 +541,9 @@ jobs:
     timeout-minutes: 30
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup dotNET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 10.x
         cache: true

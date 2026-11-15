@@ -24,16 +24,16 @@ jobs:
       HAS_NPM_TOKEN: ${{ secrets.NPM_TOKEN != '' }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v6
       with:
         version: 9.15.0
 
     # 不配 registry-url：否则 setup-node 会写 //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}，
     # 未设该变量时 npm 会报 Failed to replace env in config；OIDC 发布不需要任何 token。
     # Node 24 自带 npm 11.6+（Trusted Publishing 需要 npm ≥ 11.5.1）。
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v7
       with:
         node-version: 24
 
