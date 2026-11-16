@@ -1247,6 +1247,7 @@ export default {
   'pageNotFound.title': 'Seite nicht gefunden',
   'pageNotFound.desc': 'Die Seite existiert nicht oder wurde verschoben. Bitte kehren Sie zur Startseite zurück.',
   'pageNotFound.backHome': 'Zurück zur Startseite',
+  'pageUnauthorized.title': 'Sitzung abgelaufen',
   'pageUnauthorized.desc': 'Sie sind nicht angemeldet oder Ihre Sitzung ist abgelaufen. Bitte klicken Sie unten, um sich erneut anzumelden.',
   'pageUnauthorized.goLogin': 'Jetzt anmelden',
   'listChart.title': 'Diagramme',

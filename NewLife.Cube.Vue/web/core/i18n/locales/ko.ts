@@ -1356,6 +1356,7 @@ export default {
   'pageNotFound.desc': '페이지가 존재하지 않거나 이동되었습니다. 홈페이지로 돌아가세요.',
   'pageNotFound.backHome': '홈으로 돌아가기',
 
+  'pageUnauthorized.title': '세션이 만료되었습니다',
   'pageUnauthorized.desc': '죄송합니다. 로그인하지 않았거나 세션이 만료되었습니다. 아래 버튼을 클릭해 다시 로그인하세요.',
   'pageUnauthorized.goLogin': '지금 로그인',
 

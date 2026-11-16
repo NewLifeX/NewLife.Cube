@@ -1434,6 +1434,7 @@ export default {
     'The page does not exist or has been moved. Please go back to the home page.',
   'pageNotFound.backHome': 'Back to home',
 
+  'pageUnauthorized.title': 'Session expired',
   'pageUnauthorized.desc':
     'Sorry, you are not signed in or your session has expired. Please click the button below to sign in again.',
   'pageUnauthorized.goLogin': 'Sign in now',

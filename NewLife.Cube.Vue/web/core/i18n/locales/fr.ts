@@ -1385,6 +1385,7 @@ export default {
   'pageNotFound.title': 'Page introuvable',
   'pageNotFound.desc': 'La page n\'existe pas ou a été déplacée. Veuillez revenir à la page d\'accueil.',
   'pageNotFound.backHome': 'Retour à l\'accueil',
+  'pageUnauthorized.title': 'Session expirée',
   'pageUnauthorized.desc': 'Désolé, vous n\'êtes pas connecté ou votre session a expiré. Cliquez sur le bouton ci-dessous pour vous reconnecter.',
   'pageUnauthorized.goLogin': 'Se connecter maintenant',
 

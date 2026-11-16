@@ -1414,6 +1414,7 @@ export default {
   'pageNotFound.desc': '目前頁面不存在或已被移動，請返回首頁繼續操作。',
   'pageNotFound.backHome': '返回首頁',
 
+  'pageUnauthorized.title': '登入已失效',
   'pageUnauthorized.desc': '抱歉，您未登入或身分驗證已失效，請點擊下方按鈕重新登入！',
   'pageUnauthorized.goLogin': '立即前往',
 

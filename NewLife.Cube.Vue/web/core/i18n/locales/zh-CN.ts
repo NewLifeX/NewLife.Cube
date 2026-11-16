@@ -1428,6 +1428,7 @@ export default {
   'pageNotFound.desc': '当前页面不存在或已被移动，请返回首页继续操作。',
   'pageNotFound.backHome': '返回首页',
 
+  'pageUnauthorized.title': '登录已失效',
   'pageUnauthorized.desc': '抱歉，您未登录或身份认证已失效，请点击下方按钮重新登录！',
   'pageUnauthorized.goLogin': '立即跳转',
 
