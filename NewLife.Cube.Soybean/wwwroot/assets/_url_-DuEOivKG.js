@@ -1,0 +1,1 @@
+import{Fr as e,vr as t,wr as n,xr as r}from"./index-BVi6uooI.js";var i={class:`h-full`},a=[`src`],o=n({name:`iframe-page`,__name:`[url]`,props:{url:{}},setup(n){return(o,s)=>(e(),r(`div`,i,[t(`iframe`,{id:`iframePage`,class:`size-full`,src:n.url},null,8,a)]))}});export{o as default};
