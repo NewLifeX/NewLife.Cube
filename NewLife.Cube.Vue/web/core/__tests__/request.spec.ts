@@ -137,7 +137,7 @@ describe('request.ts — cube-vue 请求层 UI 逻辑', () => {
       setPath('/dashboard');
       opts.onUnauthorized('/Some/Other/Action');
       vi.advanceTimersByTime(150);
-      expect(h.gotoPage).toHaveBeenCalledWith(expect.stringContaining('/unauthorized?language=zh_CN'));
+      expect(h.gotoPage).toHaveBeenCalledWith(expect.stringContaining('/unauthorized?redirect=%2Fdashboard'));
     });
 
     it('已在 /unauthorized 页 → 不跳转', () => {

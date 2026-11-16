@@ -35,7 +35,7 @@ async function mountPage(): Promise<{ wrapper: ReturnType<typeof mount>; router:
       { path: '/sso-login', name: 'sso-login', component: { template: '<div />' } },
     ],
   });
-  await router.push('/unauthorized');
+  await router.push('/unauthorized?redirect=%2Fwork-orders%2FWO1');
   await router.isReady();
   const wrapper = mount(PageUnauthorized, { global: { plugins: [ElementPlus, testI18n, router] } });
   await flushPromises();
@@ -80,6 +80,7 @@ describe('PageUnauthorized — 未授权页', () => {
     await flushPromises();
 
     expect(router.currentRoute.value.path).toBe('/login');
+    expect(router.currentRoute.value.query.redirect).toBe('/work-orders/WO1');
 
     wrapper.unmount();
   });

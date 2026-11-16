@@ -25,10 +25,12 @@
 import { ElButton, ElIcon } from 'element-plus';
 import { Lock, SwitchButton } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { getConfig } from '../configure';
+import { normalizeAuthRedirect } from '../utils/authRedirect';
 
 const router = useRouter();
+const route = useRoute();
 const { t } = useI18n();
 const {
   auth: { reLoginParams },
@@ -36,7 +38,7 @@ const {
 const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
 
 function goLogin() {
-  router.replace({ path: loginPageUrl });
+  router.replace({ path: loginPageUrl, query: { redirect: normalizeAuthRedirect(route.query.redirect) } });
 }
 </script>
 
