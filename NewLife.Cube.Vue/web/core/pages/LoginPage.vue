@@ -271,9 +271,9 @@ const systemName = computed<string>(() => {
   return siteConfig.value?.name || t('login.defaultSystemName');
 });
 
-/** 登录页 Logo 地址 */
+/** 登录页 Logo 地址。服务端未配置时兜底前端 config.base.logo，与导航栏 LogoBrand 口径一致 */
 const logoSrc = computed<string>(() => {
-  const logo = siteConfig.value?.logo;
+  const logo = siteConfig.value?.logo || config.base.logo;
   if (!logo) return '';
   return resolveLogo(logo);
 });
