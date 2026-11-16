@@ -1,1 +1,0 @@
-import{Fr as e,wr as t,yr as n}from"./index-BVi6uooI.js";import{t as r}from"./exception-base-BveCac4m.js";var i=t({name:`403`,__name:`index`,setup(t){return(t,i)=>{let a=r;return e(),n(a,{type:`403`})}}});export{i as default};

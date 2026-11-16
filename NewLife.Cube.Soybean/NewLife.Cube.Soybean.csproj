@@ -65,9 +65,6 @@
   </ItemGroup>
 
   <!-- 将 wwwroot 静态文件嵌入程序集 -->
-  <ItemGroup>
-    <EmbeddedResource Include="wwwroot\**\*" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
