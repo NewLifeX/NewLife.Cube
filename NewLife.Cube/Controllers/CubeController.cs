@@ -1,3 +1,4 @@
+using Stardust.Storages;
 using System.Buffers;
 using System.ComponentModel;
 using System.Text;
@@ -32,13 +33,14 @@ namespace NewLife.Cube.Controllers;
 /// <param name="pageService"></param>
 /// <param name="tokenService"></param>
 /// <param name="sources"></param>
+/// <param name="fileStorage">分布式文件存储服务</param>
 [DisplayName("Cube data API")]
 [Description("""
     Common APIs that Cube provides to front-end controls, such as user lookup and avatar retrieval.
     """)]
 //[ApiExplorerSettings(GroupName = "Cube")]
 [Route("[controller]/[action]")]
-public class CubeController(PageService pageService, TokenService tokenService, IEnumerable<EndpointDataSource> sources) : ControllerBaseX
+public class CubeController(PageService pageService, TokenService tokenService, IEnumerable<EndpointDataSource> sources, IFileStorage fileStorage = null) : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources = sources.ToList();
     private static String[] _attachmentApis = [nameof(Avatar), nameof(Image), nameof(File)];
@@ -788,6 +790,13 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
+        var setting = CubeSetting.Current;
+        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch && fileStorage != null)
+        {
+            // 本地缺失时先向其他节点索取，再尝试原始来源地址。
+            await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");
+            await Task.Delay(setting.FileStorageFetchTimeout);
+        }
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
         {
             var url = att.Source;
@@ -844,6 +853,13 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
+        var setting = CubeSetting.Current;
+        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch && fileStorage != null)
+        {
+            // 本地缺失时先向其他节点索取，再尝试原始来源地址。
+            await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");
+            await Task.Delay(setting.FileStorageFetchTimeout);
+        }
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
         {
             var url = att.Source;
