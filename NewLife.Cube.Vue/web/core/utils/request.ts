@@ -28,6 +28,7 @@ import { getSession, removeAllCookie, setSession } from './storage';
 import { getAccessToken, removeAccessToken } from './token';
 import { getConfig } from '../configure';
 import { gotoPage } from './router';
+import { appRelativePath, normalizeAuthRedirect } from './authRedirect';
 import notification from '../components/Notification';
 import { intl } from '../i18n';
 
@@ -141,7 +142,7 @@ function handleUnauthorized(url?: string) {
 
   if (isSelf401) {
     // 如果已经在登录页、loading 页或未授权页，不再重复跳转，避免 redirect_uri 嵌套增长
-    const currentPath = window.location.pathname;
+    const currentPath = appRelativePath(window.location.pathname);
     if (currentPath === '/login' || currentPath === '/loading' || currentPath === '/unauthorized') {
       isErrorFlag = false;
       return;
@@ -152,11 +153,11 @@ function handleUnauthorized(url?: string) {
   }
 
   const redirectToUnauthorized = (pageUrl = '/unauthorized') => {
-    const language = intl.getLocale()?.replace('-', '_');
     if (!window.location.pathname.startsWith(`${BASE_PATH}${pageUrl.replace(/^\//, '')}`)) {
       setRedirectUrl();
     }
-    gotoPage(`${pageUrl}?language=${language}${getSession('templateParams') || ''}`);
+    const redirect = normalizeAuthRedirect(window.location.href);
+    gotoPage(`${pageUrl}?redirect=${encodeURIComponent(redirect)}${getSession('templateParams') || ''}`);
   };
 
   // 当位于/unauthorized页面时，不处理401
@@ -167,7 +168,7 @@ function handleUnauthorized(url?: string) {
 
   setTimeout(() => {
     // 如果当前在登录页、loading 页或未授权页，不跳转，避免循环跳转
-    const currentPath = window.location.pathname;
+    const currentPath = appRelativePath(window.location.pathname);
     if (currentPath === '/login' || currentPath === '/loading' || currentPath === '/unauthorized') {
       return;
     }

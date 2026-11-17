@@ -1247,6 +1247,7 @@ export default {
   'pageNotFound.title': 'Страница не найдена',
   'pageNotFound.desc': 'Страница не существует или была перемещена. Вернитесь на главную.',
   'pageNotFound.backHome': 'На главную',
+  'pageUnauthorized.title': 'Сессия истекла',
   'pageUnauthorized.desc': 'Извините, вы не вошли в систему или сеанс истёк. Нажмите кнопку ниже, чтобы войти снова.',
   'pageUnauthorized.goLogin': 'Войти сейчас',
   'listChart.title': 'Диаграммы',

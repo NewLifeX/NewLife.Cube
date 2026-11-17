@@ -1,34 +1,36 @@
-﻿<template>
-  <div class="unauthorized-container">
-    <el-row justify="center" align="middle" class="unauthorized-content">
-      <el-col :span="24" class="img-col">
-        <img
-          class="unauthorized-img"
-          src="https://cdn.jsdelivr.net/gh/element-plus/element-plus@latest/docs/public/404.png"
-          alt="unauthorized"
-        />
-      </el-col>
-      <el-col :span="24" class="text-col">
-        <div class="unauthorized-text">
-          {{ t('pageUnauthorized.desc') }}
-        </div>
-      </el-col>
-      <el-col :span="24" class="btn-col">
-        <el-button type="primary" size="large" @click="goLogin">
-          {{ t('pageUnauthorized.goLogin') }}
-        </el-button>
-      </el-col>
-    </el-row>
+<template>
+  <div class="page-unauthorized" data-cy="page-unauthorized">
+    <div class="status-badge" aria-hidden="true">
+      <el-icon :size="56" class="badge-icon">
+        <Lock />
+      </el-icon>
+    </div>
+    <div class="status-code" aria-hidden="true">401</div>
+    <h1 class="title">{{ t('pageUnauthorized.title') }}</h1>
+    <p class="desc">{{ t('pageUnauthorized.desc') }}</p>
+    <el-button
+      type="primary"
+      size="large"
+      class="login-button"
+      data-cy="unauthorized-login"
+      :icon="SwitchButton"
+      @click="goLogin"
+    >
+      {{ t('pageUnauthorized.goLogin') }}
+    </el-button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElRow, ElCol } from 'element-plus';
+import { ElButton, ElIcon } from 'element-plus';
+import { Lock, SwitchButton } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { getConfig } from '../configure';
+import { normalizeAuthRedirect } from '../utils/authRedirect';
 
 const router = useRouter();
+const route = useRoute();
 const { t } = useI18n();
 const {
   auth: { reLoginParams },
@@ -36,37 +38,51 @@ const {
 const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
 
 function goLogin() {
-  router.replace({ path: loginPageUrl });
+  router.replace({ path: loginPageUrl, query: { redirect: normalizeAuthRedirect(route.query.redirect) } });
 }
 </script>
 
 <style scoped>
-.unauthorized-container {
+.page-unauthorized {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
   background: var(--el-bg-color-page);
+  color: var(--el-text-color-primary);
+}
+
+.status-badge {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--el-color-warning) 12%, transparent);
+  color: var(--el-color-warning);
 }
-.unauthorized-content {
-  width: 100%;
-  text-align: center;
-  flex-direction: column;
+
+.status-code {
+  font-size: 5rem;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--el-color-warning);
 }
-.img-col {
-  margin-bottom: 32px;
+
+.title {
+  margin: 0;
+  font-size: 1.75rem;
 }
-.unauthorized-img {
-  max-width: 400px;
-  width: 100%;
-  margin: 0 auto;
-}
-.text-col {
-  font-size: 28px;
-  color: var(--el-text-color-primary);
-  margin-bottom: 32px;
-}
-.btn-col {
-  margin-top: 12px;
+
+.desc {
+  margin: 0 0 8px;
+  max-width: 480px;
+  color: var(--el-text-color-secondary);
 }
 </style>

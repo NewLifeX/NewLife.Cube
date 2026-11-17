@@ -1247,6 +1247,7 @@ export default {
   'pageNotFound.title': 'Página não encontrada',
   'pageNotFound.desc': 'A página não existe ou foi movida. Volte para a página inicial.',
   'pageNotFound.backHome': 'Voltar ao início',
+  'pageUnauthorized.title': 'Sessão expirada',
   'pageUnauthorized.desc': 'Desculpe, você não está conectado ou sua sessão expirou. Clique no botão abaixo para entrar novamente.',
   'pageUnauthorized.goLogin': 'Entrar agora',
   'listChart.title': 'Gráficos',

@@ -1395,6 +1395,7 @@ export default {
   'pageNotFound.backHome': 'Volver al inicio',
 
   // Página no autorizada
+  'pageUnauthorized.title': 'Sesión caducada',
   'pageUnauthorized.desc': 'Lo sentimos, no ha iniciado sesión o su sesión ha caducado. Haga clic en el botón de abajo para iniciar sesión de nuevo.',
   'pageUnauthorized.goLogin': 'Iniciar sesión ahora',
 

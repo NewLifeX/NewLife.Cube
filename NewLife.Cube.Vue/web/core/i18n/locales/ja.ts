@@ -1247,6 +1247,7 @@ export default {
   'pageNotFound.title': 'ページが見つかりません',
   'pageNotFound.desc': 'ページが存在しないか、移動されています。ホームページに戻ってください。',
   'pageNotFound.backHome': 'ホームに戻る',
+  'pageUnauthorized.title': 'セッションが失効しました',
   'pageUnauthorized.desc': 'ログインしていないか、セッションの有効期限が切れています。下のボタンをクリックして再度ログインしてください。',
   'pageUnauthorized.goLogin': '今すぐログイン',
   'listChart.title': 'グラフ',

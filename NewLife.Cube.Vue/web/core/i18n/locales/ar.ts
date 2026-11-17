@@ -1309,6 +1309,7 @@ export default {
   'pageNotFound.desc': 'الصفحة غير موجودة أو تم نقلها. يرجى العودة إلى الصفحة الرئيسية.',
   'pageNotFound.backHome': 'العودة إلى الرئيسية',
 
+  'pageUnauthorized.title': 'انتهت صلاحية الجلسة',
   'pageUnauthorized.desc': 'عذرًا، لم تسجل الدخول أو انتهت جلستك. يرجى النقر على الزر أدناه لتسجيل الدخول مرة أخرى.',
   'pageUnauthorized.goLogin': 'تسجيل الدخول الآن',
 

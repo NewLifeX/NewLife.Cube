@@ -17,6 +17,76 @@ namespace NewLife.Cube.Tests.Services;
 /// </summary>
 public class AttachmentSaveFileTests : IDisposable
 {
+    /// <summary>本地缺失附件先从分布式存储请求</summary>
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    public async Task AttachmentDownload_MissingLocalFile_RequestsPeer(Boolean image, Boolean fetch)
+    {
+        AttachmentProvider.Provider = new AttachmentProvider();
+        var att = new Attachment { Category = "WorkOrder", Title = "peer", UploadTime = DateTime.Now };
+        var data = Encoding.UTF8.GetBytes("peer file content");
+        using var stream = new MemoryStream(data);
+        Assert.True(await att.SaveFile(stream, null, "peer.png"));
+        var path = att.GetFilePath();
+        File.Delete(path);
+        var storage = System.Reflection.DispatchProxy.Create<Stardust.Storages.IFileStorage, PeerStorageProxy>();
+        var proxy = (PeerStorageProxy)(Object)storage;
+        proxy.Receive = () => File.WriteAllBytes(path, data);
+        var set = CubeSetting.Current;
+        var old = (set.ValidateAttachment, set.FileStorageFetch, set.FileStorageFetchTimeout);
+        set.ValidateAttachment = false;
+        set.FileStorageFetch = fetch;
+        set.FileStorageFetchTimeout = 0;
+        try
+        {
+            var controller = new NewLife.Cube.Controllers.CubeController(null!, null!, Array.Empty<Microsoft.AspNetCore.Routing.EndpointDataSource>(), storage)
+            {
+                ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext { HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext() },
+            };
+            var result = image ? await controller.Image(att.Id + ".png") : await controller.File(att.Id + ".png");
+            Assert.Equal(fetch ? 1 : 0, proxy.Requests);
+            if (fetch)
+            {
+                var file = Assert.IsType<Microsoft.AspNetCore.Mvc.PhysicalFileResult>(result);
+                Assert.Equal(data, File.ReadAllBytes(file.FileName));
+                Assert.Equal(att.Id, proxy.AttachmentId);
+                Assert.Equal(att.FilePath, proxy.RequestPath);
+            }
+            else Assert.IsType<Microsoft.AspNetCore.Mvc.NotFoundObjectResult>(result);
+        }
+        finally
+        {
+            (set.ValidateAttachment, set.FileStorageFetch, set.FileStorageFetchTimeout) = old;
+            att.Delete();
+        }
+    }
+
+    /// <summary>模拟其他节点按请求补齐文件</summary>
+    public class PeerStorageProxy : System.Reflection.DispatchProxy
+    {
+        internal Action Receive = null!;
+        internal Int32 Requests;
+        internal Int64 AttachmentId;
+        internal String? RequestPath;
+
+        /// <summary>处理存储调用</summary>
+        /// <param name="targetMethod">目标方法</param>
+        /// <param name="args">调用参数</param>
+        /// <returns>异步调用结果</returns>
+        protected override Object? Invoke(System.Reflection.MethodInfo? targetMethod, Object?[]? args)
+        {
+            if (targetMethod?.Name != "RequestFileAsync") throw new InvalidOperationException(targetMethod?.Name);
+            Requests++;
+            AttachmentId = (Int64)args![0]!;
+            RequestPath = (String?)args[1];
+            Receive();
+            return Task.CompletedTask;
+        }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
