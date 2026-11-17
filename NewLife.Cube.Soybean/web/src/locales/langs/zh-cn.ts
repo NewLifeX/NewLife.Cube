@@ -43,6 +43,7 @@ const local: App.I18n.Schema = {
     trigger: '触发',
     update: '更新',
     updateSuccess: '更新成功',
+    view: '查看',
     userCenter: '个人中心',
     yesOrNo: {
       yes: '是',
@@ -194,6 +195,7 @@ const local: App.I18n.Schema = {
     form: {
       addTitle: '新增{name}',
       editTitle: '编辑{name}',
+      viewTitle: '查看{name}',
       required: '{label}不能为空',
       basicInfo: '基础信息',
       extensionInfo: '扩展信息',

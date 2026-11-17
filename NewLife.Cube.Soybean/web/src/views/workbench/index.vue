@@ -433,8 +433,8 @@ onMounted(load);
   margin-bottom: 16px;
   padding: 16px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #5ca8f5, #86c2fa);
-  box-shadow: 0 2px 8px rgb(64 158 255 / 20%);
+  background: linear-gradient(135deg, var(--el-color-primary), var(--el-color-primary-light-3));
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--el-color-primary) 22%, transparent);
   color: #fff;
 }
 

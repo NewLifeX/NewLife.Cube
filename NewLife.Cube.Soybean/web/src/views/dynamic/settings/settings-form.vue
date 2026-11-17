@@ -6,6 +6,7 @@ import { resolveWidgets } from '@newlifex/field-mapping';
 import { groupFieldsByCategory } from '@newlifex/page-logic';
 import { cubeApi } from '@/api/cube';
 import { $t } from '@/locales';
+import { useSiteStore } from '@/store/modules/site';
 import { getRowValue } from '../shared';
 
 defineOptions({ name: 'SettingsForm' });
@@ -20,6 +21,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const apiPrefix = computed(() => `/Admin/${props.controller}`);
+const siteStore = useSiteStore();
 const fields = computed<FieldMapping[]>(() => {
   const form = props.meta?.editForm ?? props.meta?.addForm ?? [];
   return resolveWidgets(form.filter(field => !field.primaryKey && !field.readOnly));
@@ -143,6 +145,8 @@ async function save() {
       if (value !== undefined) payload[item.field.name] = value;
     }
     await cubeApi.client.put(apiPrefix.value, payload);
+    // 魔方设置含站点名称/Logo 等品牌项，保存后刷新站点配置，登录页与侧栏即时生效
+    if (props.controller === 'Cube') await siteStore.refresh();
     ElMessage.success($t('settingsCenter.saveSuccess'));
   } catch {
     // 请求层已提示错误

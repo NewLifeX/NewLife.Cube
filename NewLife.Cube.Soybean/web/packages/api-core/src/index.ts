@@ -68,6 +68,7 @@ export type {
   OAuthPlatform,
   BindsResult,
   ChangePasswordModel,
+  AreaNode,
 } from './types';
 export { FieldKind, Auth, ApiError } from './types';
 

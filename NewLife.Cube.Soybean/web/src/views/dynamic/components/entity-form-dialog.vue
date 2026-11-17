@@ -9,14 +9,15 @@ import { useAuthStore } from '@/store/modules/auth';
 import { buildTreeRows, formatCell, getRowValue, resolveImageSrc } from '../shared';
 import IconPicker from './icon-picker.vue';
 import RolePermissionPicker from './role-permission-picker.vue';
+import AreaSelect from './area-select.vue';
 
 defineOptions({ name: 'EntityFormDialog' });
 
 interface Props {
   /** 弹窗是否可见 */
   modelValue: boolean;
-  /** 新增或编辑 */
-  mode: 'add' | 'edit';
+  /** 新增、编辑或查看 */
+  mode: 'add' | 'edit' | 'view';
   /** 表单字段（来自 /meta 的 addForm 或 editForm） */
   fields: FieldMapping[];
   /** 额外的选项来源字段（列表/搜索字段），用于映射下拉取数据字典 */
@@ -63,8 +64,11 @@ const lovOptions = ref<Record<string, { label: string; value: string }[]>>({});
 /** 编辑初始值快照：字段名 → 序列化值，用于只提交真正变更的字段 */
 const initialValues = ref<Record<string, string>>({});
 
+const isView = computed(() => props.mode === 'view');
+
 const title = computed(() => {
-  const key = props.mode === 'add' ? 'page.form.addTitle' : 'page.form.editTitle';
+  const key =
+    props.mode === 'add' ? 'page.form.addTitle' : props.mode === 'edit' ? 'page.form.editTitle' : 'page.form.viewTitle';
   return $t(key, { name: props.entityName || '' }).trim();
 });
 
@@ -85,7 +89,7 @@ function tabLabel(category: string) {
 }
 
 const wideWidgets = new Set(['textarea', 'html', 'markdown', 'json', 'code', 'file']);
-const changeTriggerWidgets = new Set(['switch', 'select', 'lov', 'lovMulti', 'date', 'datetime', 'time', 'number']);
+const changeTriggerWidgets = new Set(['switch', 'select', 'lov', 'lovMulti', 'date', 'datetime', 'time', 'number', 'area']);
 
 function fieldLabel(item: FieldMapping) {
   return item.field.displayName || item.field.header || item.field.name;
@@ -113,6 +117,7 @@ function isStringField(item: FieldMapping) {
 
 const rules = computed<FormRules>(() => {
   const result: FormRules = {};
+  if (isView.value) return result;
   for (const item of props.fields) {
     if (!item.field.required || item.widget === 'readonly' || item.field.mapField) continue;
     const rule: FormItemRule = {
@@ -199,6 +204,13 @@ function isRoleDepartmentField(item: FieldMapping) {
   return /(^|\/)Role$/i.test(props.apiType) && item.field.name.toLowerCase() === 'datadepartmentids';
 }
 
+/** 地区级联目标层级（area1~area4），缺省三级 */
+function areaLevel(item: FieldMapping) {
+  const level = Number(item.props?.level);
+
+  return Number.isFinite(level) && level > 0 ? level : 3;
+}
+
 /** 部门树选项，数据来源为部门实体全量列表 */
 const departmentOptions = ref<TreeSelectOption[]>([]);
 let departmentLoaded = false;
@@ -255,6 +267,10 @@ function normalizeForControl(item: FieldMapping, raw: unknown): unknown {
       const num = Number(raw);
       return Number.isNaN(num) ? undefined : num;
     }
+    case 'area': {
+      const num = Number(raw);
+      return Number.isNaN(num) || num <= 0 ? undefined : num;
+    }
     case 'date':
       return String(raw).slice(0, 10);
     case 'datetime':
@@ -280,6 +296,10 @@ function serializeValue(item: FieldMapping, value: unknown): unknown {
   }
   if (item.widget === 'switch') return value === true;
   if (item.widget === 'number') return typeof value === 'number' ? value : undefined;
+  if (item.widget === 'area') {
+    const num = Number(value);
+    return Number.isNaN(num) || num <= 0 ? undefined : num;
+  }
   // 图标字段允许清空，空串需真实提交，否则后端保留旧图标
   if (item.widget === 'icon') return typeof value === 'string' ? value.trim() : '';
   // 数据部门可清空，需提交空串覆盖旧值
@@ -432,6 +452,15 @@ function readonlyText(item: FieldMapping) {
   return formatCell(item.field, { [item.field.name]: model.value[item.field.name] });
 }
 
+/** 查看模式展示文本：优先取详情回包原值，密码掩码 */
+function viewText(item: FieldMapping) {
+  if (item.widget === 'password') return model.value[item.field.name] ? '******' : '';
+
+  const recordValue = props.record ? getRowValue(props.record, item.field.name) : undefined;
+  const value = recordValue === undefined ? model.value[item.field.name] : recordValue;
+  return formatCell(item.field, { [item.field.name]: value });
+}
+
 /** 图片字段的预览地址；空值或非图片地址时返回空串 */
 function imagePreviewSrc(item: FieldMapping) {
   if (item.widget !== 'image') return '';
@@ -463,6 +492,10 @@ function buildPayload() {
 }
 
 async function handleSubmit() {
+  if (isView.value) {
+    close();
+    return;
+  }
   try {
     await formRef.value?.validate();
   } catch (invalid) {
@@ -523,7 +556,14 @@ watch(
               :class="{ 'md:col-span-2': isWide(item) || isPermissionField(item) || isRoleDepartmentField(item) }"
             >
           <ElInput
-            v-if="item.widget === 'readonly'"
+            v-if="isView"
+            :model-value="viewText(item)"
+            :type="isWide(item) ? 'textarea' : 'text'"
+            :rows="isWide(item) ? 3 : undefined"
+            disabled
+          />
+          <ElInput
+            v-else-if="item.widget === 'readonly'"
             :model-value="readonlyText(item)"
             disabled
             :placeholder="item.field.description"
@@ -603,6 +643,12 @@ watch(
             clearable
             class="w-full"
           />
+          <AreaSelect
+            v-else-if="item.widget === 'area'"
+            v-model="model[item.field.name]"
+            :level="areaLevel(item)"
+            :placeholder="item.field.description"
+          />
           <ElSelect
             v-else-if="isDropdown(item)"
             v-model="model[item.field.name]"
@@ -649,8 +695,10 @@ watch(
       </ElTabs>
     </ElForm>
     <template #footer>
-      <ElButton @click="close">{{ $t('common.cancel') }}</ElButton>
-      <ElButton type="primary" :loading="loading" @click="handleSubmit">{{ $t('common.confirm') }}</ElButton>
+      <ElButton v-if="!isView" @click="close">{{ $t('common.cancel') }}</ElButton>
+      <ElButton type="primary" :loading="loading" @click="handleSubmit">
+        {{ isView ? $t('common.close') : $t('common.confirm') }}
+      </ElButton>
     </template>
   </ElDialog>
 </template>

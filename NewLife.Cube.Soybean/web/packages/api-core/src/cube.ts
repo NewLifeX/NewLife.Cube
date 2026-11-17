@@ -1,7 +1,7 @@
 import type { AxiosInstance } from 'axios';
 import { createApiClient, createRequest, type ApiClientOptions } from './client';
 import { TokenManager, type TokenStorage } from './token';
-import { createUserApi, createMenuApi, createPageApi, createConfigApi, clearPageMetaCache } from './api';
+import { createUserApi, createMenuApi, createPageApi, createConfigApi, createAreaApi, clearPageMetaCache } from './api';
 import { createSiteApi } from './site';
 import { getServiceBaseUrl } from './service-path';
 
@@ -27,6 +27,8 @@ export interface CubeApi {
   config: ReturnType<typeof createConfigApi>;
   /** 站点配置 API（/Cube/Site 服务，匿名可访问） */
   site: ReturnType<typeof createSiteApi>;
+  /** 地区 API（/Cube/AreaChilds、/Cube/AreaParents 服务） */
+  area: ReturnType<typeof createAreaApi>;
 }
 
 /**
@@ -70,5 +72,6 @@ export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
     page: createPageApi(request, options.baseURL, metaCacheScope),
     config: createConfigApi(serviceRequest),
     site: createSiteApi(serviceRequest),
+    area: createAreaApi(serviceRequest),
   };
 }

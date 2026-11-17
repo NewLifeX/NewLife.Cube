@@ -17,12 +17,17 @@ export function createSiteApi(request: RequestFn) {
      * 前端拿到的就是可直接渲染的有效值。
      *
      * @param tenant 租户标识（编号/编码/名称），为空时取当前请求上下文
+     * @param noCache 是否跳过浏览器缓存（后台修改品牌配置后需要立即读取新值）
      */
-    getSite: (tenant?: string) =>
+    getSite: (tenant?: string, noCache = false) =>
       request<SiteConfig>({
         url: '/Cube/Site',
         method: 'get',
-        params: tenant ? { tenant } : undefined,
+        params: {
+          ...(tenant ? { tenant } : {}),
+          // 服务端下发 max-age=60，追加时间戳绕过浏览器缓存
+          ...(noCache ? { _t: Date.now() } : {}),
+        },
       }),
   };
 }

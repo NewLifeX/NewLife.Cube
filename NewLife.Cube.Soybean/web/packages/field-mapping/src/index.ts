@@ -33,7 +33,8 @@ export type WidgetType =
   | 'json'           // JSON 编辑器
   | 'icon'           // 图标选择
   | 'lov'            // 值集单选（LOV，选项经 lovCode 拉取或 dataSource）
-  | 'lovMulti';      // 值集多选（LOV，多选转逗号分隔）
+  | 'lovMulti'       // 值集多选（LOV，多选转逗号分隔）
+  | 'area';          // 地区级联选择（itemType=area/area1~area4）
 
 /** 字段映射结果 */
 export interface FieldMapping {
@@ -62,6 +63,13 @@ export function resolveWidget(field: DataField): FieldMapping {
   // 2. itemType 精确匹配（后端显式指定 UI 类型）
   const itemType = (field.itemType ?? '').toLowerCase();
   if (itemType) {
+    // 地区级联：area1~area4 对应省/市/区/街道，area 默认三级
+    const areaMatch = /^area([1-4])$/.exec(itemType);
+    if (itemType === 'area' || areaMatch) {
+      const level = areaMatch ? Number(areaMatch[1]) : 3;
+      return { widget: 'area', field, props: { level } };
+    }
+
     const itemTypeMap: Record<string, WidgetType> = {
       mail: 'email',
       email: 'email',

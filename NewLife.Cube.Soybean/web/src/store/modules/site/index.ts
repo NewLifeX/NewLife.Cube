@@ -12,7 +12,14 @@ export const useSiteStore = defineStore(SetupStoreId.Site, () => {
   let loading: Promise<void> | null = null;
 
   const siteName = computed(() => site.value.name || $t('system.title'));
-  const logo = computed(() => site.value.logo || '');
+  /** 后台配置的 Logo 地址，协议相对地址补全为当前协议，其余原样使用 */
+  const logo = computed(() => {
+    const value = site.value.logo || '';
+    if (!value) return '';
+    if (/^https?:\/\//i.test(value)) return value;
+    if (value.startsWith('//')) return `${window.location.protocol}${value}`;
+    return value;
+  });
   const loginBackground = computed(() => site.value.loginBackground || '');
   const loginTip = computed(() => site.value.loginTip || '');
   const copyright = computed(() => site.value.copyright || '');
@@ -33,6 +40,12 @@ export const useSiteStore = defineStore(SetupStoreId.Site, () => {
     return loading;
   }
 
+  /** 重新拉取站点配置（后台保存品牌配置后调用，避免整页刷新） */
+  async function refresh() {
+    loading = null;
+    site.value = (await cubeApi.site.getSite(undefined, true).catch(() => null))?.data ?? site.value;
+  }
+
   return {
     site,
     siteName,
@@ -40,6 +53,7 @@ export const useSiteStore = defineStore(SetupStoreId.Site, () => {
     loginBackground,
     loginTip,
     copyright,
-    load
+    load,
+    refresh
   };
 });

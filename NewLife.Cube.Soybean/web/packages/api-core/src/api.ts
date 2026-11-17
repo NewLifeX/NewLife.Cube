@@ -24,6 +24,7 @@ import type {
   ActivateModel,
   VerifyContactModel,
   VerifyStatus,
+  AreaNode,
 } from './types';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
@@ -255,6 +256,21 @@ export function createUserApi(request: RequestFn) {
     /** 解绑第三方平台（GET /Sso/UnBind/{provider}） */
     unbind: (provider: string) =>
       request<boolean>({ url: `/Sso/UnBind/${provider}`, method: 'get' }),
+  };
+}
+
+/**
+ * 地区 API（Cube 服务接口，后端无 /api 前缀）
+ */
+export function createAreaApi(request: RequestFn) {
+  return {
+    /** 获取直接子级地区；id=0 返回省级 */
+    getChilds: (id = 0) =>
+      request<AreaNode[]>({ url: '/Cube/AreaChilds', method: 'get', params: { id } }),
+
+    /** 获取从根到指定地区的父级路径（含自身） */
+    getParents: (id: number) =>
+      request<AreaNode[]>({ url: '/Cube/AreaParents', method: 'get', params: { id, isContainSelf: true } }),
   };
 }
 

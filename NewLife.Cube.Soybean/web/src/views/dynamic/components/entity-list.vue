@@ -44,7 +44,22 @@ const page = usePageLogic(
 );
 
 const { loading, tableData, statData, listFields, searchFields, pagination } = page;
-const { addFields, editFields, canAdd, canEdit, canDelete, canExport, canImport, formLoading, pkField, entity } = page;
+const {
+  addFields,
+  editFields,
+  detailFields,
+  canAdd,
+  canEdit,
+  canDelete,
+  canExport,
+  canImport,
+  formLoading,
+  pkField,
+  entity
+} = page;
+
+/** 整页只读（如审计日志）：后端没有写入端点，只保留查看 */
+const readOnly = computed(() => page.pageSetting.value?.isReadOnly === true);
 
 const errorMessage = ref('');
 const searchParams = ref<Record<string, unknown>>({});
@@ -290,6 +305,7 @@ const togglingKeys = ref<Set<string>>(new Set());
 function isBooleanField(field: FieldMapping) {
   return (
     canEdit.value &&
+    !readOnly.value &&
     (field.field.typeName || '').toLowerCase() === 'boolean' &&
     field.field.virtual !== true &&
     field.field.readOnly !== true
@@ -351,10 +367,15 @@ function cellIconName(field: FieldMapping, row: Record<string, unknown>) {
 const tableRef = ref<TableInstance>();
 const selectedRows = ref<Record<string, unknown>[]>([]);
 const formVisible = ref(false);
-const formMode = ref<'add' | 'edit'>('add');
+const formMode = ref<'add' | 'edit' | 'view'>('add');
 const formRecord = ref<Record<string, unknown> | null>(null);
 
-const formFields = computed(() => (formMode.value === 'add' ? addFields.value : editFields.value));
+/** 查看模式优先使用后端下发的详情字段，未声明时退回编辑字段 */
+const formFields = computed(() => {
+  if (formMode.value === 'add') return addFields.value;
+  if (formMode.value === 'view' && detailFields.value.length) return detailFields.value;
+  return editFields.value;
+});
 /** 表单映射下拉的额外选项来源：列表/搜索字段中带数据字典的字段（如部门搜索项） */
 const optionFields = computed(() => [...listFields.value, ...searchFields.value]);
 const selectedKeys = computed(() => selectedRows.value.map(row => rowKey(row)));
@@ -385,7 +406,24 @@ async function openEdit(row: Record<string, unknown>) {
   formVisible.value = true;
 }
 
+/** 查看详情：同样先取详情回显，弹窗只读展示 */
+async function openView(row: Record<string, unknown>) {
+  let record = row;
+  try {
+    record = await page.getDetail(rowKey(row));
+  } catch {
+    // 详情接口不可用时退回列表行数据
+  }
+  formMode.value = 'view';
+  formRecord.value = record;
+  formVisible.value = true;
+}
+
 async function handleFormSubmit(data: Record<string, unknown>) {
+  if (formMode.value === 'view') {
+    formVisible.value = false;
+    return;
+  }
   const isAdd = formMode.value === 'add';
   try {
     if (isAdd) {
@@ -511,11 +549,17 @@ onMounted(reload);
               <ElButton size="small" text @click="resetColumnSetting">{{ $t('common.reset') }}</ElButton>
             </div>
           </ElPopover>
-          <ElButton type="primary" :disabled="!canAdd" @click="openAdd">
+          <ElButton v-if="!readOnly" type="primary" :disabled="!canAdd" @click="openAdd">
             <SvgIcon icon="mdi:plus" class="mr-4px text-icon" />
             {{ $t('common.add') }}
           </ElButton>
-          <ElButton type="danger" plain :disabled="!canDelete || !selectedKeys.length" @click="handleBatchDelete">
+          <ElButton
+            v-if="!readOnly"
+            type="danger"
+            plain
+            :disabled="!canDelete || !selectedKeys.length"
+            @click="handleBatchDelete"
+          >
             {{ $t('common.batchDelete') }}
             <span v-if="selectedKeys.length">({{ selectedKeys.length }})</span>
           </ElButton>
@@ -534,7 +578,7 @@ onMounted(reload);
                 >
                   {{ format.label }}
                 </ElDropdownItem>
-                <ElDropdownItem divided command="import" :disabled="!canImport">
+                <ElDropdownItem v-if="!readOnly" divided command="import" :disabled="!canImport">
                   {{ $t('page.list.import') }}
                 </ElDropdownItem>
               </ElDropdownMenu>
@@ -582,7 +626,7 @@ onMounted(reload);
         @sort-change="handleSortChange"
         @selection-change="handleSelectionChange"
       >
-        <ElTableColumn v-if="canDelete" type="selection" width="46" />
+        <ElTableColumn v-if="canDelete && !readOnly" type="selection" width="46" />
         <ElTableColumn
           v-for="field in visibleFields"
           :key="field.field.name"
@@ -631,16 +675,20 @@ onMounted(reload);
           </template>
         </ElTableColumn>
         <ElTableColumn
-          v-if="canEdit || canDelete"
           :label="$t('common.operate')"
-          width="120"
+          :width="readOnly ? 80 : 150"
           align="center"
           header-align="center"
           fixed="right"
         >
           <template #default="{ row }">
-            <ElButton v-if="canEdit" link type="primary" @click="openEdit(row)">{{ $t('common.edit') }}</ElButton>
-            <ElButton v-if="canDelete" link type="danger" @click="handleDelete(row)">{{ $t('common.delete') }}</ElButton>
+            <ElButton link type="primary" @click="openView(row)">{{ $t('common.view') }}</ElButton>
+            <ElButton v-if="canEdit && !readOnly" link type="primary" @click="openEdit(row)">
+              {{ $t('common.edit') }}
+            </ElButton>
+            <ElButton v-if="canDelete && !readOnly" link type="danger" @click="handleDelete(row)">
+              {{ $t('common.delete') }}
+            </ElButton>
           </template>
         </ElTableColumn>
         <template #empty>

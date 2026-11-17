@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { getPaletteColorByNumber, mixColor } from '@sa/color';
 import { useAppStore } from '@/store/modules/app';
 import { useThemeStore } from '@/store/modules/theme';
@@ -16,6 +16,16 @@ const siteStore = useSiteStore();
 onMounted(() => {
   siteStore.load();
 });
+
+/** 后台配置的 Logo 加载失败时退回内置默认 Logo */
+const logoBroken = ref(false);
+const showLogo = computed(() => !!siteStore.logo && !logoBroken.value);
+watch(
+  () => siteStore.logo,
+  () => {
+    logoBroken.value = false;
+  }
+);
 
 const bgThemeColor = computed(() =>
   themeStore.darkMode ? getPaletteColorByNumber(themeStore.themeColor, 600) : themeStore.themeColor
@@ -47,7 +57,13 @@ const backgroundStyle = computed(() => {
     <ElCard class="relative z-4 w-auto rd-12px">
       <div class="w-400px lt-sm:w-300px">
         <header class="flex-y-center justify-between">
-          <img v-if="siteStore.logo" :src="siteStore.logo" class="size-48px object-contain" alt="logo" />
+          <img
+            v-if="showLogo"
+            :src="siteStore.logo"
+            class="size-64px object-contain lt-sm:size-48px"
+            alt="logo"
+            @error="logoBroken = true"
+          />
           <SystemLogo v-else class="size-64px lt-sm:size-48px" />
           <h3 class="text-26px text-primary font-500 lt-sm:text-20px">{{ siteStore.siteName }}</h3>
           <div class="i-flex-col">

@@ -44,6 +44,7 @@ const local: App.I18n.Schema = {
     update: 'Update',
     updateSuccess: 'Update Success',
     userCenter: 'User Center',
+    view: 'View',
     yesOrNo: {
       yes: 'Yes',
       no: 'No'
@@ -194,6 +195,7 @@ const local: App.I18n.Schema = {
     form: {
       addTitle: 'Add {name}',
       editTitle: 'Edit {name}',
+      viewTitle: 'View {name}',
       required: '{label} is required',
       basicInfo: 'Basic info',
       extensionInfo: 'Extension info',

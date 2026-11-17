@@ -68,6 +68,22 @@ export interface PageParams {
   [key: string]: unknown;
 }
 
+/** 地区节点（/Cube/AreaChilds、/Cube/AreaParents 返回） */
+export interface AreaNode {
+  /** 地区编号（行政区划代码） */
+  id: number;
+  /** 地区名称 */
+  name: string;
+  /** 完整名称（含上级） */
+  fullName?: string;
+  /** 父级编号，0 表示省级 */
+  parentID?: number;
+  /** 层级：省=1、市=2、区=3、街道=4 */
+  level?: number;
+  /** 大区（仅省级） */
+  bigArea?: string;
+}
+
 /** 字段元数据（对应后端 DataField） */
 export interface DataField {
   /** 字段名 */

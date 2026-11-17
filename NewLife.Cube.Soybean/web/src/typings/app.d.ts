@@ -337,6 +337,7 @@ declare namespace App {
         update: string;
         updateSuccess: string;
         userCenter: string;
+        view: string;
         yesOrNo: {
           yes: string;
           no: string;
@@ -431,6 +432,7 @@ declare namespace App {
         form: {
           addTitle: string;
           editTitle: string;
+          viewTitle: string;
           required: string;
           basicInfo: string;
           extensionInfo: string;
