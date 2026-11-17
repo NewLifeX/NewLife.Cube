@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <AssemblyTitle>NewLife Cube Library</AssemblyTitle>
     <Description>Cube Web API library of the NewLife framework: entity controllers, permission and menu management, field metadata, OAuth server, JWT authentication and runtime localization. Built for front-end/back-end separation with Vue, Blazor and Ant Design front ends, validated with 10 billion rows in a single table.</Description>
     <PackageDescription>Cube Web API library of the NewLife framework: entity controllers, permission and menu management, field metadata, OAuth server, JWT authentication and runtime localization. Built for front-end/back-end separation with Vue, Blazor and Ant Design front ends, validated with 10 billion rows in a single table. 魔方WebAPI核心库：实体控制器、权限管理、菜单管理、字段元数据、OAuth服务端、JWT认证与运行时多语言；支持前后端分离架构，对接Vue/Blazor/Antd等前端框架，单表100亿级数据验证。</PackageDescription>

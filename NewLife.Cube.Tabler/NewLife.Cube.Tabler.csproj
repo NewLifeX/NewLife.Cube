@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <AssemblyTitle>魔方Tabler主题</AssemblyTitle>
     <Description>魔方Tabler主题皮肤包，基于轻量级开源框架Tabler，提供简洁现代的界面设计、响应式布局和丰富的图标库。包含Razor视图、静态资源，支持视图覆写和深度定制。</Description>
     <Company>新生命开发团队</Company>

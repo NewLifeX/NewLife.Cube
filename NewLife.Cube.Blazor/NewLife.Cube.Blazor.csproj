@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <AssemblyTitle>魔方Blazor前端</AssemblyTitle>
     <Description>魔方Blazor前端实验项目，基于.NET原生Web框架Blazor，提供全C#开发体验的单页面应用(SPA)。支持与魔方后端API无缝对接，实现现代化前端交互。</Description>
     <Company>新生命开发团队</Company>

@@ -41,6 +41,7 @@ jobs:
           8.x
           9.x
           10.x
+          11.x
         cache: true
         cache-dependency-path: '**/*.csproj'
 
@@ -50,9 +51,9 @@ jobs:
         $ErrorActionPreference = 'Stop'
         # 包 ID -> 约定 TFM 集合
         $expected = @{
-          'NewLife.Cube' = @('net6.0','net7.0','net8.0','net9.0','net10.0')
-          'NewLife.Cube.Core' = @('net6.0','net7.0','net8.0','net9.0','net10.0')
-          'NewLife.Cube.Swagger' = @('net8.0','net9.0','net10.0')
+          'NewLife.Cube' = @('net6.0','net7.0','net8.0','net9.0','net10.0','net11.0')
+          'NewLife.Cube.Core' = @('net6.0','net7.0','net8.0','net9.0','net10.0','net11.0')
+          'NewLife.Cube.Swagger' = @('net8.0','net9.0','net10.0','net11.0')
         }
         dotnet pack NewLife.Cube/NewLife.Cube.csproj -c Release -o out-tfm
         dotnet pack NewLife.CubeNC/NewLife.CubeNC.csproj -c Release -o out-tfm

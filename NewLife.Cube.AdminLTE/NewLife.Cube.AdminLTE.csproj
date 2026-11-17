@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <AssemblyTitle>魔方AdminLTE主题</AssemblyTitle>
     <Description>魔方AdminLTE主题皮肤包，基于经典开源后台模板AdminLTE，提供响应式布局、丰富的UI组件和良好的用户体验。包含Razor视图、静态资源，支持视图覆写和深度定制。</Description>
     <Company>新生命开发团队</Company>

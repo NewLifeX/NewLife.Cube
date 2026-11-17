@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <AssemblyTitle>魔方ElementUI主题</AssemblyTitle>
     <Description>魔方ElementUI主题皮肤包，基于饿了么前端UI框架Element，提供Vue风格的组件设计、流畅的交互体验，适合前后端分离架构。包含Razor视图、静态资源，支持视图覆写和深度定制。</Description>
     <Company>新生命开发团队</Company>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <AssemblyTitle>魔方LayuiAdmin主题</AssemblyTitle>
     <Description>魔方LayuiAdmin主题皮肤包，基于国产经典UI框架Layui，提供简洁友好的中文界面、丰富的表单和表格组件，特别适合中文后台系统。包含Razor视图、静态资源，支持视图覆写和深度定制。</Description>
     <Company>新生命开发团队</Company>

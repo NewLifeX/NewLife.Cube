@@ -11,7 +11,7 @@
 [![AOT](https://github.com/NewLifeX/NewLife.Cube/actions/workflows/aot.yml/badge.svg?branch=master)](https://github.com/NewLifeX/NewLife.Cube/actions/workflows/aot.yml)
 <!-- metrics:start -->
 [![AOT smoke](https://img.shields.io/badge/AOT%20smoke-21%2F21-brightgreen?logo=dotnet)](Doc/AOT兼容性分析.md)
-[![TFM](https://img.shields.io/badge/TFM-5%20%28net6.0%20%E2%86%92%20net10.0%29-512BD4?logo=dotnet)](https://www.nuget.org/packages/NewLife.Cube)
+[![TFM](https://img.shields.io/badge/TFM-6%20%28net6.0%20%E2%86%92%20net11.0%29-512BD4?logo=dotnet)](https://www.nuget.org/packages/NewLife.Cube)
 [![locales](https://img.shields.io/badge/locales-31-2ea44f?logo=dotnet)](Doc/多语言本地化.md)
 <!-- metrics:end -->
 ![platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
@@ -71,7 +71,7 @@ app.Run();
 
 | 專案 | 覆蓋範圍 |
 | --- | --- |
-| 目標框架 | 單包 5 個：net6.0、net7.0、net8.0、net9.0、net10.0 |
+| 目標框架 | 單包 6 個：net6.0、net7.0、net8.0、net9.0、net10.0、net11.0 |
 | 系統與架構 | Windows、Linux、macOS；x64、x86、arm64、arm、loongarch64、riscv64、s390x |
 | 資料庫 | MySql / SQLite / SqlServer / Oracle / PostgreSql / SqlCe / Access / 達夢 |
 | NativeAOT | 非 MVC 底座 18 個冒煙場景（JIT/AOT 雙跑），當前數量見上方徽章 |

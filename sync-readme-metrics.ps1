@@ -40,7 +40,7 @@ function Get-MetricsBlock([String]$newline) {
     $lines = @(
         $StartMarker
         "[![AOT smoke](https://img.shields.io/badge/AOT%20smoke-$smokeEncoded-brightgreen?logo=dotnet)](Doc/AOT兼容性分析.md)"
-        "[![TFM](https://img.shields.io/badge/TFM-$($values["tfm-count"])%20%28net6.0%20%E2%86%92%20net10.0%29-512BD4?logo=dotnet)](https://www.nuget.org/packages/NewLife.Cube)"
+        "[![TFM](https://img.shields.io/badge/TFM-$($values["tfm-count"])%20%28net6.0%20%E2%86%92%20net11.0%29-512BD4?logo=dotnet)](https://www.nuget.org/packages/NewLife.Cube)"
         "[![locales](https://img.shields.io/badge/locales-$($values["locale-count"])-2ea44f?logo=dotnet)](Doc/多语言本地化.md)"
         $EndMarker
     )

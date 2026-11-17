@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <AssemblyTitle>魔方Metronic8主题</AssemblyTitle>
     <Description>魔方Metronic8主题皮肤包，基于最新版Metronic 8框架，采用现代化设计语言和组件体系，提供更流畅的用户体验和更丰富的可视化功能。包含Razor视图、静态资源，支持视图覆写和深度定制。</Description>
     <Company>新生命开发团队</Company>
