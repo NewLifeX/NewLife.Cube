@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
@@ -75,8 +75,11 @@ namespace NewLife.Cube.Entity
             // 实体缓存
             if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Token.EqualIgnoreCase(token));
 
-            //return Find(_.Token == token);
-            return Meta.SingleCache[token];
+            // return Find(_.Token == token);
+            // return Meta.SingleCache[token];
+
+            // Token 是从键；索引器按主键 ID 查询，必须显式走从键缓存。
+            return Meta.SingleCache.GetItemWithSlaveKey(token) as UserToken;
         }
 
         /// <summary>根据用户查找</summary>

@@ -47,6 +47,37 @@ public class TokenAndJobTests
     #endregion
 
     #region SYS-11 用户令牌
+    /// <summary>千条以上令牌查询使用从键缓存</summary>
+    [Fact(DisplayName = "用户令牌_千条以上通过从键缓存查询令牌")]
+    public void UserToken_FindByToken_SingleCacheUsesTokenAsSlaveKey()
+    {
+        var created = new List<UserToken>();
+        try
+        {
+            // 必须跨过实体缓存阈值，否则无法覆盖误用主键索引器的回归。
+            for (Int32 i = 0; i < 1001; i++)
+                created.Add(CreateToken(_fx.LegacyUser));
+
+            Assert.True(UserToken.Meta.Session.Count >= 1000);
+            var target = created[^1];
+            var persisted = UserToken.Find(UserToken._.Token == target.Token);
+            Assert.NotNull(persisted);
+            Assert.Equal(target.ID, persisted.ID);
+
+            // 冷查询和重复查询都必须按 Token 返回同一条记录。
+            Assert.Equal(target.ID, UserToken.FindByToken(target.Token)?.ID);
+            Assert.Equal(target.ID, UserToken.FindByToken(target.Token)?.ID);
+            Assert.Null(UserToken.FindByToken(Unique("missing")));
+            Assert.Null(UserToken.FindByToken(null));
+            Assert.Null(UserToken.FindByToken(""));
+        }
+        finally
+        {
+            // 共享夹具只清理本用例创建的记录。
+            foreach (var token in created) token.Delete();
+        }
+    }
+
     [Fact(DisplayName = "用户令牌_无效禁用过期与账号禁用均被拒绝")]
     public void UserToken_Valid_RejectsInvalidStates()
     {
