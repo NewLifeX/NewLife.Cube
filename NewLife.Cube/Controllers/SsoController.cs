@@ -575,6 +575,11 @@ public class SsoController : ControllerBaseX
             // 登录成功后设置租户上下文，保证后续请求/数据访问落在正确租户
             HttpContext.SetTenant(client.TenantId);
 
+            // 小程序/APP 不经过 CompleteLogin。无租户用户在此按已解析的 AppId 租户补建绑定，
+            // 角色用租户默认角色，不用用户自己的全局「普通用户」
+            if (CubeSetting.Current.EnableTenant)
+                HttpContext.EnsureTenantUser(user, HttpContext.GetUserHost());
+
             log.ConnectId = uc.ID;
             log.UserId = uc.UserID;
             log.Success = true;

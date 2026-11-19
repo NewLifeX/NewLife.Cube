@@ -214,8 +214,8 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             stat.SaveAsync(5_000);
         }
 
-        // 自动绑定用户到当前租户
-        if (set.EnableTenant) EnsureTenantUser(httpContext, user, ip);
+        // 自动绑定用户到当前租户。角色取租户默认角色，不用用户自己的全局默认角色
+        if (set.EnableTenant) httpContext.EnsureTenantUser(user, ip);
 
         // 设置租户
         httpContext.ChooseTenant(user.ID);
@@ -265,59 +265,6 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         provider.SaveCookie(user, expire, httpContext);
 
         return new ServiceResult<IToken> { IsSuccess = true, Data = tokens, Message = "登录成功" };
-    }
-
-    /// <summary>确保用户已绑定到当前租户。用户从哪个租户登录/注册，自动添加绑定关系</summary>
-    /// <param name="httpContext">HTTP上下文</param>
-    /// <param name="user">当前用户</param>
-    /// <param name="ip">客户端IP</param>
-    /// <returns>租户用户绑定记录，无需绑定时返回null</returns>
-    private TenantUser EnsureTenantUser(HttpContext httpContext, IManageUser user, String ip)
-    {
-        // 规则B（永久能力，非影子期兼容）：优先 X-App-Id（OAuth 配置租户），其次 X-Tenant/Query/Cookie；
-        // 有有效租户标识且用户未绑定时自动补建绑定。无租户标识返回 -1，不处理。
-        var userId = user?.ID ?? 0;
-        var tenantId = httpContext.ResolveTenantForLogin();
-        if (tenantId <= 0 || userId <= 0) return null;
-
-        // 检查是否已绑定到该租户
-        var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, userId);
-        if (tenantUser != null)
-        {
-            // 补偿：存量绑定无角色（主角色与角色组均为空）时，用租户默认角色兜底
-            if (tenantUser.Enable && tenantUser.RoleId <= 0 && tenantUser.RoleIds.IsNullOrEmpty())
-            {
-                tenantUser.RoleId = ManagerProviderHelper.ResolveTenantRole(tenantId);
-                tenantUser.Update();
-            }
-            return tenantUser;
-        }
-
-        // 规则B 收紧：仅"存量无有效绑定用户"（无任何 Enable=true 的 TenantUser）才自动绑定。
-        // 已属于其它租户的用户不自动自建加入，防止带可猜编码的水平越权；多租户归属走显式管理动作。
-        if (TenantUser.FindAllByUserId(userId).Any(e => e.Enable))
-        {
-            XTrace.WriteLine(L.TLog("[TenantBind] user [{0}] already has a valid tenant, refuse to auto-bind to tenant [{1}]", userId, tenantId));
-            return null;
-        }
-
-        // 自动创建绑定关系
-        tenantUser = new TenantUser
-        {
-            TenantId = tenantId,
-            UserId = userId,
-            //与 UserController.Register 自动绑定一致，取默认角色兜底 
-            RoleId = ManagerProviderHelper.ResolveTenantRole(tenantId),
-            Enable = true,
-            CreateIP = ip,
-            CreateTime = DateTime.Now,
-        };
-        tenantUser.Insert();
-
-        // 审计：自动绑定租户（规则B），写入审计日志便于追溯自建绑定行为（P2-5）
-        XTrace.WriteLine(L.TLog("[{0}] user auto-bound to tenant [{1}]", userId, tenantId));
-        LogProvider.Provider.WriteLog(typeof(TenantUser), L.TLog("Auto bind"), true, L.TLog("User [{0}] auto-bound to tenant [{1}]", userId, tenantId), userId, userId + "", ip);
-        return tenantUser;
     }
 
     /// <summary>处理登录错误，记录日志并累加错误次数（含子网计数）</summary>

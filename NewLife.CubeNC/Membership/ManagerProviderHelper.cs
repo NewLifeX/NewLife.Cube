@@ -380,6 +380,53 @@ public static class ManagerProviderHelper
         return new TenantResolution { HasIdentifier = id >= 0, TenantId = id };
     }
 
+    /// <summary>确保用户已绑定到当前租户。账密登录与微信小程序/APP 登录共用。
+    /// 优先已建立的租户上下文，其次 X-App-Id，再次 X-Tenant/Query/Cookie。
+    /// 仅「没有任何启用绑定」的用户才自动补建；已属于其它租户的不自动加入。
+    /// 租户角色用 <see cref="ResolveTenantRole"/>（如「普通用户-租户名」），不用用户自己的全局默认角色</summary>
+    /// <param name="httpContext">HTTP上下文</param>
+    /// <param name="user">当前用户</param>
+    /// <param name="ip">客户端IP</param>
+    /// <returns>租户用户绑定记录，无需绑定时返回null</returns>
+    public static TenantUser EnsureTenantUser(this HttpContext httpContext, IManageUser user, String ip)
+    {
+        var userId = user?.ID ?? 0;
+        var tenantId = httpContext.ResolveTenantForLogin();
+        if (tenantId <= 0 || userId <= 0) return null;
+
+        var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, userId);
+        if (tenantUser != null)
+        {
+            if (tenantUser.Enable && tenantUser.RoleId <= 0 && tenantUser.RoleIds.IsNullOrEmpty())
+            {
+                tenantUser.RoleId = ResolveTenantRole(tenantId);
+                tenantUser.Update();
+            }
+            return tenantUser;
+        }
+
+        if (TenantUser.FindAllByUserId(userId).Any(e => e.Enable))
+        {
+            XTrace.WriteLine(L.TLog("[TenantBind] user [{0}] already has a valid tenant, refuse to auto-bind to tenant [{1}]", userId, tenantId));
+            return null;
+        }
+
+        tenantUser = new TenantUser
+        {
+            TenantId = tenantId,
+            UserId = userId,
+            RoleId = ResolveTenantRole(tenantId),
+            Enable = true,
+            CreateIP = ip,
+            CreateTime = DateTime.Now,
+        };
+        tenantUser.Insert();
+
+        XTrace.WriteLine(L.TLog("[{0}] user auto-bound to tenant [{1}]", userId, tenantId));
+        LogProvider.Provider.WriteLog(typeof(TenantUser), L.TLog("Auto bind"), true, L.TLog("User [{0}] auto-bound to tenant [{1}]", userId, tenantId), userId, userId + "", ip);
+        return tenantUser;
+    }
+
     /// <summary>解析登录/绑定租户：优先已建立的租户上下文，其次单一解析入口（X-App-Id / X-Tenant/Query/Cookie）。返回 -1 表示未解析到有效租户</summary>
     /// <param name="context">HTTP上下文</param>
     /// <returns>租户ID，未解析到返回 -1</returns>
