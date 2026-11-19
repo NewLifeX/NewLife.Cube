@@ -331,11 +331,12 @@ export function createCubeEngine(
     for (const field of fields.value.searchFields) searchModel[field.name] = undefined;
   }
 
-  /** 表单模型初值：Boolean 默认 false（开关需要确定态），其余 undefined */
+  /** 表单模型初值：preset 默认值 > Boolean 默认 false（开关需要确定态）> undefined */
   function resetFormModel(): void {
     clearModel(formModel);
     for (const field of fields.value.addFields) {
-      formModel[field.name] = field.typeName === 'Boolean' ? false : undefined;
+      if (field.defaultValue !== undefined) formModel[field.name] = field.defaultValue;
+      else formModel[field.name] = field.typeName === 'Boolean' ? false : undefined;
     }
   }
 

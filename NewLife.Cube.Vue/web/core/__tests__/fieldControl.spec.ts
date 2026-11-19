@@ -554,6 +554,27 @@ describe('serializeSubmitModel 多选字段名大小写', () => {
   });
 });
 
+describe('serializeSubmitModel 默认值兜底', () => {
+  it('留空（空串/undefined）按 field.defaultValue 回填，有值不覆盖', () => {
+    const fields = [
+      f({ name: 'Logins', typeName: 'Int32', defaultValue: 0 }),
+      f({ name: 'OnlineTime', typeName: 'Int32', defaultValue: 0 }),
+      f({ name: 'Age', typeName: 'Int32', defaultValue: 0 }),
+    ];
+
+    const out = serializeSubmitModel({ Logins: '', OnlineTime: undefined, Age: 18 }, fields);
+    expect(out.Logins).toBe(0);
+    expect(out.OnlineTime).toBe(0);
+    expect(out.Age).toBe(18);
+  });
+
+  it('模型里没有该键时不凭空补键（编辑详情未下发该列时不动它）', () => {
+    const fields = [f({ name: 'Logins', typeName: 'Int32', defaultValue: 0 })];
+    const out = serializeSubmitModel({ Name: 'a' }, fields);
+    expect('Logins' in out).toBe(false);
+  });
+});
+
 describe('isRequiredField（必填判定）', () => {
   it('审计 auto-fill 列不产必填（XCode 服务端自动填充）', () => {
     // 后端 /meta 对审计列不下发 readOnly/nullable 标记，前端若按「非可空即必填」判定，
@@ -564,6 +585,18 @@ describe('isRequiredField（必填判定）', () => {
     expect(isRequiredField(f({ name: 'UpdateUserID', typeName: 'Int32' }))).toBe(false);
     expect(isRequiredField(f({ name: 'UpdateTime', typeName: 'DateTime' }))).toBe(false);
     expect(isRequiredField(f({ name: 'UpdateIP', typeName: 'String' }))).toBe(false);
+  });
+
+  it('preset 的 requiredWhen 优先于静态判定（传入 model 时按模型求值）', () => {
+    const field = f({
+      name: 'Logins',
+      typeName: 'Int32',
+      nullable: false,
+      requiredWhen: () => false,
+    });
+    // 不传 model 的静态场景保持原口径，传 model 时按 preset 放开
+    expect(isRequiredField(field)).toBe(true);
+    expect(isRequiredField(field, {})).toBe(false);
   });
 
   it('审计列判定大小写不敏感且为精确名匹配', () => {

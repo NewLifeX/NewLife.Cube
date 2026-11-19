@@ -283,7 +283,8 @@ export function findMissingRequiredField(
   fields: FieldMeta[],
 ): FieldMeta | null {
   for (const field of fields) {
-    if (!isRequiredField(field)) continue;
+    // 传入 model 以让 preset 的 requiredWhen 动态必填在提交前校验同样生效
+    if (!isRequiredField(field, model)) continue;
     const value = model[resolveKey(model, field.name)];
     if (value === undefined || value === null || value === '') return field;
     if (Array.isArray(value) && value.length === 0) return field;

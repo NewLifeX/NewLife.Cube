@@ -36,6 +36,8 @@ export interface FieldPresetPatch {
   visibleWhen?: (model: Record<string, unknown>) => boolean;
   /** 行/模型级必填条件 */
   requiredWhen?: (model: Record<string, unknown>) => boolean;
+  /** 默认值：新增表单初值，且留空提交时回填 */
+  defaultValue?: unknown;
 }
 
 /** 列表区补丁 */
@@ -111,6 +113,7 @@ function applyFieldPatch(field: FieldMeta, patch: FieldPresetPatch): FieldMeta {
   if (patch.overflowTooltip !== undefined) next.overflowTooltip = patch.overflowTooltip;
   if (patch.visibleWhen !== undefined) next.visibleWhen = patch.visibleWhen;
   if (patch.requiredWhen !== undefined) next.requiredWhen = patch.requiredWhen;
+  if (patch.defaultValue !== undefined) next.defaultValue = patch.defaultValue;
   return next;
 }
 

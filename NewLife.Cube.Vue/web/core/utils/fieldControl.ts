@@ -354,10 +354,16 @@ export function isServerAuditFillField(field: FieldMeta): boolean {
  * 元数据不携带 readOnly 标记；若按「非可空即必填」判定，用户在扩展分组看不到
  * 这些字段也会被提交校验拦死，故一律不产客户端必填。
  *
+ * 例外三：preset 的 `requiredWhen` 动态必填优先于静态判定（与 FormContent 的星号口径一致），
+ * 传入 `model` 时按其返回值覆盖；未传 `model`（静态场景）仍走静态规则。
+ *
  * @param field 字段元数据
+ * @param model 表单模型；提供时用于求值 `requiredWhen`
  * @returns true 表示必填
  */
-export function isRequiredField(field: FieldMeta): boolean {
+export function isRequiredField(field: FieldMeta, model?: Record<string, unknown>): boolean {
+  // preset 的动态必填优先：FormContent 展示星号与提交前校验共用同一口径
+  if (model && field.requiredWhen) return field.requiredWhen(model);
   // Boolean 开关恒有值（默认 false=否 即默认态），无需强制用户操作，故不计必填
   if (field.typeName === 'Boolean') return false;
   // 映射字段（RoleName→RoleID）的取值取决于关联键，虚拟属性不可空不代表必须选择，与 MVC _Form_Map 同口径
@@ -395,6 +401,17 @@ export function serializeSubmitModel(
       out[k] = v;
     }
   }
+
+  // preset 默认值兜底：可空化展示的数值字段留空时，提交 `''`/null 会被后端
+  // 不可空 Int32 等属性拒收，按其声明的 defaultValue 回填（键名大小写不敏感）
+  for (const field of fields) {
+    if (field.defaultValue === undefined) continue;
+    const key = Object.keys(out).find((k) => k.toLowerCase() === field.name.toLowerCase());
+    if (key === undefined) continue;
+    const value = out[key];
+    if (value === null || value === undefined || value === '') out[key] = field.defaultValue;
+  }
+
   return out;
 }
 

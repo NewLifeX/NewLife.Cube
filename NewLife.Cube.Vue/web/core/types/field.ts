@@ -133,6 +133,11 @@ export interface FieldMeta {
   visibleWhen?: (model: Record<string, unknown>) => boolean;
   /** 行/模型级必填条件。preset 覆盖 */
   requiredWhen?: (model: Record<string, unknown>) => boolean;
+  /**
+   * 默认值。preset 覆盖：新增表单初始值，且留空提交时按此值回填。
+   * 用于把后端“非空数值列”（如 Int32 的 Logins/OnlineTime）在表单上呈现为可留空、留空即取默认值。
+   */
+  defaultValue?: unknown;
   /** 最大宽度。超长文本截断到该字符数 */
   maxWidth?: number;
   /** 单元格样式类 */

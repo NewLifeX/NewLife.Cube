@@ -248,4 +248,14 @@ describe('engine/logic 必填判定', () => {
     expect(findMissingRequiredField({ Tags: [] }, fields)?.name).toBe('Tags');
     expect(findMissingRequiredField({ Tags: ['a'] }, fields)).toBeNull();
   });
+
+  it('应该跳过 preset 判定为非必填的字段（requiredWhen=false 时留空可提交）', () => {
+    const fields = [
+      str('Logins', '登录次数', { nullable: false, requiredWhen: () => false }),
+      str('Name', '名称', { nullable: false }),
+    ];
+    // 登录次数留空被 requiredWhen 放开，继续查后面的 Name
+    expect(findMissingRequiredField({ Logins: '', Name: '' }, fields)?.name).toBe('Name');
+    expect(findMissingRequiredField({ Logins: '', Name: 'A' }, fields)).toBeNull();
+  });
 });
