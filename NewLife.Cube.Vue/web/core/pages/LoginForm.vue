@@ -3,13 +3,12 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue';
-import { usePasswordRules } from '../composables/usePasswordRules';
 import type { LoginConfig } from '@newlifex/cube';
 
 const { t } = useI18n();
 
 const props = defineProps<{
-  /** 后端登录配置（主要消费 security.passwordStrength 动态生成密码规则） */
+  /** 后端登录配置。登录页不校验密码复杂度（仅要求非空），保留该属性以兼容父组件传参 */
   loginConfig?: LoginConfig;
   /** 是否正在提交（由父组件控制，展示 loading 并禁用按钮） */
   submitting?: boolean;
@@ -24,20 +23,13 @@ const emit = defineEmits<{
 const form = ref<{ username: string; password: string }>({ username: '', password: '' });
 const errors = ref<{ username?: string; password?: string }>({});
 
-// 密码规则：由 strength + 当前输入派生（逻辑来自 usePasswordRules，可独立单测）。
-// 复杂密码校验开关（security.passwordComplexity）为 false 时不做复杂度校验，仅要求非空。
-const { passwordRuleDefs, passwordRules, showPasswordHints } = usePasswordRules(
-  () => props.loginConfig?.security?.passwordStrength,
-  () => form.value.password,
-  () => props.loginConfig?.security?.passwordComplexity !== false,
-);
-
 function clearError(field: 'username' | 'password'): void {
   errors.value[field] = undefined;
 }
 
 /**
- * 客户端校验（用户名 + 动态密码规则）。
+ * 客户端校验（用户名 + 密码非空）。
+ * 登录页不校验密码复杂度：存量用户可能使用弱密码（如默认 admin），复杂度只在新设密码时校验。
  * 校验通过才 emit('submit')，容器只负责与服务端交互。
  */
 function handleSubmit(): void {
@@ -57,13 +49,6 @@ function handleSubmit(): void {
   if (!password) {
     errors.value.password = t('register.enterPassword');
     valid = false;
-  } else {
-    // 动态规则：根据后端 passwordStrength 生成；无规则（* 或空）时回退为「至少 5 位」兜底
-    const failed = passwordRuleDefs.value.find((r) => !r.test(password));
-    if (failed) {
-      errors.value.password = t('register.passwordRule', { rule: failed.label });
-      valid = false;
-    }
   }
 
   if (!valid) {
@@ -118,19 +103,6 @@ function onFormKeydown(e: KeyboardEvent): void {
         @input="clearError('password')"
       />
       <span v-if="errors.password" class="input-error">{{ errors.password }}</span>
-
-      <!-- 密码强度提示（实时反馈） -->
-      <div v-if="showPasswordHints" class="password-hints">
-        <div
-          v-for="(rule, idx) in passwordRules"
-          :key="idx"
-          class="password-hint-item"
-          :class="{ satisfied: rule.satisfied }"
-        >
-          <span class="hint-icon">{{ rule.satisfied ? '✓' : '○' }}</span>
-          <span class="hint-text">{{ rule.label }}</span>
-        </div>
-      </div>
     </div>
 
     <!-- 登录按钮 -->
@@ -214,40 +186,6 @@ function onFormKeydown(e: KeyboardEvent): void {
 .input-error {
   font-size: 12px;
   color: var(--el-color-danger);
-}
-
-/* ── 密码强度提示 ── */
-.password-hints {
-  margin-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 0 2px;
-}
-
-.password-hint-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--el-text-color-placeholder);
-  transition: color 0.25s ease;
-  line-height: 1.5;
-}
-
-.password-hint-item.satisfied {
-  color: var(--el-color-success);
-}
-
-.hint-icon {
-  width: 14px;
-  text-align: center;
-  font-size: 11px;
-  flex-shrink: 0;
-}
-
-.hint-text {
-  flex: 1;
 }
 
 /* ==================== 登录按钮 ==================== */

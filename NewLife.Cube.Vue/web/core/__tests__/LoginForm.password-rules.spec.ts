@@ -5,50 +5,10 @@ import LoginForm from '../pages/LoginForm.vue';
 import i18n from '../i18n';
 import type { LoginConfig } from '@newlifex/cube';
 
-/** 错误文案跟随 locale，断言用词条拼期望值 */
-const ruleError = (rule: string): string => i18n.global.t('register.passwordRule', { rule });
-const minLength = (min: number): string => i18n.global.t('password.minLength', { min });
-
-interface Scenario {
-  key: string;
-  strength: string;
-  failingPwd: string;
-  validPwd: string;
-  hintCount: number;
-  expectedError: string;
-}
-
-const SCENARIOS: Scenario[] = [
-  { key: 'A', strength: '*', failingPwd: 'ab', validPwd: 'abcde', hintCount: 1, expectedError: ruleError(minLength(5)) },
-  { key: 'B', strength: '.{6,}', failingPwd: 'abc', validPwd: 'abcdef', hintCount: 1, expectedError: ruleError(minLength(6)) },
-  {
-    key: 'C',
-    strength: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$',
-    failingPwd: 'Ab1',
-    validPwd: 'Abcdef12',
-    hintCount: 4,
-    expectedError: ruleError(minLength(8)),
-  },
-  { key: 'D', strength: '', failingPwd: 'ab', validPwd: 'abcde', hintCount: 1, expectedError: ruleError(minLength(5)) },
-  {
-    key: 'E',
-    strength: '^[a-z]+$',
-    failingPwd: 'abc123',
-    validPwd: 'abc',
-    hintCount: 1,
-    expectedError: ruleError(i18n.global.t('password.complexity')),
-  },
-];
-
-function mountForm(strength: string, passwordComplexity = true) {
+function mountForm(loginConfig?: LoginConfig) {
   return mount(LoginForm, {
-    props: {
-      loginConfig: {
-        security: { passwordStrength: strength, passwordComplexity },
-      } as LoginConfig,
-    },
+    props: { loginConfig },
     global: {
-      // 密码规则文案由 usePasswordRules 直取全局 i18n，插件必须装同一个实例
       plugins: [ElementPlus, i18n],
     },
   });
@@ -62,38 +22,42 @@ async function setLoginCredentials(wrapper: ReturnType<typeof mountForm>, userna
   await flushPromises();
 }
 
-describe('LoginForm 密码规则动态校验', () => {
-  SCENARIOS.forEach((scenario) => {
-    it(`场景 ${scenario.key}：失败时给出正确错误，成功时触发提交`, async () => {
-      const wrapper = mountForm(scenario.strength);
-      await setLoginCredentials(wrapper, 'admin', scenario.failingPwd);
+describe('LoginForm 登录密码校验', () => {
+  it('场景 A：弱密码（默认 admin）不被密码复杂度拦截，直接提交', async () => {
+    // 后端启用严格复杂度正则也不影响登录：存量用户可能使用弱密码
+    const wrapper = mountForm({
+      security: { passwordStrength: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$', passwordComplexity: true },
+    } as LoginConfig);
+    await setLoginCredentials(wrapper, 'admin', 'admin');
 
-      expect(wrapper.findAll('.password-hint-item').length).toBe(scenario.hintCount);
-      await wrapper.find('form').trigger('submit.prevent');
-      await flushPromises();
-      expect(wrapper.text()).toContain(scenario.expectedError);
-      expect(wrapper.emitted('submit')).toBeFalsy();
-
-      await setLoginCredentials(wrapper, 'admin', scenario.validPwd);
-      if (scenario.hintCount > 0) {
-        expect(wrapper.findAll('.password-hint-item.satisfied').length).toBe(scenario.hintCount);
-      }
-      await wrapper.find('form').trigger('submit.prevent');
-      await flushPromises();
-      expect(wrapper.emitted('submit')).toBeTruthy();
-      expect(wrapper.emitted('submit')?.[0]?.[0]).toEqual({ username: 'admin', password: scenario.validPwd });
-    });
-  });
-
-  it('场景 F：复杂密码校验开关关闭时不校验复杂度，弱密码直接提交', async () => {
-    const wrapper = mountForm('^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$', false);
-    await setLoginCredentials(wrapper, 'admin', 'weak');
-
-    // 不展示任何密码复杂度提示
+    // 不展示密码复杂度提示
     expect(wrapper.findAll('.password-hint-item').length).toBe(0);
+
     await wrapper.find('form').trigger('submit.prevent');
     await flushPromises();
-    // 复杂度不拦截，直接提交
+
+    expect(wrapper.emitted('submit')).toBeTruthy();
+    expect(wrapper.emitted('submit')?.[0]?.[0]).toEqual({ username: 'admin', password: 'admin' });
+  });
+
+  it('场景 B：空密码被拦截，提示输入密码', async () => {
+    const wrapper = mountForm({ security: { passwordStrength: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$' } } as LoginConfig);
+    await setLoginCredentials(wrapper, 'admin', '');
+
+    await wrapper.find('form').trigger('submit.prevent');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain(i18n.global.t('register.enterPassword'));
+    expect(wrapper.emitted('submit')).toBeFalsy();
+  });
+
+  it('场景 C：复杂度开关关闭时同样允许弱密码提交', async () => {
+    const wrapper = mountForm({ security: { passwordStrength: '.{8,}', passwordComplexity: false } } as LoginConfig);
+    await setLoginCredentials(wrapper, 'admin', 'weak');
+
+    await wrapper.find('form').trigger('submit.prevent');
+    await flushPromises();
+
     expect(wrapper.emitted('submit')).toBeTruthy();
     expect(wrapper.emitted('submit')?.[0]?.[0]).toEqual({ username: 'admin', password: 'weak' });
   });
