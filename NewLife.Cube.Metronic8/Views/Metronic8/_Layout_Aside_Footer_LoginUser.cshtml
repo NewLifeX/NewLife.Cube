@@ -1,4 +1,4 @@
-﻿@using NewLife.Common;
+@using NewLife.Common;
 @using XCode.Membership;
 @{
     var user = ManageProvider.User as IUser ?? User.Identity as IUser;
@@ -42,13 +42,13 @@
                             @user.DisplayName (@user.Name)
                         </div>
                         <span class="badge badge-light-info text-start fs-8">@user.RoleName</span>
-                        <a href="~/Admin/User/Info/@user.ID" class="text-muted text-hover-primary fs-7"> @user.Mail</a>
+                        <a href="~/Admin/User/Info/@user.Id" class="text-muted text-hover-primary fs-7"> @user.Mail</a>
                     </div>
                 </div>
             </div>
             <div class="menu-item p-0 px-3">
                 <div class="menu-content p-0 d-flex align-items-center p-0 px-3">
-                    <a href="~/Admin/User/Info/@user.ID" class="btn btn-icon btn-light-info m-1" title="账号信息"><i class="fas fa-user-edit fs-2"></i></a>
+                    <a href="~/Admin/User/Info/@user.Id" class="btn btn-icon btn-light-info m-1" title="账号信息"><i class="fas fa-user-edit fs-2"></i></a>
                 </div>
             </div>
             <div class="separator my-2"></div>
@@ -63,3 +63,4 @@
         </div>
     </div>
 }
+

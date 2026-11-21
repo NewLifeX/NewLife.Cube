@@ -25,11 +25,11 @@ export interface UserInfo {
   mobile: string;
   code: string;
   avatar: string;
-  roleID: number;
+  roleId: number;
   roleIds: string;
   roleName: string;
   roleNames: string;
-  departmentID: number;
+  departmentId: number;
   online: boolean;
   enable: boolean;
   /** 邮箱已验证（安全中心展示验证状态） */
@@ -48,7 +48,7 @@ export interface UserInfo {
   ex5: string;
   ex6: unknown;
   updateUser: string;
-  updateUserID: number;
+  updateUserId: number;
   updateIP: string;
   updateTime: string;
   remark: string;

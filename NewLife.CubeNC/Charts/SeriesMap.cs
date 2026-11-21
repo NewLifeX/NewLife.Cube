@@ -1,4 +1,4 @@
-﻿namespace NewLife.Cube.Charts;
+namespace NewLife.Cube.Charts;
 
 /// <summary>地图</summary>
 /// <remark>
@@ -13,7 +13,7 @@ public class SeriesMap : Series
 
     //public String Type { get; set; }="map";
 
-    ///// <summary>组件 ID</summary>
+    ///// <summary>组件 Id</summary>
     ///// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
     //public String Id { get; set; }
 
@@ -261,7 +261,7 @@ public class SeriesMap : Series
     /// <remark>如果 series.data 没有指定，并且 dataset 存在，那么就会使用 dataset。datasetIndex 指定本系列使用哪个 dataset。</remark>
     public Double? DatasetIndex { get; set; }
 
-    /// <summary>该系列所有数据项的组 ID，优先级低于groupId</summary>
+    /// <summary>该系列所有数据项的组 Id，优先级低于groupId</summary>
     /// <remark>详见series.data.groupId。</remark>
     public String DataGroupId { get; set; }
 
@@ -375,3 +375,4 @@ public class SeriesMap : Series
     public Object Tooltip { get; set; }
 
 }
+

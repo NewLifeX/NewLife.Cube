@@ -21,7 +21,7 @@ namespace NewLife.Cube.Tests.Membership;
 [Collection("TenantAuth")]
 public class WxMiniLoginTenantReproTests
 {
-    private const String OpenId = "o-wxmini-repro-1";
+    private const String WxOpenId = "o-wxmini-repro-1";
     private const String AppId = "wx-mini-repro-t1";
 
     private readonly TenantAuthFixture _fx;
@@ -49,9 +49,9 @@ public class WxMiniLoginTenantReproTests
             Assert.Equal("普通用户", user.Role?.Name);
 
             var tenantRoleId = ManagerProviderHelper.ResolveTenantRole(_fx.Tenant1.Id);
-            Assert.NotEqual(user.RoleID, tenantRoleId);
+            Assert.NotEqual(user.RoleId, tenantRoleId);
 
-            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.ID);
+            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.Id);
             Assert.NotNull(tu);
             Assert.True(tu.Enable);
             Assert.Equal(tenantRoleId, tu.RoleId);
@@ -61,7 +61,7 @@ public class WxMiniLoginTenantReproTests
             _fx.Provider.Current = null;
             var second = Login(controller);
             Assert.False(String.IsNullOrEmpty(second.Data?.AccessToken));
-            Assert.Single(TenantUser.FindAllByUserId(user.ID), e => e.Enable);
+            Assert.Single(TenantUser.FindAllByUserId(user.Id), e => e.Enable);
 
             // 已有租户的用户，换到别的小程序租户后再登录，不自动加入别家租户
             MoveWxConfig(_fx.Tenant2.Id);
@@ -69,8 +69,8 @@ public class WxMiniLoginTenantReproTests
             _fx.Provider.Current = null;
             var other = Login(controller);
             Assert.False(String.IsNullOrEmpty(other.Data?.AccessToken));
-            Assert.Null(TenantUser.FindByTenantIdAndUserId(_fx.Tenant2.Id, user.ID));
-            Assert.Single(TenantUser.FindAllByUserId(user.ID), e => e.Enable && e.TenantId == _fx.Tenant1.Id);
+            Assert.Null(TenantUser.FindByTenantIdAndUserId(_fx.Tenant2.Id, user.Id));
+            Assert.Single(TenantUser.FindAllByUserId(user.Id), e => e.Enable && e.TenantId == _fx.Tenant1.Id);
         }
         finally
         {
@@ -125,9 +125,9 @@ public class WxMiniLoginTenantReproTests
 
     private static User FindWxUser()
     {
-        var uc = UserConnect.FindByProviderAndOpenID("WxOpen", OpenId);
+        var uc = UserConnect.FindByProviderAndOpenId("WxOpen", WxOpenId);
         Assert.NotNull(uc);
-        return User.FindByID(uc.UserID);
+        return User.FindById(uc.UserId);
     }
 
     /// <summary>只替换微信网关响应，配置解析与 SetTenant 仍走生产代码</summary>
@@ -159,6 +159,6 @@ public class WxMiniLoginTenantReproTests
     private sealed class FakeWxOpenClient : WxOpenClient
     {
         protected override String GetHtml(String action, String url)
-            => "{\"openid\":\"" + OpenId + "\",\"session_key\":\"sk-repro\",\"unionid\":\"u-repro-1\"}";
+            => "{\"openid\":\"" + WxOpenId + "\",\"session_key\":\"sk-repro\",\"unionid\":\"u-repro-1\"}";
     }
 }

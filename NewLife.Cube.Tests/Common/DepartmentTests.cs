@@ -31,13 +31,13 @@ public class DepartmentTests
         var dept = Department.Add(name, code, 0);
 
         Assert.NotNull(dept);
-        Assert.True(dept.ID > 0);
+        Assert.True(dept.Id > 0);
         Assert.Equal(name, dept.Name);
         Assert.Equal(code, dept.Code);
-        Assert.Equal(0, dept.ParentID);
+        Assert.Equal(0, dept.ParentId);
 
-        Assert.Equal(dept.ID, Department.FindByCode(code)?.ID);
-        Assert.Contains(Department.FindAllByName(name), e => e.ID == dept.ID);
+        Assert.Equal(dept.Id, Department.FindByCode(code)?.Id);
+        Assert.Contains(Department.FindAllByName(name), e => e.Id == dept.Id);
     }
 
     [Fact(DisplayName = "部门_父子层级与租户隔离")]
@@ -46,21 +46,21 @@ public class DepartmentTests
         var tenantId = 91;
         var parent = new Department { TenantId = tenantId, Name = Unique("总部"), Type = (DepartmentTypes)1, Enable = true, Visible = true };
         parent.Insert();
-        var child = new Department { TenantId = tenantId, Name = Unique("分部"), ParentID = parent.ID, Type = (DepartmentTypes)2, Enable = true, Visible = true };
+        var child = new Department { TenantId = tenantId, Name = Unique("分部"), ParentId = parent.Id, Type = (DepartmentTypes)2, Enable = true, Visible = true };
         child.Insert();
 
         // 父级隔离
-        var children = Department.FindAllByTenantIdAndParentId(tenantId, parent.ID);
-        Assert.Contains(children, e => e.ID == child.ID);
-        Assert.DoesNotContain(children, e => e.ID == parent.ID);
+        var children = Department.FindAllByTenantIdAndParentId(tenantId, parent.Id);
+        Assert.Contains(children, e => e.Id == child.Id);
+        Assert.DoesNotContain(children, e => e.Id == parent.Id);
 
         // 租户隔离：另一租户同名部门不串数据
-        var otherTenant = new Department { TenantId = tenantId + 1, Name = child.Name, ParentID = parent.ID, Type = (DepartmentTypes)2, Enable = true, Visible = true };
+        var otherTenant = new Department { TenantId = tenantId + 1, Name = child.Name, ParentId = parent.Id, Type = (DepartmentTypes)2, Enable = true, Visible = true };
         otherTenant.Insert();
 
-        Assert.Equal(child.ID, Department.FindByTenantIdAndParentIdAndName(tenantId, parent.ID, child.Name)?.ID);
-        Assert.Equal(otherTenant.ID, Department.FindByTenantIdAndParentIdAndName(tenantId + 1, parent.ID, child.Name)?.ID);
-        Assert.Null(Department.FindByTenantIdAndParentIdAndName(tenantId + 2, parent.ID, child.Name));
+        Assert.Equal(child.Id, Department.FindByTenantIdAndParentIdAndName(tenantId, parent.Id, child.Name)?.Id);
+        Assert.Equal(otherTenant.Id, Department.FindByTenantIdAndParentIdAndName(tenantId + 1, parent.Id, child.Name)?.Id);
+        Assert.Null(Department.FindByTenantIdAndParentIdAndName(tenantId + 2, parent.Id, child.Name));
     }
 
     [Fact(DisplayName = "部门_按名称关键字与父级条件检索")]
@@ -69,20 +69,20 @@ public class DepartmentTests
         var tenantId = 92;
         var parent = new Department { TenantId = tenantId, Name = Unique("集团"), Type = (DepartmentTypes)1, Enable = true, Visible = true };
         parent.Insert();
-        var hit = new Department { TenantId = tenantId, Name = "财务" + Unique("中心"), ParentID = parent.ID, Type = (DepartmentTypes)2, Enable = true, Visible = true };
+        var hit = new Department { TenantId = tenantId, Name = "财务" + Unique("中心"), ParentId = parent.Id, Type = (DepartmentTypes)2, Enable = true, Visible = true };
         hit.Insert();
-        var miss = new Department { TenantId = tenantId, Name = Unique("市场中心"), ParentID = parent.ID, Type = (DepartmentTypes)2, Enable = true, Visible = true };
+        var miss = new Department { TenantId = tenantId, Name = Unique("市场中心"), ParentId = parent.Id, Type = (DepartmentTypes)2, Enable = true, Visible = true };
         miss.Insert();
 
         var page = new PageParameter { PageIndex = 1, PageSize = 20 };
-        var list = Department.FindAll(Department._.TenantId == tenantId & Department._.Name.Contains("财务"), page);
+        var list = Department.Search(tenantId, (DepartmentTypes)(-1), -1, -1, null, null, "财务", page);
 
-        Assert.Contains(list, e => e.ID == hit.ID);
-        Assert.DoesNotContain(list, e => e.ID == miss.ID);
+        Assert.Contains(list, e => e.Id == hit.Id);
+        Assert.DoesNotContain(list, e => e.Id == miss.Id);
 
-        var all = Department.FindAllByTenantIdAndParentId(tenantId, parent.ID);
-        Assert.Contains(all, e => e.ID == hit.ID);
-        Assert.Contains(all, e => e.ID == miss.ID);
+        var all = Department.FindAllByTenantIdAndParentId(tenantId, parent.Id);
+        Assert.Contains(all, e => e.Id == hit.Id);
+        Assert.Contains(all, e => e.Id == miss.Id);
     }
 
     [Fact(DisplayName = "部门_名称必填")]
@@ -93,4 +93,5 @@ public class DepartmentTests
         Assert.Throws<ArgumentNullException>(() => dept.Insert());
     }
 }
+
 

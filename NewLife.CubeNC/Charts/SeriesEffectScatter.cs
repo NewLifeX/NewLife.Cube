@@ -1,4 +1,4 @@
-﻿namespace NewLife.Cube.Charts;
+namespace NewLife.Cube.Charts;
 
 /// <summary>带有涟漪特效动画的散点（气泡）图</summary>
 /// <remark>
@@ -12,7 +12,7 @@ public class SeriesEffectScatter : Series
 
     //public String Type { get; set; } = "effectScatter";
 
-    ///// <summary>组件 ID</summary>
+    ///// <summary>组件 Id</summary>
     ///// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
     //public String Id { get; set; }
 
@@ -312,9 +312,9 @@ public class SeriesEffectScatter : Series
     ///     itemId: 2,
     ///     // 指定数据项的名称使用第三个维度在饼图等图表中有用，可以使这个名字显示在图例（legend）中。
     ///     itemName: 3,
-    ///     // 指定数据项的组 ID (groupId)。当全局过渡动画功能开启时，setOption 前后拥有相同 groupId 的数据项会进行动画过渡。
+    ///     // 指定数据项的组 Id (groupId)。当全局过渡动画功能开启时，setOption 前后拥有相同 groupId 的数据项会进行动画过渡。
     ///     itemGroupId: 4,
-    ///     // 指定数据项对应的子数据组 ID (childGroupId)，用于实现多层下钻和聚合。详见 childGroupId。
+    ///     // 指定数据项对应的子数据组 Id (childGroupId)，用于实现多层下钻和聚合。详见 childGroupId。
     ///     // 从 v5.5.0 开始支持
     ///     itemChildGroupId: 5
     /// }
@@ -581,3 +581,4 @@ public class SeriesEffectScatter : Series
     public Object Tooltip { get; set; }
 
 }
+

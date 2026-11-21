@@ -21,14 +21,14 @@ describe('Svelte 用户 Store', () => {
         id: 1,
         name: '系统',
         displayName: '系统',
-        parentID: 0,
+        parentId: 0,
         url: '',
         visible: true,
         children: [
-          { id: 2, name: '用户', displayName: '用户', parentID: 1, url: '/Admin/User', visible: true, permissions: { '2': '添加' }, children: [] },
+          { id: 2, name: '用户', displayName: '用户', parentId: 1, url: '/Admin/User', visible: true, permissions: { '2': '添加' }, children: [] },
         ],
       },
-      { id: 3, name: '首页', displayName: '首页', parentID: 0, url: '/Admin/Index', visible: true, permissions: { '1': '查看' }, children: [] },
+      { id: 3, name: '首页', displayName: '首页', parentId: 0, url: '/Admin/Index', visible: true, permissions: { '1': '查看' }, children: [] },
     ]);
 
     expect(getMenuPermission('/Admin/User')).toEqual({ '2': '添加' });

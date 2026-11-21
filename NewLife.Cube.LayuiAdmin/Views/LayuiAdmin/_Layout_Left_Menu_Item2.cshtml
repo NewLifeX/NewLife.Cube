@@ -1,4 +1,4 @@
-﻿@model ValueTuple<IList<MenuTree>, IMenu>
+@model ValueTuple<IList<MenuTree>, IMenu>
 
 @{
     var menu = Model.Item1;
@@ -26,9 +26,9 @@
         var menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.Root.Childs);
         if (user?.Role != null)
         {
-            menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(item.ID, user, true));
+            menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(item.Id, user, true));
         }
-                <dd data-name="@item.ID">
+                <dd data-name="@item.Id">
                   <a href="javascript:;">@item.DisplayName </a>
                   <dl class="layui-nav-child">
                 @foreach (var sub in menus)
@@ -42,7 +42,7 @@
     }
     else
     {
-        <dd data-name="@item.ID">
+        <dd data-name="@item.Id">
           <a href="javascript:;" lay-tips="@item.DisplayName" lay-direction="2" lay-href="@(item.Url != null ? Url.Content(item.Url) : "#")">
                 <i class="layui-icon layui-icon-@icon fa-@icon"></i>
                 <cite>@item.DisplayName</cite>
@@ -50,3 +50,4 @@
         </dd>
     }
 }
+

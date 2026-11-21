@@ -195,7 +195,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         {
             if (Int32.TryParse(tenant, out var id)) return Tenant.FindById(id);
 
-            return Tenant.FindByCode(tenant) ?? Tenant.Find(Tenant._.Name == tenant);
+            return Tenant.FindByCode(tenant) ?? Tenant.FindByName(tenant);
         }
 
         return TenantContext.Current?.Tenant;
@@ -315,12 +315,12 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult UserSearch(Int32 roleId = 0, Int32 departmentId = 0, String key = null)
     {
         //var exp = new WhereExpression();
-        //if (roleId > 0) exp &= _.RoleID == roleId;
-        //if (departmentId > 0) exp &= _.DepartmentID == departmentId;
+        //if (roleId > 0) exp &= _.RoleId == roleId;
+        //if (departmentId > 0) exp &= _.DepartmentId == departmentId;
         //exp &= _.Enable == true;
         //if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key);
 
-        var page = new PageParameter { PageSize = 20, Sort = _.Name };
+        var page = new PageParameter { PageSize = 20, Sort = "Name" };
 
         //// 默认排序
         //if (page.Sort.IsNullOrEmpty()) page.Sort = _.Name;
@@ -330,11 +330,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         return Json(0, null, list.Select(e => new
         {
-            e.ID,
+            e.Id,
             e.Code,
             e.Name,
             e.DisplayName,
-            //e.DepartmentID,
+            //e.DepartmentId,
             DepartmentName = e.Department?.ToString(),
         }).ToArray());
     }
@@ -349,11 +349,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult DepartmentSearch(Int32 parentid = -1, String key = null)
     {
         //var exp = new WhereExpression();
-        //if (parentid >= 0) exp &= Department._.ParentID == parentid;
+        //if (parentid >= 0) exp &= Department._.ParentId == parentid;
         //exp &= Department._.Enable == true & Department._.Visible == true;
         //if (!key.IsNullOrEmpty()) exp &= Department._.Code.StartsWith(key) | Department._.Name.StartsWith(key) | Department._.FullName.StartsWith(key);
 
-        var page = new PageParameter { PageSize = 20, Sort = Department._.Name };
+        var page = new PageParameter { PageSize = 20, Sort = "Name" };
 
         //// 默认排序
         //if (page.Sort.IsNullOrEmpty()) page.Sort = Department._.Name;
@@ -363,12 +363,12 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         return Json(0, null, list.Select(e => new
         {
-            e.ID,
+            e.Id,
             e.Code,
             e.Name,
             e.FullName,
-            //e.ManagerID,
-            Manager = FindByID(e.ManagerId)?.ToString(),
+            //e.ManagerId,
+            Manager = FindById(e.ManagerId)?.ToString(),
         }).ToArray());
     }
     #endregion
@@ -385,13 +385,13 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         return Json(0, null, new
         {
-            r.ID,
+            r.Id,
             r.Name,
             r.FullName,
-            r.ParentID,
+            r.ParentId,
             r.Level,
             r.Path,
-            IdPath = r.GetAllParents().Where(e => e.ID > 0).Select(e => e.ID).Join("/"),
+            IdPath = r.GetAllParents().Where(e => e.Id > 0).Select(e => e.Id).Join("/"),
             r.ParentPath
         });
     }
@@ -407,10 +407,10 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
         if (r == null) return Json(500, null, L.T("Region not found."));
 
-        if (r.ID == 0)
-            return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.ID, e.Name, e.FullName, e.ParentID, e.Level, BigArea = e.GetBig() }).ToArray());
+        if (r.Id == 0)
+            return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.Id, e.Name, e.FullName, e.ParentId, e.Level, BigArea = e.GetBig() }).ToArray());
         else
-            return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.ID, e.Name, e.FullName, e.ParentID, e.Level }).ToArray());
+            return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.Id, e.Name, e.FullName, e.ParentId, e.Level }).ToArray());
     }
 
     /// <summary>获取地区父级</summary>
@@ -426,11 +426,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var list = new List<Object>();
         foreach (var e in r.GetAllParents())
         {
-            if (e.ID == 0) continue;
-            if (r.ID == 0)
-                list.Add(new { e.ID, e.Name, e.FullName, e.ParentID, e.Level, BigArea = e.GetBig() });
+            if (e.Id == 0) continue;
+            if (r.Id == 0)
+                list.Add(new { e.Id, e.Name, e.FullName, e.ParentId, e.Level, BigArea = e.GetBig() });
             else
-                list.Add(new { e.ID, e.Name, e.FullName, e.ParentID, e.Level });
+                list.Add(new { e.Id, e.Name, e.FullName, e.ParentId, e.Level });
         }
 
         if (isContainSelf) list.Add(r);
@@ -457,10 +457,10 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var list = new List<Object>();
         foreach (var e in rs)
         {
-            if (e.ParentID == 0)
-                list.Add(new { e.ID, e.Name, e.ParentID, e.Level, BigArea = e.GetBig() });
+            if (e.ParentId == 0)
+                list.Add(new { e.Id, e.Name, e.ParentId, e.Level, BigArea = e.GetBig() });
             else
-                list.Add(new { e.ID, e.Name, e.ParentID, e.Level });
+                list.Add(new { e.Id, e.Name, e.ParentId, e.Level });
         }
 
         return Json(0, null, list);
@@ -499,7 +499,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         // 用于兼容旧代码：按扩展名优先级查找（.png/.svg/.jpg/.gif/.webp）
         if (av.IsNullOrEmpty() && !set.AvatarPath.IsNullOrEmpty())
         {
-            var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.ID);
+            var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.Id);
             av = found;
         }
 
@@ -621,7 +621,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         // 防水平越权：仅允许保存当前登录用户自己的布局；系统管理员可代用户设置
         var cur = ManageProvider.User;
-        if (cur == null || userid != cur.ID && !cur.Roles.Any(e => e.IsSystem))
+        if (cur == null || userid != cur.Id && !cur.Roles.Any(e => e.IsSystem))
             return Json(403, L.T("You can only save your own layout settings."));
 
         var para = Parameter.GetOrAdd(userid, category, name);
@@ -653,7 +653,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpGet]
     public ActionResult GetPageConfig(String kind, String page)
     {
-        var rs = pageService.GetPageConfig(kind, page, CurrentUser?.ID ?? 0);
+        var rs = pageService.GetPageConfig(kind, page, CurrentUser?.Id ?? 0);
         return Json(0, null, rs);
     }
 
@@ -666,7 +666,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult SetPageConfig(String kind, String page, [FromBody] JsonElement value)
     {
         // 当前登录用户配置优先；未登录时写全局配置
-        var rs = pageService.SetPageConfig(kind, page, value.ToDictionary(), CurrentUser?.ID ?? 0);
+        var rs = pageService.SetPageConfig(kind, page, value.ToDictionary(), CurrentUser?.Id ?? 0);
         return Json(0, null, rs);
     }
 
@@ -701,8 +701,8 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
         // 按当前用户角色过滤菜单：
-        // allowedIds       —— 当前用户角色可访问的菜单ID集合（来自各角色的 Resources）
-        // permissionedIds —— 被纳入权限系统的菜单ID集合（任一角色分配过即视为“已声明所需权限”）
+        // allowedIds       —— 当前用户角色可访问的菜单Id集合（来自各角色的 Resources）
+        // permissionedIds —— 被纳入权限系统的菜单Id集合（任一角色分配过即视为“已声明所需权限”）
         // 规则：未声明所需权限的菜单默认有权限（对所有登录用户可见）；已声明的仅对拥有该权限的角色可见
         // 多租户门控：未开启多租户时，隐藏所有租户相关菜单（控制器声明了 MenuModes.Tenant 的）
         // 说明：Visible=false 的隐藏菜单（如 [Menu(0,false)] 的 UserOnline/UserStat）也保留返回，
@@ -713,7 +713,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var allowedIds = user?.Roles?.SelectMany(r => r.Resources).ToArray() ?? [];
         var permissionedIds = Role.FindAll().SelectMany(r => r.Resources).ToArray();
 
-        Boolean IsAccessible(IMenu m) => (allowedIds.Contains(m.ID) || !permissionedIds.Contains(m.ID))
+        Boolean IsAccessible(IMenu m) => (allowedIds.Contains(m.Id) || !permissionedIds.Contains(m.Id))
             && (allowTenant || !NewLife.Cube.Membership.MenuHelper.IsTenantMenu(m))
             // 跨宿主共享菜单数据时，隐藏本站点未部署控制器的菜单（如 MVC 版读到的“值集管理”）
             && m.IsMenuAvailable();
@@ -723,7 +723,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var menuTree = ViewModels.MenuTree.GetMenuTree(pMenuTree =>
         {
             // 递归按当前用户角色过滤子菜单
-            var parent = fact.FindByID(pMenuTree.ID);
+            var parent = fact.FindByID(pMenuTree.Id);
             var subMenus = parent?.Childs?.Where(IsAccessible).ToList() as IList<IMenu> ?? [];
             return subMenus;
         }, list =>
@@ -733,7 +733,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
                             let source = menu.DisplayName.IsNullOrEmpty() ? menu.Name : menu.DisplayName
                             select new ViewModels.MenuTree
                             {
-                                ID = menu.ID,
+                                Id = menu.Id,
                                 Name = menu.Name,
                                 DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                 FullName = menu.FullName,
@@ -741,7 +741,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
                                 NewWindow = menu.NewWindow,
-                                ParentID = menu.ParentID,
+                                ParentId = menu.ParentId,
                                 Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu),
                                 // 拼音按库中源文显示名计算，英文界面下也能用中文拼音搜索
                                 PinYin = NewLife.Common.PinYin.Get(source),
@@ -942,7 +942,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         if (!set.OwnerOnlyAttachmentCategories.IsNullOrEmpty())
         {
             var ownerCats = set.OwnerOnlyAttachmentCategories.Split(',');
-            if (ownerCats.Any(c => c.Trim().EqualIgnoreCase(category)) && att.CreateUserID != user.ID)
+            if (ownerCats.Any(c => c.Trim().EqualIgnoreCase(category)) && att.CreateUserId != user.Id)
                 return StatusCode(403);
         }
 
@@ -959,3 +959,4 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     }
     #endregion
 }
+

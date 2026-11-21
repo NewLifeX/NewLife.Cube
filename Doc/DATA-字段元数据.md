@@ -348,7 +348,7 @@ var field = new FormField
 };
 ```
 
-> **映射字段（Map）**：`RoleName` 这类通过 `Map` 指向 `RoleID` 的虚拟字段，`/meta` 会下发 `mapField`（关联键）、`mapTypeName`（键类型）与 `dataSource`（关联表选项）；前端在字段原位置渲染下拉，提交的是关联键 `RoleID`，列表仍显示名称。控制器设置 `DataSource` 时优先使用（可过滤/排序），未设置时由 `MapProvider` 自动取关联表：行数不超过 `CubeSetting.MaxDropDownList` 才下发，整型键自动补「无」选项，超过该上限则退回键值输入（与 MVC `_Form_Map` 同口径）。关联表很大时给该字段配 `LovCode` 即可改走远程 LOV（同样提交关联键，支持远程搜索与分页）。
+> **映射字段（Map）**：`RoleName` 这类通过 `Map` 指向 `RoleId` 的虚拟字段，`/meta` 会下发 `mapField`（关联键）、`mapTypeName`（键类型）与 `dataSource`（关联表选项）；前端在字段原位置渲染下拉，提交的是关联键 `RoleId`，列表仍显示名称。控制器设置 `DataSource` 时优先使用（可过滤/排序），未设置时由 `MapProvider` 自动取关联表：行数不超过 `CubeSetting.MaxDropDownList` 才下发，整型键自动补「无」选项，超过该上限则退回键值输入（与 MVC `_Form_Map` 同口径）。关联表很大时给该字段配 `LovCode` 即可改走远程 LOV（同样提交关联键，支持远程搜索与分页）。
 >
 > **多选字典**：`dataSource` 配合 `multiple`（`ItemType=multipleSelect`，或字段名以 `s` 结尾）渲染多选下拉，提交时前端把数组拼成逗号串（如角色组 `RoleIds`）；搜索区同样按多选渲染并把数组拼成逗号串提交。
 

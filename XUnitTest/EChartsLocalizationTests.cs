@@ -27,7 +27,7 @@ public class EChartsLocalizationTests
                 new() { Logins = 5 },
             };
             var chart = new ECharts();
-            chart.SetX(list, "ID");
+            chart.SetX(list, "Id");
             chart.Add(list, [field], SeriesTypes.Line);
 
             return chart.Series[0].Name;
@@ -70,3 +70,4 @@ public class EChartsLocalizationTests
         Assert.Equal("Logins", SeriesName("en-US", field));
     }
 }
+

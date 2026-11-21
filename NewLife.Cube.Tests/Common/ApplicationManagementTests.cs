@@ -200,18 +200,18 @@ public class ApplicationManagementTests
         var session = "sess" + Guid.NewGuid().ToString("N")[..8];
         var online = new UserOnline
         {
-            UserID = _fx.LegacyUser.ID,
+            UserId = _fx.LegacyUser.Id,
             Name = _fx.LegacyUser.Name,
-            SessionID = session,
+            SessionId = session,
             Page = "/admin/index",
             Status = "在线",
             CreateTime = DateTime.Now,
         };
         online.Insert();
 
-        var found = UserOnline.FindBySessionID(session, false);
+        var found = UserOnline.FindBySessionId(session, false);
         Assert.NotNull(found);
-        Assert.Equal(online.ID, found.ID);
+        Assert.Equal(online.Id, found.Id);
 
         found.SetError("会话超时");
         Assert.Equal("会话超时", found.Status);
@@ -222,22 +222,24 @@ public class ApplicationManagementTests
 
         var start = DateTime.Now.AddHours(-1);
         var end = DateTime.Now.AddHours(1);
-        var byUser = UserOnline.Search(_fx.LegacyUser.ID, session, start, end, null, new PageParameter { PageIndex = 1, PageSize = 10 });
-        Assert.Contains(byUser, e => e.ID == online.ID);
+        var byUser = UserOnline.Search(_fx.LegacyUser.Id, session, start, end, null, new PageParameter { PageIndex = 1, PageSize = 10 });
+        Assert.Contains(byUser, e => e.Id == online.Id);
 
         // 每页参数对象独立创建，避免分页状态在多次查询间复用
         var byKey = UserOnline.Search(-1, null, start, end, session, new PageParameter { PageIndex = 1, PageSize = 10 });
-        Assert.Contains(byKey, e => e.ID == online.ID);
+        Assert.Contains(byKey, e => e.Id == online.Id);
 
         var outside = UserOnline.Search(-1, null, DateTime.Now.AddDays(-10), DateTime.Now.AddDays(-9), session, new PageParameter { PageIndex = 1, PageSize = 10 });
-        Assert.DoesNotContain(outside, e => e.ID == online.ID);
+        Assert.DoesNotContain(outside, e => e.Id == online.Id);
 
-        Assert.Null(UserOnline.FindBySessionID(null, false));
-        Assert.Null(UserOnline.FindBySessionID(Unique("missing"), false));
-        Assert.Contains(UserOnline.FindAllByUserID(_fx.LegacyUser.ID), e => e.ID == online.ID);
+        Assert.Null(UserOnline.FindBySessionId(null, false));
+        Assert.Null(UserOnline.FindBySessionId(Unique("missing"), false));
+        Assert.Contains(UserOnline.FindAllByUserId(_fx.LegacyUser.Id), e => e.Id == online.Id);
     }
     #endregion
 }
+
+
 
 
 

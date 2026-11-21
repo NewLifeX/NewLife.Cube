@@ -1,4 +1,4 @@
-﻿# 第9章 数据权限
+# 第9章 数据权限
 
 > 本章介绍魔方的数据权限系统，实现数据级别的访问控制。
 > 
@@ -31,7 +31,7 @@
 ### 基本用法
 
 ```csharp
-[DataPermission(null, "UserID={#userId}")]
+[DataPermission(null, "UserId={#userId}")]
 public class UserTokenController : EntityController<UserToken, UserTokenModel>
 {
     // 列表、导出、详情、编辑、删除等动作统一按表达式过滤
@@ -46,7 +46,7 @@ public class DataPermissionAttribute : Attribute
     /// <summary>不受限的系统角色名。逗号或分号分隔</summary>
     public String SystemRoles { get; set; }
 
-    /// <summary>条件表达式。如 linkid in {#SiteIds} or CreateUserID={$user.Id}</summary>
+    /// <summary>条件表达式。如 linkid in {#SiteIds} or CreateUserId={$user.Id}</summary>
     public String Expression { get; set; }
 }
 ```
@@ -133,11 +133,11 @@ if (!DataScopeHelper.CanAccess(order)) throw new UnauthorizedAccessException();
 
 | 场景 | 表达式示例 |
 |------|-----------|
-| 仅本人数据（令牌/参数/在线） | `UserID={#userId}` |
-| 创建者本人（日志/附件） | `CreateUserID={#userId}` |
-| 行归属为负责人（部门） | `ManagerID={#userId}` |
+| 仅本人数据（令牌/参数/在线） | `UserId={#userId}` |
+| 创建者本人（日志/附件） | `CreateUserId={#userId}` |
+| 行归属为负责人（部门） | `ManagerId={#userId}` |
 | 双方字段任一（委托代理） | `PrincipalId={#userId} or AgentId={#userId}` |
-| 用户记录本人（用户页） | `ID={#userId}` |
+| 用户记录本人（用户页） | `Id={#userId}` |
 | 站点/地区集合 | `SiteId in {#SiteIds}` |
 
 > `{#userId}` 由控制器管线写入（`ControllerBaseX.OnActionExecuting`，令牌接口由 `ValidToken` 写入）；控制器之外没有该数据源。

@@ -8,7 +8,7 @@ public static class RolePermissionHelper
 {
     /// <summary>应用权限字符串到角色权限字典。以字符串为准重建权限，避免 JSON 请求下把所有权限当成未授权而清空</summary>
     /// <remarks>
-    /// 权限字符串格式：MenuID#Flags,MenuID#Flags，例如 "52#1,53#4"。
+    /// 权限字符串格式：MenuId#Flags,MenuId#Flags，例如 "52#1,53#4"。
     /// JSON/API 提交路径没有表单复选框，直接使用该字符串重建权限字典；
     /// 空字符串表示清空全部权限。
     /// 受限模式（restricted=true，租户管理员场景）：只能授予当前用户自己拥有的权限位，
@@ -25,7 +25,7 @@ public static class RolePermissionHelper
         // 旧权限快照：受限模式保留当前用户未拥有的权限（系统管理员授予的其它权限）
         var old = new Dictionary<Int32, PermissionFlags>(entity.Permissions);
 
-        // 解析权限字符串 "MenuID#Flags,MenuID#Flags"，受限模式只授予当前用户自己拥有的权限位
+        // 解析权限字符串 "MenuId#Flags,MenuId#Flags"，受限模式只授予当前用户自己拥有的权限位
         var dic = new Dictionary<Int32, PermissionFlags>();
         if (!String.IsNullOrEmpty(permission))
         {
@@ -41,7 +41,7 @@ public static class RolePermissionHelper
                 {
                     var flagVal = (PermissionFlags)flag;
                     // 防止越界授权：受限模式只授予当前用户自己拥有的权限位
-                    if (restricted) flagVal &= OwnedFlags(current, XCode.Membership.Menu.FindByID(menuId));
+                    if (restricted) flagVal &= OwnedFlags(current, XCode.Membership.Menu.FindById(menuId));
                     if (flagVal > PermissionFlags.None) dic[menuId] = flagVal;
                 }
             }
@@ -59,7 +59,7 @@ public static class RolePermissionHelper
             {
                 if (dic.ContainsKey(item.Key)) continue;
 
-                var keep = item.Value & ~OwnedFlags(current, XCode.Membership.Menu.FindByID(item.Key));
+                var keep = item.Value & ~OwnedFlags(current, XCode.Membership.Menu.FindById(item.Key));
                 if (keep > PermissionFlags.None) entity.Set(item.Key, keep);
             }
         }
@@ -83,3 +83,4 @@ public static class RolePermissionHelper
         return owned;
     }
 }
+

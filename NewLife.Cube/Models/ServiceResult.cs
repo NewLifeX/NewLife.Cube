@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace NewLife.Cube.Models;
 
@@ -16,7 +16,7 @@ public class ServiceResult
     /// <summary>是否需要图片验证码。true 时前端应展示验证码输入框，并携带 CaptchaId/CaptchaCode 重试</summary>
     public Boolean CaptchaRequired { get; set; }
 
-    /// <summary>图片验证码ID。CaptchaRequired 为 true 时有效，校验时需要回传</summary>
+    /// <summary>图片验证码Id。CaptchaRequired 为 true 时有效，校验时需要回传</summary>
     public String CaptchaId { get; set; }
 
     /// <summary>图片验证码数据（base64 PNG/SVG）。CaptchaRequired 为 true 时有效，前端可直接展示</summary>

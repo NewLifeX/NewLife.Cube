@@ -1,12 +1,16 @@
 using NewLife.Data;
 using XCode;
 using XCode.Configuration;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 
 namespace NewLife.Cube.Entity;
 
 /// <summary>用户在线</summary>
 public partial class UserOnline : Entity<UserOnline>
 {
+
     #region 对象操作
     static UserOnline()
     {
@@ -17,8 +21,8 @@ public partial class UserOnline : Entity<UserOnline>
 
         var sc = Meta.SingleCache;
         if (sc.Expire < 20 * 60) sc.Expire = 20 * 60;
-        sc.FindSlaveKeyMethod = k => Find(__.SessionID, k);
-        sc.GetSlaveKeyMethod = e => e.SessionID;
+        sc.FindSlaveKeyMethod = k => Find(__.SessionId, k);
+        sc.GetSlaveKeyMethod = e => e.SessionId;
 
         // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
         Meta.Interceptors.Add<TimeInterceptor>();
@@ -62,70 +66,31 @@ public partial class UserOnline : Entity<UserOnline>
     #endregion
 
     #region 扩展查询
-    /// <summary>根据编号查找</summary>
-    /// <param name="id">编号</param>
-    /// <returns>实体对象</returns>
-    public static UserOnline FindByID(Int32 id)
-    {
-        if (id <= 0) return null;
-
-        //// 实体缓存
-        //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
-
-        // 单对象缓存
-        return Meta.SingleCache[id];
-
-        //return Find(_.ID == id);
-    }
-
-    /// <summary>根据用户查找</summary>
-    /// <param name="userId">用户</param>
-    /// <returns>实体列表</returns>
-    public static IList<UserOnline> FindAllByUserID(Int32 userId)
-    {
-        //// 实体缓存
-        //if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UserID == userId);
-
-        return FindAll(_.UserID == userId);
-    }
-
     /// <summary>根据会话查找</summary>
     /// <param name="sessionId">会话</param>
     /// <param name="cache">是否从缓存查询</param>
     /// <returns>实体列表</returns>
-    public static UserOnline FindBySessionID(String sessionId, Boolean cache = true)
+    public static UserOnline FindBySessionId(String sessionId, Boolean cache = true)
     {
         if (sessionId.IsNullOrEmpty()) return null;
 
         if (cache)
         {
             //// 实体缓存
-            //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.SessionID.EqualIgnoreCase(sessionId));
+            //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.SessionId.EqualIgnoreCase(sessionId));
 
             return Meta.SingleCache.GetItemWithSlaveKey(sessionId) as UserOnline;
         }
 
-        return Find(_.SessionID == sessionId);
+        return Find(_.SessionId == sessionId);
     }
 
-    /// <summary>根据会话查找</summary>
-    /// <param name="sessionId">会话</param>
-    /// <returns>实体列表</returns>
-    public static IList<UserOnline> FindAllBySessionID(String sessionId)
-    {
-        if (sessionId.IsNullOrEmpty()) return new List<UserOnline>();
-
-        // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.SessionID.EqualIgnoreCase(sessionId));
-
-        return FindAll(_.SessionID == sessionId);
-    }
     #endregion
 
     #region 高级查询
     /// <summary>高级查询</summary>
     /// <param name="userId">用户</param>
-    /// <param name="sessionId">会话。Web的SessionID或Server的会话编号</param>
+    /// <param name="sessionId">会话。Web的SessionId或Server的会话编号</param>
     /// <param name="start">创建时间开始</param>
     /// <param name="end">创建时间结束</param>
     /// <param name="key">关键字</param>
@@ -135,16 +100,16 @@ public partial class UserOnline : Entity<UserOnline>
     {
         var exp = new WhereExpression();
 
-        if (userId >= 0) exp &= _.UserID == userId;
-        if (!sessionId.IsNullOrEmpty()) exp &= _.SessionID == sessionId;
+        if (userId >= 0) exp &= _.UserId == userId;
+        if (!sessionId.IsNullOrEmpty()) exp &= _.SessionId == sessionId;
         exp &= _.CreateTime.Between(start, end);
-        if (!key.IsNullOrEmpty()) exp &= _.Name.Contains(key) | _.SessionID.Contains(key) | _.Page.Contains(key) | _.Status.Contains(key) | _.CreateIP.Contains(key) | _.UpdateIP.Contains(key);
+        if (!key.IsNullOrEmpty()) exp &= _.Name.Contains(key) | _.SessionId.Contains(key) | _.Page.Contains(key) | _.Status.Contains(key) | _.CreateIP.Contains(key) | _.UpdateIP.Contains(key);
 
         return FindAll(exp, page);
     }
 
-    //// Select Count(ID) as ID,SessionID From UserOnline Where CreateTime>'2020-01-24 00:00:00' Group By SessionID Order By ID Desc limit 20
-    //private static readonly FieldCache<UserOnline> _SessionIDCache = new FieldCache<UserOnline>(nameof(SessionID))
+    //// Select Count(Id) as Id,SessionId From UserOnline Where CreateTime>'2020-01-24 00:00:00' Group By SessionId Order By Id Desc limit 20
+    //private static readonly FieldCache<UserOnline> _SessionIDCache = new FieldCache<UserOnline>(nameof(SessionId))
     //{
     //    //Where = _.CreateTime > DateTime.Today.AddDays(-30) & Expression.Empty
     //};
@@ -168,3 +133,4 @@ public partial class UserOnline : Entity<UserOnline>
     }
     #endregion
 }
+

@@ -145,7 +145,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             // 当前用户是否系统管理员。开发功能仅系统管理员可用
             isSystem = user?.Roles.Any(e => e.IsSystem) == true,
             // 当前页面菜单与动作所需权限位。有效权限由前端结合用户信息计算，避免写入可缓存的 meta
-            menuId = Menu?.ID,
+            menuId = Menu?.Id,
             requiredPermissions = new
             {
                 add = (Int32)PermissionFlags.Insert,
@@ -243,7 +243,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         }
         if (page.IsNullOrEmpty() || CurrentUser == null || list == null || list.Count == 0) return;
 
-        var cfg = LoadColumnConfig("Page-React", page, CurrentUser.ID);
+        var cfg = LoadColumnConfig("Page-React", page, CurrentUser.Id);
         if (cfg == null || cfg.Count == 0) return;
 
         // 列顺序：listOrder 字段名数组。未列出的字段保持原顺序排在后面（新增字段自动可见）
@@ -287,8 +287,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <returns>配置字典</returns>
     protected virtual IDictionary<String, Object> LoadColumnConfig(String category, String page, Int32 userId)
     {
-        var p = Parameter.Find(Parameter._.Category == category & Parameter._.Name == page & Parameter._.UserID == userId)
-            ?? Parameter.Find(Parameter._.Category == category & Parameter._.Name == page & Parameter._.UserID == 0);
+        var p = Parameter.FindByUserIdAndCategoryAndName(userId, category, page)
+            ?? Parameter.FindByUserIdAndCategoryAndName(0, category, page);
         if (p == null) return null;
 
         var value = !p.Value.IsNullOrEmpty() ? p.Value : p.LongValue;
@@ -562,9 +562,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     {
         using var writer = new StreamWriter(stream, System.Text.Encoding.UTF8, 1024, leaveOpen: true);
 
-        // 表头：英文字段名（对齐 MVC CsvResult）；首列 ID 改 Id 防止被识别为 SYLK 文件
+        // 表头：英文字段名（对齐 MVC CsvResult）
         var headers = fields.Select(f => f.Name).ToArray();
-        if (headers.Length > 0 && headers[0] == "ID") headers[0] = "Id";
         writer.WriteLine(String.Join(",", headers.Select(h => $"\"{h}\"")));
 
         // 数据行：枚举导出数字（对齐 MVC CsvResult）；含逗号/引号/换行的字段用引号包裹
@@ -592,7 +591,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     {
         using var excel = new ExcelWriter(stream);
 
-        // 表头：优先显示名，其次描述，最后字段名（对齐 MVC ExcelResult）；首列 ID 改 Id 防止被识别为 SYLK 文件
+        // 表头：优先显示名，其次描述，最后字段名（对齐 MVC ExcelResult）
         var headers = new List<String>();
         foreach (var fi in fields)
         {
@@ -600,7 +599,6 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             if (name.IsNullOrEmpty()) name = fi.Description;
             if (name.IsNullOrEmpty()) name = fi.Name;
 
-            if (name == "ID" && fi == fields[0]) name = "Id";
             headers.Add(name);
         }
         excel.WriteHeader(null, headers);
@@ -855,3 +853,5 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     }
     #endregion
 }
+
+

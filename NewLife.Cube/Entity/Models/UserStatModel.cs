@@ -12,7 +12,7 @@ public partial class UserStatModel
 {
     #region 属性
     /// <summary>编号</summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>统计日期</summary>
     public DateTime Date { get; set; }
@@ -65,7 +65,7 @@ public partial class UserStatModel
     /// <param name="model">模型</param>
     public void Copy(UserStatModel model)
     {
-        ID = model.ID;
+        Id = model.Id;
         Date = model.Date;
         Total = model.Total;
         Logins = model.Logins;

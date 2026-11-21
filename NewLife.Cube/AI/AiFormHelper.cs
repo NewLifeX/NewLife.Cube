@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NewLife;
 using NewLife.Cube.ViewModels;
 using NewLife.Serialization;
@@ -45,10 +45,10 @@ public static class AiFormHelper
     /// <summary>自动维护字段。由框架自动填充，不允许 AI 填写。含审计（创建/更新/注册/登录）与统计（在线/次数）字段</summary>
     private static readonly String[] _autoFields = [
         // 创建/更新审计
-        "CreateTime", "CreateUser", "CreateUserID", "CreateIP",
-        "UpdateTime", "UpdateUser", "UpdateUserID", "UpdateIP",
+        "CreateTime", "CreateUser", "CreateUserId", "CreateIP",
+        "UpdateTime", "UpdateUser", "UpdateUserId", "UpdateIP",
         // 注册/登录审计
-        "RegisterTime", "RegisterUser", "RegisterUserID", "RegisterIP",
+        "RegisterTime", "RegisterUser", "RegisterUserId", "RegisterIP",
         "LastLogin", "LastLoginIP", "LastLoginTime",
         // 在线状态与统计
         "Online", "OnlineTime", "Logins",
@@ -182,3 +182,4 @@ public static class AiFormHelper
         return value;
     }
 }
+

@@ -195,7 +195,7 @@ public Object RoleList()
     // 显式字典投影，确保序列化键为小驼峰 id/name，与 ValueField/LabelField 对齐
     var data = list.Select(r => new Dictionary<String, Object>
     {
-        ["id"] = r.ID,
+        ["id"] = r.Id,
         ["name"] = r.Name,
     }).ToList();
     return new { Data = (Object)data, Total = data.Count };

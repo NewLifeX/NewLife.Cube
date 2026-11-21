@@ -65,7 +65,7 @@ public class SecurityEventService
                 Success = blocked,
                 Remark = Cut(message, 2000),
                 CreateIP = ip,
-                LinkID = linkId,
+                LinkId = linkId,
                 UserName = user,
                 TraceId = DefaultSpan.Current?.TraceId,
             };
@@ -146,3 +146,4 @@ public class SecurityEventService
     private static String Cut(String text, Int32 max) => text == null || text.Length <= max ? text : text[..max];
     #endregion
 }
+

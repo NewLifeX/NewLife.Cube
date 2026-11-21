@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
@@ -10,14 +10,14 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>附件管理</summary>
-[DataPermission(null, "CreateUserID={#userId}")]
+[DataPermission(null, "CreateUserId={#userId}")]
 [CubeArea]
 [Menu(38, true, Icon = "fa-file-text")]
 public class AttachmentController : EntityController<Attachment, AttachmentModel>
 {
     static AttachmentController()
     {
-        ListFields.RemoveField("Id", "Hash", "Url", "Source", "UpdateUserID", "UpdateIP", "Remark");
+        ListFields.RemoveField("Id", "Hash", "Url", "Source", "UpdateUserId", "UpdateIP", "Remark");
         ListFields.RemoveCreateField();
 
         {

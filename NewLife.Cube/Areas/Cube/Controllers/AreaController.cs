@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
@@ -22,16 +22,16 @@ public class AreaController : EntityController<Area, AreaModel>
         ListFields.RemoveRemarkField();
 
         {
-            var df = ListFields.GetField("ParentID") as ListField;
-            df.Url = "/Cube/Area?Id={ParentID}";
+            var df = ListFields.GetField("ParentId") as ListField;
+            df.Url = "/Cube/Area?Id={ParentId}";
         }
         {
             var df = ListFields.AddDataField("sub", "Level") as ListField;
             df.DisplayName = "Children";
-            df.Url = "/Cube/Area?parentId={ID}";
+            df.Url = "/Cube/Area?parentId={Id}";
         }
 
-        //AddFormFields.AddField("ID");
+        //AddFormFields.AddField("Id");
     }
 
     private static Int32 _inited;
@@ -70,7 +70,7 @@ public class AreaController : EntityController<Area, AreaModel>
         if (id > 0)
         {
             var ss = new List<Area>();
-            var entity = FindByID(id);
+            var entity = FindById(id);
             if (entity != null) ss.Add(entity);
             return ss;
         }
@@ -84,7 +84,7 @@ public class AreaController : EntityController<Area, AreaModel>
         var parentid = p["parentid"].ToInt(-1);
         if (parentid < 0)
         {
-            var areaId = p["AreaID"];
+            var areaId = p["AreaId"];
             parentid = ("-1/" + areaId).SplitAsInt("/").LastOrDefault();
         }
 
@@ -93,7 +93,7 @@ public class AreaController : EntityController<Area, AreaModel>
         var end = p["dtEnd"].ToDateTime();
 
         // 地区默认升序
-        if (p.Sort.IsNullOrEmpty()) p.OrderBy = _.ID.Asc();
+        if (p.Sort.IsNullOrEmpty()) p.OrderBy = "Id Asc";
 
         return Area.Search(parentid, level, idstart, idend, enable, p["q"], start, end, p);
     }
@@ -121,11 +121,11 @@ public class AreaController : EntityController<Area, AreaModel>
         var all = Area.FindAllWithCache();
 
         // 省级（父级为根 0）且有经纬度
-        var provinces = all.Where(e => e.ParentID == 0 && (e.Longitude != 0 || e.Latitude != 0)).ToList();
-        var provIds = provinces.Select(e => e.ID).ToHashSet();
+        var provinces = all.Where(e => e.ParentId == 0 && (e.Longitude != 0 || e.Latitude != 0)).ToList();
+        var provIds = provinces.Select(e => e.Id).ToHashSet();
 
         // 城市（省直下）且有经纬度
-        var cities = all.Where(e => provIds.Contains(e.ParentID) && e.Longitude > 0 && e.Latitude > 0).ToList();
+        var cities = all.Where(e => provIds.Contains(e.ParentId) && e.Longitude > 0 && e.Latitude > 0).ToList();
 
         return Json(0, null, new
         {

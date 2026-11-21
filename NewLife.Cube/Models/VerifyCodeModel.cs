@@ -1,4 +1,4 @@
-﻿using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Areas.Admin.Models;
 
 namespace NewLife.Cube.Models;
 
@@ -22,9 +22,10 @@ public class VerifyCodeModel : ICubeModel
     // 时才用”的 CaptchaId/CaptchaCode 被当成必填，绑定手机等无图片验证码步骤的发送码被误拦
     // （症状：POST /Auth/SendCode 报 “The CaptchaId field is required.”）。真实必填校验由 SendVerifyCode 内
     // 按 RequireCaptcha(4,…) 配置执行；CaptchaScene=0 时（见 VerifyCodeService）发码不要求图片验证码。
-    /// <summary>验证码 ID。调用 /Auth/Captcha 获取，发送验证码时原样回传；仅在发验证码场景需要图片验证码时必填 </summary>
+    /// <summary>验证码 Id。调用 /Auth/Captcha 获取，发送验证码时原样回传；仅在发验证码场景需要图片验证码时必填 </summary>
     public String? CaptchaId { get; set; }
 
     /// <summary>验证码用户输入。仅在发验证码场景需要图片验证码时必填 </summary>
     public String? CaptchaCode { get; set; }
 }
+

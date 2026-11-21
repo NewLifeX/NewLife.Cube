@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Tests.Membership;
 using NewLife.Serialization;
 using NewLife.Web;
+using XCode;
 using XCode.Membership;
 using Xunit;
 
@@ -116,7 +117,7 @@ public class BackupRestoreTests : IDisposable
     public void Backup_CreatesGzFile()
     {
         var category = Unique("Bak");
-        Parameter.GetOrAdd(_fx.LegacyUser.ID, category, "Key", "值");
+        Parameter.GetOrAdd(_fx.LegacyUser.Id, category, "Key", "值");
 
         var ctrl = Create<ParameterBackupController>();
 
@@ -132,35 +133,35 @@ public class BackupRestoreTests : IDisposable
     public void Restore_BringsDeletedRowsBack()
     {
         // 备份/还原是整表操作，先清空参数表，避免已有主键与还原插入冲突
-        Parameter.Delete(Parameter._.ID > 0);
+        Parameter.FindAll().Delete();
         Assert.Equal(0, Parameter.FindCount());
 
         var category = Unique("Rst");
-        var first = Parameter.GetOrAdd(_fx.LegacyUser.ID, category, "A", "1");
-        var second = Parameter.GetOrAdd(_fx.LegacyUser.ID, category, "B", "2");
-        Assert.True(first.ID > 0);
-        Assert.True(second.ID > 0);
+        var first = Parameter.GetOrAdd(_fx.LegacyUser.Id, category, "A", "1");
+        var second = Parameter.GetOrAdd(_fx.LegacyUser.Id, category, "B", "2");
+        Assert.True(first.Id > 0);
+        Assert.True(second.Id > 0);
 
         var ctrl = Create<RestoreCaseController>();
         Assert.Equal(0, ReadJson(ctrl.Backup())["code"].ToInt());
 
         // 备份完成后删除数据，模拟误删
-        Assert.Equal(2, Parameter.Delete(Parameter._.Category == category));
+        Assert.Equal(2, Parameter.FindAllByCategory(category, _fx.LegacyUser.Id).Delete());
         Assert.Equal(0, Parameter.FindCount());
 
         var rs = ctrl.Restore();
 
         Assert.Equal(0, ReadJson(rs)["code"].ToInt());
         Assert.Equal(2, Parameter.FindCount());
-        Assert.Equal("1", Parameter.FindByKey(first.ID)?.Value);
-        Assert.Equal("2", Parameter.FindByKey(second.ID)?.Value);
+        Assert.Equal("1", Parameter.FindByKey(first.Id)?.Value);
+        Assert.Equal("2", Parameter.FindByKey(second.Id)?.Value);
     }
 
     [Fact(DisplayName = "备份_超过条数上限时拒绝")]
     public void Backup_ExceedsMaxBackup_Rejected()
     {
         var category = Unique("Lim");
-        Parameter.GetOrAdd(_fx.LegacyUser.ID, category, "Key", "值");
+        Parameter.GetOrAdd(_fx.LegacyUser.Id, category, "Key", "值");
 
         var set = CubeSetting.Current;
         var old = set.MaxBackup;
@@ -194,20 +195,20 @@ public class BackupRestoreTests : IDisposable
     public void Restore_NonEmptyTable_ReportsFailure()
     {
         // 备份/还原是整表操作，先清空参数表，避免已有主键与还原插入冲突
-        Parameter.Delete(Parameter._.ID > 0);
+        Parameter.FindAll().Delete();
         Assert.Equal(0, Parameter.FindCount());
 
         var category = Unique("RstBusy");
-        var first = Parameter.GetOrAdd(_fx.LegacyUser.ID, category, "A", "1");
-        var second = Parameter.GetOrAdd(_fx.LegacyUser.ID, category, "B", "2");
-        Assert.True(first.ID > 0);
-        Assert.True(second.ID > 0);
+        var first = Parameter.GetOrAdd(_fx.LegacyUser.Id, category, "A", "1");
+        var second = Parameter.GetOrAdd(_fx.LegacyUser.Id, category, "B", "2");
+        Assert.True(first.Id > 0);
+        Assert.True(second.Id > 0);
 
         var ctrl = Create<BusyRestoreController>();
         Assert.Equal(0, ReadJson(ctrl.Backup())["code"].ToInt());
 
         // 只删一行，另一行仍在表中；还原时主键冲突会导致整批写入失败
-        Assert.Equal(1, Parameter.Delete(Parameter._.ID == second.ID));
+        Assert.Equal(1, Parameter.DeleteById(second.Id));
         Assert.Equal(1, Parameter.FindCount());
 
         var rs = ctrl.Restore();
@@ -216,6 +217,7 @@ public class BackupRestoreTests : IDisposable
         var json = ReadJson(rs);
         Assert.Equal(500, json["code"].ToInt());
         Assert.Equal(1, Parameter.FindCount());
-        Assert.Null(Parameter.FindByKey(second.ID));
+        Assert.Null(Parameter.FindByKey(second.Id));
     }
 }
+

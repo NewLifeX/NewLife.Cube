@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife;
@@ -16,8 +16,8 @@ public class StudentController : EntityController<Student, StudentModel>
 {
     static StudentController()
     {
-        ListFields.RemoveField("CreateUserID");
-        ListFields.RemoveField("UpdateUserID");
+        ListFields.RemoveField("CreateUserId");
+        ListFields.RemoveField("UpdateUserId");
         //FormFields
 
         {

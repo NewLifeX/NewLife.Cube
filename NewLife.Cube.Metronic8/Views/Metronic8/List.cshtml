@@ -1,4 +1,4 @@
-﻿@*
+@*
     集合列表
 *@
 @using NewLife;
@@ -7,7 +7,7 @@
 @{
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
     var user = ViewBag.User as IUser ?? ManageProvider.User;
-    var layoutSet = Parameter.GetOrAdd(user.ID, "LayoutSetting", ViewBag.Title as String, "table");
+    var layoutSet = Parameter.GetOrAdd(user.Id, "LayoutSetting", ViewBag.Title as String, "table");
     var mode = layoutSet.Value;
 }
 

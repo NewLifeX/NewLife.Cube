@@ -274,3 +274,4 @@ public class CubeLocalizationTests
         return false;
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Web;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
@@ -151,7 +151,7 @@ public class RunTimeMiddleware
 
             XTrace.Log.Error("[{0}] error [{1}] {2}", uri, ip, ctx.TraceIdentifier);
 
-            LogProvider.Provider?.WriteLog(L.T("Access"), L.T("Error"), false, ex.Message + " " + uri + Environment.NewLine + ex.GetMessage(), user?.ID ?? 0, user + "", ip);
+            LogProvider.Provider?.WriteLog(L.T("Access"), L.T("Error"), false, ex.Message + " " + uri + Environment.NewLine + ex.GetMessage(), user?.Id ?? 0, user + "", ip);
 
             XTrace.WriteException(ex);
 

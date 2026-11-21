@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using NewLife.Cube.Entity;
@@ -129,7 +129,7 @@ public static class ViewHelper
                         <tr>
                             @if (set.EnableSelect && ukey != null)
                             {
-                                <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                                <td class="text-center"><input type="checkbox" name="keys" value="@entity.Id" /></td>
                             }
                             @foreach (var item in fields)
                             {
@@ -169,7 +169,7 @@ public static class ViewHelper
 
         var str = tmp.Substring(null, "            @foreach");
         // 如果有用户字段，则启用provider
-        if (fields.Any(f => f.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID")))
+        if (fields.Any(f => f.Name.EqualIgnoreCase("CreateUserId", "UpdateUserId")))
             str = str.Replace("//var provider", "var provider");
         sb.Append(str);
 
@@ -206,9 +206,9 @@ public static class ViewHelper
         var ps = new Int32[2];
         str = tmp.Substring("            @if (this.Has", "                @foreach (var item in fields)", 0, ps);
         if (fact.Unique != null)
-            str = str.Replace("@entity.ID", "@entity." + fact.Unique.Name);
+            str = str.Replace("@entity.Id", "@entity." + fact.Unique.Name);
         else
-            str = str.Replace("@entity.ID", "");
+            str = str.Replace("@entity.Id", "");
 
         sb.Append("            @if (this.Has");
         sb.Append(str);
@@ -267,7 +267,7 @@ public static class ViewHelper
                         // 特殊处理枚举
                         if (item.Type.IsEnum)
                             sb.AppendFormat("""<td class="text-center">@entity.{0}</td>""", item.Name);
-                        else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+                        else if (item.Name.EqualIgnoreCase("CreateUserId", "UpdateUserId"))
                             BuildUser(item, sb);
                         else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
@@ -282,7 +282,7 @@ public static class ViewHelper
                             if (item.MapProvider != null)
                             {
                                 var prv = item.MapProvider;
-                                // 从注册表获取含 Area 前缀的完整路径，避免 /User?ID=... 缺少 Area 前缀
+                                // 从注册表获取含 Area 前缀的完整路径，避免 /User?Id=... 缺少 Area 前缀
                                 var pageInfo = EntityPageRegistry.Get(prv.EntityType);
                                 var linkUrl = pageInfo?.Url ?? ("/" + prv.EntityType.Name);
                                 var pkName = pageInfo?.PrimaryKey ?? prv.Key;
@@ -370,7 +370,7 @@ public static class ViewHelper
                         // 特殊处理枚举
                         if (item.Type.IsEnum)
                             sb.Append(@"<td></td>");
-                        else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+                        else if (item.Name.EqualIgnoreCase("CreateUserId", "UpdateUserId"))
                             sb.Append(@"<td></td>");
                         else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
@@ -675,8 +675,8 @@ public static class ViewHelper
             @*<div class="form-group">
                 @Html.ActionLink("用户链接", "Index", "UserConnect", null, new { @class = "btn btn-success btn-sm" })
                 @Html.ActionLink("用户在线", "Index", "UserOnline", null, new { @class = "btn btn-success btn-sm" })
-                <label for="RoleID" class="control-label">角色：</label>
-                @Html.ForDropDownList("RoleID", Role.FindAllWithCache().Cast<IEntity>().ToList(), page["roldId"], "全部", true)
+                <label for="RoleId" class="control-label">角色：</label>
+                @Html.ForDropDownList("RoleId", Role.FindAllWithCache().Cast<IEntity>().ToList(), page["roldId"], "全部", true)
                 @Html.ForDropDownList("p", VisitStat.FindAllPageName(), page["p"], "全部页面", true)
                 @Html.ForListBox("roleIds", Role.FindAllWithCache(), page["roleIds"])
             </div>*@
@@ -745,14 +745,14 @@ public static class ViewHelper
         if (!user.Avatar.StartsWithIgnoreCase("/Sso/"))
         {
             var av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath();
-            if (File.Exists(av)) return "/Cube/Avatar?id=" + user.ID;
+            if (File.Exists(av)) return "/Cube/Avatar?id=" + user.Id;
         }
 
         // 兼容旧版头像
         if (!set.AvatarPath.IsNullOrEmpty())
         {
-            var av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
-            if (File.Exists(av)) return "/Sso/Avatar?id=" + user.ID;
+            var av = set.AvatarPath.CombinePath(user.Id + ".png").GetBasePath();
+            if (File.Exists(av)) return "/Sso/Avatar?id=" + user.Id;
         }
 
         return null;
@@ -849,7 +849,7 @@ public static class ViewHelper
         {
             // 左侧菜单展示所有可见菜单，不按角色权限过滤
             // 权限控制在 Controller/Action 层通过 EntityAuthorizeAttribute 实现
-            var parent = fact.FindByID(pMenuTree.ID);
+            var parent = fact.FindByID(pMenuTree.Id);
             var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu>;
             return NewLife.Cube.Membership.MenuHelper.FilterAvailable(subMenus);
         }, list =>
@@ -859,7 +859,7 @@ public static class ViewHelper
                                 // where m.Visible
                             select new MenuTree
                             {
-                                ID = menu.ID,
+                                Id = menu.Id,
                                 Name = menu.Name,
                                 DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                 FullName = menu.FullName,
@@ -867,7 +867,7 @@ public static class ViewHelper
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
                                 NewWindow = menu.NewWindow,
-                                ParentID = menu.ParentID,
+                                ParentId = menu.ParentId,
                                 Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
                             }).ToList();
             return menuList.Count > 0 ? menuList : null;
@@ -924,9 +924,9 @@ public static class ViewHelper
         if (userId <= 0) return GetAttachmentUrl(attachment);
 
         var url = $"attachment:{attachment.Id}";
-        var list = UserToken.FindAllByUserID(userId);
+        var list = UserToken.FindAllByUserId(userId);
         var ut = list.FirstOrDefault(e => e.Url.EqualIgnoreCase(url) && e.Enable && e.Expire > DateTime.Now);
-        ut ??= new UserToken { UserID = userId, Url = url };
+        ut ??= new UserToken { UserId = userId, Url = url };
 
         if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(8);
         ut.Enable = true;
@@ -1100,3 +1100,4 @@ public class Bootstrap
     }
     #endregion
 }
+

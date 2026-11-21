@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -75,7 +75,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             CurrentUser = user as IManageUser;
 
             // // 设置变量，数据权限使用，最后面统一设置
-            // HttpContext.Items["userId"] = user.ID;
+            // HttpContext.Items["userId"] = user.Id;
 
             // 没有菜单时不做权限控制
             //if (Menu != null)
@@ -88,7 +88,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         var tid = ModelExtension.GetService<ITenantContext>(HttpContext.RequestServices)?.TenantId ?? 0;
         if (tid > 0 && user != null)
         {
-            var tus = TenantUser.FindAllByUserId(user.ID);
+            var tus = TenantUser.FindAllByUserId(user.Id);
             CurrentTenant = tus.FirstOrDefault(e => e.TenantId == tid);
         }
 
@@ -115,7 +115,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             if (CurrentUser != null)
             {
                 // 设置变量，数据权限使用
-                HttpContext.Items["userId"] = CurrentUser.ID;
+                HttpContext.Items["userId"] = CurrentUser.Id;
 
                 // 选择列是否出现由页面能力决定；批量修改/删除的用户权限由前端结合用户信息计算
                 // PageSetting.EnableSelect 不在这里按权限改写，避免权限变化后被 /meta 缓存成旧值

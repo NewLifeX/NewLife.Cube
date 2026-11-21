@@ -1,4 +1,4 @@
-﻿using System.Security.Principal;
+using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
@@ -27,8 +27,8 @@ public static class ManagerProviderHelper
     /// 与"未认证（凭证缺失/无效，应返回 401）"区分，避免客户端把租户拒绝误判为凭证过期而触发无意义的刷新/重登</summary>
     public const String TenantCheckFailedKey = "Cube_TenantCheckFailed";
 
-    /// <summary>租户校验失败用户的 ID 标记（HttpContext.Items 键），与 <see cref="TenantCheckFailedKey"/> 配套。
-    /// 单独存 ID：审计日志落库需要真实 userId 关联用户；同时以 ID 是否大于 0 作为"已认证但租户校验失败"的判定（比用户名更可靠）</summary>
+    /// <summary>租户校验失败用户的 Id 标记（HttpContext.Items 键），与 <see cref="TenantCheckFailedKey"/> 配套。
+    /// 单独存 Id：审计日志落库需要真实 userId 关联用户；同时以 Id 是否大于 0 作为"已认证但租户校验失败"的判定（比用户名更可靠）</summary>
     public const String TenantCheckFailedUserIdKey = "Cube_TenantCheckFailedUserId";
 
     /// <summary>租户校验失败原因标记（HttpContext.Items 键），取值：InvalidIdentifier（显式标识无效）/NotMember（非租户成员）/MissingIdentifier（缺租户标识）。403 响应据此输出差异化文案</summary>
@@ -110,7 +110,7 @@ public static class ManagerProviderHelper
                                     // 吊销旧令牌对应 UserToken，防止滑动续期不断累积不可吊销的令牌
                                     if (!jwt.Id.IsNullOrEmpty() && Int32.TryParse(jwt.Id, out var oldId))
                                     {
-                                        var oldUt = UserToken.FindByID(oldId);
+                                        var oldUt = UserToken.FindByIdNoCache(oldId);
                                         if (oldUt != null && oldUt.Enable)
                                         {
                                             oldUt.Enable = false;
@@ -133,7 +133,7 @@ public static class ManagerProviderHelper
                     {
                         mu.SaveLogin(null);
 
-                        LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Auto sign-in"), true, $"{user} IssuedAt={jwt.IssuedAt.ToFullString()} Expire={jwt.Expire.ToFullString()}", user.ID, user + "", ip: context.GetUserHost());
+                        LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Auto sign-in"), true, $"{user} IssuedAt={jwt.IssuedAt.ToFullString()} Expire={jwt.Expire.ToFullString()}", user.Id, user + "", ip: context.GetUserHost());
                     }
 #endif
                 }
@@ -150,7 +150,7 @@ public static class ManagerProviderHelper
             {
                 XTrace.WriteLine(L.TLog("Tenant check failed, access denied: user [{0}] has no valid tenant", user));
                 context.Items[TenantCheckFailedKey] = user.Name;
-                context.Items[TenantCheckFailedUserIdKey] = user.ID;
+                context.Items[TenantCheckFailedUserIdKey] = user.Id;
                 provider.SetCurrent(null, serviceProvider);
                 return null;
             }
@@ -212,7 +212,7 @@ public static class ManagerProviderHelper
             var utId = jwt.Id.ToInt();
             if (utId > 0)
             {
-                var ut = UserToken.FindByID(utId);
+                var ut = UserToken.FindByIdNoCache(utId);
                 if (ut == null || !ut.Enable)
                 {
                     span?.AppendTag(L.TLog("UserToken revoked: {0}", utId));
@@ -256,7 +256,7 @@ public static class ManagerProviderHelper
         var tenantId = GetTenantId(context);
 
         // 判断是否系统管理员，管理后台（租户0）仅系统管理员可进入
-        var user = User.FindByID(userId);
+        var user = User.FindById(userId);
         var isAdmin = user != null && user.Roles.Any(e => e.IsSystem);
 
         // 进入最后一次使用的租户
@@ -353,7 +353,7 @@ public static class ManagerProviderHelper
             || !req.Cookies[$"TenantId-{SysConfig.Current.Name}"].IsNullOrEmpty();
     }
 
-    /// <summary>解析 X-App-Id 到租户ID（OAuth 配置租户，校验存在且启用）。无 appId 或无效返回 -1</summary>
+    /// <summary>解析 X-App-Id 到租户Id（OAuth 配置租户，校验存在且启用）。无 appId 或无效返回 -1</summary>
     private static Int32 ResolveTenantByAppId(String appId)
     {
         if (appId.IsNullOrEmpty()) return -1;
@@ -390,7 +390,7 @@ public static class ManagerProviderHelper
     /// <returns>租户用户绑定记录，无需绑定时返回null</returns>
     public static TenantUser EnsureTenantUser(this HttpContext httpContext, IManageUser user, String ip)
     {
-        var userId = user?.ID ?? 0;
+        var userId = user?.Id ?? 0;
         var tenantId = httpContext.ResolveTenantForLogin();
         if (tenantId <= 0 || userId <= 0) return null;
 
@@ -429,7 +429,7 @@ public static class ManagerProviderHelper
 
     /// <summary>解析登录/绑定租户：优先已建立的租户上下文，其次单一解析入口（X-App-Id / X-Tenant/Query/Cookie）。返回 -1 表示未解析到有效租户</summary>
     /// <param name="context">HTTP上下文</param>
-    /// <returns>租户ID，未解析到返回 -1</returns>
+    /// <returns>租户Id，未解析到返回 -1</returns>
     public static Int32 ResolveTenantForLogin(this HttpContext context)
     {
         if (context == null) return -1;
@@ -440,8 +440,8 @@ public static class ManagerProviderHelper
         return context.ResolveTenant().TenantId;
     }
 
-    /// <summary>校验租户ID是否存在且启用。0（管理后台）视为无效租户；未开启多租户时仅要求大于0</summary>
-    /// <param name="tenantId">租户ID</param>
+    /// <summary>校验租户Id是否存在且启用。0（管理后台）视为无效租户；未开启多租户时仅要求大于0</summary>
+    /// <param name="tenantId">租户Id</param>
     /// <returns>有效返回true</returns>
     private static Boolean IsValidTenant(Int32 tenantId)
     {
@@ -458,8 +458,8 @@ public static class ManagerProviderHelper
     public static TenantMode GetTenantMode(this TenantContext tc)
         => tc == null ? TenantMode.None : tc.TenantId > 0 ? TenantMode.Tenant : tc.TenantId == 0 ? TenantMode.AdminBackend : TenantMode.None;
 
-    /// <summary>获取租户ID对应模式。&gt;0=租户，0=管理后台，负=未提供</summary>
-    /// <param name="tenantId">租户ID</param>
+    /// <summary>获取租户Id对应模式。&gt;0=租户，0=管理后台，负=未提供</summary>
+    /// <param name="tenantId">租户Id</param>
     /// <returns>租户模式</returns>
     public static TenantMode GetTenantMode(this Int32 tenantId)
         => tenantId > 0 ? TenantMode.Tenant : tenantId == 0 ? TenantMode.AdminBackend : TenantMode.None;
@@ -507,7 +507,7 @@ public static class ManagerProviderHelper
         var tenant = Tenant.FindById(tenantId);
         if (tenant != null && !tenant.Name.IsNullOrEmpty()) name += $"-{tenant.Name}";
 
-        return Role.GetOrAdd(name).ID;
+        return Role.GetOrAdd(name).Id;
     }
 
     /// <summary>解析注册租户。优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant（租户编码，与GetTenantId语义一致）。
@@ -699,7 +699,7 @@ public static class ManagerProviderHelper
             ut = new UserToken
             {
                 Token = refreshToken,
-                UserID = user.ID,
+                UserId = user.Id,
                 Enable = true,
                 Expire = DateTime.Now.AddDays(7),
                 CreateIP = context.GetUserHost(),
@@ -715,7 +715,7 @@ public static class ManagerProviderHelper
             var jwt = GetJwt();
             jwt.Subject = user.Name;
             jwt.Expire = exp;
-            if (ut != null) jwt.Id = ut.ID.ToString();
+            if (ut != null) jwt.Id = ut.Id.ToString();
             accessToken = jwt.Encode(null);
         }
         context.Items["jwtToken"] = accessToken;
@@ -828,7 +828,7 @@ public static class ManagerProviderHelper
             var utId = jwt.Id.ToInt();
             if (utId > 0)
             {
-                var ut = UserToken.FindByID(utId);
+                var ut = UserToken.FindByIdNoCache(utId);
                 if (ut == null || !ut.Enable)
                 {
                     XTrace.WriteLine(L.TLog("UserToken revoked: {0}", utId));
@@ -981,11 +981,11 @@ public static class ManagerProviderHelper
         var tenant = req.Headers["X-Tenant"].ToString();
         if (!tenant.IsNullOrEmpty()) return ResolveTenantByCode(tenant);
 
-        // QueryString兜底（一般用于调试/回调等），传数字ID
+        // QueryString兜底（一般用于调试/回调等），传数字Id
         var idStr = req.Query["tenantId"].ToString();
         if (!idStr.IsNullOrEmpty()) return ResolveTenantById(idStr);
 
-        // 最后从Cookie读取（兼容现有浏览器模式），Cookie存的是数字ID
+        // 最后从Cookie读取（兼容现有浏览器模式），Cookie存的是数字Id
         var key = $"TenantId-{SysConfig.Current.Name}";
         var str = req.Cookies[key];
         return str.IsNullOrEmpty() ? -1 : ResolveTenantById(str);
@@ -1025,9 +1025,9 @@ public static class ManagerProviderHelper
         return null;
     }
 
-    /// <summary>按租户编码（Code）解析租户。X-Tenant 头专用，避免纯数字编码被误判为ID；多租户开启时校验存在且启用，无效返回-1</summary>
+    /// <summary>按租户编码（Code）解析租户。X-Tenant 头专用，避免纯数字编码被误判为Id；多租户开启时校验存在且启用，无效返回-1</summary>
     /// <param name="code">租户编码</param>
-    /// <returns>租户ID，无效返回-1</returns>
+    /// <returns>租户Id，无效返回-1</returns>
     private static Int32 ResolveTenantByCode(String code)
     {
         if (code.IsNullOrEmpty()) return -1;
@@ -1041,9 +1041,9 @@ public static class ManagerProviderHelper
         return t.Id;
     }
 
-    /// <summary>按数字ID解析租户。Query/Cookie 专用；0表示管理后台；多租户开启时校验存在且启用，无效返回-1</summary>
-    /// <param name="idStr">租户数字ID</param>
-    /// <returns>租户ID，无效返回-1；0表示管理后台</returns>
+    /// <summary>按数字Id解析租户。Query/Cookie 专用；0表示管理后台；多租户开启时校验存在且启用，无效返回-1</summary>
+    /// <param name="idStr">租户数字Id</param>
+    /// <returns>租户Id，无效返回-1；0表示管理后台</returns>
     private static Int32 ResolveTenantById(String idStr)
     {
         if (idStr.IsNullOrEmpty()) return -1;
@@ -1053,7 +1053,7 @@ public static class ManagerProviderHelper
         if (id == 0) return 0;
         if (id < 0) return -1;
 
-        // 多租户开启时，校验租户存在且启用，防止伪造租户ID绕过数据隔离
+        // 多租户开启时，校验租户存在且启用，防止伪造租户Id绕过数据隔离
         if (CubeSetting.Current.EnableTenant)
         {
             var t = Tenant.FindById(id);
@@ -1123,7 +1123,7 @@ public readonly struct TenantResolution
     /// <summary>是否携带租户标识（无论有效与否）</summary>
     public Boolean HasIdentifier { get; init; }
 
-    /// <summary>解析到的租户ID。&gt;0=租户，0=管理后台，-1=未解析到有效租户</summary>
+    /// <summary>解析到的租户Id。&gt;0=租户，0=管理后台，-1=未解析到有效租户</summary>
     public Int32 TenantId { get; init; }
 
     /// <summary>租户模式</summary>
@@ -1139,7 +1139,7 @@ public interface ITenantContext
     /// <summary>租户模式</summary>
     TenantMode Mode { get; }
 
-    /// <summary>租户ID。0=管理后台，&gt;0=租户</summary>
+    /// <summary>租户Id。0=管理后台，&gt;0=租户</summary>
     Int32 TenantId { get; }
 
     /// <summary>租户</summary>
@@ -1152,7 +1152,7 @@ public class TenantContextService : ITenantContext
     /// <summary>租户模式</summary>
     public TenantMode Mode => TenantContext.Current.GetTenantMode();
 
-    /// <summary>租户ID</summary>
+    /// <summary>租户Id</summary>
     public Int32 TenantId => TenantContext.CurrentId;
 
     /// <summary>租户</summary>
@@ -1164,7 +1164,7 @@ public class TenantContextService : ITenantContext
 public static class TenantAccessPolicy
 {
     /// <summary>校验用户是否属于指定租户。管理员豁免（可进管理后台及任意租户）；普通用户须有有效 TenantUser 绑定，且不能进管理后台（tenantId=0）</summary>
-    /// <param name="tenantId">租户ID（&gt;0 为租户；0 为管理后台，仅管理员）</param>
+    /// <param name="tenantId">租户Id（&gt;0 为租户；0 为管理后台，仅管理员）</param>
     /// <param name="user">已认证用户</param>
     /// <returns>属于该租户返回true</returns>
     public static Boolean IsMember(Int32 tenantId, IManageUser user)
@@ -1175,7 +1175,8 @@ public static class TenantAccessPolicy
         // 普通用户不能进管理后台（tenantId<=0）
         if (tenantId <= 0) return false;
 
-        var tu = TenantUser.FindByTenantIdAndUserId(tenantId, user.ID);
+        var tu = TenantUser.FindByTenantIdAndUserId(tenantId, user.Id);
         return tu != null && tu.Enable;
     }
 }
+

@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using XCode;
 @using XCode.Configuration;
 @{
@@ -18,7 +18,7 @@
                     @foreach (var item in fields)
                     {
                         @*// 默认隐藏审计属性
-                        if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "UpdateUserID", "UpdateUser", "UpdateTime",
+                        if (item.Name.EqualIgnoreCase("CreateUserId", "CreateUser", "CreateTime", "UpdateUserId", "UpdateUser", "UpdateTime",
                             "CreateIP", "UpdateIP") && set.HidenAuditProperty)
                             continue;*@
 
@@ -44,5 +44,6 @@
     </div>
 
 </div>
+
 
 

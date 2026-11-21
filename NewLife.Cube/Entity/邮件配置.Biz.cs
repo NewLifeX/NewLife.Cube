@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -28,6 +28,7 @@ namespace NewLife.Cube.Entity;
 
 public partial class MailConfig : Entity<MailConfig>
 {
+
     #region 对象操作
     // 控制最大缓存数量，Find/FindAll查询方法在表行数小于该值时走实体缓存
     private static Int32 MaxCacheCount = 1000;
@@ -69,8 +70,8 @@ public partial class MailConfig : Entity<MailConfig>
         /*var user = ManageProvider.User;
         if (user != null)
         {
-            if (method == DataMethod.Insert && !Dirtys[nameof(CreateUserID)]) CreateUserID = user.ID;
-            if (!Dirtys[nameof(UpdateUserID)]) UpdateUserID = user.ID;
+            if (method == DataMethod.Insert && !Dirtys[nameof(CreateUserId)]) CreateUserId = user.Id;
+            if (!Dirtys[nameof(UpdateUserId)]) UpdateUserId = user.Id;
         }*/
         //if (method == DataMethod.Insert && !Dirtys[nameof(CreateTime)]) CreateTime = DateTime.Now;
         //if (!Dirtys[nameof(UpdateTime)]) UpdateTime = DateTime.Now;
@@ -212,3 +213,4 @@ public partial class MailConfig : Entity<MailConfig>
 
     #endregion
 }
+

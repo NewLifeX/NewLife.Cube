@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202509.xsd" Version="11.7.2023.0327" Document="https://newlifex.com/xcode/model" ModelVersion="2.0.2026.130" xmlns="https://newlifex.com/Model202509.xsd">
   <Option>
     <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
@@ -48,11 +48,11 @@
         <Column Name="Name" DataType="String" Master="True" Description="名称" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="GraduationDate" DataType="DateTime" Description="毕业时间" />
-        <Column Name="HeadTeacherId" DataType="Int32" Map="XCode.Membership.User@ID@$@TeacherName" Description="班主任" />
-        <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
+        <Column Name="HeadTeacherId" DataType="Int32" Map="XCode.Membership.User@Id@$@TeacherName" Description="班主任" />
+        <Column Name="CreateUserId" DataType="Int32" Description="创建者" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" />
-        <Column Name="UpdateUserID" DataType="Int32" Description="更新者" />
+        <Column Name="UpdateUserId" DataType="Int32" Description="更新者" />
         <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
         <Column Name="UpdateIP" DataType="String" Description="更新地址" />
         <Column Name="Remark" DataType="String" Length="200" Description="备注" />
@@ -72,10 +72,10 @@
         <Column Name="Avatar" DataType="String" ItemType="image" Description="头像" Category="基本信息" />
         <Column Name="Weight" DataType="Double" Scale="2" Description="体重。小数" />
         <Column Name="Amount" DataType="Decimal" Scale="3" Description="存款。小数" />
-        <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展信息" />
+        <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展信息" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展信息" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展信息" />
-        <Column Name="UpdateUserID" DataType="Int32" Description="更新者" Category="扩展信息" />
+        <Column Name="UpdateUserId" DataType="Int32" Description="更新者" Category="扩展信息" />
         <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展信息" />
         <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展信息" />
         <Column Name="Remark" DataType="String" Length="200" Description="备注" Category="扩展信息" />

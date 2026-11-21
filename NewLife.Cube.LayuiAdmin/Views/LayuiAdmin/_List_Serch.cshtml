@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Cube
 @using NewLife.Cube.Extensions;
 @using XCode
@@ -51,14 +51,14 @@
                             }
                         }
                     }
-                    <div class="layui-inline" id="ID-laydate-rangeLinked">
+                    <div class="layui-inline" id="Id-laydate-rangeLinked">
                         <label class="layui-form-label" style="width:auto;">日期：</label>
                         <div class="layui-input-inline">
-                            <input type="text" autocomplete="off" id="ID-laydate-start-date" class="layui-input" name="dtStart" placeholder="开始日期" value="@Context.Request.GetRequestValue("dtStart")">
+                            <input type="text" autocomplete="off" id="Id-laydate-start-date" class="layui-input" name="dtStart" placeholder="开始日期" value="@Context.Request.GetRequestValue("dtStart")">
                         </div>
                         <div class="layui-form-mid">-</div>
                         <div class="layui-input-inline">
-                            <input type="text" autocomplete="off" id="ID-laydate-end-date" name="dtEnd" class="layui-input" placeholder="结束日期" value="@Context.Request.GetRequestValue("dtEnd")">
+                            <input type="text" autocomplete="off" id="Id-laydate-end-date" name="dtEnd" class="layui-input" placeholder="结束日期" value="@Context.Request.GetRequestValue("dtEnd")">
                         </div>
                     </div>
                     <div class="layui-inline">
@@ -78,8 +78,8 @@
         var laydate = layui.laydate;
         // 日期范围 - 左右面板联动选择模式
         laydate.render({
-            elem: '#ID-laydate-rangeLinked',
-            range: ['#ID-laydate-start-date', '#ID-laydate-end-date'],
+            elem: '#Id-laydate-rangeLinked',
+            range: ['#Id-laydate-start-date', '#Id-laydate-end-date'],
             rangeLinked: true // 开启日期范围选择时的区间联动标注模式 ---  2.8+ 新增
         });
     });

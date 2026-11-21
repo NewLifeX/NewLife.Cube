@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
 using NewLife.Cube.Membership;
@@ -41,29 +41,29 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         // 避免同名菜单混淆；不依赖 FullName 字段数据质量。新增/编辑表单均生效
         foreach (var fields in new[] { AddFormFields, EditFormFields })
         {
-            var df = fields.GetField("ParentID");
+            var df = fields.GetField("ParentId");
             df.DataSource = _ => BuildMenuSource();
         }
     }
 
-    /// <summary>构建菜单层级路径字典（菜单缓存 → ID → 显示路径），供父级下拉选择</summary>
+    /// <summary>构建菜单层级路径字典（菜单缓存 → Id → 显示路径），供父级下拉选择</summary>
     /// <returns>菜单编号到层级路径的映射</returns>
     private static Dictionary<Int32, String> BuildMenuSource()
     {
         var menus = XCode.Membership.Menu.FindAllWithCache().ToList();
-        var map = menus.ToDictionary(e => e.ID, e => e);
+        var map = menus.ToDictionary(e => e.Id, e => e);
         var dict = new Dictionary<Int32, String>();
         foreach (var e in menus)
         {
             var parts = new List<String> { MenuHelper.GetDisplayName(e) ?? e.Name };
             var p = e;
             var guard = 0;
-            while (p.ParentID > 0 && map.TryGetValue(p.ParentID, out var pp) && pp.ID != p.ID && guard++ < 8)
+            while (p.ParentId > 0 && map.TryGetValue(p.ParentId, out var pp) && pp.Id != p.Id && guard++ < 8)
             {
                 parts.Insert(0, MenuHelper.GetDisplayName(pp) ?? pp.Name);
                 p = pp;
             }
-            dict[e.ID] = String.Join("/", parts);
+            dict[e.Id] = String.Join("/", parts);
         }
         return dict;
     }
@@ -97,7 +97,7 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         var count = 0;
         foreach (var id in ids)
         {
-            var entity = XCode.Membership.Menu.FindByID(id);
+            var entity = XCode.Membership.Menu.FindById(id);
             if (entity != null && MenuHelper.RefreshDisplayName(entity) && entity.Update() > 0) count++;
         }
 

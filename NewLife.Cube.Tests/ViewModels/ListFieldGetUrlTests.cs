@@ -34,12 +34,12 @@ public class ListFieldGetUrlTests
     [Fact(DisplayName = "已注册实体：生成含 Area 前缀的跨 Area 链接")]
     public void RegisteredEntity_ReturnsAreaUrl()
     {
-        // 模拟菜单扫描时注册：Role 实体对应 /Admin/Role，主键 ID
-        EntityPageRegistry.Register(typeof(RoleEntity), "/Admin/Role", "ID");
+        // 模拟菜单扫描时注册：Role 实体对应 /Admin/Role，主键 Id
+        EntityPageRegistry.Register(typeof(RoleEntity), "/Admin/Role", "Id");
 
         var lf = new ListField
         {
-            MapProvider = new MapProvider { EntityType = typeof(RoleEntity), Key = "ID" },
+            MapProvider = new MapProvider { EntityType = typeof(RoleEntity), Key = "Id" },
             MapField = "RoleId",
         };
 
@@ -47,7 +47,7 @@ public class ListFieldGetUrlTests
 
         var url = lf.GetUrl(model);
 
-        Assert.Equal("/Admin/Role?ID=5", url);
+        Assert.Equal("/Admin/Role?Id=5", url);
     }
 
     [Fact(DisplayName = "未注册实体：回退到不含 Area 前缀的旧路径")]
@@ -56,7 +56,7 @@ public class ListFieldGetUrlTests
         // 不注册 DeptEntity，验证回退行为
         var lf = new ListField
         {
-            MapProvider = new MapProvider { EntityType = typeof(DeptEntity), Key = "ID" },
+            MapProvider = new MapProvider { EntityType = typeof(DeptEntity), Key = "Id" },
             MapField = "DeptId",
         };
 
@@ -64,18 +64,18 @@ public class ListFieldGetUrlTests
 
         var url = lf.GetUrl(model);
 
-        Assert.Equal("/DeptEntity?ID=3", url);
+        Assert.Equal("/DeptEntity?Id=3", url);
     }
 
     [Fact(DisplayName = "显式配置 Url 时优先于注册表")]
     public void ExplicitUrl_TakesPrecedence()
     {
-        EntityPageRegistry.Register(typeof(RoleEntity), "/Admin/Role", "ID");
+        EntityPageRegistry.Register(typeof(RoleEntity), "/Admin/Role", "Id");
 
         var lf = new ListField
         {
             Url = "/Custom/Path?x={Id}",
-            MapProvider = new MapProvider { EntityType = typeof(RoleEntity), Key = "ID" },
+            MapProvider = new MapProvider { EntityType = typeof(RoleEntity), Key = "Id" },
             MapField = "RoleId",
         };
 
@@ -99,7 +99,7 @@ public class ListFieldGetUrlTests
     {
         var lf = new ListField
         {
-            MapProvider = new MapProvider { EntityType = typeof(RoleEntity), Key = "ID" },
+            MapProvider = new MapProvider { EntityType = typeof(RoleEntity), Key = "Id" },
         };
 
         Assert.Null(lf.GetUrl(new TestModel()));
@@ -121,3 +121,4 @@ public class ListFieldGetUrlTests
         Assert.Equal("/Detail?userId=9&name=admin", url);
     }
 }
+

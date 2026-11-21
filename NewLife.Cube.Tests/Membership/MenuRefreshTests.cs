@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using NewLife;
@@ -25,7 +25,7 @@ public class MenuRefreshTests : IDisposable
     {
         foreach (var id in _ids)
         {
-            XCode.Membership.Menu.FindByID(id)?.Delete();
+            XCode.Membership.Menu.FindById(id)?.Delete();
         }
         _ids.Clear();
         Menu.Meta.Session.ClearCache("MenuRefreshTests", true);
@@ -40,13 +40,13 @@ public class MenuRefreshTests : IDisposable
     {
         var menu = new Menu { Name = "RefreshUser", DisplayName = "旧名字", FullName = typeof(RefreshUserController).FullName, Url = "/Test/RefreshUser" };
         menu.Insert();
-        _ids.Add(menu.ID);
+        _ids.Add(menu.Id);
 
-        var db = Reload(menu.ID);
+        var db = Reload(menu.Id);
         Assert.True(MenuHelper.RefreshDisplayName(db));
         db.Update();
 
-        var db2 = Reload(menu.ID);
+        var db2 = Reload(menu.Id);
         Assert.Equal("用户", db2.DisplayName);
         Assert.Equal(typeof(RefreshUserController).FullName, db2.FullName);
     }
@@ -56,9 +56,9 @@ public class MenuRefreshTests : IDisposable
     {
         var menu = new Menu { Name = "RefreshUnknown", DisplayName = "保留名字", FullName = "No.Such.Controller", Url = "/Test/RefreshUnknown" };
         menu.Insert();
-        _ids.Add(menu.ID);
+        _ids.Add(menu.Id);
 
-        var db = Reload(menu.ID);
+        var db = Reload(menu.Id);
         Assert.False(MenuHelper.RefreshDisplayName(db));
         Assert.Equal("保留名字", db.DisplayName);
     }
@@ -76,3 +76,4 @@ public class MenuRefreshTests : IDisposable
     [DisplayName("用户")]
     private class RefreshUserController { }
 }
+

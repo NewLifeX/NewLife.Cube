@@ -1,4 +1,4 @@
-﻿using NewLife.Collections;
+using NewLife.Collections;
 using NewLife.Cube.Enums;
 using XCode.Membership;
 
@@ -32,7 +32,7 @@ public class LoginModel : ICubeModel
     /// </remarks>
     public String? ChallengeId { get; set; }
 
-    /// <summary>验证码 ID。调用 /Auth/Captcha 获取，登录时原样回传；仅在登录场景需要验证码时必填 </summary>
+    /// <summary>验证码 Id。调用 /Auth/Captcha 获取，登录时原样回传；仅在登录场景需要验证码时必填 </summary>
     public String? CaptchaId { get; set; }
 
     /// <summary>验证码用户输入。仅在登录场景需要验证码时必填 </summary>
@@ -95,7 +95,7 @@ public class AuthRegisterModel : ICubeModel
     /// <summary>OAuth 临时令牌（category=oauth 时必填）</summary>
     public String? OAuthToken { get; set; }
 
-    /// <summary>验证码 ID。调用 /Auth/Captcha 获取，注册时原样回传；仅在注册场景需要验证码时必填 </summary>
+    /// <summary>验证码 Id。调用 /Auth/Captcha 获取，注册时原样回传；仅在注册场景需要验证码时必填 </summary>
     public String? CaptchaId { get; set; }
 
     /// <summary>验证码用户输入。仅在注册场景需要验证码时必填 </summary>
@@ -219,7 +219,7 @@ public class ResetPwdModel : ICubeModel
 public class UserInfo
 {
     /// <summary> 编号 </summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>名称。登录用户名</summary>
     public String Name { get; set; }
@@ -255,7 +255,7 @@ public class UserInfo
     public DateTime Birthday { get; set; }
 
     /// <summary>角色。主要角色</summary>
-    public Int32 RoleID { get; set; }
+    public Int32 RoleId { get; set; }
 
     /// <summary>角色组。次要角色集合</summary>
     public String RoleIds { get; set; }
@@ -271,7 +271,7 @@ public class UserInfo
     public String RoleNames { get; set; }
 
     /// <summary>部门。组织机构</summary>
-    public Int32 DepartmentID { get; set; }
+    public Int32 DepartmentId { get; set; }
 
     /// <summary>在线</summary>
     public Boolean Online { get; set; }
@@ -316,7 +316,7 @@ public class UserInfo
     public String UpdateUser { get; set; }
 
     /// <summary>更新用户</summary>
-    public Int32 UpdateUserID { get; set; }
+    public Int32 UpdateUserId { get; set; }
 
     /// <summary>更新地址</summary>
     public String UpdateIP { get; set; }

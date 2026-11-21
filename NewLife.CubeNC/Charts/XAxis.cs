@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace NewLife.Cube.Charts;
@@ -7,7 +7,7 @@ namespace NewLife.Cube.Charts;
 /// <remark>直角坐标系 grid 中的 x 轴，一般情况下单个 grid 组件最多只能放上下两个 x 轴，多于两个 x 轴需要通过配置 offset 属性防止同个位置多个 x 轴的重叠。</remark>
 public class XAxis
 {
-    /// <summary>组件 ID</summary>
+    /// <summary>组件 Id</summary>
     /// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
     public String Id { get; set; }
 
@@ -317,3 +317,4 @@ public class XAxis
     public Double? Z { get; set; }
 
 }
+

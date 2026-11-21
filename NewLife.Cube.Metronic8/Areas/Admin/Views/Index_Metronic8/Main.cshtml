@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics;
+@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime;
@@ -71,7 +71,7 @@
                             <a href="#" class="text-muted text-hover-primary text-uppercase fs-8 fw-bolder mr-lg-8 mr-5 mb-lg-0 mb-2">@set.Company&nbsp;&nbsp;<i class="la la-cube"></i>@set.Name (@set.Version)</a>
                         </div>
                     </div>
-                    @if (user.RoleName == "Admin" || user.RoleID == 1)
+                    @if (user.RoleName == "Admin" || user.RoleId == 1)
                     {
                         <div class="my-lg-0 my-1">
                             <a href="@Url.Action("Restart")" class="btn btn-sm btn-light-warning fw-bolder text-uppercase mr-3" data-bs-toggle="tooltip" title="重启ASP.NET应用程序域" 　onclick="return confirm('仅重启ASP.Net应用程序域，而不是操作系统！\n确认重启？')">重启</a>
@@ -312,3 +312,4 @@
         </div>
     </div>
 </div>
+

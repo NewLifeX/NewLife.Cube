@@ -2,6 +2,9 @@ using System.ComponentModel;
 using NewLife.Data;
 using NewLife.Log;
 using XCode;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 
 namespace NewLife.Cube.Entity;
 
@@ -35,6 +38,7 @@ public enum LimitDimensions
 
 public partial class AccessRule : Entity<AccessRule>
 {
+
     #region 对象操作
     static AccessRule()
     {
@@ -78,8 +82,8 @@ public partial class AccessRule : Entity<AccessRule>
         /*var user = ManageProvider.User;
         if (user != null)
         {
-            if (method == DataMethod.Insert && !Dirtys[nameof(CreateUserID)]) CreateUserID = user.ID;
-            if (!Dirtys[nameof(UpdateUserID)]) UpdateUserID = user.ID;
+            if (method == DataMethod.Insert && !Dirtys[nameof(CreateUserId)]) CreateUserId = user.Id;
+            if (!Dirtys[nameof(UpdateUserId)]) UpdateUserId = user.Id;
         }*/
         //if (method == DataMethod.Insert && !Dirtys[nameof(CreateTime)]) CreateTime = DateTime.Now;
         //if (!Dirtys[nameof(UpdateTime)]) UpdateTime = DateTime.Now;
@@ -312,3 +316,4 @@ public partial class AccessRule : Entity<AccessRule>
     }
     #endregion
 }
+

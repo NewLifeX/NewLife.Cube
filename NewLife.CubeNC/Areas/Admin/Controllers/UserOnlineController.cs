@@ -9,22 +9,22 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户在线控制器</summary>
-[DataPermission(null, "UserID={#userId}")]
+[DataPermission(null, "UserId={#userId}")]
 [AdminArea]
 [Menu(0, false)]
 public class UserOnlineController : EntityController<UserOnline, UserOnlineModel>
 {
     static UserOnlineController()
     {
-        ListFields.RemoveField("ID", "UserID", "SessionID", "Status", "LastError", "CreateIP", "CreateTime");
+        ListFields.RemoveField("Id", "UserId", "SessionId", "Status", "LastError", "CreateIP", "CreateTime");
 
         ListFields.TraceUrl("TraceId");
 
         {
             var df = ListFields.GetField("Name") as ListField;
-            df.Url = "/Admin/User/Edit?id={UserID}";
+            df.Url = "/Admin/User/Edit?id={UserId}";
             df.Target = "_blank";
-            //df.DataVisible = e => (e as UserOnline).UserID > 0;
+            //df.DataVisible = e => (e as UserOnline).UserId > 0;
         }
     }
 
@@ -33,7 +33,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
     /// <returns></returns>
     protected override IEnumerable<UserOnline> Search(Pager p)
     {
-        var userid = p["UserID"].ToInt(-1);
+        var userid = p["UserId"].ToInt(-1);
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
 
@@ -43,7 +43,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
         if (userid < 0)
         {
             var user = ManageProvider.User;
-            if (!user.Roles.Any(e => e.IsSystem)) userid = user.ID;
+            if (!user.Roles.Any(e => e.IsSystem)) userid = user.Id;
         }
 
         return UserOnline.Search(userid, null, start, end, p["Q"], p);
@@ -75,21 +75,21 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
     [HttpPost]
     public ActionResult Kick(Int32 id)
     {
-        var online = UserOnline.FindByID(id);
+        var online = UserOnline.FindById(id);
         if (online == null) return Json(1, "Online record not found");
 
         // 数据权限校验：非系统管理员只能强制下线自己的在线记录，防止越权踢人并吊销他人全部令牌
         var user = ManageProvider.User;
         if (user == null) return Json(403, "请先登录");
-        if (!user.Roles.Any(e => e.IsSystem) && online.UserID != user.ID)
+        if (!user.Roles.Any(e => e.IsSystem) && online.UserId != user.Id)
             return Json(403, "仅能强制下线自己的在线记录");
 
         // 1. 吊销该用户所有令牌（API/JWT 即时失效）
-        var count = UserToken.RevokeByUser(online.UserID);
+        var count = UserToken.RevokeByUser(online.UserId);
 
         // 2. 清除 Session 会话（MVC 用户即时下线）
-        if (!online.SessionID.IsNullOrEmpty())
-            SessionProvider.Instance.RemoveSession(online.SessionID);
+        if (!online.SessionId.IsNullOrEmpty())
+            SessionProvider.Instance.RemoveSession(online.SessionId);
 
         // 3. 标记记录为已强制下线，不删除（保留审计数据）
         online.Status = "已强制下线";
@@ -97,7 +97,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
 
         // 4. 审计日志
         LogProvider.Provider.WriteLog(L.TLog("User online"), L.TLog("Force offline"), true,
-            L.TLog("User [{0}] was forced offline and {1} tokens were revoked", online.Name, count), online.UserID, online.Name);
+            L.TLog("User [{0}] was forced offline and {1} tokens were revoked", online.Name, count), online.UserId, online.Name);
 
         return Json(0, $"已强制下线，吊销{count}个令牌");
     }

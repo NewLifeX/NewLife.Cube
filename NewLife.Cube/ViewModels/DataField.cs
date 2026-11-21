@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -262,7 +262,7 @@ public class DataField : IDictionarySource
         }
         else if (this is FormField && !MapField.IsNullOrEmpty() && MapProvider != null)
         {
-            // 映射字段（如 RoleName 指向 RoleID）：表单下发关联表数据源，前端在关联键位置渲染下拉
+            // 映射字段（如 RoleName 指向 RoleId）：表单下发关联表数据源，前端在关联键位置渲染下拉
             try
             {
                 var mapFact = MapProvider.EntityType == null ? null : EntityFactory.CreateFactory(MapProvider.EntityType);

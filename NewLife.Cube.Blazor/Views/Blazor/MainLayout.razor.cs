@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -149,7 +149,7 @@ namespace NewLife.Cube.Blazor.Views.Blazor
             var menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.Root.Childs);
             if (user?.Role != null)
             {
-                menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(fact.Root.ID, user, true));
+                menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(fact.Root.Id, user, true));
             }
 
             // 如果顶级只有一层，并且至少有三级目录，则提升一级
@@ -157,7 +157,7 @@ namespace NewLife.Cube.Blazor.Views.Blazor
 
             var menuTree = MenuTree.GetMenuTree(pMenuTree =>
             {
-                var subMenus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(pMenuTree.ID, user, true));
+                var subMenus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(pMenuTree.Id, user, true));
                 return subMenus;
             }, list =>
             {
@@ -166,13 +166,13 @@ namespace NewLife.Cube.Blazor.Views.Blazor
                                     // where m.Visible
                                 select new MenuTree
                                 {
-                                    ID = menu.ID,
+                                    Id = menu.Id,
                                     Name = menu.Name,
                                     DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                     Url = menu.Url,
                                     Icon = menu.Icon,
                                     Visible = menu.Visible,
-                                    ParentID = menu.ParentID,
+                                    ParentId = menu.ParentId,
                                     Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
                                 }).ToList();
                 return menuList.Count > 0 ? menuList : null;
@@ -182,3 +182,4 @@ namespace NewLife.Cube.Blazor.Views.Blazor
         }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 using NewLife.Caching;
 using NewLife.Cube.Entity;
@@ -103,7 +103,7 @@ public class MailService(ICacheProvider cacheProvider)
             ConfigId = config.Id,
             ConfigName = config + "",
             Provider = config.Provider,
-            UserId = ManageProvider.User?.ID ?? 0,
+            UserId = ManageProvider.User?.Id ?? 0,
             Target = mail,
             ExpireTime = DateTime.Now.AddSeconds(config.Expire > 0 ? config.Expire : 300),
         };
@@ -200,3 +200,4 @@ public class MailService(ICacheProvider cacheProvider)
         return sb.ToString();
     }
 }
+

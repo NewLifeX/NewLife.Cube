@@ -178,7 +178,7 @@ public class SsoClientService : ISsoClientService
     /// <returns></returns>
     public virtual String OnLogin(OAuthClient client, IServiceProvider context, UserConnect uc, Boolean forceBind, Int32 userId)
     {
-        using var span = Tracer?.NewSpan("SsoProviderLogin", $"connectid={uc.ID} openid={uc.OpenID} username={uc.UserName}");
+        using var span = Tracer?.NewSpan("SsoProviderLogin", $"connectid={uc.Id} openid={uc.OpenId} username={uc.UserName}");
 
         var httpContext = ModelExtension.GetService<IHttpContextAccessor>(context).HttpContext;
         var req = httpContext.Request;
@@ -187,7 +187,7 @@ public class SsoClientService : ISsoClientService
         var prv = Provider;
         prv ??= Provider = ManageProvider.Provider;
 
-        var user = prv.FindByID(uc.UserID);
+        var user = prv.FindByID(uc.UserId);
         if (forceBind || user == null || !uc.Enable) user = BindingService.OnBind(uc, client, userId);
 
         try
@@ -206,7 +206,7 @@ public class SsoClientService : ISsoClientService
         BindingService.Fill(client, user, context);
 
         if (user is User userAv && userAv.Avatar.IsNullOrEmpty())
-            userAv.Avatar = $"/Sso/Avatar?id={user.ID}";
+            userAv.Avatar = $"/Sso/Avatar?id={user.Id}";
 
         if (user is IAuthUser user3)
         {
@@ -228,7 +228,7 @@ public class SsoClientService : ISsoClientService
         }
 
         var log = LogProvider.Provider;
-        log?.WriteLog(typeof(User), L.T("SSO sign-in"), true, L.T("[{0}] signed in via [{1}] as [{2}]", user, client.Name, client.UserName ?? client.NickName) + (source.IsNullOrEmpty() ? "" : " " + L.T("Source: {0}", source)), user.ID, user + "");
+        log?.WriteLog(typeof(User), L.T("SSO sign-in"), true, L.T("[{0}] signed in via [{1}] as [{2}]", user, client.Name, client.UserName ?? client.NickName) + (source.IsNullOrEmpty() ? "" : " " + L.T("Source: {0}", source)), user.Id, user + "");
 
         if (!user.Enable) throw new InvalidOperationException(L.T("User [{0}] is disabled.", user));
 
@@ -251,3 +251,4 @@ public class SsoClientService : ISsoClientService
     public virtual String GetKey(String name) => BindingService.GetKey(name);
     #endregion
 }
+

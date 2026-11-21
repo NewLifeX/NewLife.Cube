@@ -7,8 +7,10 @@ using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Configuration;
 using NewLife.Cube.AI;
+using NewLife.Cube.Services;
 using NewLife.Reflection;
 using NewLife.Serialization;
+using XCode.Configuration;
 
 namespace NewLife.Cube;
 
@@ -16,16 +18,26 @@ namespace NewLife.Cube;
 public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiContext where TConfig : Config<TConfig>, new()
 {
     /// <summary>要展现和修改的对象</summary>
+    /// <remarks>启用集群配置同步时，读取合并视图（本地为底 + 数据库覆盖），保存同时写入数据库与本地文件</remarks>
     protected override TConfig Value
     {
         get
         {
+            var (manager, scope) = CubeConfigSyncHelper.Resolve(HttpContext, Config<TConfig>.Provider);
+            if (manager != null) return manager.LoadView<TConfig>(scope!);
             return Config<TConfig>.Current;
         }
         set
         {
             if (value != null)
             {
+                var (manager, scope) = CubeConfigSyncHelper.Resolve(HttpContext, Config<TConfig>.Provider);
+                if (manager != null)
+                {
+                    manager.SaveBoth(scope!, value);
+                    return;
+                }
+
                 var cfg = Config<TConfig>.Current;
                 //value.ConfigFile = cfg.ConfigFile;
                 //value.Save();
@@ -49,6 +61,10 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
         // 配置项都是可选覆盖，留空表示沿用默认值，因此一律不标记必填，避免配置页满屏必填星号并拦截保存
         foreach (var field in fields) field.Nullable = true;
 
+        // 启用集群配置同步时，跳过字段只在本机生效，配置页置为只读
+        var (manager, scope) = CubeConfigSyncHelper.Resolve(HttpContext, Config<TConfig>.Provider);
+        CubeConfigSyncHelper.ApplySkipReadOnly(fields, manager, scope);
+
         return fields;
     }
 
@@ -58,9 +74,10 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
     [HttpGet]
     public virtual String GetFormSchema(String mode = "edit")
     {
-        var set = Config<TConfig>.Current;
+        // 启用集群配置同步时 Value 返回合并视图，与配置页显示保持一致
+        var set = Value;
         var fields = new List<AiFormField>();
-        foreach (var fi in DataField.Localize(GetMembers(typeof(TConfig))))
+        foreach (var fi in OnGetFields(ViewKinds.EditForm))
         {
             // 敏感字段不向 AI 暴露（ApiKey/Secret/Token/连接串等）
             if (AiFormHelper.IsSensitiveField(fi.Name)) continue;
@@ -112,7 +129,7 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
             };
         }
 
-        var fields = GetMembers(typeof(TConfig)).ToList();
+        var fields = OnGetFields(ViewKinds.EditForm).ToList();
         var rs = new Dictionary<String, Object?>();
         var skipped = new List<String>();
         var errors = new List<String>();

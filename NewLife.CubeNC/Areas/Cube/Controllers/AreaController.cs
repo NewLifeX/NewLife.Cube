@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Charts;
 using NewLife.Cube.ViewModels;
@@ -23,16 +23,16 @@ public class AreaController : EntityController<Area, AreaModel>
         ListFields.RemoveRemarkField();
 
         {
-            var df = ListFields.GetField("ParentID") as ListField;
-            df.Url = "/Cube/Area?Id={ParentID}";
+            var df = ListFields.GetField("ParentId") as ListField;
+            df.Url = "/Cube/Area?Id={ParentId}";
         }
         {
             var df = ListFields.AddDataField("sub", "Level") as ListField;
             df.DisplayName = "Children";
-            df.Url = "/Cube/Area?parentId={ID}";
+            df.Url = "/Cube/Area?parentId={Id}";
         }
 
-        //AddFormFields.AddField("ID");
+        //AddFormFields.AddField("Id");
     }
 
     private static Int32 _inited;
@@ -71,7 +71,7 @@ public class AreaController : EntityController<Area, AreaModel>
         if (id > 0)
         {
             var ss = new List<Area>();
-            var entity = FindByID(id);
+            var entity = FindById(id);
             if (entity != null) ss.Add(entity);
             return ss;
         }
@@ -85,7 +85,7 @@ public class AreaController : EntityController<Area, AreaModel>
         var parentid = p["parentid"].ToInt(-1);
         if (parentid < 0)
         {
-            var areaId = p["AreaID"];
+            var areaId = p["AreaId"];
             parentid = ("-1/" + areaId).SplitAsInt("/").LastOrDefault();
         }
 
@@ -94,19 +94,22 @@ public class AreaController : EntityController<Area, AreaModel>
         var end = p["dtEnd"].ToDateTime();
 
         // 地区默认升序
-        if (p.Sort.IsNullOrEmpty()) p.OrderBy = _.ID.Asc();
+        if (p.Sort.IsNullOrEmpty()) p.OrderBy = "Id Asc";
 
         var list = Area.Search(parentid, level, idstart, idend, enable, p["q"], start, end, p);
 
         if (list.Count > 0)
         {
+            var kindField = Area.Meta.Table.FindByName(nameof(Area.Kind));
+            var idField = Area.Meta.Table.FindByName(nameof(Area.Id));
+
             var exp = new WhereExpression();
-            exp &= _.ID <= 999999;
-            var list2 = Area.FindAll(exp.GroupBy(_.Kind), null, _.ID.Count() & _.Kind, 0, 0);
-            list2 = list2.OrderByDescending(e => e.ID).ToList();
+            exp &= idField <= 999999;
+            var list2 = Area.FindAll(exp.GroupBy(kindField), null, idField.Count() & kindField, 0, 0);
+            list2 = list2.OrderByDescending(e => e.Id).ToList();
             if (list2.Count >= 0)
             {
-                AddChart(list2, _.Kind, L.T("Count"), [_.ID], SeriesTypes.Bar);
+                AddChart(list2, kindField, L.T("Count"), [idField], SeriesTypes.Bar);
 
                 //var chart = new ECharts
                 //{
@@ -116,13 +119,13 @@ public class AreaController : EntityController<Area, AreaModel>
                 //chart.SetY("个数", "value");
                 //chart.SetTooltip();
 
-                //var bar = chart.AddBar(list2, _.Kind, e => e.ID);
+                //var bar = chart.AddBar(list2, _.Kind, e => e.Id);
 
                 //ViewBag.Charts = new[] { chart };
             }
             if (list2.Count >= 0)
             {
-                var chart = AddChart(list2, _.Kind, null, [_.ID], SeriesTypes.Pie, "bottom");
+                var chart = AddChart(list2, kindField, null, [idField], SeriesTypes.Pie, "bottom");
                 chart.XAxis = null;
                 var pie = chart.Series[0];
 
@@ -134,7 +137,7 @@ public class AreaController : EntityController<Area, AreaModel>
                 ////chart.SetY(null, "value");
                 //chart.Legend = new { show = "false", top = "5%", left = "center" };
 
-                //var pie = chart.AddPie(list2, _.Kind, e => new NameValue(e.Kind ?? "未知", e.ID));
+                //var pie = chart.AddPie(list2, _.Kind, e => new NameValue(e.Kind ?? "未知", e.Id));
                 pie["radius"] = new[] { "40%", "70%" };
                 pie["avoidLabelOverlap"] = false;
                 pie["itemStyle"] = new { borderRadius = 10, borderColor = "#fff", borderWidth = 2 };

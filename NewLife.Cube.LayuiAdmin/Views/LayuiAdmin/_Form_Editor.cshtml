@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using XCode;
@@ -41,7 +41,7 @@ else
         @await Html.PartialAsync("_Form_Type_Map", Model)
     }
     //自读属性
-    else if (item.Name.EqualIgnoreCase("ID"))
+    else if (item.Name.EqualIgnoreCase("Id"))
     {
         <label class="layui-form-label @className">@entity[item.Name]</label>
     }
@@ -66,3 +66,4 @@ else
         @await Html.PartialAsync("_Form_Editor_Item", itemModel)
     }
 }
+

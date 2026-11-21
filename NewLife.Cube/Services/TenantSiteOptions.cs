@@ -36,7 +36,7 @@ public static class TenantSiteOptionsStore
     {
         if (tenantCode.IsNullOrEmpty()) return null;
 
-        var p = Parameter.Find(Parameter._.UserID == 0 & Parameter._.Category == Category & Parameter._.Name == tenantCode);
+        var p = Parameter.FindByUserIdAndCategoryAndName(0, Category, tenantCode);
         if (p == null || p.LongValue.IsNullOrEmpty()) return null;
 
         try
@@ -69,6 +69,7 @@ public static class TenantSiteOptionsStore
     {
         if (tenantCode.IsNullOrEmpty()) return;
 
-        Parameter.Find(Parameter._.UserID == 0 & Parameter._.Category == Category & Parameter._.Name == tenantCode)?.Delete();
+        Parameter.FindByUserIdAndCategoryAndName(0, Category, tenantCode)?.Delete();
     }
 }
+

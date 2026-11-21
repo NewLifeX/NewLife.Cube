@@ -1,4 +1,4 @@
-﻿using NewLife.Model;
+using NewLife.Model;
 
 namespace NewLife.Web.OAuth;
 
@@ -45,8 +45,8 @@ public class WxOpenClient : OAuthClient
         {
             // 解析返回结果
             if (dic.TryGetValue("session_key", out var v) && v is String sk) SessionKey = sk.Trim();
-            if (dic.TryGetValue("openid", out v) && v is String oid) OpenID = oid.Trim();
-            if (dic.TryGetValue("unionid", out v) && v is String uid) UnionID = uid.Trim();
+            if (dic.TryGetValue("openid", out v) && v is String oid) OpenId = oid.Trim();
+            if (dic.TryGetValue("unionid", out v) && v is String uid) UnionId = uid.Trim();
 
             // 检查错误
             if (dic.TryGetValue("errcode", out v) && v != null && v.ToString() != "0")
@@ -82,8 +82,9 @@ public class WxOpenClient : OAuthClient
     {
         base.Fill(user);
 
-        // 小程序用户默认使用 OpenID 作为用户名
-        if (user.Name.IsNullOrEmpty() && !OpenID.IsNullOrEmpty())
-            user.Name = $"小程序用户{OpenID[^8..]}";
+        // 小程序用户默认使用 OpenId 作为用户名
+        if (user.Name.IsNullOrEmpty() && !OpenId.IsNullOrEmpty())
+            user.Name = $"小程序用户{OpenId[^8..]}";
     }
 }
+

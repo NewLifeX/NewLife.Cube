@@ -287,8 +287,8 @@ public class AiFormHelperTests
     public void IsAutoField_ExpandedList()
     {
         // 审计字段（创建/更新/注册/登录）
-        Assert.True(AiFormHelper.IsAutoField("UpdateUserID"));
-        Assert.True(AiFormHelper.IsAutoField("CreateUserID"));
+        Assert.True(AiFormHelper.IsAutoField("UpdateUserId"));
+        Assert.True(AiFormHelper.IsAutoField("CreateUserId"));
         Assert.True(AiFormHelper.IsAutoField("RegisterTime"));
         Assert.True(AiFormHelper.IsAutoField("RegisterIP"));
         Assert.True(AiFormHelper.IsAutoField("LastLogin"));
@@ -308,3 +308,4 @@ public class AiFormHelperTests
     }
     #endregion
 }
+

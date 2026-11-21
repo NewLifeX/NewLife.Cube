@@ -90,7 +90,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
 
     /// <summary>发送验证码（手机/邮箱）</summary>
     /// <param name="model">验证码模型，Channel 为 Sms/Mail，Username 为手机号或邮箱</param>
-    /// <returns>验证码记录ID</returns>
+    /// <returns>验证码记录Id</returns>
     [HttpPost]
     [AllowAnonymous]
     [RateLimit(Limit = 10)]
@@ -154,7 +154,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     }
 
     /// <summary>获取登录页配置（OAuth 提供商列表、是否允许注册等）</summary>
-    /// <param name="tenant">可选租户标识：租户ID整数、tenantCode 或 tenantName；为空时按请求域名自动匹配</param>
+    /// <param name="tenant">可选租户标识：租户Id整数、tenantCode 或 tenantName；为空时按请求域名自动匹配</param>
     /// <returns>登录配置信息</returns>
     [HttpGet]
     [AllowAnonymous]
@@ -166,7 +166,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
             if (Int32.TryParse(tenant, out var id))
                 t = Tenant.FindById(id);
             else
-                t = Tenant.FindByCode(tenant) ?? Tenant.Find(Tenant._.Name == tenant);
+                t = Tenant.FindByCode(tenant) ?? Tenant.FindByName(tenant);
         }
 
         var model = new LoginConfigModel(t);
@@ -192,7 +192,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     {
         if (ManageProvider.User is not User user) throw new Exception(L.T("The current user is invalid."));
 
-        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
+        user = XCode.Membership.User.FindByKeyForEdit(user.Id);
         if (user == null) throw new Exception(L.T("Invalid user id."));
 
         user["Password"] = null;
@@ -225,7 +225,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
                 }
             }
 
-            userInfo.Tenants = TenantUser.FindAllByUserId(user.ID)
+            userInfo.Tenants = TenantUser.FindAllByUserId(user.Id)
                 .Where(e => e.Enable && e.Tenant != null && e.Tenant.Enable)
                 .Select(e => new TenantItem
                 {
@@ -434,3 +434,4 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         return Json(0, L.T("Account closed."));
     }
 }
+

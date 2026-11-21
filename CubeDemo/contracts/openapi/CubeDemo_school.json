@@ -1285,7 +1285,7 @@
             ],
             "description": "全名"
           },
-          "parentID": {
+          "parentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -1432,7 +1432,7 @@
             "type": "string",
             "description": "设备型号"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -1450,7 +1450,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -1516,7 +1516,7 @@
           "model": {
             "type": "string"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -1531,7 +1531,7 @@
           "createIP": {
             "type": "string"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -1627,7 +1627,7 @@
             ],
             "description": "全名"
           },
-          "parentID": {
+          "parentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -1726,7 +1726,7 @@
             ],
             "description": "创建者"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -1754,7 +1754,7 @@
             ],
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2055,7 +2055,7 @@
               "string"
             ]
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2079,7 +2079,7 @@
               "string"
             ]
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2335,7 +2335,7 @@
             ],
             "description": "创建者"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2363,7 +2363,7 @@
             ],
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2490,7 +2490,7 @@
             "description": "存款。小数",
             "format": "double"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2508,7 +2508,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2620,7 +2620,7 @@
             ],
             "format": "double"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2635,7 +2635,7 @@
           "createIP": {
             "type": "string"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2974,7 +2974,7 @@
             ],
             "description": "头像"
           },
-          "roleID": {
+          "roleId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2990,7 +2990,7 @@
             ],
             "description": "角色组。次要角色集合"
           },
-          "departmentID": {
+          "departmentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3115,7 +3115,7 @@
             "type": "string",
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",

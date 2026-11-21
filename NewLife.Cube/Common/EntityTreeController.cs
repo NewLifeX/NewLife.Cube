@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
@@ -120,7 +120,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     [HttpPatch]
     public ActionResult Up(Int32 id)
     {
-        var menu = FindByID(id);
+        var menu = FindById(id);
 
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Up();
@@ -136,7 +136,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     [HttpPatch]
     public ActionResult Down(Int32 id)
     {
-        var menu = FindByID(id);
+        var menu = FindById(id);
 
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Down();
@@ -144,10 +144,10 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         return RedirectToAction("Index");
     }
 
-    /// <summary>根据ID查找节点</summary>
+    /// <summary>根据Id查找节点</summary>
     /// <param name="id">主键</param>
     /// <returns>实体对象，未找到时返回 null</returns>
-    protected static TEntity FindByID(Int32 id)
+    protected static TEntity FindById(Int32 id)
     {
         var key = Factory.Unique.Name;
         return EntityTree<TEntity>.Meta.Cache.Find(e => (Int32)e[key] == id);
@@ -173,7 +173,7 @@ public class EntityTreeApiController<TEntity, TModel> : EntityTreeController<TEn
     [HttpPost]
     public new virtual IActionResult Up(Int32 id)
     {
-        var menu = FindByID(id);
+        var menu = FindById(id);
         if (menu == null)
             return Json(404, L.T("Data does not exist."));
 
@@ -191,7 +191,7 @@ public class EntityTreeApiController<TEntity, TModel> : EntityTreeController<TEn
     [HttpPost]
     public new virtual IActionResult Down(Int32 id)
     {
-        var menu = FindByID(id);
+        var menu = FindById(id);
         if (menu == null)
             return Json(404, L.T("Data does not exist."));
 

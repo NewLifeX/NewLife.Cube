@@ -110,14 +110,14 @@ public partial class CronJob : IEntity<CronJobModel>
     [BindColumn("NextTime", "下一次时间。下一次执行作业的时间", "")]
     public DateTime NextTime { get => _NextTime; set { if (OnPropertyChanging("NextTime", value)) { _NextTime = value; OnPropertyChanged("NextTime"); } } }
 
-    private Int32 _CreateUserID;
+    private Int32 _CreateUserId;
     /// <summary>创建者</summary>
     [Category("扩展")]
     [DisplayName("创建者")]
     [Description("创建者")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("CreateUserID", "创建者", "")]
-    public Int32 CreateUserID { get => _CreateUserID; set { if (OnPropertyChanging("CreateUserID", value)) { _CreateUserID = value; OnPropertyChanged("CreateUserID"); } } }
+    [BindColumn("CreateUserId", "创建者", "")]
+    public Int32 CreateUserId { get => _CreateUserId; set { if (OnPropertyChanging("CreateUserId", value)) { _CreateUserId = value; OnPropertyChanged("CreateUserId"); } } }
 
     private DateTime _CreateTime;
     /// <summary>创建时间</summary>
@@ -137,14 +137,14 @@ public partial class CronJob : IEntity<CronJobModel>
     [BindColumn("CreateIP", "创建地址", "")]
     public String CreateIP { get => _CreateIP; set { if (OnPropertyChanging("CreateIP", value)) { _CreateIP = value; OnPropertyChanged("CreateIP"); } } }
 
-    private Int32 _UpdateUserID;
+    private Int32 _UpdateUserId;
     /// <summary>更新者</summary>
     [Category("扩展")]
     [DisplayName("更新者")]
     [Description("更新者")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("UpdateUserID", "更新者", "")]
-    public Int32 UpdateUserID { get => _UpdateUserID; set { if (OnPropertyChanging("UpdateUserID", value)) { _UpdateUserID = value; OnPropertyChanged("UpdateUserID"); } } }
+    [BindColumn("UpdateUserId", "更新者", "")]
+    public Int32 UpdateUserId { get => _UpdateUserId; set { if (OnPropertyChanging("UpdateUserId", value)) { _UpdateUserId = value; OnPropertyChanged("UpdateUserId"); } } }
 
     private DateTime _UpdateTime;
     /// <summary>更新时间</summary>
@@ -190,10 +190,10 @@ public partial class CronJob : IEntity<CronJobModel>
         EnableLog = model.EnableLog;
         LastTime = model.LastTime;
         NextTime = model.NextTime;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateTime = model.UpdateTime;
         UpdateIP = model.UpdateIP;
         Remark = model.Remark;
@@ -219,10 +219,10 @@ public partial class CronJob : IEntity<CronJobModel>
             "EnableLog" => _EnableLog,
             "LastTime" => _LastTime,
             "NextTime" => _NextTime,
-            "CreateUserID" => _CreateUserID,
+            "CreateUserId" => _CreateUserId,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
-            "UpdateUserID" => _UpdateUserID,
+            "UpdateUserId" => _UpdateUserId,
             "UpdateTime" => _UpdateTime,
             "UpdateIP" => _UpdateIP,
             "Remark" => _Remark,
@@ -243,10 +243,10 @@ public partial class CronJob : IEntity<CronJobModel>
                 case "EnableLog": _EnableLog = value.ToBoolean(); break;
                 case "LastTime": _LastTime = value.ToDateTime(); break;
                 case "NextTime": _NextTime = value.ToDateTime(); break;
-                case "CreateUserID": _CreateUserID = value.ToInt(); break;
+                case "CreateUserId": _CreateUserId = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
-                case "UpdateUserID": _UpdateUserID = value.ToInt(); break;
+                case "UpdateUserId": _UpdateUserId = value.ToInt(); break;
                 case "UpdateTime": _UpdateTime = value.ToDateTime(); break;
                 case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
                 case "Remark": _Remark = Convert.ToString(value); break;
@@ -322,7 +322,7 @@ public partial class CronJob : IEntity<CronJobModel>
         public static readonly Field NextTime = FindByName("NextTime");
 
         /// <summary>创建者</summary>
-        public static readonly Field CreateUserID = FindByName("CreateUserID");
+        public static readonly Field CreateUserId = FindByName("CreateUserId");
 
         /// <summary>创建时间</summary>
         public static readonly Field CreateTime = FindByName("CreateTime");
@@ -331,7 +331,7 @@ public partial class CronJob : IEntity<CronJobModel>
         public static readonly Field CreateIP = FindByName("CreateIP");
 
         /// <summary>更新者</summary>
-        public static readonly Field UpdateUserID = FindByName("UpdateUserID");
+        public static readonly Field UpdateUserId = FindByName("UpdateUserId");
 
         /// <summary>更新时间</summary>
         public static readonly Field UpdateTime = FindByName("UpdateTime");
@@ -382,7 +382,7 @@ public partial class CronJob : IEntity<CronJobModel>
         public const String NextTime = "NextTime";
 
         /// <summary>创建者</summary>
-        public const String CreateUserID = "CreateUserID";
+        public const String CreateUserId = "CreateUserId";
 
         /// <summary>创建时间</summary>
         public const String CreateTime = "CreateTime";
@@ -391,7 +391,7 @@ public partial class CronJob : IEntity<CronJobModel>
         public const String CreateIP = "CreateIP";
 
         /// <summary>更新者</summary>
-        public const String UpdateUserID = "UpdateUserID";
+        public const String UpdateUserId = "UpdateUserId";
 
         /// <summary>更新时间</summary>
         public const String UpdateTime = "UpdateTime";

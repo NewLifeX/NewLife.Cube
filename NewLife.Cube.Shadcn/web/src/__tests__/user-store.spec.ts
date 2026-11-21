@@ -30,14 +30,14 @@ const menus: MenuItem[] = [
     id: 1,
     name: '系统',
     displayName: '系统',
-    parentID: 0,
+    parentId: 0,
     url: '',
     visible: true,
     children: [
-      { id: 2, name: '用户', displayName: '用户', parentID: 1, url: '/Admin/User', visible: true, permissions: { '2': '添加', '4': '编辑' }, children: [] },
+      { id: 2, name: '用户', displayName: '用户', parentId: 1, url: '/Admin/User', visible: true, permissions: { '2': '添加', '4': '编辑' }, children: [] },
     ],
   },
-  { id: 3, name: '首页', displayName: '首页', parentID: 0, url: '/Admin/Index', visible: true, permissions: { '1': '查看' }, children: [] },
+  { id: 3, name: '首页', displayName: '首页', parentId: 0, url: '/Admin/Index', visible: true, permissions: { '1': '查看' }, children: [] },
 ];
 
 

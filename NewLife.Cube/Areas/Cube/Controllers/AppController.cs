@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using NewLife.Cube.Entity;
 using XCode;
 using XCode.Membership;
@@ -28,19 +28,19 @@ public class AppController : EntityController<App, AppModel>
 
         {
             var df = AddFormFields.GetField("RoleIds");
-            df.DataSource = e => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = e => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
 
         {
             var df = EditFormFields.GetField("RoleIds");
-            df.DataSource = e => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = e => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
 
         {
             var df = ListFields.AddListField("Log", "UpdateUserId");
             //df.Header = "修改日志";
             df.DisplayName = "Change log";
-            df.Url = "/Admin/Log?category=Applications&linkId={ID}";
+            df.Url = "/Admin/Log?category=Applications&linkId={Id}";
         }
     }
 }

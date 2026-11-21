@@ -17,7 +17,7 @@ public class BindsModel : ICubeModel
 public class UserBindModel
 {
     /// <summary>编号</summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>平台标识</summary>
     public String Provider { get; set; }
@@ -39,7 +39,7 @@ public class UserBindModel
 public class OAuthPlatformModel
 {
     /// <summary>编号</summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>平台标识。绑定/解绑 URL 使用</summary>
     public String Name { get; set; }

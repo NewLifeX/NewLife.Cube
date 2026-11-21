@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
@@ -81,10 +81,10 @@ public class OAuthClient
     public String RefreshToken { get; set; }
 
     /// <summary>统一标识。当前应用下唯一</summary>
-    public String OpenID { get; set; }
+    public String OpenId { get; set; }
 
     /// <summary>企业级标识。当前企业所有应用下唯一</summary>
-    public String UnionID { get; set; }
+    public String UnionId { get; set; }
 
     /// <summary>过期时间</summary>
     public DateTime Expire { get; set; }
@@ -281,8 +281,8 @@ public class OAuthClient
     }
     #endregion
 
-    #region 3-获取OpenID
-    /// <summary>OpenID地址</summary>
+    #region 3-获取OpenId
+    /// <summary>OpenId地址</summary>
     public String OpenIDUrl { get; set; }
 
     /// <summary>根据授权码获取访问令牌</summary>
@@ -301,7 +301,7 @@ public class OAuthClient
         if (dic != null)
         {
             if (dic.TryGetValue("expires_in", out var v) && v != null) Expire = DateTime.Now.AddSeconds(v.ToInt());
-            if (dic.TryGetValue("openid", out v) && v != null) OpenID = v.ToString().Trim();
+            if (dic.TryGetValue("openid", out v) && v != null) OpenId = v.ToString().Trim();
 
             var strDic = dic.Where(e => e.Value is String).ToDictionary(e => e.Key, e => (String)e.Value);
             OnGetInfo(strDic);
@@ -316,8 +316,8 @@ public class OAuthClient
     /// <summary>用户信息地址</summary>
     public String UserUrl { get; set; }
 
-    /// <summary>用户ID</summary>
-    public Int64 UserID { get; set; }
+    /// <summary>用户Id</summary>
+    public Int64 UserId { get; set; }
 
     /// <summary>用户名</summary>
     public String UserName { get; set; }
@@ -414,7 +414,7 @@ public class OAuthClient
     /// <param name="user"></param>
     public virtual void Fill(IManageUser user)
     {
-        if (user.Name.IsNullOrEmpty()) user.Name = UserName ?? UnionID ?? OpenID;
+        if (user.Name.IsNullOrEmpty()) user.Name = UserName ?? UnionId ?? OpenId;
         if (user.NickName.IsNullOrEmpty()) user.NickName = NickName;
 
         //// 头像
@@ -480,9 +480,9 @@ public class OAuthClient
            .Replace("{response_type}", HttpUtility.UrlEncode(ResponseType) + "")
            .Replace("{token}", HttpUtility.UrlEncode(AccessToken + ""))
            .Replace("{code}", HttpUtility.UrlEncode(Code + ""))
-           .Replace("{openid}", HttpUtility.UrlEncode(OpenID + ""))
-           .Replace("{unionid}", HttpUtility.UrlEncode(UnionID + ""))
-           .Replace("{userid}", UserID + "")
+           .Replace("{openid}", HttpUtility.UrlEncode(OpenId + ""))
+           .Replace("{unionid}", HttpUtility.UrlEncode(UnionId + ""))
+           .Replace("{userid}", UserId + "")
            .Replace("{redirect}", HttpUtility.UrlEncode(_redirect + ""))
            .Replace("{scope}", HttpUtility.UrlEncode(Scope + ""))
            .Replace("{state}", HttpUtility.UrlEncode(_state + ""));
@@ -605,12 +605,12 @@ public class OAuthClient
     /// <param name="dic"></param>
     protected virtual void OnGetInfo(IDictionary<String, String> dic)
     {
-        if (dic.TryGetValue("openid", out var str)) OpenID = str.Trim();
-        if (dic.TryGetValue("unionid", out str)) UnionID = str.Trim();
+        if (dic.TryGetValue("openid", out var str)) OpenId = str.Trim();
+        if (dic.TryGetValue("unionid", out str)) UnionId = str.Trim();
 
-        if (dic.TryGetValue("uid", out str)) UserID = str.ToLong();
-        if (dic.TryGetValue("userid", out str)) UserID = str.ToLong();
-        if (dic.TryGetValue("user_id", out str)) UserID = str.ToLong();
+        if (dic.TryGetValue("uid", out str)) UserId = str.ToLong();
+        if (dic.TryGetValue("userid", out str)) UserId = str.ToLong();
+        if (dic.TryGetValue("user_id", out str)) UserId = str.ToLong();
 
         if (dic.TryGetValue("name", out str)) UserName = str.Trim();
         if (dic.TryGetValue("username", out str)) UserName = str.Trim();

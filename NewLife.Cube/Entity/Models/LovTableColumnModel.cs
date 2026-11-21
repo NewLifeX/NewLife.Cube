@@ -34,7 +34,7 @@ public class LovTableColumnModel
     public Int32 Sort { get; set; }
 
     /// <summary>创建用户</summary>
-    public Int32 CreateUserID { get; set; }
+    public Int32 CreateUserId { get; set; }
 
     /// <summary>创建地址</summary>
     public String CreateIP { get; set; }
@@ -43,7 +43,7 @@ public class LovTableColumnModel
     public DateTime CreateTime { get; set; }
 
     /// <summary>更新用户</summary>
-    public Int32 UpdateUserID { get; set; }
+    public Int32 UpdateUserId { get; set; }
 
     /// <summary>更新地址</summary>
     public String UpdateIP { get; set; }
@@ -54,3 +54,4 @@ public class LovTableColumnModel
     /// <summary>备注</summary>
     public String Remark { get; set; }
 }
+

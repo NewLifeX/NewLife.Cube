@@ -45,18 +45,18 @@ public class SystemManagementTests
     public void Parameter_GetOrAdd_CreatesOnce()
     {
         var category = Unique("Cat");
-        var userId = _fx.LegacyUser.ID;
+        var userId = _fx.LegacyUser.Id;
 
         var first = Parameter.GetOrAdd(userId, category, "Key1", "值1");
         var second = Parameter.GetOrAdd(userId, category, "Key1", "值2");
 
-        Assert.True(first.ID > 0);
-        Assert.Equal(first.ID, second.ID);
+        Assert.True(first.Id > 0);
+        Assert.Equal(first.Id, second.Id);
         Assert.Equal("值1", second.Value);
 
-        var found = Parameter.FindByUserIDAndCategoryAndName(userId, category, "Key1");
+        var found = Parameter.FindByUserIdAndCategoryAndName(userId, category, "Key1");
         Assert.NotNull(found);
-        Assert.Equal(first.ID, found.ID);
+        Assert.Equal(first.Id, found.Id);
     }
 
     [Fact(DisplayName = "字典参数_按用户与类别隔离查询")]
@@ -64,27 +64,27 @@ public class SystemManagementTests
     {
         var category = Unique("Cat");
         var other = Unique("Cat");
-        var userA = _fx.LegacyUser.ID;
-        var userB = _fx.LegacyUser2.ID;
+        var userA = _fx.LegacyUser.Id;
+        var userB = _fx.LegacyUser2.Id;
 
         Parameter.GetOrAdd(userA, category, "Shared", "A");
         Parameter.GetOrAdd(userB, category, "Shared", "B");
         Parameter.GetOrAdd(userA, other, "Shared", "C");
 
-        var listA = Parameter.FindAllByUserIDAndCategory(userA, category);
-        var listB = Parameter.FindAllByUserIDAndCategory(userB, category);
+        var listA = Parameter.FindAllByUserIdAndCategory(userA, category);
+        var listB = Parameter.FindAllByUserIdAndCategory(userB, category);
 
         Assert.Single(listA);
         Assert.Equal("A", listA[0].Value);
         Assert.Single(listB);
         Assert.Equal("B", listB[0].Value);
-        Assert.Null(Parameter.FindByUserIDAndCategoryAndName(userA, category, "Missing"));
+        Assert.Null(Parameter.FindByUserIdAndCategoryAndName(userA, category, "Missing"));
     }
 
     [Fact(DisplayName = "字典参数_类型化存取支持字符串与列表")]
     public void Parameter_SetValue_RoundTripsTypes()
     {
-        var param = Parameter.GetOrAdd(_fx.LegacyUser.ID, Unique("Cat"), "Typed", null);
+        var param = Parameter.GetOrAdd(_fx.LegacyUser.Id, Unique("Cat"), "Typed", null);
 
         param.SetValue("纯文本");
         Assert.Equal("纯文本", param.GetValue());
@@ -106,11 +106,11 @@ public class SystemManagementTests
         var action = Unique("SysTest");
         var provider = LogProvider.Provider;
 
-        provider.WriteLog(typeof(User), action, true, "系统管理测试成功", _fx.LegacyUser.ID, _fx.LegacyUser.Name, "127.0.0.1");
-        provider.WriteLog(typeof(User), action, false, "系统管理测试失败", _fx.LegacyUser.ID, _fx.LegacyUser.Name, "127.0.0.1");
+        provider.WriteLog(typeof(User), action, true, "系统管理测试成功", _fx.LegacyUser.Id, _fx.LegacyUser.Name, "127.0.0.1");
+        provider.WriteLog(typeof(User), action, false, "系统管理测试失败", _fx.LegacyUser.Id, _fx.LegacyUser.Name, "127.0.0.1");
 
         var list = WaitFor(
-            () => XCode.Membership.Log.FindAll(XCode.Membership.Log._.Action == action),
+            () => XCode.Membership.Log.FindAllByAction(action),
             e => e.Count >= 2);
 
         Assert.Equal(2, list.Count);
@@ -118,7 +118,7 @@ public class SystemManagementTests
         Assert.Contains(list, e => !e.Success && e.Remark.Contains("失败"));
         Assert.All(list, e =>
         {
-            Assert.Equal(_fx.LegacyUser.ID, e.CreateUserID);
+            Assert.Equal(_fx.LegacyUser.Id, e.CreateUserId);
             Assert.Equal(_fx.LegacyUser.Name, e.UserName);
             Assert.Equal("127.0.0.1", e.CreateIP);
             Assert.True(e.CreateTime.Year >= DateTime.Today.Year);
@@ -136,20 +136,20 @@ public class SystemManagementTests
         var second = UserStat.GetOrAdd(date);
 
         Assert.NotNull(first);
-        Assert.Equal(first.ID, second.ID);
+        Assert.Equal(first.Id, second.Id);
         Assert.Equal(date.Date, first.Date.Date);
         Assert.Equal(1, UserStat.FindAll(UserStat._.Date == date).Count);
 
         var found = UserStat.FindByDate(date);
         Assert.NotNull(found);
-        Assert.Equal(first.ID, found.ID);
+        Assert.Equal(first.Id, found.Id);
 
         var page = new NewLife.Data.PageParameter { PageIndex = 1, PageSize = 10 };
         var list = UserStat.SearchByDate(date.AddDays(-1), date.AddDays(1), null, page);
-        Assert.Contains(list, e => e.ID == first.ID);
+        Assert.Contains(list, e => e.Id == first.Id);
 
         var outside = UserStat.SearchByDate(date.AddDays(5), date.AddDays(6), null, page);
-        Assert.DoesNotContain(outside, e => e.ID == first.ID);
+        Assert.DoesNotContain(outside, e => e.Id == first.Id);
 
         first.Delete();
     }
@@ -164,11 +164,11 @@ public class SystemManagementTests
         // 空关键字按区间返回
         var page = new NewLife.Data.PageParameter { PageIndex = 1, PageSize = 5 };
         var list = UserStat.SearchByDate(start, start.AddDays(7), null, page);
-        Assert.Contains(list, e => e.ID == stat.ID);
+        Assert.Contains(list, e => e.Id == stat.Id);
 
         // 区间之外不返回
         var outside = UserStat.SearchByDate(start.AddDays(30), start.AddDays(31), null, new NewLife.Data.PageParameter { PageIndex = 1, PageSize = 5 });
-        Assert.DoesNotContain(outside, e => e.ID == stat.ID);
+        Assert.DoesNotContain(outside, e => e.Id == stat.Id);
 
         stat.Delete();
     }
@@ -182,34 +182,37 @@ public class SystemManagementTests
         var childName = Unique("市");
         var leafName = Unique("区");
 
-        // Area.ID 为行政区划代码（非自增），测试用随机编号避免与真实数据冲突
-        var root = new Area { ID = NewLife.Security.Rand.Next(900_000_000, 999_999_999), Name = rootName, ParentID = 0, Enable = true, Remark = "测试根节点" };
+        // Area.Id 为行政区划代码（非自增），测试用随机编号避免与真实数据冲突。
+        // 取 6 位编号（90万~99万）：真实行政区划代码集中在 11万~66万，且不超出 FindAllByParentId 支持的上限
+        var root = new Area { Id = NewLife.Security.Rand.Next(900_000, 930_000), Name = rootName, ParentId = 0, Enable = true, Remark = "测试根节点" };
         root.Insert();
-        var child = new Area { ID = NewLife.Security.Rand.Next(900_000_000, 999_999_999), Name = childName, ParentID = root.ID, Enable = true };
+        var child = new Area { Id = NewLife.Security.Rand.Next(930_000, 960_000), Name = childName, ParentId = root.Id, Enable = true };
         child.Insert();
-        var leaf = new Area { ID = NewLife.Security.Rand.Next(900_000_000, 999_999_999), Name = leafName, ParentID = child.ID, Enable = true };
+        var leaf = new Area { Id = NewLife.Security.Rand.Next(960_000, 990_000), Name = leafName, ParentId = child.Id, Enable = true };
         leaf.Insert();
 
-        Assert.True(root.ID > 0);
-        Assert.Equal(root.ID, child.ParentID);
-        Assert.Equal(child.ID, leaf.ParentID);
+        Assert.True(root.Id > 0);
+        Assert.Equal(root.Id, child.ParentId);
+        Assert.Equal(child.Id, leaf.ParentId);
 
         // 地区层级查询走实体缓存，插入后需清缓存才能命中
         Area.Meta.Cache.Clear("地区管理测试写入", true);
 
-        Assert.Equal(root.ID, Area.FindByID(child.ID)?.ParentID);
+        Assert.Equal(root.Id, Area.FindByID(child.Id)?.ParentId);
 
-        var children = Area.FindAll(Area._.ParentID == root.ID);
-        Assert.Contains(children, e => e.ID == child.ID);
-        Assert.DoesNotContain(children, e => e.ID == leaf.ID);
+        var children = Area.FindAllByParentId(root.Id);
+        Assert.Contains(children, e => e.Id == child.Id);
+        Assert.DoesNotContain(children, e => e.Id == leaf.Id);
 
         var parents = leaf.GetAllParents();
-        Assert.Contains(parents, e => e.ID == child.ID);
-        Assert.Contains(parents, e => e.ID == root.ID);
+        Assert.Contains(parents, e => e.Id == child.Id);
+        Assert.Contains(parents, e => e.Id == root.Id);
 
-        Assert.Equal(child.ID, Area.Find(Area._.ParentID == root.ID & Area._.Name == childName)?.ID);
-        Assert.Null(Area.Find(Area._.ParentID == root.ID & Area._.Name == leafName));
+        Assert.Equal(child.Id, Area.FindAllByParentId(root.Id).FirstOrDefault(e => e.Name == childName)?.Id);
+        Assert.Null(Area.FindAllByParentId(root.Id).FirstOrDefault(e => e.Name == leafName));
     }
     #endregion
 }
+
+
 

@@ -1,4 +1,4 @@
-﻿using NewLife.Collections;
+using NewLife.Collections;
 using NewLife.Cube.Enums;
 using XCode.Membership;
 
@@ -36,7 +36,7 @@ public class LoginModel : ICubeModel
     [Obsolete("Use ChallengeId instead")]
     public String? Pkey { get => ChallengeId; set => ChallengeId = value; }
 
-    /// <summary>图片验证码ID。调用 /Auth/Captcha 获取；仅在登录场景需要验证码时必填</summary>
+    /// <summary>图片验证码Id。调用 /Auth/Captcha 获取；仅在登录场景需要验证码时必填</summary>
     public String? CaptchaId { get; set; }
 
     /// <summary>图片验证码答案。仅在登录场景需要验证码时必填</summary>
@@ -100,7 +100,7 @@ public class AuthRegisterModel : ICubeModel
     /// <summary>OAuth 临时令牌（OAuthBind 时必填）</summary>
     public String OAuthToken { get; set; }
 
-    /// <summary>图片验证码ID。调用 /Auth/Captcha 获取；仅在注册场景需要验证码时必填</summary>
+    /// <summary>图片验证码Id。调用 /Auth/Captcha 获取；仅在注册场景需要验证码时必填</summary>
     /// <remarks>可空声明以避免 MVC 隐式 Required 误拦，原因同登录模型</remarks>
     public String? CaptchaId { get; set; }
 
@@ -156,7 +156,7 @@ public class UserInfo
     /// <summary>
     /// 编号
     /// </summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>名称。登录用户名</summary>
     public String Name { get; set; }
@@ -183,7 +183,7 @@ public class UserInfo
     public String Avatar { get; set; }
 
     /// <summary>角色。主要角色</summary>
-    public Int32 RoleID { get; set; }
+    public Int32 RoleId { get; set; }
 
     /// <summary>角色组。次要角色集合</summary>
     public String RoleIds { get; set; }
@@ -199,7 +199,7 @@ public class UserInfo
     public String RoleNames { get; set; }
 
     /// <summary>部门。组织机构</summary>
-    public Int32 DepartmentID { get; set; }
+    public Int32 DepartmentId { get; set; }
 
     /// <summary>在线</summary>
     public Boolean Online { get; set; }
@@ -244,7 +244,7 @@ public class UserInfo
     public String UpdateUser { get; set; }
 
     /// <summary>更新用户</summary>
-    public Int32 UpdateUserID { get; set; }
+    public Int32 UpdateUserId { get; set; }
 
     /// <summary>更新地址</summary>
     public String UpdateIP { get; set; }

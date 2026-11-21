@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Cube.Tests.Common;
@@ -98,7 +99,7 @@ public class AccessServiceTests : IDisposable, IClassFixture<AccessServiceDbFixt
         Assert.Null(rs);
 
         // 安全事件已写入且标记为未拦截
-        var log = XLog.Find(XLog._.Category == SecurityEventService.CategoryName & XLog._.Action == "扫描器" & XLog._.CreateIP == ip);
+        var log = XLog.FindAllByAction("扫描器").FirstOrDefault(e => e.Category == SecurityEventService.CategoryName && e.CreateIP == ip);
         Assert.NotNull(log);
         Assert.False(log!.Success);
     }
@@ -250,7 +251,7 @@ public class AccessServiceTests : IDisposable, IClassFixture<AccessServiceDbFixt
         // 自动模式单次威胁放行，事件已记录且标记为未拦截
         Assert.Null(rs);
 
-        var log = XLog.Find(XLog._.Category == SecurityEventService.CategoryName & XLog._.Action == "扫描器" & XLog._.CreateIP == ip);
+        var log = XLog.FindAllByAction("扫描器").FirstOrDefault(e => e.Category == SecurityEventService.CategoryName && e.CreateIP == ip);
         Assert.NotNull(log);
         Assert.False(log!.Success);
     }
@@ -318,7 +319,7 @@ public class AccessServiceTests : IDisposable, IClassFixture<AccessServiceDbFixt
         Assert.Null(rs);
         Assert.False(_cache.Cache.ContainsKey("security:auto:escalated"));
 
-        var log = XLog.Find(XLog._.Category == SecurityEventService.CategoryName & XLog._.Action == "自动恢复" & XLog._.CreateIP == ip);
+        var log = XLog.FindAllByAction("自动恢复").FirstOrDefault(e => e.Category == SecurityEventService.CategoryName && e.CreateIP == ip);
         Assert.NotNull(log);
     }
 }

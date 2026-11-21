@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -153,7 +153,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     [EntityAuthorize(PermissionFlags.Update)]
     public ActionResult Up(Int32 id)
     {
-        var menu = FindByID(id);
+        var menu = FindById(id);
         if (menu == null) return RedirectToAction("Index");
 
         if (Valid(menu, DataObjectMethodType.Update, true))
@@ -184,7 +184,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     [EntityAuthorize(PermissionFlags.Update)]
     public ActionResult Down(Int32 id)
     {
-        var menu = FindByID(id);
+        var menu = FindById(id);
         if (menu == null) return RedirectToAction("Index");
 
         if (Valid(menu, DataObjectMethodType.Update, true))
@@ -208,10 +208,10 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         return RedirectToAction("Index");
     }
 
-    /// <summary>根据ID查找节点</summary>
+    /// <summary>根据Id查找节点</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    protected static TEntity FindByID(Int32 id)
+    protected static TEntity FindById(Int32 id)
     {
         var key = EntityTree<TEntity>.Meta.Unique.Name;
         return EntityTree<TEntity>.Meta.Cache.Find(e => (Int32)e[key] == id);

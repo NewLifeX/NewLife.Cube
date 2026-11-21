@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -193,7 +193,7 @@ public class SsoController : ControllerBaseX
             {
                 var html = client.GetAccessToken(code);
 
-                if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0 && client.UserName.IsNullOrEmpty())
+                if (client.AccessToken.IsNullOrEmpty() && client.OpenId.IsNullOrEmpty() && client.UserId == 0 && client.UserName.IsNullOrEmpty())
                 {
                     XTrace.WriteLine(L.TLog("[{2}] no access token, redirecting to SSO again code={0} state={1}", code, state, id));
                     XTrace.WriteLine(Request.GetRawUrl() + "");
@@ -219,13 +219,13 @@ public class SsoController : ControllerBaseX
                 if (!client.UserUrl.IsNullOrEmpty()) client.GetUserInfo();
             }
 
-            if (uc.ID == 0) uc = _bindingService.GetConnect(client);
+            if (uc.Id == 0) uc = _bindingService.GetConnect(client);
             uc.Fill(client);
 
             var url = _clientService.OnLogin(client, HttpContext.RequestServices, uc, log.Action == "Bind", log.UserId);
 
-            log.ConnectId = uc.ID;
-            log.UserId = uc.UserID;
+            log.ConnectId = uc.Id;
+            log.UserId = uc.UserId;
             log.Success = true;
             log.Update();
 
@@ -287,13 +287,13 @@ public class SsoController : ControllerBaseX
                 }
             }
 
-            HttpContext.ChooseTenant(user.ID);
+            HttpContext.ChooseTenant(user.Id);
 
             // SSO 登录显式持久化选中的租户到 Cookie（与 CompleteLogin 一致，认证路径不再写 Cookie）
             if (_tenantContext.Mode != TenantMode.None)
                 HttpContext.SaveTenant(_tenantContext.TenantId);
 
-            // 防御性加固：确保 .Cube.Session cookie 已发送，防止外部OAuth回调后 Session ID 漂移
+            // 防御性加固：确保 .Cube.Session cookie 已发送，防止外部OAuth回调后 Session Id 漂移
             var sessionKey = ".Cube.Session";
             var sid = Request.Cookies[sessionKey];
             if (!sid.IsNullOrEmpty())
@@ -419,7 +419,7 @@ public class SsoController : ControllerBaseX
             Scope = client.Scope,
             State = null,
             RedirectUri = url,
-            UserId = user.ID,
+            UserId = user.Id,
             TraceId = DefaultSpan.Current?.TraceId,
         };
         log.Insert();
@@ -437,7 +437,7 @@ public class SsoController : ControllerBaseX
         var user = _clientService.Current;
         if (user == null) throw new Exception("Not signed in!");
 
-        var binds = UserConnect.FindAllByUserID(user.ID);
+        var binds = UserConnect.FindAllByUserId(user.Id);
 
         foreach (var uc in binds)
         {
@@ -890,7 +890,7 @@ public class SsoController : ControllerBaseX
         }
     }
 
-    /// <summary>OpenID Connect 发现文档</summary>
+    /// <summary>OpenId Connect 发现文档</summary>
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
@@ -961,14 +961,14 @@ public class SsoController : ControllerBaseX
         // 用于兼容旧代码：按扩展名优先级查找（.png/.svg/.jpg/.gif/.webp）
         if (av == null && !set.AvatarPath.IsNullOrEmpty())
         {
-            var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.ID);
+            var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.Id);
             av = found != null ? found.AsFile() : null;
         }
 
         // 使用最后一个第三方头像
         if (av == null && user is IManageUser muser)
         {
-            var list = UserConnect.FindAllByUserID(user.ID);
+            var list = UserConnect.FindAllByUserId(user.Id);
             foreach (var item in list.OrderByDescending(e => e.UpdateTime))
             {
                 var url = item.Avatar;
@@ -1010,3 +1010,4 @@ public class SsoController : ControllerBaseX
     }
     #endregion
 }
+

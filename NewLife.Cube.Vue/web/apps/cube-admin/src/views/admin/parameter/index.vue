@@ -23,7 +23,6 @@ registerPagePreset(PARAMETER_ROUTE, {
     remove: ['Category'],
     patch: {
       Id: { hidden: true },
-      ID: { hidden: true },
       Remark: { hidden: true },
       UpdateUser: { hidden: true },
       UpdateTime: { width: 168 },
@@ -31,9 +30,9 @@ registerPagePreset(PARAMETER_ROUTE, {
       Value: { overflowTooltip: false },
       LongValue: { overflowTooltip: false },
     },
-    order: ['Name', 'Value', 'LongValue', 'Kind', 'Enable', 'UserID', 'UpdateTime'],
+    order: ['Name', 'Value', 'LongValue', 'Kind', 'Enable', 'UserId', 'UpdateTime'],
   },
-  search: { remove: ['Category', 'UserID'] },
+  search: { remove: ['Category', 'UserId'] },
   form: { columns: 1 },
 });
 
@@ -81,14 +80,14 @@ const panelCountHint = computed(() => {
   return t('parameterAdmin.panelCountAll', { count: categoryTotal.value || ctx.total.value });
 });
 
-function kindTagType(kind: unknown): '' | 'success' | 'warning' | 'info' | 'danger' {
+function kindTagType(kind: unknown): 'primary' | 'success' | 'warning' | 'info' | 'danger' | undefined {
   const n = Number(kind);
   if (Number.isNaN(n)) return 'info';
   if (n === 0) return 'info';
   if (n === 3) return 'success';
   if (n === 9 || n === 14) return 'warning';
   if (n === 21 || n === 22) return 'warning';
-  return '';
+  return undefined;
 }
 
 function previewText(raw: unknown, max = VALUE_PREVIEW_LEN): string {
@@ -99,7 +98,7 @@ function previewText(raw: unknown, max = VALUE_PREVIEW_LEN): string {
 }
 
 function rowUserId(row: Record<string, unknown>): number {
-  const v = row.userID ?? row.UserID ?? row.userId;
+  const v = row.userId ?? row.UserId ?? row.userID ?? row.UserID;
   return Number(v ?? 0);
 }
 
@@ -146,7 +145,7 @@ function extractListPayload(res: unknown): { rows: Record<string, unknown>[]; to
 const engineHttp = createDefaultCubeEngineDeps().http;
 
 async function loadCategoryIndex(): Promise<void> {
-  const api = ctx.type.value;
+  const api = ctx.apiPrefix.value;
   if (!api) return;
   categoryLoading.value = true;
   try {
@@ -177,9 +176,14 @@ async function loadCategoryIndex(): Promise<void> {
 
 function applySystemFilter(): void {
   if (systemOnly.value) {
+    ctx.searchModel.UserId_min = 0;
+    ctx.searchModel.UserId_max = 0;
+    // 兼容旧后端字段名；新后端只认 UserId
     ctx.searchModel.UserID_min = 0;
     ctx.searchModel.UserID_max = 0;
   } else {
+    ctx.searchModel.UserId_min = undefined;
+    ctx.searchModel.UserId_max = undefined;
     ctx.searchModel.UserID_min = undefined;
     ctx.searchModel.UserID_max = undefined;
   }
@@ -197,6 +201,8 @@ async function selectCategory(name: string | null): Promise<void> {
 
 async function resetSearchBar(): Promise<void> {
   systemOnly.value = false;
+  ctx.searchModel.UserId_min = undefined;
+  ctx.searchModel.UserId_max = undefined;
   ctx.searchModel.UserID_min = undefined;
   ctx.searchModel.UserID_max = undefined;
   await ctx.resetSearch();
@@ -207,7 +213,7 @@ async function resetSearchBar(): Promise<void> {
 }
 
 function seedSystemUserOnForm(): void {
-  for (const key of ['UserID', 'userID', 'UserId', 'userId']) {
+  for (const key of ['UserId', 'userId', 'UserID', 'userID']) {
     ctx.formModel[key] = 0;
   }
 }
@@ -383,7 +389,7 @@ watch(
           </template>
 
           <template #actions>
-            <el-button type="primary" @click="handleAdd">
+            <el-button type="primary" data-role="add" @click="handleAdd">
               {{ selectedCategory ? t('parameterAdmin.addInCategory') : t('engine.add') }}
             </el-button>
           </template>
@@ -398,7 +404,7 @@ watch(
             <code class="param-key">{{ value || '—' }}</code>
           </template>
 
-          <template #col-UserID="{ row, value }">
+          <template #col-UserId="{ row, value }">
             <el-tag v-if="rowUserId(row as Record<string, unknown>) === 0" size="small" type="primary" effect="plain">
               {{ t('parameterAdmin.systemScope') }}
             </el-tag>

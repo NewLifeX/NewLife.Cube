@@ -9,13 +9,13 @@ namespace NewLife.Cube.Services;
 
 /// <summary>
 /// 值集数据存取。值集定义（运行时手工"名值定义"）与枚举值、列表配置、搜索字段、表格列没有真实表，
-/// 数据聚合以 JSON 存入 <see cref="Parameter"/> 字典参数表（UserID=0，Category=各类别，Name=值集编码 LovCode）。
+/// 数据聚合以 JSON 存入 <see cref="Parameter"/> 字典参数表（UserId=0，Category=各类别，Name=值集编码 LovCode）。
 /// 代码声明的枚举与 [LovList] 列表型值集由 <see cref="LovRegistry"/> 反射提供、不落库；本类仅承载运行时手工创建的数据。
 /// 原为 5 个 XCode 实体的 .Biz 静态方法（含 LovDefinition 定义表），去表化后收敛到本类。
 /// </summary>
 public static class LovStore
 {
-    // 分类常量。Parameter 记录键：UserID=0 + Category + Name(值集编码)
+    // 分类常量。Parameter 记录键：UserId=0 + Category + Name(值集编码)
     private const String CategoryDef = "Lov.Def";
     private const String CategoryEnumItem = "Lov.EnumItem";
     private const String CategoryListConfig = "Lov.ListConfig";
@@ -34,7 +34,7 @@ public static class LovStore
     /// <returns>值集定义，不存在时返回 null</returns>
     public static LovDefModel? FindDef(String lovCode)
     {
-        var p = Parameter.FindByUserIDAndCategoryAndName(0, CategoryDef, GetKey(lovCode));
+        var p = Parameter.FindByUserIdAndCategoryAndName(0, CategoryDef, GetKey(lovCode));
         if (p == null) return null;
 
         return BuildDef(p);
@@ -44,7 +44,7 @@ public static class LovStore
     /// <returns>值集定义列表</returns>
     public static IList<LovDefModel> FindAllDefs()
     {
-        var list = Parameter.FindAll(Parameter._.UserID == 0 & Parameter._.Category == CategoryDef);
+        var list = Parameter.FindAllByUserIdAndCategory(0, CategoryDef);
         var models = new List<LovDefModel>();
         foreach (var p in list)
         {
@@ -185,7 +185,7 @@ public static class LovStore
     /// <returns>JSON 内容，无则返回 null</returns>
     private static String? FindJson(String lovCode, String category)
     {
-        var p = Parameter.FindByUserIDAndCategoryAndName(0, category, GetKey(lovCode));
+        var p = Parameter.FindByUserIdAndCategoryAndName(0, category, GetKey(lovCode));
         if (p == null) return null;
 
         var json = p.Value ?? p.LongValue;
@@ -206,9 +206,9 @@ public static class LovStore
         var gate = _locks.GetOrAdd(key, _ => new Object());
         lock (gate)
         {
-            var p = Parameter.FindByUserIDAndCategoryAndName(0, category, key);
+            var p = Parameter.FindByUserIdAndCategoryAndName(0, category, key);
             if (p == null)
-                p = new Parameter { UserID = 0, Category = category, Name = key, CreateTime = DateTime.Now };
+                p = new Parameter { UserId = 0, Category = category, Name = key, CreateTime = DateTime.Now };
             else
                 p.UpdateTime = DateTime.Now;
 
@@ -233,7 +233,7 @@ public static class LovStore
         var gate = _locks.GetOrAdd(key, _ => new Object());
         lock (gate)
         {
-            var p = Parameter.FindByUserIDAndCategoryAndName(0, category, key);
+            var p = Parameter.FindByUserIdAndCategoryAndName(0, category, key);
             if (p == null) return 0;
 
             return p.Delete();
@@ -251,3 +251,5 @@ public static class LovStore
     }
     #endregion
 }
+
+

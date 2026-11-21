@@ -12,7 +12,7 @@ public partial class OAuthConfigModel
 {
     #region 属性
     /// <summary>编号</summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>租户</summary>
     public Int32 TenantId { get; set; }
@@ -90,7 +90,7 @@ public partial class OAuthConfigModel
     public Boolean IsDeleted { get; set; }
 
     /// <summary>创建者</summary>
-    public Int32 CreateUserID { get; set; }
+    public Int32 CreateUserId { get; set; }
 
     /// <summary>创建时间</summary>
     public DateTime CreateTime { get; set; }
@@ -99,7 +99,7 @@ public partial class OAuthConfigModel
     public String CreateIP { get; set; }
 
     /// <summary>更新者</summary>
-    public Int32 UpdateUserID { get; set; }
+    public Int32 UpdateUserId { get; set; }
 
     /// <summary>更新时间</summary>
     public DateTime UpdateTime { get; set; }
@@ -116,7 +116,7 @@ public partial class OAuthConfigModel
     /// <param name="model">模型</param>
     public void Copy(OAuthConfigModel model)
     {
-        ID = model.ID;
+        Id = model.Id;
         TenantId = model.TenantId;
         Provider = model.Provider;
         Name = model.Name;
@@ -142,10 +142,10 @@ public partial class OAuthConfigModel
         FieldMap = model.FieldMap;
         FetchAvatar = model.FetchAvatar;
         IsDeleted = model.IsDeleted;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateTime = model.UpdateTime;
         UpdateIP = model.UpdateIP;
         Remark = model.Remark;

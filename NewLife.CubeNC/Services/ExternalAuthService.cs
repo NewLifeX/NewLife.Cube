@@ -108,16 +108,16 @@ public static class ExternalAuthHelper
             if (!extUser.RoleName.IsNullOrEmpty())
             {
                 var role = Role.FindByName(extUser.RoleName);
-                if (role != null) user.RoleID = role.ID;
+                if (role != null) user.RoleId = role.Id;
             }
-            if (user.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
+            if (user.RoleId <= 0 && !set.DefaultRole.IsNullOrEmpty())
             {
                 var role = Role.FindByName(set.DefaultRole);
-                if (role != null) user.RoleID = role.ID;
+                if (role != null) user.RoleId = role.Id;
             }
 
             user.Insert();
-            LogProvider.Provider?.WriteLog(typeof(User), L.TLog("External sign-up"), true, L.TLog("User: {0}", extUser.UserName), user.ID, user + "", ip);
+            LogProvider.Provider?.WriteLog(typeof(User), L.TLog("External sign-up"), true, L.TLog("User: {0}", extUser.UserName), user.Id, user + "", ip);
         }
         else
         {
@@ -228,3 +228,4 @@ public static class ExternalAuthHelper
         return null;
     }
 }
+

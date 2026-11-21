@@ -10,19 +10,19 @@ public class EntityPageInfo
     /// <summary>页面路径，含 Area 前缀。如 /Admin/User</summary>
     public String Url { get; set; }
 
-    /// <summary>主键参数名。如 ID</summary>
+    /// <summary>主键参数名。如 Id</summary>
     public String PrimaryKey { get; set; }
     #endregion
 
     #region 方法
     /// <summary>根据主键值构造完整跳转链接</summary>
     /// <param name="keyValue">主键值</param>
-    /// <returns>如 /Admin/User?ID=123</returns>
+    /// <returns>如 /Admin/User?Id=123</returns>
     public String GetLink(Object keyValue) => $"{Url}?{PrimaryKey}={keyValue}";
 
     /// <summary>构造含占位符的 URL 模板，供代码生成使用</summary>
     /// <param name="mapField">外键字段名，用于生成 Razor 占位符</param>
-    /// <returns>如 /Admin/User?ID={OwnerId}</returns>
+    /// <returns>如 /Admin/User?Id={OwnerId}</returns>
     public String GetUrlTemplate(String mapField) => $"{Url}?{PrimaryKey}={{{mapField}}}";
     #endregion
 }
@@ -39,12 +39,12 @@ public static class EntityPageRegistry
     /// <summary>注册实体类型到页面的映射。同一实体重复注册时后者覆盖前者</summary>
     /// <param name="entityType">实体类型</param>
     /// <param name="url">页面路径，含 Area 前缀。如 /Admin/User</param>
-    /// <param name="primaryKey">主键参数名。如 ID</param>
+    /// <param name="primaryKey">主键参数名。如 Id</param>
     public static void Register(Type entityType, String url, String primaryKey)
     {
         if (entityType == null || url.IsNullOrEmpty()) return;
 
-        _registry[entityType] = new EntityPageInfo { Url = url, PrimaryKey = primaryKey ?? "ID" };
+        _registry[entityType] = new EntityPageInfo { Url = url, PrimaryKey = primaryKey ?? "Id" };
     }
 
     /// <summary>获取实体类型对应的页面信息</summary>
@@ -71,3 +71,4 @@ public static class EntityPageRegistry
     /// <returns>类型到页面信息的只读快照</returns>
     public static IReadOnlyDictionary<Type, EntityPageInfo> GetAll() => _registry;
 }
+

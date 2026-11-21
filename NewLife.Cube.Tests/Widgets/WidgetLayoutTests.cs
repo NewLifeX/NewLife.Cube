@@ -357,8 +357,8 @@ public class WidgetLayoutTests : IDisposable
         const Int32 userId = 102;
 
         // 写入旧格式逐行排序（分类 Widget.Order）
-        new Parameter { UserID = userId, Category = WidgetManager.OrderCategory, Name = "Profile", Value = "5" }.Save();
-        new Parameter { UserID = userId, Category = WidgetManager.OrderCategory, Name = "QuickLink", Value = "2" }.Save();
+        new Parameter { UserId = userId, Category = WidgetManager.OrderCategory, Name = "Profile", Value = "5" }.Save();
+        new Parameter { UserId = userId, Category = WidgetManager.OrderCategory, Name = "QuickLink", Value = "2" }.Save();
 
         var rs = _manager.GetLayout(userId);
         Assert.Equal(2, rs.Count);
@@ -371,7 +371,7 @@ public class WidgetLayoutTests : IDisposable
     public void GetGroupOrder_Default()
     {
         // 清理全局配置，验证内置约定
-        var p = Parameter.FindByUserIDAndCategoryAndName(0, WidgetManager.GroupCategory, "Order");
+        var p = Parameter.FindByUserIdAndCategoryAndName(0, WidgetManager.GroupCategory, "Order");
         p?.Delete();
 
         var rs = _manager.GetGroupOrder();
@@ -449,7 +449,7 @@ public class WidgetLayoutTests : IDisposable
     public void GetWidgets_GroupItemOrder_Applied()
     {
         // 清理可能存在的组内配置（同集合其它用例可能写入），保证默认断言自包含
-        Parameter.FindByUserIDAndCategoryAndName(0, WidgetManager.GroupCategory, "System")?.Delete();
+        Parameter.FindByUserIdAndCategoryAndName(0, WidgetManager.GroupCategory, "System")?.Delete();
 
         // 系统组默认按 Sort：SysInfo(100) 在 LoginLog(120) 前
         var def = _manager.GetWidgets(null, true, 0)
@@ -470,6 +470,8 @@ public class WidgetLayoutTests : IDisposable
         Assert.True(rs.IndexOf("LoginLog") < rs.IndexOf("SysInfo"), "配置后 LoginLog 应在 SysInfo 前");
 
         // 清理全局配置，避免影响其它用例
-        Parameter.FindByUserIDAndCategoryAndName(0, WidgetManager.GroupCategory, "System")?.Delete();
+        Parameter.FindByUserIdAndCategoryAndName(0, WidgetManager.GroupCategory, "System")?.Delete();
     }
 }
+
+

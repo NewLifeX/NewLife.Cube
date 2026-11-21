@@ -1,3 +1,4 @@
+using System.Reflection;
 ﻿using NewLife.Reflection;
 using XCode;
 using XCode.Configuration;
@@ -87,16 +88,19 @@ public static class AiDataHelper
         return true;
     }
 
-    /// <summary>过滤实体字段，仅保留 AI 可用的安全字段（敏感黑名单过滤）</summary>
+    /// <summary>过滤实体字段，仅保留 AI 可用的安全字段（敏感黑名单过滤，跳过过时别名字段）</summary>
     /// <param name="allFields">实体所有字段</param>
-    /// <param name="entityType">实体类型（预留，保持签名兼容）</param>
+    /// <param name="entityType">实体类型，用于识别字段改名后的过时别名</param>
     /// <returns>安全字段列表</returns>
     public static IList<FieldItem> FilterSafeFields(FieldItem[] allFields, Type entityType)
     {
         if (allFields == null || allFields.Length == 0) return [];
 
-        // 黑名单过滤：字段名/ItemType 命中敏感模式则排除
-        return allFields.Where(IsSafeField).ToList();
+        // 黑名单过滤：字段名/ItemType 命中敏感模式则排除；旧字段名映射属性不参与
+        return allFields
+            .Where(e => e.IsDataObjectField || entityType?.GetProperty(e.Name)?.GetCustomAttribute<ObsoleteAttribute>() == null)
+            .Where(IsSafeField)
+            .ToList();
     }
 
     /// <summary>将实体对象转为安全字段的字典（仅包含 AI 可见字段）</summary>

@@ -354,31 +354,32 @@ public class ImportControllerTests
         var rs = ctrl.TestOnImport(list, context);
 
         Assert.Equal(2, rs);
-        Assert.Equal(2, Parameter.FindCount(Parameter._.Category == category));
+        Assert.Equal(2, Parameter.FindCountByCategory(category));
     }
 
     [Fact(DisplayName = "导入落库_按主键合并更新已有数据")]
     public void OnImport_MergeMode_UpdatesByPrimaryKey()
     {
         var category = Unique("Imp");
-        var origin = Parameter.GetOrAdd(_fx.LegacyUser.ID, category, "Key", "旧值");
-        Assert.True(origin.ID > 0);
+        var origin = Parameter.GetOrAdd(_fx.LegacyUser.Id, category, "Key", "旧值");
+        Assert.True(origin.Id > 0);
 
         var ctrl = CreateParameterController();
         var list = new List<IEntity>
         {
-            new Parameter { ID = origin.ID, Category = category, Name = "Key", Value = "新值", Enable = true },
+            new Parameter { Id = origin.Id, Category = category, Name = "Key", Value = "新值", Enable = true },
         };
         var context = new ImportContext { Name = "data.csv", Mode = ImportMode.Merge, TotalCount = 1 };
 
         var rs = ctrl.TestOnImport(list, context);
 
         Assert.Equal(1, rs);
-        var found = Parameter.FindByKey(origin.ID);
+        var found = Parameter.FindByKey(origin.Id);
         Assert.NotNull(found);
         Assert.Equal("新值", found!.Value);
         // 合并而不是新增
-        Assert.Equal(1, Parameter.FindCount(Parameter._.Category == category));
+        Assert.Equal(1, Parameter.FindCountByCategory(category));
     }
     #endregion
 }
+

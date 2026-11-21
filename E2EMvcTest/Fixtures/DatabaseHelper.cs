@@ -39,7 +39,7 @@ public static class DatabaseHelper
     /// <returns>角色编号，不存在时返回 0</returns>
     public static Int32 GetRoleIdByName(String name)
     {
-        const String sql = "SELECT IFNULL(ID, 0) FROM Role WHERE Name = @name LIMIT 1";
+        const String sql = "SELECT IFNULL(Id, 0) FROM Role WHERE Name = @name LIMIT 1";
         return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", name));
     }
 
@@ -90,7 +90,7 @@ public static class DatabaseHelper
         // 字段名不能参数化，使用白名单校验防止注入
         var allowedFields = new HashSet<String>(StringComparer.OrdinalIgnoreCase)
         {
-            "ID", "Name", "DisplayName", "Mail", "Mobile", "Code", "Password", "Remark",
+            "Id", "Name", "DisplayName", "Mail", "Mobile", "Code", "Password", "Remark",
             "Logins", "LastLogin", "CreateTime", "UpdateTime", "Enable",
         };
 
@@ -124,14 +124,14 @@ public static class DatabaseHelper
     #region UserConnect 表查询
 
     /// <summary>统计指定用户和提供商的 UserConnect 绑定记录数</summary>
-    /// <param name="userId">用户 ID（0 表示不限）</param>
+    /// <param name="userId">用户 Id（0 表示不限）</param>
     /// <param name="provider">OAuth 提供商名称，如"NewLife"</param>
     /// <returns>匹配行数</returns>
     public static Int32 CountUserConnect(Int32 userId, String provider)
     {
         if (userId > 0)
         {
-            const String sql = "SELECT COUNT(*) FROM UserConnect WHERE UserID = @uid AND Provider = @p";
+            const String sql = "SELECT COUNT(*) FROM UserConnect WHERE UserId = @uid AND Provider = @p";
             return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@uid", userId), ("@p", provider));
         }
         else
@@ -149,9 +149,9 @@ public static class DatabaseHelper
     public static Int32 SeedUserConnect(String provider, String openid, Int32 userId)
     {
         const String sql = """
-            INSERT INTO UserConnect (Provider, UserID, OpenID, Enable, CreateUserID, CreateIP, CreateTime, UpdateUserID, UpdateIP, UpdateTime)
+            INSERT INTO UserConnect (Provider, UserId, OpenId, Enable, CreateUserId, CreateIP, CreateTime, UpdateUserId, UpdateIP, UpdateTime)
             VALUES (@p, @uid, @openid, 1, @uid, '::1', @now, @uid, '::1', @now)
-            RETURNING ID;
+            RETURNING Id;
             """;
         var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql,
@@ -185,12 +185,12 @@ public static class DatabaseHelper
 
     #region Tenant / TenantUser 表查询
 
-    /// <summary>按名称获取用户 Id（User 表主键为 ID）</summary>
+    /// <summary>按名称获取用户 Id（User 表主键为 Id）</summary>
     /// <param name="username">用户名</param>
     /// <returns>用户 Id，不存在返回 0</returns>
     public static Int32 GetUserIdByName(String username)
     {
-        const String sql = "SELECT ID FROM User WHERE Name = @name LIMIT 1";
+        const String sql = "SELECT Id FROM User WHERE Name = @name LIMIT 1";
         return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", username));
     }
 
@@ -199,7 +199,7 @@ public static class DatabaseHelper
     /// <returns>角色 Id，不存在返回 0</returns>
     public static Int32 GetUserRoleId(String username)
     {
-        const String sql = "SELECT RoleID FROM User WHERE Name = @name LIMIT 1";
+        const String sql = "SELECT RoleId FROM User WHERE Name = @name LIMIT 1";
         return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", username));
     }
 
@@ -224,7 +224,7 @@ public static class DatabaseHelper
     /// <returns>Permission 字段值，不存在返回 null</returns>
     public static String? GetRolePermission(Int32 roleId)
     {
-        const String sql = "SELECT Permission FROM Role WHERE ID = @id LIMIT 1";
+        const String sql = "SELECT Permission FROM Role WHERE Id = @id LIMIT 1";
         return ExecuteScalar<String?>(MembershipConnStr, sql, ("@id", roleId));
     }
 
@@ -291,15 +291,15 @@ public static class DatabaseHelper
     /// <returns>OAuthConfig 记录 Id，失败返回 0</returns>
     public static Int32 EnsureOAuthConfigWithTenant(String name, Int32 tenantId)
     {
-        const String find = "SELECT ID FROM OAuthConfig WHERE Name = @name LIMIT 1";
+        const String find = "SELECT Id FROM OAuthConfig WHERE Name = @name LIMIT 1";
         var id = ExecuteScalar<Int32>(CubeWriteConnStr, find, ("@name", name));
         if (id > 0) return id;
 
         // Sort 置大保证列表排在最前；其余非空列均提供默认值
         const String sql = """
-            INSERT INTO OAuthConfig (TenantId, Name, GrantType, Enable, Debug, Visible, AutoRegister, Sort, FetchAvatar, IsDeleted, CreateUserID, UpdateUserID)
+            INSERT INTO OAuthConfig (TenantId, Name, GrantType, Enable, Debug, Visible, AutoRegister, Sort, FetchAvatar, IsDeleted, CreateUserId, UpdateUserId)
             VALUES (@tenantId, @name, 0, 1, 0, 1, 0, 9999, 0, 0, 0, 0)
-            RETURNING ID;
+            RETURNING Id;
             """;
         return ExecuteScalarWrite<Int32>(CubeWriteConnStr, sql, ("@tenantId", tenantId), ("@name", name));
     }
@@ -320,9 +320,9 @@ public static class DatabaseHelper
     public static Int32 SeedDepartment(String name, Int32 managerId)
     {
         const String sql = """
-            INSERT INTO Department (TenantId, Code, Name, ParentID, Level, Sort, Enable, Visible, ManagerId, CreateUserID, CreateTime, UpdateUserID, UpdateTime)
+            INSERT INTO Department (TenantId, Code, Name, ParentId, Level, Sort, Enable, Visible, ManagerId, CreateUserId, CreateTime, UpdateUserId, UpdateTime)
             VALUES (0, @name, @name, 0, 1, 0, 1, 1, @mid, @mid, @now, @mid, @now)
-            RETURNING ID;
+            RETURNING Id;
             """;
         var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql, ("@name", name), ("@mid", managerId), ("@now", now));
@@ -344,7 +344,7 @@ public static class DatabaseHelper
     public static Int64 SeedAttachment(String title, Int32 createUserId)
     {
         const String sql = """
-            INSERT INTO Attachment (Id, Category, Title, FileName, Extension, Size, ContentType, Enable, UploadTime, CreateUser, CreateUserID, CreateTime, UpdateUserID, UpdateTime)
+            INSERT INTO Attachment (Id, Category, Title, FileName, Extension, Size, ContentType, Enable, UploadTime, CreateUser, CreateUserId, CreateTime, UpdateUserId, UpdateTime)
             VALUES ((SELECT IFNULL(MAX(Id), 0) + 1 FROM Attachment), 'e2e', @title, @title, '.txt', 1, 'text/plain', 1, @now, @user, @uid, @now, @uid, @now)
             RETURNING Id;
             """;
@@ -466,3 +466,4 @@ public static class DatabaseHelper
 
     #endregion
 }
+

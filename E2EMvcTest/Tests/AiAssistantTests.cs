@@ -563,7 +563,7 @@ public sealed class AiAssistantTests : IAsyncLifetime
     }
 
     /// <summary>注入 AI 助手浮窗标记并加载真实 ai-assistant.js，使测试不依赖 AISwitch 设置。</summary>
-    /// <remarks>markup 仅含 JS 契约所需的元素 ID（aiAssistantFab/Panel/Messages/Input/Send 等），
+    /// <remarks>markup 仅含 JS 契约所需的元素 Id（aiAssistantFab/Panel/Messages/Input/Send 等），
     /// 面板内联 position:fixed 以便验证拖动定位；等待 window.CubeAI 出现表示脚本已加载且 init 已执行。</remarks>
     /// <param name="page">当前页面</param>
     private static async Task EnsureAiAssistantAsync(IPage page)
@@ -650,3 +650,4 @@ public sealed class AiAssistantTests : IAsyncLifetime
         ", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
     }
 }
+

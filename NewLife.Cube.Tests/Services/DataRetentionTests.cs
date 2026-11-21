@@ -60,7 +60,7 @@ public class DataRetentionTests
             recentOAuthLog.Insert();
 
             // 系统日志（无创建者的旧日志）
-            var oldLog = new XCode.Membership.Log { ID = (Int32)(XCode.Membership.Log.Meta.Factory.Snow.GetId(now.AddDays(-30).AddMinutes(-2)) % Int32.MaxValue), Action = "RetentionTest", Success = true, CreateTime = now.AddDays(-30) };
+            var oldLog = new XCode.Membership.Log { Id = (Int32)(XCode.Membership.Log.Meta.Factory.Snow.GetId(now.AddDays(-30).AddMinutes(-2)) % Int32.MaxValue), Action = "RetentionTest", Success = true, CreateTime = now.AddDays(-30) };
             oldLog.Insert();
             var recentLog = new XCode.Membership.Log { Action = "RetentionTest", Success = true, CreateTime = now };
             recentLog.Insert();
@@ -102,6 +102,7 @@ public class DataRetentionTests
         }
     }
 }
+
 
 
 

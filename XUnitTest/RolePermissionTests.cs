@@ -76,7 +76,7 @@ public class RolePermissionTests : IDisposable
     public void Apply_AllNegativeOne_RoundTrip()
     {
         var role = CreateRole();
-        var id = role.ID;
+        var id = role.Id;
 
         // 全部权限（0xFFFFFFFF）经序列化为 -1，必须能保存
         RolePermissionHelper.Apply(role, "52#-1,53#16", null, false);
@@ -84,7 +84,7 @@ public class RolePermissionTests : IDisposable
 
         // 清缓存后从数据库重新读取
         Role.Meta.Session.ClearCache($"roundtrip-{id}", true);
-        var reloaded = Role.FindByID(id);
+        var reloaded = Role.FindById(id);
         Assert.NotNull(reloaded);
         Assert.Equal(PermissionFlags.All, reloaded!.Get(52));
         Assert.Equal((PermissionFlags)16, reloaded.Get(53));
@@ -151,14 +151,14 @@ public class RolePermissionTests : IDisposable
     public void RoundTrip_ExtraFlags_Persisted()
     {
         var role = CreateRole();
-        var id = role.ID;
+        var id = role.Id;
 
         // 模拟前端「首页」菜单权限串：查看(1)+释放内存(16)
         RolePermissionHelper.Apply(role, "32#17", null, false);
         role.Update();
 
         Role.Meta.Session.ClearCache($"extra-{id}", true);
-        var reloaded = Role.FindByID(id);
+        var reloaded = Role.FindById(id);
         Assert.NotNull(reloaded);
         Assert.Equal((PermissionFlags)17, reloaded!.Get(32));
         Assert.True(reloaded.Has(32, PermissionFlags.Detail));
@@ -166,12 +166,12 @@ public class RolePermissionTests : IDisposable
     }
 
     [Fact]
-    [DisplayName("RoundTrip_权限串顺序_按资源ID升序")]
+    [DisplayName("RoundTrip_权限串顺序_按资源Id升序")]
     public void RoundTrip_PermissionString_OrderedByResourceId()
     {
         var role = CreateRole();
 
-        // 乱序设置，SavePermission 应按资源 ID 升序序列化
+        // 乱序设置，SavePermission 应按资源 Id 升序序列化
         role.Set(53, PermissionFlags.Detail);
         role.Set(52, PermissionFlags.All);
         role.Set(51, (PermissionFlags)16);
@@ -180,6 +180,7 @@ public class RolePermissionTests : IDisposable
         var idx52 = role.Permission.IndexOf("52#-1", StringComparison.Ordinal);
         var idx51 = role.Permission.IndexOf("51#16", StringComparison.Ordinal);
         var idx53 = role.Permission.IndexOf("53#1", StringComparison.Ordinal);
-        Assert.True(idx51 >= 0 && idx52 > idx51 && idx53 > idx52, $"权限串应按资源ID升序: {role.Permission}");
+        Assert.True(idx51 >= 0 && idx52 > idx51 && idx53 > idx52, $"权限串应按资源Id升序: {role.Permission}");
     }
 }
+

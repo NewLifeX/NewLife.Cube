@@ -154,12 +154,12 @@ public class DataFieldTests
     [DisplayName("DataField 默认值序列化时忽略 null/0/false/空串噪音")]
     public void Serialize_Default_OmitsNoise()
     {
-        var field = new DataField { Name = "ID", DisplayName = "编号", Type = typeof(Int32), PrimaryKey = true };
+        var field = new DataField { Name = "Id", DisplayName = "编号", Type = typeof(Int32), PrimaryKey = true };
 
         var json = JsonSerializer.Serialize(field, CreateOptions());
 
         // 必要字段保留
-        Assert.Contains("\"name\":\"ID\"", json);
+        Assert.Contains("\"name\":\"Id\"", json);
         Assert.Contains("\"displayName\":\"编号\"", json);
         Assert.Contains("\"typeName\":\"Int32\"", json);
         Assert.Contains("\"primaryKey\":true", json);
@@ -271,12 +271,12 @@ public class DataFieldTests
     [DisplayName("FastJson 序列化 DataField 时忽略 null/0/false 噪音")]
     public void FastJson_Serialize_Default_OmitsNoise()
     {
-        var field = new DataField { Name = "ID", DisplayName = "编号", Type = typeof(Int32), PrimaryKey = true };
+        var field = new DataField { Name = "Id", DisplayName = "编号", Type = typeof(Int32), PrimaryKey = true };
 
         var json = ToFastJson(field);
 
         // 必要字段保留
-        Assert.Contains("\"name\":\"ID\"", json);
+        Assert.Contains("\"name\":\"Id\"", json);
         Assert.Contains("\"displayName\":\"编号\"", json);
         Assert.Contains("\"typeName\":\"Int32\"", json);
         Assert.Contains("\"primaryKey\":true", json);
@@ -451,3 +451,4 @@ public class DataFieldTests
         Assert.DoesNotContain("dataSource", json);
     }
 }
+

@@ -26,7 +26,7 @@ using static XCode.Membership.User;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户控制器</summary>
-[DataPermission(null, "ID={#userId}")]
+[DataPermission(null, "Id={#userId}")]
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
@@ -55,7 +55,7 @@ public class UserController : EntityController<User, UserModel>
             var df = ListFields.AddListField("AvatarImage", "Name");
             df.Header = "";
             //df.Text = "<img src=\"{Avatar}\" style=\"width:64px;height:64px;\" />";
-            //df.Url = "/Admin/User/Edit?id={ID}";
+            //df.Url = "/Admin/User/Edit?id={Id}";
             // 始终显示头像列：无头像文件时由 MyAvatar 回退到 /Cube/Avatar 端点兜底生成 SVG 文字头像
             // 使用ILinkExtend，高度定制头像超链接
             df.AddService(new MyAvatar());
@@ -63,39 +63,39 @@ public class UserController : EntityController<User, UserModel>
         }
         {
             var df = ListFields.GetField("Name") as ListField;
-            df.Url = "/Admin/User/Edit?id={ID}";
+            df.Url = "/Admin/User/Edit?id={Id}";
             df.Target = "_blank";
         }
         {
             var df = ListFields.GetField("DisplayName") as ListField;
-            df.Url = "/Admin/User/Edit?id={ID}";
+            df.Url = "/Admin/User/Edit?id={Id}";
             df.Target = "_blank";
             df.Title = "{Remark}";
         }
 
         {
             var df = AddFormFields.AddDataField("RoleId", "RoleName");
-            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             AddFormFields.RemoveField("RoleName");
         }
         {
             var df = EditFormFields.AddDataField("RoleId", "RoleName");
-            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             EditFormFields.RemoveField("RoleName");
         }
 
         {
             var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             AddFormFields.RemoveField("RoleNames");
         }
         {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
         }
         {
-            AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "Extended" && group != L.T("Extended");
+            AddFormFields.GroupVisible = (entity, group) => (entity as User).Id == 0 && group != "Extended" && group != L.T("Extended");
         }
         {
             var ff = AddFormFields.GetField("AreaId") as FormField;
@@ -116,8 +116,8 @@ public class UserController : EntityController<User, UserModel>
         {
             var user = data as User;
             // 本地有头像文件 → GetAvatarUrl 返回可访问地址；否则回退到 /Cube/Avatar 端点，由服务端兜底生成 SVG 文字头像
-            var src = user.GetAvatarUrl() ?? $"/Cube/Avatar?id={user.ID}";
-            return $"<a href=\"/Admin/User/Edit?id={user.ID}\" target=\"_blank\"><img src=\"{src}\" style=\"width:32px;height:32px;\" /></a>";
+            var src = user.GetAvatarUrl() ?? $"/Cube/Avatar?id={user.Id}";
+            return $"<a href=\"/Admin/User/Edit?id={user.Id}\" target=\"_blank\"><img src=\"{src}\" style=\"width:32px;height:32px;\" /></a>";
         }
     }
 
@@ -162,7 +162,7 @@ public class UserController : EntityController<User, UserModel>
         if (id > 0)
         {
             var list = new List<User>();
-            var entity = FindByID(id);
+            var entity = FindById(id);
             if (entity != null)
             {
                 // 不向浏览器输出密码
@@ -172,7 +172,10 @@ public class UserController : EntityController<User, UserModel>
             return list;
         }
 
+        // 角色搜索多选提交 roleId=1,2（前端字段名 camelCase），兼容 roleIds 复数参数与旧字段名 roleID
         var roleIds = p["roleIds"].SplitAsInt();
+        if (roleIds.Length == 0) roleIds = p["roleId"].SplitAsInt();
+        if (roleIds.Length == 0) roleIds = p["roleID"].SplitAsInt();
         var departmentIds = p["departmentId"].SplitAsInt();
         var areaIds = p["areaId"].SplitAsInt("/");
         var enable = p["enable"]?.ToBoolean();
@@ -189,15 +192,15 @@ public class UserController : EntityController<User, UserModel>
                 // 城市，要下一级
                 if (r.Level == 2)
                 {
-                    rs.AddRange(r.Childs.Select(e => e.ID));
+                    rs.AddRange(r.Childs.Select(e => e.Id));
                 }
                 // 省份，要下面两级
                 else if (r.Level == 1)
                 {
-                    rs.AddRange(r.Childs.Select(e => e.ID));
+                    rs.AddRange(r.Childs.Select(e => e.Id));
                     foreach (var item in r.Childs)
                     {
-                        rs.AddRange(item.Childs.Select(e => e.ID));
+                        rs.AddRange(item.Childs.Select(e => e.Id));
                     }
                 }
             }
@@ -577,7 +580,7 @@ public class UserController : EntityController<User, UserModel>
     public ActionResult CloseAccount()
     {
         var user = ManageProvider.User as User;
-        if (user == null || user.ID <= 0) return Json(500, "Not signed in, please sign in first");
+        if (user == null || user.Id <= 0) return Json(500, "Not signed in, please sign in first");
 
         var result = _userService.CloseAccount(user, UserHost);
         if (!result.IsSuccess) return Json(500, result.Message);
@@ -597,7 +600,7 @@ public class UserController : EntityController<User, UserModel>
         var cur = ManageProvider.User as XCode.Membership.User;
         if (cur == null) return RedirectToAction("Login");
 
-        var user = XCode.Membership.User.FindByKeyForEdit(cur.ID);
+        var user = XCode.Membership.User.FindByKeyForEdit(cur.Id);
         if (user == null) throw new Exception("Invalid user id!");
 
         var data = new Dictionary<String, Object>
@@ -606,7 +609,7 @@ public class UserController : EntityController<User, UserModel>
             ["导出时间"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
             ["个人资料"] = new
             {
-                user.ID,
+                user.Id,
                 user.Name,
                 user.DisplayName,
                 user.Sex,
@@ -616,8 +619,8 @@ public class UserController : EntityController<User, UserModel>
                 user.MobileVerified,
                 user.Code,
                 user.Avatar,
-                user.RoleID,
-                user.DepartmentID,
+                user.RoleId,
+                user.DepartmentId,
                 user.Enable,
                 user.Birthday,
                 user.Logins,
@@ -626,16 +629,16 @@ public class UserController : EntityController<User, UserModel>
                 user.RegisterTime,
                 user.RegisterIP,
             },
-            ["第三方绑定"] = UserConnect.FindAllByUserID(user.ID).Select(e => new
+            ["第三方绑定"] = UserConnect.FindAllByUserId(user.Id).Select(e => new
             {
                 e.Provider,
-                e.OpenID,
+                e.OpenId,
                 e.NickName,
                 e.Enable,
                 e.CreateTime,
                 e.UpdateTime,
             }),
-            ["令牌记录"] = UserToken.FindAllByUserID(user.ID).Select(e => new
+            ["令牌记录"] = UserToken.FindAllByUserId(user.Id).Select(e => new
             {
                 Token = e.Token?.Length > 8 ? e.Token[..8] + "..." : e.Token,
                 e.Expire,
@@ -664,9 +667,9 @@ public class UserController : EntityController<User, UserModel>
         var user = ManageProvider.User as XCode.Membership.User;
         if (user == null) return RedirectToAction("Login");
 
-        if (id > 0 && id != user.ID) throw new Exception("Not allowed to view another user's profile");
+        if (id > 0 && id != user.Id) throw new Exception("Not allowed to view another user's profile");
 
-        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
+        user = XCode.Membership.User.FindByKeyForEdit(user.Id);
         if (user == null) throw new Exception("Invalid user id!");
 
         //user.Password = null;
@@ -702,11 +705,11 @@ public class UserController : EntityController<User, UserModel>
         var cur = ManageProvider.User;
         if (cur == null) return RedirectToAction("Login");
 
-        if (user.ID != cur.ID) throw new Exception("Not allowed to modify another user's profile");
+        if (user.Id != cur.Id) throw new Exception("Not allowed to modify another user's profile");
 
         var entity = user as IEntity;
         if (entity.Dirtys["Name"]) throw new Exception("User name cannot be modified!");
-        if (entity.Dirtys["RoleID"]) throw new Exception("Role cannot be modified!");
+        if (entity.Dirtys["RoleId"]) throw new Exception("Role cannot be modified!");
         if (entity.Dirtys["RoleIds"]) throw new Exception("Role cannot be modified!");
         if (entity.Dirtys["Enable"]) throw new Exception("Enable state cannot be modified!");
 
@@ -718,7 +721,7 @@ public class UserController : EntityController<User, UserModel>
                 throw new Exception("Only image files can be uploaded!");
 
             //var set = CubeSetting.Current;
-            //var fileName = user.ID + Path.GetExtension(file.FileName);
+            //var fileName = user.Id + Path.GetExtension(file.FileName);
             var att = await SaveFile(user, file, null, null);
             if (att != null) user.Avatar = ViewHelper.GetAttachmentUrl(att);
         }
@@ -728,7 +731,7 @@ public class UserController : EntityController<User, UserModel>
 
         user.Update();
 
-        return Info(user.ID);
+        return Info(user.Id);
     }
 
     /// <summary>修改密码</summary>
@@ -796,11 +799,11 @@ public class UserController : EntityController<User, UserModel>
         var user = ManageProvider.User as XCode.Membership.User;
         if (user == null) return RedirectToAction("Login");
 
-        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
+        user = XCode.Membership.User.FindByKeyForEdit(user.Id);
         if (user == null) throw new Exception("Invalid user id!");
 
         // 第三方绑定
-        var ucs = UserConnect.FindAllByUserID(user.ID);
+        var ucs = UserConnect.FindAllByUserId(user.Id);
         var ms = OAuthConfig.GetValids(_tenantContext.TenantId, GrantTypes.AuthorizationCode);
 
         var model = new BindsModel
@@ -872,7 +875,7 @@ public class UserController : EntityController<User, UserModel>
         if (!ManageProvider.User.Roles.Any(e => e.IsSystem)) throw new Exception("Clearing the password requires administrator permission!");
 
         // 前面表单可能已经清空密码
-        var user = FindByID(id);
+        var user = FindById(id);
         if (user == null)
         {
             if (IsJsonRequest) return Json(1, "User not found");
@@ -898,7 +901,7 @@ public class UserController : EntityController<User, UserModel>
         // 吊销令牌属于安全运维操作，仅管理员可用（用户页对非系统角色只读，防跨用户令牌吊销）
         if (!IsSystemRole()) throw new Exception("Revoking tokens requires administrator permission!");
 
-        var user = FindByID(id);
+        var user = FindById(id);
         if (user == null)
         {
             if (IsJsonRequest) return Json(1, "User not found");
@@ -923,7 +926,7 @@ public class UserController : EntityController<User, UserModel>
         var user = ManageProvider.User as User;
         if (user == null) return RedirectToAction("Login");
 
-        var tlist = TenantUser.FindAllByUserId(user.ID);
+        var tlist = TenantUser.FindAllByUserId(user.Id);
         var model = new TenantSettingModel(user.Name)
         {
             Tenants = tlist.ToDictionary(e => e.TenantId, v => v.TenantName)
@@ -949,8 +952,8 @@ public class UserController : EntityController<User, UserModel>
             var tu = new TenantUser
             {
                 TenantId = _tenantContext.TenantId,
-                UserId = entity.ID,
-                RoleId = ManagerProviderHelper.ResolveTenantRole(_tenantContext.TenantId, entity.RoleID),
+                UserId = entity.Id,
+                RoleId = ManagerProviderHelper.ResolveTenantRole(_tenantContext.TenantId, entity.RoleId),
                 CreateIP = entity.RegisterIP,
                 Enable = entity.Enable,
 
@@ -971,17 +974,19 @@ public class UserController : EntityController<User, UserModel>
 
         var p = page;
         var roleIds = p["roleIds"].SplitAsInt();
+        if (roleIds.Length == 0) roleIds = p["roleId"].SplitAsInt();
+        if (roleIds.Length == 0) roleIds = p["roleID"].SplitAsInt();
         var departmentIds = p["departmentId"].SplitAsInt();
 
         // 角色
         if (roleIds != null && roleIds.Length > 0)
-            data[typeof(Role)] = Role.FindAll(Role._.ID.In(roleIds));
+            data[typeof(Role)] = Role.FindAllByIds(roleIds);
         else
             data[typeof(Role)] = Role.FindAllWithCache();
 
         // 部门
         if (departmentIds != null && departmentIds.Length > 0)
-            data[typeof(Department)] = Department.FindAll(Department._.ID.In(departmentIds));
+            data[typeof(Department)] = Department.FindAllByIds(departmentIds);
         else
             data[typeof(Department)] = Department.FindAllWithCache();
 
@@ -1009,7 +1014,7 @@ public class UserController : EntityController<User, UserModel>
         if (tagTenantId > 0)
         {
             var user = ManageProvider.User;
-            var tu = TenantUser.FindByTenantIdAndUserId(tagTenantId, user.ID);
+            var tu = TenantUser.FindByTenantIdAndUserId(tagTenantId, user.Id);
             if (tu == null || !tu.Enable)
                 throw new InvalidOperationException("No permission to switch to this tenant!");
 
@@ -1057,7 +1062,7 @@ public class UserController : EntityController<User, UserModel>
     //    {
     //        foreach (var id in ids)
     //        {
-    //            var user = FindByID(id);
+    //            var user = FindById(id);
     //            if (user != null && user.Enable != isEnable)
     //            {
     //                user.Enable = isEnable;
@@ -1096,3 +1101,4 @@ public class UserController : EntityController<User, UserModel>
     }
     #endregion
 }
+

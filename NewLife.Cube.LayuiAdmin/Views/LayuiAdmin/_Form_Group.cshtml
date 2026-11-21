@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using XCode;
 @using XCode.Configuration;
@@ -11,8 +11,8 @@
     if (cls.IsNullOrEmpty()) { cls = "layui-form-item"; }
 
     var isHide="";
-    if (field.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs"))
+    if (field.Name.EqualIgnoreCase("CreateUserId", "CreateUser", "CreateTime", "CreateIP",
+                "UpdateUserId", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs"))
     {
         isHide="layui-hide";
     }

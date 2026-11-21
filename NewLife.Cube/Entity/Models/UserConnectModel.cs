@@ -12,22 +12,22 @@ public partial class UserConnectModel
 {
     #region 属性
     /// <summary>编号</summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>提供商</summary>
     public String Provider { get; set; }
 
     /// <summary>用户。本地用户</summary>
-    public Int32 UserID { get; set; }
+    public Int32 UserId { get; set; }
 
-    /// <summary>身份标识。用户名、OpenID</summary>
-    public String OpenID { get; set; }
+    /// <summary>身份标识。用户名、OpenId</summary>
+    public String OpenId { get; set; }
 
     /// <summary>全局标识。跨应用统一</summary>
-    public String UnionID { get; set; }
+    public String UnionId { get; set; }
 
     /// <summary>用户编号。第三方用户编号</summary>
-    public Int64 LinkID { get; set; }
+    public Int64 LinkId { get; set; }
 
     /// <summary>昵称</summary>
     public String NickName { get; set; }
@@ -51,7 +51,7 @@ public partial class UserConnectModel
     public Boolean Enable { get; set; }
 
     /// <summary>创建用户</summary>
-    public Int32 CreateUserID { get; set; }
+    public Int32 CreateUserId { get; set; }
 
     /// <summary>创建地址</summary>
     public String CreateIP { get; set; }
@@ -60,7 +60,7 @@ public partial class UserConnectModel
     public DateTime CreateTime { get; set; }
 
     /// <summary>更新用户</summary>
-    public Int32 UpdateUserID { get; set; }
+    public Int32 UpdateUserId { get; set; }
 
     /// <summary>更新地址</summary>
     public String UpdateIP { get; set; }
@@ -77,12 +77,12 @@ public partial class UserConnectModel
     /// <param name="model">模型</param>
     public void Copy(UserConnectModel model)
     {
-        ID = model.ID;
+        Id = model.Id;
         Provider = model.Provider;
-        UserID = model.UserID;
-        OpenID = model.OpenID;
-        UnionID = model.UnionID;
-        LinkID = model.LinkID;
+        UserId = model.UserId;
+        OpenId = model.OpenId;
+        UnionId = model.UnionId;
+        LinkId = model.LinkId;
         NickName = model.NickName;
         DeviceId = model.DeviceId;
         Avatar = model.Avatar;
@@ -90,10 +90,10 @@ public partial class UserConnectModel
         RefreshToken = model.RefreshToken;
         Expire = model.Expire;
         Enable = model.Enable;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateIP = model.CreateIP;
         CreateTime = model.CreateTime;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateIP = model.UpdateIP;
         UpdateTime = model.UpdateTime;
         Remark = model.Remark;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
@@ -31,21 +31,21 @@ public class MenuRefreshActionTests
         {
             var controller = new MenuController();
             var context = new DefaultHttpContext();
-            context.Request.QueryString = new QueryString($"?keys={menu.ID}");
+            context.Request.QueryString = new QueryString($"?keys={menu.Id}");
             controller.ControllerContext = new ControllerContext { HttpContext = context };
 
             var result = controller.RefreshName();
             Assert.NotNull(result);
 
             Menu.Meta.Session.ClearCache("MenuRefreshActionTests", true);
-            var db = Menu.FindByKey(menu.ID);
+            var db = Menu.FindByKey(menu.Id);
             Assert.NotNull(db);
             Assert.Equal("菜单", db!.DisplayName);
         }
         finally
         {
             Menu.Meta.Session.ClearCache("MenuRefreshActionTests", true);
-            Menu.FindByKey(menu.ID)?.Delete();
+            Menu.FindByKey(menu.Id)?.Delete();
         }
     }
 
@@ -59,3 +59,4 @@ public class MenuRefreshActionTests
         Assert.NotNull(result);
     }
 }
+

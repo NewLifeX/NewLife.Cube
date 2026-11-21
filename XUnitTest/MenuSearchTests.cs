@@ -19,7 +19,7 @@ public class MenuSearchTests
     {
         return MenuHelper.BuildSearchMenus(
             menus,
-            m => children != null && children.TryGetValue(m.ID, out var list) ? list : [],
+            m => children != null && children.TryGetValue(m.Id, out var list) ? list : [],
             modules,
             url => url.Replace("~/", "/"));
     }
@@ -28,7 +28,7 @@ public class MenuSearchTests
     {
         return new Menu
         {
-            ID = id,
+            Id = id,
             Name = name,
             DisplayName = displayName,
             Url = url,
@@ -72,21 +72,21 @@ public class MenuSearchTests
         var list = Build([system, tools], children, modules);
 
         Assert.Equal(5, list.Count);
-        Assert.Contains(list, e => e.ID == 4);
-        Assert.DoesNotContain(list, e => e.ID == 5);
+        Assert.Contains(list, e => e.Id == 4);
+        Assert.DoesNotContain(list, e => e.Id == 5);
 
-        var userItem = list.First(e => e.ID == 2);
+        var userItem = list.First(e => e.Id == 2);
         Assert.Equal("ZxSystem", userItem.Module);
         Assert.Equal("ZxSystem / ZxUsers", userItem.Path);
         Assert.Equal("/Admin/User", userItem.Url);
 
-        var detailItem = list.First(e => e.ID == 3);
+        var detailItem = list.First(e => e.Id == 3);
         Assert.Equal("ZxSystem / ZxUsers / ZxUserDetail", detailItem.Path);
 
-        var childItem = list.First(e => e.ID == 6);
+        var childItem = list.First(e => e.Id == 6);
         Assert.Equal("ZxSystem / ZxGroup / ZxChildPage", childItem.Path);
 
-        var logItem = list.First(e => e.ID == 8);
+        var logItem = list.First(e => e.Id == 8);
         Assert.Equal("base", logItem.Module);
         Assert.True(logItem.NewWindow);
     }
@@ -124,7 +124,7 @@ public class MenuSearchTests
 
         var list = Build([system], children, null);
 
-        var item = list.First(e => e.ID == 2);
+        var item = list.First(e => e.Id == 2);
         Assert.Equal("YongHuGuanLi", item.PinYin);
         Assert.Equal("YHGL", item.Initials);
         Assert.Contains("YongHuGuanLi", item.PathPinYin);
@@ -149,7 +149,7 @@ public class MenuSearchTests
         var list = Build([root], children, null);
 
         Assert.Single(list);
-        Assert.Equal(4, list[0].ID);
+        Assert.Equal(4, list[0].Id);
     }
 
     [Fact]
@@ -165,3 +165,4 @@ public class MenuSearchTests
         Assert.Equal("Root", list[0].Path);
     }
 }
+

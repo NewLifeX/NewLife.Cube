@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using NewLife.Caching;
 using NewLife.Collections;
 using NewLife.Security;
@@ -108,7 +108,7 @@ public class TotpMfaService : IMfaService
     #region MFA 挂起令牌（供 UserService 使用）
 
     /// <summary>颁发 MFA 挂起令牌（登录校验通过账密但 MFA 尚未验证时调用）</summary>
-    /// <param name="userId">用户 ID</param>
+    /// <param name="userId">用户 Id</param>
     /// <returns>不透明令牌字符串，TTL 300 秒</returns>
     public String IssuePendingToken(Int32 userId)
     {
@@ -117,9 +117,9 @@ public class TotpMfaService : IMfaService
         return token;
     }
 
-    /// <summary>从挂起令牌中解析用户 ID，解析成功后立即删除令牌（防重放）</summary>
+    /// <summary>从挂起令牌中解析用户 Id，解析成功后立即删除令牌（防重放）</summary>
     /// <param name="mfaToken">挂起令牌</param>
-    /// <returns>用户 ID；令牌无效或已过期返回 0</returns>
+    /// <returns>用户 Id；令牌无效或已过期返回 0</returns>
     public Int32 ConsumePendingToken(String mfaToken)
     {
         if (mfaToken.IsNullOrEmpty()) return 0;
@@ -205,26 +205,26 @@ public class TotpMfaService : IMfaService
 
     private static String GetExtend(IUser user, String key)
     {
-        if (user is not User u || u.ID <= 0) return null;
+        if (user is not User u || u.Id <= 0) return null;
 
-        var list = Parameter.FindAllByUserID(u.ID, MfaCategory);
+        var list = Parameter.FindAllByUserIdAndCategory(u.Id, MfaCategory);
         return list.FirstOrDefault(e => e.Name == key)?.Value;
     }
 
     private static void SetExtend(IUser user, String key, String value)
     {
-        if (user is not User u || u.ID <= 0) return;
+        if (user is not User u || u.Id <= 0) return;
 
-        var p = Parameter.GetOrAdd(u.ID, MfaCategory, key);
+        var p = Parameter.GetOrAdd(u.Id, MfaCategory, key);
         p.Value = value;
         p.Update();
     }
 
     private static void RemoveExtend(IUser user, String key)
     {
-        if (user is not User u || u.ID <= 0) return;
+        if (user is not User u || u.Id <= 0) return;
 
-        var list = Parameter.FindAllByUserID(u.ID, MfaCategory);
+        var list = Parameter.FindAllByUserIdAndCategory(u.Id, MfaCategory);
         list.FirstOrDefault(e => e.Name == key)?.Delete();
     }
 
@@ -287,3 +287,6 @@ public class TotpMfaService : IMfaService
 
     #endregion
 }
+
+
+

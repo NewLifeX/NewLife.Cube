@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Web;
 @using XCode;
 @using System.Linq;
@@ -6,7 +6,7 @@
     var prefix = (Object)Model + "";
     var page = ViewBag.Page as Pager;
 
-    var areaId = page[prefix + "AreaID"];
+    var areaId = page[prefix + "AreaId"];
 
     var set = NewLife.Cube.CubeSetting.Current;
     var res = set.ResourceUrl;
@@ -16,7 +16,7 @@
 <link href="@res/city_picker/city-picker.css" rel="stylesheet">
 <div class="form-group mx-3">
     <div>
-        <input readonly class="form-control form-control-sm" type="text" id="AreaID" value="@areaId" data-toggle="city-picker" placeholder="请选择省/市" data-level="district" data-autoPost="false" data-perfix="">
+        <input readonly class="form-control form-control-sm" type="text" id="AreaId" value="@areaId" data-toggle="city-picker" placeholder="请选择省/市" data-level="district" data-autoPost="false" data-perfix="">
     </div>
 </div>
 <script src="@res/city_picker/city-picker.js"></script>

@@ -32,7 +32,7 @@ public class MultiDeviceLoginTests
             Name = "dev_" + Guid.NewGuid().ToString("N")[..8],
             DisplayName = "多设备测试用户",
             Password = _fx.Provider.PasswordProvider.Hash(Password),
-            RoleID = _fx.LegacyUser.RoleID,
+            RoleId = _fx.LegacyUser.RoleId,
             Enable = true,
             RegisterTime = DateTime.Now,
         };
@@ -52,7 +52,7 @@ public class MultiDeviceLoginTests
 
     private static String RefreshToken(HttpContext ctx) => ctx.Items["refreshToken"] as String;
 
-    private static Int32 EnabledCount(Int32 userId) => UserToken.FindAllByUserID(userId).Count(e => e.Enable);
+    private static Int32 EnabledCount(Int32 userId) => UserToken.FindAllByUserId(userId).Count(e => e.Enable);
 
     #endregion
 
@@ -70,7 +70,7 @@ public class MultiDeviceLoginTests
             var ctx2 = Login(user);
 
             Assert.NotEqual(RefreshToken(ctx1), RefreshToken(ctx2));
-            Assert.Equal(2, EnabledCount(user.ID));
+            Assert.Equal(2, EnabledCount(user.Id));
             Assert.True(UserToken.FindByToken(RefreshToken(ctx1)).Enable);
             Assert.True(UserToken.FindByToken(RefreshToken(ctx2)).Enable);
         }
@@ -93,7 +93,7 @@ public class MultiDeviceLoginTests
             var ctx2 = Login(user);
 
             Assert.NotEqual(RefreshToken(ctx1), RefreshToken(ctx2));
-            Assert.Equal(1, EnabledCount(user.ID));
+            Assert.Equal(1, EnabledCount(user.Id));
             Assert.False(UserToken.FindByToken(RefreshToken(ctx1)).Enable);
             Assert.True(UserToken.FindByToken(RefreshToken(ctx2)).Enable);
         }
@@ -126,7 +126,7 @@ public class MultiDeviceLoginTests
 
             Assert.True(UserToken.FindByToken(RefreshToken(ctx1)).Enable, "其他设备令牌不应被牵连");
             Assert.False(UserToken.FindByToken(RefreshToken(ctx2)).Enable, "当前设备令牌应被吊销");
-            Assert.Equal(1, EnabledCount(user.ID));
+            Assert.Equal(1, EnabledCount(user.Id));
         }
         finally
         {
@@ -143,12 +143,12 @@ public class MultiDeviceLoginTests
         {
             var user = CreateUser();
             var ctx = Login(user);
-            Assert.Equal(1, EnabledCount(user.ID));
+            Assert.Equal(1, EnabledCount(user.Id));
 
             _fx.Provider.SetCurrent(user);
             _fx.Provider.Logout();
 
-            Assert.Equal(0, EnabledCount(user.ID));
+            Assert.Equal(0, EnabledCount(user.Id));
             Assert.False(UserToken.FindByToken(RefreshToken(ctx)).Enable);
         }
         finally
@@ -169,7 +169,9 @@ public class MultiDeviceLoginTests
         Assert.Equal(0, UserToken.RevokeByUser(-5));
         Assert.False(UserToken.RevokeByTokenId(0));
         Assert.False(UserToken.RevokeByTokenId(Int32.MaxValue));
-        Assert.Equal(1, EnabledCount(user.ID));
+        Assert.Equal(1, EnabledCount(user.Id));
     }
     #endregion
 }
+
+

@@ -81,8 +81,8 @@
                 var df = item as ListField;
                 var name = df?.Header ?? item.DisplayName;
                 var title = df?.HeaderTitle ?? item.Description;
-                if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                            "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs")||item.Description.IsNullOrEmpty())
+                if (item.Name.EqualIgnoreCase("CreateUserId", "CreateUser", "CreateTime", "CreateIP",
+                            "UpdateUserId", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs")||item.Description.IsNullOrEmpty())
                 {
                     continue;
                 }
@@ -124,7 +124,7 @@
             tree: {
                 iconIndex: 1,
                 idName: '@fact.Unique.Name',
-                pidName: 'ParentID',
+                pidName: 'ParentId',
                 isPidData: true
             },
             cols: datacols,
@@ -308,4 +308,5 @@
 <style>
     .ew-tree-table{margin-bottom:-8px;}
 </style>
+
 

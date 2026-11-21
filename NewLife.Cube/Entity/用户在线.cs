@@ -17,28 +17,28 @@ namespace NewLife.Cube.Entity;
 [Serializable]
 [DataObject]
 [Description("用户在线")]
-[BindIndex("IX_UserOnline_UserID", false, "UserID")]
-[BindIndex("IX_UserOnline_SessionID", false, "SessionID")]
+[BindIndex("IX_UserOnline_UserId", false, "UserId")]
+[BindIndex("IX_UserOnline_SessionId", false, "SessionId")]
 [BindIndex("IX_UserOnline_CreateTime", false, "CreateTime")]
 [BindTable("UserOnline", Description = "用户在线", ConnName = "Log", DbType = DatabaseType.None)]
 public partial class UserOnline : IEntity<UserOnlineModel>
 {
     #region 属性
-    private Int32 _ID;
+    private Int32 _Id;
     /// <summary>编号</summary>
     [DisplayName("编号")]
     [Description("编号")]
     [DataObjectField(true, true, false, 0)]
-    [BindColumn("ID", "编号", "")]
-    public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+    [BindColumn("Id", "编号", "")]
+    public Int32 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
-    private Int32 _UserID;
+    private Int32 _UserId;
     /// <summary>用户。当前登录人</summary>
     [DisplayName("用户")]
     [Description("用户。当前登录人")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("UserID", "用户。当前登录人", "")]
-    public Int32 UserID { get => _UserID; set { if (OnPropertyChanging("UserID", value)) { _UserID = value; OnPropertyChanged("UserID"); } } }
+    [BindColumn("UserId", "用户。当前登录人", "")]
+    public Int32 UserId { get => _UserId; set { if (OnPropertyChanging("UserId", value)) { _UserId = value; OnPropertyChanged("UserId"); } } }
 
     private String _Name;
     /// <summary>名称。当前登录人，或根据设备标识推算出来的使用人</summary>
@@ -48,13 +48,13 @@ public partial class UserOnline : IEntity<UserOnlineModel>
     [BindColumn("Name", "名称。当前登录人，或根据设备标识推算出来的使用人", "", Master = true)]
     public String Name { get => _Name; set { if (OnPropertyChanging("Name", value)) { _Name = value; OnPropertyChanged("Name"); } } }
 
-    private String _SessionID;
-    /// <summary>会话。Web的SessionID或Server的会话编号</summary>
+    private String _SessionId;
+    /// <summary>会话。Web的SessionId或Server的会话编号</summary>
     [DisplayName("会话")]
-    [Description("会话。Web的SessionID或Server的会话编号")]
+    [Description("会话。Web的SessionId或Server的会话编号")]
     [DataObjectField(false, false, true, 50)]
-    [BindColumn("SessionID", "会话。Web的SessionID或Server的会话编号", "")]
-    public String SessionID { get => _SessionID; set { if (OnPropertyChanging("SessionID", value)) { _SessionID = value; OnPropertyChanged("SessionID"); } } }
+    [BindColumn("SessionId", "会话。Web的SessionId或Server的会话编号", "")]
+    public String SessionId { get => _SessionId; set { if (OnPropertyChanging("SessionId", value)) { _SessionId = value; OnPropertyChanged("SessionId"); } } }
 
     private String _OAuthProvider;
     /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
@@ -219,10 +219,10 @@ public partial class UserOnline : IEntity<UserOnlineModel>
     /// <param name="model">模型</param>
     public void Copy(UserOnlineModel model)
     {
-        ID = model.ID;
-        UserID = model.UserID;
+        Id = model.Id;
+        UserId = model.UserId;
         Name = model.Name;
-        SessionID = model.SessionID;
+        SessionId = model.SessionId;
         OAuthProvider = model.OAuthProvider;
         Referer = model.Referer;
         Times = model.Times;
@@ -253,10 +253,10 @@ public partial class UserOnline : IEntity<UserOnlineModel>
     {
         get => name switch
         {
-            "ID" => _ID,
-            "UserID" => _UserID,
+            "Id" => _Id,
+            "UserId" => _UserId,
             "Name" => _Name,
-            "SessionID" => _SessionID,
+            "SessionId" => _SessionId,
             "OAuthProvider" => _OAuthProvider,
             "Referer" => _Referer,
             "Times" => _Times,
@@ -282,10 +282,10 @@ public partial class UserOnline : IEntity<UserOnlineModel>
         {
             switch (name)
             {
-                case "ID": _ID = value.ToInt(); break;
-                case "UserID": _UserID = value.ToInt(); break;
+                case "Id": _Id = value.ToInt(); break;
+                case "UserId": _UserId = value.ToInt(); break;
                 case "Name": _Name = Convert.ToString(value); break;
-                case "SessionID": _SessionID = Convert.ToString(value); break;
+                case "SessionId": _SessionId = Convert.ToString(value); break;
                 case "OAuthProvider": _OAuthProvider = Convert.ToString(value); break;
                 case "Referer": _Referer = Convert.ToString(value); break;
                 case "Times": _Times = value.ToInt(); break;
@@ -315,6 +315,47 @@ public partial class UserOnline : IEntity<UserOnlineModel>
     #endregion
 
     #region 扩展查询
+    /// <summary>根据编号查找</summary>
+    /// <param name="id">编号</param>
+    /// <returns>实体对象</returns>
+    public static UserOnline FindById(Int32 id)
+    {
+        if (id < 0) return null;
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
+
+        // 单对象缓存
+        return Meta.SingleCache[id];
+
+        //return Find(_.Id == id);
+    }
+
+    /// <summary>根据用户查找</summary>
+    /// <param name="userId">用户</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserOnline> FindAllByUserId(Int32 userId)
+    {
+        if (userId < 0) return [];
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UserId == userId);
+
+        return FindAll(_.UserId == userId);
+    }
+
+    /// <summary>根据会话查找</summary>
+    /// <param name="sessionId">会话</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserOnline> FindAllBySessionId(String sessionId)
+    {
+        if (sessionId.IsNullOrEmpty()) return [];
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.SessionId.EqualIgnoreCase(sessionId));
+
+        return FindAll(_.SessionId == sessionId);
+    }
     #endregion
 
     #region 字段名
@@ -322,16 +363,16 @@ public partial class UserOnline : IEntity<UserOnlineModel>
     public partial class _
     {
         /// <summary>编号</summary>
-        public static readonly Field ID = FindByName("ID");
+        public static readonly Field Id = FindByName("Id");
 
         /// <summary>用户。当前登录人</summary>
-        public static readonly Field UserID = FindByName("UserID");
+        public static readonly Field UserId = FindByName("UserId");
 
         /// <summary>名称。当前登录人，或根据设备标识推算出来的使用人</summary>
         public static readonly Field Name = FindByName("Name");
 
-        /// <summary>会话。Web的SessionID或Server的会话编号</summary>
-        public static readonly Field SessionID = FindByName("SessionID");
+        /// <summary>会话。Web的SessionId或Server的会话编号</summary>
+        public static readonly Field SessionId = FindByName("SessionId");
 
         /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
         public static readonly Field OAuthProvider = FindByName("OAuthProvider");
@@ -397,16 +438,16 @@ public partial class UserOnline : IEntity<UserOnlineModel>
     public partial class __
     {
         /// <summary>编号</summary>
-        public const String ID = "ID";
+        public const String Id = "Id";
 
         /// <summary>用户。当前登录人</summary>
-        public const String UserID = "UserID";
+        public const String UserId = "UserId";
 
         /// <summary>名称。当前登录人，或根据设备标识推算出来的使用人</summary>
         public const String Name = "Name";
 
-        /// <summary>会话。Web的SessionID或Server的会话编号</summary>
-        public const String SessionID = "SessionID";
+        /// <summary>会话。Web的SessionId或Server的会话编号</summary>
+        public const String SessionId = "SessionId";
 
         /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
         public const String OAuthProvider = "OAuthProvider";

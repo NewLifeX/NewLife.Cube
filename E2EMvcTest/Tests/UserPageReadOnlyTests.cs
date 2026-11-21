@@ -90,7 +90,7 @@ public sealed class UserPageReadOnlyTests : IAsyncLifetime
         Assert.True(hasField, $"[{testId}] 未渲染用户中心资料页。URL={_page.Url}");
 
         // 管理表单字段（角色选择）不应出现
-        Assert.Equal(0, await _page.Locator("select[name=RoleID]").CountAsync());
+        Assert.Equal(0, await _page.Locator("select[name=RoleId]").CountAsync());
 
         // 非系统角色不显示管理表单入口标签
         Assert.Equal(0, await _page.Locator("a[href*='/Admin/User/Edit']").CountAsync());
@@ -186,3 +186,4 @@ public sealed class UserPageReadOnlyTests : IAsyncLifetime
 
     #endregion
 }
+

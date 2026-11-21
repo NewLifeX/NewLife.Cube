@@ -12,16 +12,16 @@ public partial class UserOnlineModel
 {
     #region 属性
     /// <summary>编号</summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>用户。当前登录人</summary>
-    public Int32 UserID { get; set; }
+    public Int32 UserId { get; set; }
 
     /// <summary>名称。当前登录人，或根据设备标识推算出来的使用人</summary>
     public String Name { get; set; }
 
-    /// <summary>会话。Web的SessionID或Server的会话编号</summary>
-    public String SessionID { get; set; }
+    /// <summary>会话。Web的SessionId或Server的会话编号</summary>
+    public String SessionId { get; set; }
 
     /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
     public String OAuthProvider { get; set; }
@@ -86,10 +86,10 @@ public partial class UserOnlineModel
     /// <param name="model">模型</param>
     public void Copy(UserOnlineModel model)
     {
-        ID = model.ID;
-        UserID = model.UserID;
+        Id = model.Id;
+        UserId = model.UserId;
         Name = model.Name;
-        SessionID = model.SessionID;
+        SessionId = model.SessionId;
         OAuthProvider = model.OAuthProvider;
         Referer = model.Referer;
         Times = model.Times;

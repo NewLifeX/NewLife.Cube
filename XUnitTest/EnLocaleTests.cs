@@ -28,7 +28,7 @@ public class EnLocaleTests
     [InlineData("应用系统", "Applications")]
     [InlineData("应用日志", "App log")]
     [InlineData("工作台部件", "Dashboard widgets")]
-    [InlineData("编号", "ID")]
+    [InlineData("编号", "Id")]
     [InlineData("名称", "Name")]
     [InlineData("30天活跃。30天活跃用户数", "Active (30d). Active users in the last 30 days")]
     [InlineData("存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO，默认Local", "Storage type. Local disk, Oss (Alibaba Cloud), Cos (Tencent Cloud), Qiniu or EasyIO; defaults to Local")]
@@ -61,3 +61,4 @@ public class EnLocaleTests
         Assert.Equal("3 核心", Translate("zh-CN", "{0} cores", 3));
     }
 }
+

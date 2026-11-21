@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
@@ -137,7 +137,7 @@ public partial class EntityController<TEntity, TModel>
 
             ViewBag.StatusMessage = SysConfig.Develop ? ("添加失败！" + err) : "添加失败！";
 
-            // 添加失败，ID清零，否则会显示保存按钮
+            // 添加失败，Id清零，否则会显示保存按钮
             entity[Factory.Unique.Name] = 0;
 
             if (IsJsonRequest) return Json(code, ViewBag.StatusMessage);
@@ -568,7 +568,7 @@ public partial class EntityController<TEntity, TModel>
         //if (id.IsNullOrEmpty()) return RedirectToAction(nameof(Index));
 
         // 读取系统配置
-        var ps = Parameter.FindAllByUserID(ManageProvider.User.ID); // UserID=0 && Category=Sync
+        var ps = Parameter.FindAllByUserId(ManageProvider.User.Id); // UserId=0 && Category=Sync
         ps = ps.Where(e => e.Category == "Sync").ToList();
         var server = ps.FirstOrDefault(e => e.Name == "Server")?.Value;
         var token = ps.FirstOrDefault(e => e.Name == "Token")?.Value;
@@ -651,3 +651,4 @@ public partial class EntityController<TEntity, TModel>
     }
     #endregion
 }
+

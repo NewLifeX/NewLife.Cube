@@ -2903,7 +2903,7 @@
             "description": "最后请求",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2921,7 +2921,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3139,7 +3139,7 @@
             "description": "最后请求",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3157,7 +3157,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3232,7 +3232,7 @@
             ],
             "description": "全名"
           },
-          "parentID": {
+          "parentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3361,7 +3361,7 @@
               "string"
             ]
           },
-          "parentID": {
+          "parentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3557,7 +3557,7 @@
             "type": "string",
             "description": "创建者"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3579,7 +3579,7 @@
             "type": "string",
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3700,7 +3700,7 @@
             "type": "string",
             "description": "创建者"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3722,7 +3722,7 @@
             "type": "string",
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3801,7 +3801,7 @@
             "description": "下一次时间。下一次执行作业的时间",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3819,7 +3819,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3898,7 +3898,7 @@
             "description": "下一次时间。下一次执行作业的时间",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -3916,7 +3916,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -4074,7 +4074,7 @@
               "string"
             ]
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -4098,7 +4098,7 @@
               "string"
             ]
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -4214,7 +4214,7 @@
               "string"
             ]
           },
-          "roleID": {
+          "roleId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -4228,7 +4228,7 @@
               "string"
             ]
           },
-          "departmentID": {
+          "departmentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",

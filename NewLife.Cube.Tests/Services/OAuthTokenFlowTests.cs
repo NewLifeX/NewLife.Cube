@@ -7,7 +7,7 @@ using Xunit;
 namespace NewLife.Cube.Tests.Services;
 
 /// <summary>
-/// OAUTH-1 令牌换取链路测试。用可替换响应内容的 GitHub 客户端跑完整链路（授权码→令牌→用户信息/OpenID），
+/// OAUTH-1 令牌换取链路测试。用可替换响应内容的 GitHub 客户端跑完整链路（授权码→令牌→用户信息/OpenId），
 /// 验证请求地址拼装与响应字段映射，无需访问外部平台。
 /// </summary>
 public class OAuthTokenFlowTests
@@ -76,7 +76,7 @@ public class OAuthTokenFlowTests
         var html = client.GetUserInfo();
 
         Assert.False(html.IsNullOrEmpty());
-        Assert.Equal(42, client.UserID);
+        Assert.Equal(42, client.UserId);
         Assert.Equal("octocat", client.UserName);
         Assert.Equal("The Octocat", client.NickName);
         Assert.Equal("https://a.example.com/avatar.png", client.Avatar);
@@ -96,7 +96,7 @@ public class OAuthTokenFlowTests
         var html = client.GetOpenID();
 
         Assert.False(html.IsNullOrEmpty());
-        Assert.Equal("oid-1", client.OpenID);
+        Assert.Equal("oid-1", client.OpenId);
         Assert.Contains("token=gho_token", Assert.Single(client.Calls));
     }
 
@@ -119,3 +119,4 @@ public class OAuthTokenFlowTests
         Assert.True(client.AccessToken.IsNullOrEmpty());
     }
 }
+

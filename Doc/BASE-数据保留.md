@@ -123,8 +123,8 @@ private void TrimData()
 static Int32 DeleteLogBefore(DateTime date)
 {
     // 通过 SnowFlake 工厂将时间转换为 ID 范围
-    var where = XLog._.ID < XLog.Meta.Factory.Snow.GetId(date)
-               & XLog._.CreateUserID == 0;
+    var where = XLog._.Id < XLog.Meta.Factory.Snow.GetId(date)
+               & XLog._.CreateUserId == 0;
 
     try
     {

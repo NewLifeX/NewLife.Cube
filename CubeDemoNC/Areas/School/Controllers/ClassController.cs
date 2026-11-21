@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
 using NewLife.Cube;
@@ -21,7 +21,7 @@ public class ClassController : EntityController<Class, ClassModel>
     static ClassController()
     {
         {
-            var df = ListFields.AddListField("test", null, "ID");
+            var df = ListFields.AddListField("test", null, "Id");
             df.DisplayName = "AJAX操作请求";
             df.Url = "/School/Class/Hello";
             df.DataAction = "action";
@@ -29,14 +29,14 @@ public class ClassController : EntityController<Class, ClassModel>
         }
 
         {
-            var df = ListFields.AddListField("test1", null, "ID");
+            var df = ListFields.AddListField("test1", null, "Id");
             df.DisplayName = "当前页打开";
             df.Url = "/School/Class";
             df.Target = TargetEnum._self + "";
         }
 
         {
-            var df = ListFields.AddListField("test1", null, "ID");
+            var df = ListFields.AddListField("test1", null, "Id");
             df.DisplayName = "浏览器多标签页打开";
             df.Url = "/School/Student";
             df.Target = TargetEnum._blank + "";

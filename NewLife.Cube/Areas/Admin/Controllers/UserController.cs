@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +23,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <param name="authEnhanced">增强认证服务</param>
 /// <param name="passwordService"></param>
 /// <param name="tenantContext">租户上下文</param>
-[DataPermission(null, "ID={#userId}")]
+[DataPermission(null, "Id={#userId}")]
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
@@ -51,7 +51,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
                 // 已是完整 URL（http/https 或绝对路径）直接透传，保留远程头像
                 if (!av.IsNullOrEmpty() && av.StartsWithIgnoreCase("http://", "https://", "/")) return av;
                 // 其余情况（空、裸文件名）统一指向头像端点，由端点兜底返回本地文件或生成的 SVG 文字头像
-                return $"/Cube/Avatar?id={user.ID}";
+                return $"/Cube/Avatar?id={user.Id}";
             };
         }
         {
@@ -64,19 +64,19 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
 
         {
             // 角色搜索：下拉多选。角色未以值集声明（无 LovCode），改用角色缓存作为数据源；
-            // ItemType=multipleSelect 触发 DataField 下发 multiple=true，前端 LovSelect 渲染为多选下拉，多选值经逗号串 roleID=1,2 提交
-            var df = SearchFields.GetField(_.RoleID);
+            // ItemType=multipleSelect 触发 DataField 下发 multiple=true，前端 LovSelect 渲染为多选下拉，多选值经逗号串 roleId=1,2 提交
+            var df = SearchFields.GetField("RoleId");
             df.DataSource = _ => Role.FindAllWithCache()
                 .Where(e => e.Enable)
                 .OrderByDescending(e => e.Sort)
-                .ToDictionary(e => e.ID, e => e.Name);
+                .ToDictionary(e => e.Id, e => e.Name);
             df.ItemType = "multipleSelect";
         }
 
         {
             // 部门搜索：下拉多选。部门缓存作为数据源（对齐 MVC _SelectDepartment 部门选择）
-            var df = SearchFields.GetField(_.DepartmentID);
-            df.DataSource = _ => Department.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            var df = SearchFields.GetField("DepartmentId");
+            df.DataSource = _ => Department.FindAllWithCache().ToDictionary(e => e.Id, e => e.Name);
             df.ItemType = "multipleSelect";
         }
 
@@ -125,40 +125,40 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             df.HeaderTitle = "Third-party sign-in links";
             df.DisplayName = "Links";
             df.Title = "Third-party sign-in links";
-            df.Url = "/Admin/UserConnect?userId={ID}";
+            df.Url = "/Admin/UserConnect?userId={Id}";
         }
 
         {
             var df = ListFields.AddListField("Token", "Logins");
             //df.Header = "令牌";
             df.DisplayName = "Token";
-            df.Url = "/Admin/UserToken?userId={ID}";
+            df.Url = "/Admin/UserToken?userId={Id}";
         }
 
         {
             var df = ListFields.AddListField("Log", "Logins");
             //df.Header = "日志";
             df.DisplayName = "Log";
-            df.Url = "/Admin/Log?userId={ID}";
+            df.Url = "/Admin/Log?userId={Id}";
         }
 
         {
             var df = ListFields.AddListField("OAuthLog", "Logins");
             //df.Header = "OAuth日志";
             df.DisplayName = "OAuth log";
-            df.Url = "/Admin/OAuthLog?userId={ID}";
+            df.Url = "/Admin/OAuthLog?userId={Id}";
         }
 
         {
-            // 主要角色 RoleName 通过 Map 指向 RoleID：显式数据源让前端在该字段位置渲染下拉并提交 RoleID。
+            // 主要角色 RoleName 通过 Map 指向 RoleId：显式数据源让前端在该字段位置渲染下拉并提交 RoleId。
             // 启用角色排前，历史已停用但仍被用户占用的角色也保留，避免编辑时角色显示为空
             var df = AddFormFields.GetField("RoleName");
-            if (df != null) df.DataSource = _ => Role.FindAllWithCache().OrderByDescending(e => e.Enable).ThenByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            if (df != null) df.DataSource = _ => Role.FindAllWithCache().OrderByDescending(e => e.Enable).ThenByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
 
         {
             var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             AddFormFields.RemoveField("RoleNames");
         }
         //{
@@ -167,19 +167,19 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         //}
 
         {
-            // 主要角色 RoleName 通过 Map 指向 RoleID：显式数据源让前端在该字段位置渲染下拉并提交 RoleID
+            // 主要角色 RoleName 通过 Map 指向 RoleId：显式数据源让前端在该字段位置渲染下拉并提交 RoleId
             var df = EditFormFields.GetField("RoleName");
-            if (df != null) df.DataSource = _ => Role.FindAllWithCache().OrderByDescending(e => e.Enable).ThenByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            if (df != null) df.DataSource = _ => Role.FindAllWithCache().OrderByDescending(e => e.Enable).ThenByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
 
         {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
         }
 
         {
-            AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "Extended" && group != L.T("Extended");
+            AddFormFields.GroupVisible = (entity, group) => (entity as User).Id == 0 && group != "Extended" && group != L.T("Extended");
         }
     }
 
@@ -192,7 +192,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         if (id > 0)
         {
             var list = new List<User>();
-            var entity = FindByID(id);
+            var entity = FindById(id);
             if (entity != null)
             {
                 entity.Password = null;
@@ -202,8 +202,9 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         }
 
         //var roleId = p["roleId"].ToInt(-1);
-        // 角色搜索多选提交 roleID=1,2（前端字段名 camelCase），兼容 roleIds 复数参数
+        // 角色搜索多选提交 roleId=1,2（前端字段名 camelCase），兼容 roleIds 复数参数与旧字段名 roleID
         var roleIds = p["roleIds"].SplitAsInt();
+        if (roleIds.Length == 0) roleIds = p["roleId"].SplitAsInt();
         if (roleIds.Length == 0) roleIds = p["roleID"].SplitAsInt();
         //var departmentId = p["departmentId"].ToInt(-1);
         var departmentIds = p["departmentId"].SplitAsInt();
@@ -218,10 +219,10 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         //return XCode.Membership.User.Search(roleId, departmentId, enable, start, end, key, p);
 
         //var exp = new WhereExpression();
-        //if (roleId >= 0) exp &= _.RoleID == roleId | _.RoleIds.Contains("," + roleId + ",");
-        //if (roleIds != null && roleIds.Length > 0) exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
-        //if (departmentId >= 0) exp &= _.DepartmentID == departmentId;
-        //if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
+        //if (roleId >= 0) exp &= _.RoleId == roleId | _.RoleIds.Contains("," + roleId + ",");
+        //if (roleIds != null && roleIds.Length > 0) exp &= _.RoleId.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
+        //if (departmentId >= 0) exp &= _.DepartmentId == departmentId;
+        //if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentId.In(departmentIds);
         //if (enable != null) exp &= _.Enable == enable.Value;
         //exp &= _.LastLogin.Between(start, end);
         //if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
@@ -235,13 +236,13 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             if (r != null)
                 // 城市，要下一级
                 if (r.Level == 2)
-                    rs.AddRange(r.Childs.Select(e => e.ID));
+                    rs.AddRange(r.Childs.Select(e => e.Id));
                 // 省份，要下面两级
                 else if (r.Level == 1)
                 {
-                    rs.AddRange(r.Childs.Select(e => e.ID));
+                    rs.AddRange(r.Childs.Select(e => e.Id));
                     foreach (var item in r.Childs)
-                        rs.AddRange(item.Childs.Select(e => e.ID));
+                        rs.AddRange(item.Childs.Select(e => e.Id));
                 }
             areaIds = rs.ToArray();
         }
@@ -249,40 +250,13 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         //if (roleId > 0) roleIds.Add(roleId);
         //if (departmentId > 0) departmentIds.Add(departmentId);
 
-        // 性别/在线/邮箱验证/手机验证：XCode 数组版 Search 不支持这些参数，传了这些条件时改用完整表达式
+        // 性别/在线/邮箱验证/手机验证
         var sex = p["sex"].ToInt(-1);
         var online = p["online"]?.ToBoolean();
         var mailVerified = p["mailVerified"]?.ToBoolean();
         var mobileVerified = p["mobileVerified"]?.ToBoolean();
 
-        IList<User> list2;
-        if (sex >= 0 || online != null || mailVerified != null || mobileVerified != null)
-        {
-            var exp = new WhereExpression();
-            if (roleIds.Length > 0)
-            {
-                var exp2 = new WhereExpression();
-                exp2 |= _.RoleID.In(roleIds);
-                foreach (var rid in roleIds)
-                    exp2 |= _.RoleIds.Contains("," + rid + ",");
-                exp &= exp2;
-            }
-            if (departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
-            if (areaIds.Length > 0) exp &= _.AreaId.In(areaIds);
-            if (enable != null) exp &= _.Enable == enable.Value;
-            if (sex >= 0) exp &= _.Sex == (SexKinds)sex;
-            if (online != null) exp &= _.Online == online.Value;
-            if (mailVerified != null) exp &= _.MailVerified == mailVerified.Value;
-            if (mobileVerified != null) exp &= _.MobileVerified == mobileVerified.Value;
-            exp &= _.LastLogin.Between(start, end);
-            if (!key.IsNullOrEmpty()) exp &= _.Code.Contains(key) | _.Name.Contains(key) | _.DisplayName.Contains(key) | _.Mobile.Contains(key) | _.Mail.Contains(key);
-
-            list2 = Entity<User>.FindAll(exp, p);
-        }
-        else
-        {
-            list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
-        }
+        var list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, sex, online, mailVerified, mobileVerified, start, end, key, p);
 
         foreach (var user in list2)
             user.Password = null;
@@ -485,7 +459,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     {
         if (ManageProvider.User is not User user) throw new Exception(L.T("The current user is invalid."));
 
-        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
+        user = XCode.Membership.User.FindByKeyForEdit(user.Id);
         if (user == null) throw new Exception(L.T("Invalid user id."));
 
         user["Password"] = null;
@@ -509,7 +483,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         var cur = ManageProvider.User;
         if (cur == null) return RedirectToAction("Login");
 
-        if (user.ID != cur.ID) throw new Exception(L.T("You cannot modify another user's profile."));
+        if (user.Id != cur.Id) throw new Exception(L.T("You cannot modify another user's profile."));
 
         var entity = user as IEntity;
         // 自助更新：仅当用户名实际变更时才拦截。
@@ -517,7 +491,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         // 改为值比对：Name 与当前登录用户名一致则放行。
         if (entity.Dirtys["Name"] && !user.Name.EqualIgnoreCase(cur.Name))
             throw new Exception(L.T("The username cannot be changed."));
-        if (entity.Dirtys["RoleID"]) throw new Exception(L.T("The role cannot be changed."));
+        if (entity.Dirtys["RoleId"]) throw new Exception(L.T("The role cannot be changed."));
         if (entity.Dirtys["Enable"]) throw new Exception(L.T("The disabled state cannot be changed."));
 
         // 头像上传已拆分为独立接口 Attachments（POST /Admin/User/attachments），
@@ -544,11 +518,11 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         if (cur == null) return RedirectToAction("Login");
 
         // 强制只能为当前登录用户上传头像，避免越权
-        var targetId = id.IsNullOrEmpty() ? cur.ID + "" : id;
-        if (!targetId.EqualIgnoreCase(cur.ID + ""))
+        var targetId = id.IsNullOrEmpty() ? cur.Id + "" : id;
+        if (!targetId.EqualIgnoreCase(cur.Id + ""))
             return Json(CubeCode.ParamError.ToInt(), L.T("Only the signed-in user can upload an avatar."));
 
-        return await base.Attachments(file, cur.ID + "", title);
+        return await base.Attachments(file, cur.Id + "", title);
     }
 
     /// <summary>头像上传校验：在基类「非空 + 危险扩展名黑名单」基础上，限制仅图片类型</summary>
@@ -575,7 +549,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     //{
     //    // 修改保存目录和文件名
     //    var set = CubeSetting.Current;
-    //    if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
+    //    if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.Id + Path.GetExtension(file.FileName);
 
     //    return base.SaveFile(entity, file, set.AvatarPath, fileName);
     //}
@@ -626,11 +600,11 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         var user = ManageProvider.User as User;
         if (user == null) return RedirectToAction("Login");
 
-        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
+        user = XCode.Membership.User.FindByKeyForEdit(user.Id);
         if (user == null) throw new Exception(L.T("Invalid user id."));
 
         // 第三方绑定
-        var ucs = UserConnect.FindAllByUserID(user.ID);
+        var ucs = UserConnect.FindAllByUserId(user.Id);
         var ms = OAuthConfig.GetValids(tenantContext.TenantId, GrantTypes.AuthorizationCode);
 
         // 自定义接口直接回实体容易带出令牌、应用密钥等只写字段，这里显式映射为展示 DTO
@@ -639,7 +613,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             Name = user.Name,
             Connects = ucs.Select(e => new UserBindModel
             {
-                ID = e.ID,
+                Id = e.Id,
                 Provider = e.Provider,
                 NickName = e.NickName,
                 Avatar = e.Avatar,
@@ -648,7 +622,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             }).ToArray(),
             OAuthItems = ms.Select(e => new OAuthPlatformModel
             {
-                ID = e.ID,
+                Id = e.Id,
                 Name = e.Name,
                 NickName = e.NickName,
                 Logo = e.Logo,
@@ -740,7 +714,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             if (user != null) throw new ArgumentException(nameof(email), L.T("Email [{0}] already exists.", email));
 
             var r = Role.GetOrAdd(set.DefaultRole);
-            var user2 = ManageProvider.Provider.Register(username, password, r.ID, true);
+            var user2 = ManageProvider.Provider.Register(username, password, r.Id, true);
 
             if (user2 != null && user2 is User user3)
             {
@@ -769,13 +743,13 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             // 多租户开启且解析到租户时，自动绑定用户到该租户（参考 SSO 登录的租户绑定流程）
             if (set.EnableTenant && tenantId > 0 && user2 != null)
             {
-                var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, user2.ID);
+                var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, user2.Id);
                 if (tenantUser == null)
                 {
                     tenantUser = new TenantUser
                     {
                         TenantId = tenantId,
-                        UserId = user2.ID,
+                        UserId = user2.Id,
                         Enable = true,
                         CreateIP = UserHost,
                         CreateTime = DateTime.Now,
@@ -819,7 +793,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         if (!ManageProvider.User.Roles.Any(e => e.IsSystem)) throw new Exception(L.T("Clearing the password requires administrator privileges."));
 
         // 前面表单可能已经清空密码
-        var user = FindByID(id);
+        var user = FindById(id);
         //user.Password = "nopass";
         user.Password = null;
         user.SaveWithoutValid();
@@ -838,7 +812,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         // 吊销令牌属于安全运维操作，仅管理员可用（用户页对非系统角色只读，防跨用户令牌吊销）
         if (!IsSystemRole()) throw new Exception(L.T("Revoking tokens requires administrator privileges."));
 
-        var user = FindByID(id);
+        var user = FindById(id);
         if (user == null) return Json(1, L.T("User does not exist."));
 
         var count = UserToken.RevokeByUser(id);
@@ -908,3 +882,4 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     }
     #endregion
 }
+

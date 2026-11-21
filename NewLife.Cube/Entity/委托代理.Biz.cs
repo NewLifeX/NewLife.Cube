@@ -41,7 +41,7 @@ namespace NewLife.Cube.Entity
         #region 扩展属性
         /// <summary>委托人</summary>
         [XmlIgnore, ScriptIgnore, IgnoreDataMember]
-        public IUser Principal => Extends.Get(nameof(Principal), k => User.FindByID(PrincipalId));
+        public IUser Principal => Extends.Get(nameof(Principal), k => User.FindById(PrincipalId));
 
         /// <summary>委托人</summary>
         [Map(nameof(PrincipalId))]
@@ -49,7 +49,7 @@ namespace NewLife.Cube.Entity
 
         /// <summary>代理人</summary>
         [XmlIgnore, ScriptIgnore, IgnoreDataMember]
-        public IUser Agent => Extends.Get(nameof(Agent), k => User.FindByID(AgentId));
+        public IUser Agent => Extends.Get(nameof(Agent), k => User.FindById(AgentId));
 
         /// <summary>代理人</summary>
         [Map(nameof(AgentId))]

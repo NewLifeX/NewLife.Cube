@@ -83,8 +83,8 @@ public class WidgetDataFixture : IDisposable
         InsertLog(now.AddDays(-1), "历史", true);                 // 昨日日志
         InsertLog(now.AddDays(-2), "登录", true, "old");          // 前日登录
 
-        new UserOnline { Name = "admin", SessionID = "s1", CreateTime = now.AddMinutes(-5) }.Insert();
-        new UserOnline { Name = "old", SessionID = "s2", CreateTime = now.AddHours(-2) }.Insert(); // 超出30分钟
+        new UserOnline { Name = "admin", SessionId = "s1", CreateTime = now.AddMinutes(-5) }.Insert();
+        new UserOnline { Name = "old", SessionId = "s2", CreateTime = now.AddHours(-2) }.Insert(); // 超出30分钟
 
         // 今日统计：供 MaxOnline/OnlineTime 部件读取（最大在线 20，累计在线 3660 秒=1小时1分）
         new NewLife.Cube.Entity.UserStat { Date = DateTime.Today, MaxOnline = 20, OnlineTime = 3660 }.Insert();
@@ -94,7 +94,7 @@ public class WidgetDataFixture : IDisposable
     {
         var log = new XLog
         {
-            ID = XLog.Meta.Factory.Snow.GetId(time),
+            Id = XLog.Meta.Factory.Snow.GetId(time),
             Category = "测试",
             Action = action,
             Success = success,
@@ -194,3 +194,4 @@ public class WidgetDataTests : IDisposable
         Assert.Equal("当前在线", (String)d.Trend);
     }
 }
+

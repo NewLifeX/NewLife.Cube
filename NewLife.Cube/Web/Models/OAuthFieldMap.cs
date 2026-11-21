@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace NewLife.Cube.Web.Models
 {
@@ -8,13 +8,13 @@ namespace NewLife.Cube.Web.Models
     public class OAuthFieldMap
     {
         /// <summary>统一标识。当前应用下唯一</summary>
-        public String OpenID { get; set; }
+        public String OpenId { get; set; }
 
         /// <summary>企业级标识。当前企业所有应用下唯一</summary>
-        public String UnionID { get; set; }
+        public String UnionId { get; set; }
 
-        /// <summary>用户ID</summary>
-        public String UserID { get; set; }
+        /// <summary>用户Id</summary>
+        public String UserId { get; set; }
 
         /// <summary>用户名</summary>
         public String UserName { get; set; }

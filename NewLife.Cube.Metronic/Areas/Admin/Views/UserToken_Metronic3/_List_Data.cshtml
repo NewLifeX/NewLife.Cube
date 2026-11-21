@@ -1,4 +1,4 @@
-﻿@model IList<UserToken>
+@model IList<UserToken>
 @using NewLife.Cube.Entity
 @using NewLife;
 @using NewLife.Web;
@@ -30,7 +30,7 @@
             <th class="text-center">Json数据</th>
             <th class="text-center">Xml数据</th>
             <th class="text-center">Csv数据</th>
-            <th class="text-center" title="用户。本地用户"><a href="@Html.Raw(page.GetSortUrl("UserID"))">用户</a></th>
+            <th class="text-center" title="用户。本地用户"><a href="@Html.Raw(page.GetSortUrl("UserId"))">用户</a></th>
             <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("Expire"))">过期时间</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
             <th class="text-center" title="次数。该令牌使用次数"><a href="@Html.Raw(page.GetSortUrl("Times"))">次数</a></th>
@@ -65,7 +65,7 @@
             {
                 <td class="text-center align-middle pt-0 pb-0">
                     <label class="checkbox checkbox-single">
-                        <input class="checkable" type="checkbox" name="keys" value="@entity.ID" />
+                        <input class="checkable" type="checkbox" name="keys" value="@entity.Id" />
                         <span></span>
                     </label>
                 </td>
@@ -84,7 +84,7 @@
             <td class="text-right">@entity.Times.ToString("n0")</td>
             <td>@entity.LastIP</td>
             <td class="text-center">@entity.LastTime.ToFullString("")</td>
-            <td class="text-center">@provider.FindByID(entity.UpdateUserID)</td>
+            <td class="text-center">@provider.FindByID(entity.UpdateUserId)</td>
             <td class="text-center" title="@entity.UpdateIP.IPToAddress()">@entity.UpdateIP</td>
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
             {

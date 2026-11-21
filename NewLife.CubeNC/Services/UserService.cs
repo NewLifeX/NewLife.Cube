@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Controllers;
 using NewLife.Cube.Areas.Admin.Models;
@@ -36,7 +36,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     /// <summary>OAuth回跳注册待处理缓存前缀</summary>
     private const String OAuthPendingPrefix = "OAuthPending:";
 
-    /// <summary>可信设备缓存前缀。值=设备首次可信时的IP，用于防止设备ID被复制跨IP滥用</summary>
+    /// <summary>可信设备缓存前缀。值=设备首次可信时的IP，用于防止设备Id被复制跨IP滥用</summary>
     private const String TrustedDevicePrefix = "TrustedDevice:";
     #endregion
 
@@ -47,8 +47,8 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     #endregion
 
     #region 可信设备
-    /// <summary>判断设备是否可信。设备ID在可信缓存中且记录的可信IP与当前IP一致</summary>
-    /// <param name="deviceId">设备ID</param>
+    /// <summary>判断设备是否可信。设备Id在可信缓存中且记录的可信IP与当前IP一致</summary>
+    /// <param name="deviceId">设备Id</param>
     /// <param name="ip">当前IP</param>
     /// <returns>可信返回 true</returns>
     public Boolean IsTrustedDevice(String deviceId, String ip)
@@ -62,12 +62,12 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         var value = _cache.Get<String>(key);
         if (value.IsNullOrEmpty()) return false;
 
-        // 可信IP与当前IP不一致时视为不可信，防止设备ID被复制跨IP滥用
+        // 可信IP与当前IP不一致时视为不可信，防止设备Id被复制跨IP滥用
         return value.EqualIgnoreCase(ip);
     }
 
     /// <summary>标记设备为可信设备。登录/注册成功后调用，有效期内免自适应验证码</summary>
-    /// <param name="deviceId">设备ID</param>
+    /// <param name="deviceId">设备Id</param>
     /// <param name="ip">当前IP</param>
     public void SetTrustedDevice(String deviceId, String ip)
     {
@@ -199,10 +199,10 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         // 登录/注册成功，标记设备可信，有效期内免自适应验证码
         SetTrustedDevice(AuthHelper.GetDeviceId(httpContext), ip);
 
-        // 头像为空时，自动设置基于用户ID的默认头像
+        // 头像为空时，自动设置基于用户Id的默认头像
         if (user is User userAv && userAv.Avatar.IsNullOrEmpty())
         {
-            userAv.Avatar = $"/Sso/Avatar?id={user.ID}";
+            userAv.Avatar = $"/Sso/Avatar?id={user.Id}";
             (userAv as IEntity).Update();
         }
 
@@ -218,7 +218,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         if (set.EnableTenant) httpContext.EnsureTenantUser(user, ip);
 
         // 设置租户
-        httpContext.ChooseTenant(user.ID);
+        httpContext.ChooseTenant(user.Id);
 
         // 登录/注册时显式持久化选中的租户到 Cookie（认证路径的 ChooseTenant 不再写 Cookie，消除认证副作用）
         if (_tenantContext.Mode != TenantMode.None)
@@ -232,12 +232,12 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             userSource.SaveAsync();
         }
 
-        LogProvider.Provider.WriteLog(typeof(User), action, true, L.TLog("User: {0}", username) + (source.IsNullOrEmpty() ? "" : L.TLog(" (source: {0})", source)), user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), action, true, L.TLog("User: {0}", username) + (source.IsNullOrEmpty() ? "" : L.TLog(" (source: {0})", source)), user.Id, user + "", ip);
 
         // MFA 拦截：账密通过但用户已开启 MFA，不下发正式令牌，改为下发挂起令牌
         if (set.EnableMfa && _mfa != null && user is IUser iuser && _mfa.IsEnabled(iuser))
         {
-            var mfaToken = _mfa.IssuePendingToken(user.ID);
+            var mfaToken = _mfa.IssuePendingToken(user.Id);
             return new ServiceResult<IToken>
             {
                 IsSuccess = true,
@@ -249,7 +249,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         // 单设备模式：新登录踢掉旧设备，确保同一账号仅保留当前会话。必须在 MFA 拦截之后执行，
         // 否则用户未完成二步验证就已把其他设备踢下线；若本次请求已提前颁发令牌（密码登录管线），
         // 说明踢机已在其颁发前完成，此处跳过以免吊销刚签发的会话
-        if (!set.EnableMultiDeviceLogin && user.ID > 0 && httpContext.Items["jwtToken"] == null) UserToken.RevokeByUser(user.ID);
+        if (!set.EnableMultiDeviceLogin && user.Id > 0 && httpContext.Items["jwtToken"] == null) UserToken.RevokeByUser(user.Id);
 
         // 先颁发令牌，JWT 缓存在 context.Items["jwtToken"]
         // 记住登录状态（Remember）：JWT 有效期与 Cookie 一致延长到 365 天，
@@ -462,7 +462,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         httpContext.Session.Remove("Cube_OAuthId");
         _cache.Remove(pendingKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), L.TLog("OAuth callback registration"), true, L.TLog("Provider: {0}", pending.Provider), user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.TLog("OAuth callback registration"), true, L.TLog("Provider: {0}", pending.Provider), user.Id, user + "", ip);
 
         return result;
     }
@@ -531,7 +531,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
         var role = Role.GetOrAdd(set.DefaultRole);
         var provider = ManageProvider.Provider;
-        provider.Register(username, password, role?.ID ?? 0, enable);
+        provider.Register(username, password, role?.Id ?? 0, enable);
 
         var user = provider.FindByName(username) as User ?? User.FindByName(username);
         if (user == null) throw new InvalidOperationException(L.T("Registration failed. Please try again later."));
@@ -578,19 +578,19 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     /// <remarks>
     /// 按注册顺序调用所有 <see cref="IAccountCloseHandler"/>（全部尽力而为，单个失败不影响其它处理器），
     /// 默认处理器负责吊销令牌、解绑第三方、清理个人数据并脱敏用户行；
-    /// 处理器完成后，框架兜底禁用账号（保留 ID/Name 防重名与审计），确保注销后无法登录。
+    /// 处理器完成后，框架兜底禁用账号（保留 Id/Name 防重名与审计），确保注销后无法登录。
     /// </remarks>
     /// <param name="user">当前用户</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>注销结果</returns>
     public ServiceResult CloseAccount(IUser user, String ip)
     {
-        using var span = tracer?.NewSpan(nameof(CloseAccount), new { user?.ID, ip });
+        using var span = tracer?.NewSpan(nameof(CloseAccount), new { user?.Id, ip });
 
-        if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = "用户未登录" };
+        if (user == null || user.Id <= 0) return new ServiceResult { IsSuccess = false, Message = "用户未登录" };
 
         // 注销脱敏前快照，供处理器定位并清理个人数据。走 SQL 查询，避免单对象缓存返回陈旧副本
-        var entity0 = User.Find(User._.ID == user.ID);
+        var entity0 = User.FindByIdFromDatabase(user.Id);
         IUser snapshot = entity0?.CloneEntity();
 
         // 调用所有处理器清理个人数据。全部尽力而为，单个失败不影响其它处理器
@@ -598,7 +598,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
         // 兜底禁用账号：不依赖任何处理器，确保注销后无法登录。
         // 从数据库重新加载，避免单对象缓存中的陈旧实体把处理器已脱敏的字段写回
-        var entity = User.Find(User._.ID == user.ID);
+        var entity = User.FindByIdFromDatabase(user.Id);
         if (entity != null)
         {
             entity.Enable = false;
@@ -606,7 +606,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         }
         User.Meta.SingleCache.Clear("账号注销");
 
-        LogProvider.Provider.WriteLog(typeof(User), L.TLog("Close account"), true, L.TLog("User: {0}", user), user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.TLog("Close account"), true, L.TLog("User: {0}", user), user.Id, user + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Account closed.") };
     }
@@ -622,7 +622,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         foreach (var handler in handlers)
         {
             // 埋点：每个处理器一个子 Span，便于观测各自耗时与失败
-            using var span = tracer?.NewSpan($"CloseAccount:{handler.GetType().Name}", new { user?.ID });
+            using var span = tracer?.NewSpan($"CloseAccount:{handler.GetType().Name}", new { user?.Id });
             try
             {
                 handler.HandleAsync(user, ip).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -631,7 +631,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             catch (Exception ex)
             {
                 span?.SetError(ex, null);
-                XTrace.WriteLine(L.TLog("[CloseAccount] handler {0} failed to clean up (user {1}): {2}", handler.GetType().FullName, user?.ID, ex.Message));
+                XTrace.WriteLine(L.TLog("[CloseAccount] handler {0} failed to clean up (user {1}): {2}", handler.GetType().FullName, user?.Id, ex.Message));
                 XTrace.WriteException(ex);
             }
         }
@@ -653,7 +653,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             if (_timer != null) return;
 
             //!!! 临时关闭OnlineTime累加字段
-            User.Meta.Factory.AdditionalFields.Remove(nameof(User.__.OnlineTime));
+            User.Meta.Factory.AdditionalFields.Remove("OnlineTime");
 
             _timer = new TimerX(s => ClearExpire(), null, 1000, 60 * 1000) { Async = true };
             _timer2 = new TimerX(DoStat, null, 3000, 60 * 1000) { Async = true };
@@ -669,12 +669,12 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         // 网页使用一个定时器来清理过期
         StartTimer();
 
-        if (online != null && online.SessionID != sessionId) online = null;
+        if (online != null && online.SessionId != sessionId) online = null;
 
         // LastError 设计缺陷，非空设计导致无法在插入中忽略
-        online ??= UserOnline.GetOrAdd(sessionId, UserOnline.FindBySessionID, k => new UserOnline
+        online ??= UserOnline.GetOrAdd(sessionId, UserOnline.FindBySessionId, k => new UserOnline
         {
-            SessionID = k,
+            SessionId = k,
             LastError = new DateTime(1970, 1, 2),//MSSql不能使用1973年之前的日期
             CreateIP = ip,
             CreateTime = DateTime.Now
@@ -697,7 +697,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         if (!status.IsNullOrEmpty() || online.LastError.AddMinutes(3) < DateTime.Now) online.Status = status;
 
         online.Times++;
-        if (userid > 0) online.UserID = userid;
+        if (userid > 0) online.UserId = userid;
         if (!name.IsNullOrEmpty()) online.Name = name;
 
         online.Address = ip.IPToAddress();
@@ -735,7 +735,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
                 var rs = Area.SearchIP(ip, 2);
                 if (rs.Count > 0)
                 {
-                    user2.AreaId = rs[rs.Count - 1].ID;
+                    user2.AreaId = rs[rs.Count - 1].Id;
                     user2.SaveAsync();
                 }
             }
@@ -745,7 +745,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             }
         }
 
-        return SetStatus(online, sessionId, deviceId, page, status, userAgent, user.ID, user + "", ip, refer);
+        return SetStatus(online, sessionId, deviceId, page, status, userAgent, user.Id, user + "", ip, refer);
     }
 
     /// <summary>删除过期，指定过期时间</summary>
@@ -803,7 +803,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             // 设置离线
             foreach (var item in list)
             {
-                var user = ManageProvider.Provider.FindByID(item.UserID);
+                var user = ManageProvider.Provider.FindByID(item.UserId);
                 if (user is User user2)
                 {
                     user2.Online = false;
@@ -837,7 +837,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         var set = CubeSetting.Current;
 
         // 在线表删除
-        var olts = UserOnline.FindAllByUserID(user.ID);
+        var olts = UserOnline.FindAllByUserId(user.Id);
         if (olts.Count > 0)
         {
             foreach (var olt in olts)
@@ -876,13 +876,8 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         var t7 = DateTime.Today.AddDays(-7);
         var t30 = DateTime.Today.AddDays(-30);
 
-        var selects = UserStat._.ID.Count();
-        selects &= User._.LastLogin.SumLarge($"'{t1:yyyy-MM-dd}'", "activeT1");
-        selects &= User._.LastLogin.SumLarge($"'{t7:yyyy-MM-dd}'", "activeT7");
-        selects &= User._.LastLogin.SumLarge($"'{t30:yyyy-MM-dd}'", "activeT30");
-        selects &= User._.RegisterTime.SumLarge($"'{t1:yyyy-MM-dd}'", "newT1");
-        selects &= User._.RegisterTime.SumLarge($"'{t7:yyyy-MM-dd}'", "newT7");
-        selects &= User._.RegisterTime.SumLarge($"'{t30:yyyy-MM-dd}'", "newT30");
+        var selects = UserStat._.Id.Count();
+        selects &= User.BuildStatSelects(t1, t7, t30);
 
         // 减少Sql日志
         var dal = UserOnline.Meta.Session.Dal;
@@ -896,7 +891,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
                 var user = list[0];
 
                 var st = UserStat.GetOrAdd(DateTime.Today);
-                st.Total = user.ID;
+                st.Total = user.Id;
                 st.Actives = user["activeT1"].ToInt();
                 st.ActivesT7 = user["activeT7"].ToInt();
                 st.ActivesT30 = user["activeT30"].ToInt();
@@ -919,3 +914,5 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     }
     #endregion
 }
+
+

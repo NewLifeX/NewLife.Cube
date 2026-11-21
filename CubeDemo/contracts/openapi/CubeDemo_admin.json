@@ -8493,7 +8493,7 @@
             "description": "过期时间。到期后本规则自动失效；未设置表示永久有效。仅供系统自动封禁使用",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -8511,7 +8511,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -8629,7 +8629,7 @@
             "description": "过期时间。到期后本规则自动失效；未设置表示永久有效。仅供系统自动封禁使用",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -8647,7 +8647,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -10606,7 +10606,7 @@
             ],
             "description": "全名"
           },
-          "parentID": {
+          "parentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -10880,7 +10880,7 @@
           },
           "enablePasswordComplexity": {
             "type": "boolean",
-            "description": "复杂密码校验。启用后登录页校验密码复杂度（按密码强度），禁用后登录页仅要求密码非空，默认true"
+            "description": "复杂密码校验。启用后在注册与修改密码时校验密码复杂度（按密码强度），登录页不校验，默认true"
           },
           "maxLoginError": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -11379,7 +11379,7 @@
             ],
             "description": "全名"
           },
-          "parentID": {
+          "parentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -11478,7 +11478,7 @@
             ],
             "description": "创建者"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -11506,7 +11506,7 @@
             ],
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -11592,7 +11592,7 @@
               "string"
             ]
           },
-          "parentID": {
+          "parentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -11678,7 +11678,7 @@
               "string"
             ]
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -11702,7 +11702,7 @@
               "string"
             ]
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -11865,7 +11865,7 @@
               "string"
             ]
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -11889,7 +11889,7 @@
               "string"
             ]
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -11986,7 +11986,7 @@
             "type": "string",
             "description": "操作"
           },
-          "linkID": {
+          "linkId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12068,7 +12068,7 @@
             ],
             "description": "创建者"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12293,7 +12293,7 @@
             "description": "优先级。较大优先",
             "format": "int32"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12311,7 +12311,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12444,7 +12444,7 @@
             "description": "优先级。较大优先",
             "format": "int32"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12462,7 +12462,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12545,7 +12545,7 @@
             ],
             "description": "全名"
           },
-          "parentID": {
+          "parentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12662,7 +12662,7 @@
             ],
             "description": "创建者"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12690,7 +12690,7 @@
             ],
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12839,7 +12839,7 @@
               "string"
             ]
           },
-          "parentID": {
+          "parentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12939,7 +12939,7 @@
               "string"
             ]
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -12963,7 +12963,7 @@
               "string"
             ]
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13120,7 +13120,7 @@
             "type": "boolean",
             "description": "删除。是否已删除，可恢复"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13138,7 +13138,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13296,7 +13296,7 @@
             "type": "boolean",
             "description": "删除。是否已删除，可恢复"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13314,7 +13314,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13494,7 +13494,7 @@
             "description": "编号",
             "format": "int32"
           },
-          "userID": {
+          "userId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13591,7 +13591,7 @@
             ],
             "description": "创建者"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13619,7 +13619,7 @@
             ],
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13673,7 +13673,7 @@
             ],
             "format": "int32"
           },
-          "userID": {
+          "userId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13756,7 +13756,7 @@
               "string"
             ]
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -13780,7 +13780,7 @@
               "string"
             ]
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -14021,7 +14021,7 @@
             ],
             "description": "创建者"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -14049,7 +14049,7 @@
             ],
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -14194,7 +14194,7 @@
               "string"
             ]
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -14218,7 +14218,7 @@
               "string"
             ]
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -14450,7 +14450,7 @@
             "description": "优先级。较大优先",
             "format": "int32"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -14468,7 +14468,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -14604,7 +14604,7 @@
             "description": "优先级。较大优先",
             "format": "int32"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -14622,7 +14622,7 @@
             "type": "string",
             "description": "创建地址"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15460,7 +15460,7 @@
             ],
             "description": "头像"
           },
-          "roleID": {
+          "roleId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15476,7 +15476,7 @@
             ],
             "description": "角色组。次要角色集合"
           },
-          "departmentID": {
+          "departmentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15601,7 +15601,7 @@
             "type": "string",
             "description": "更新者"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15686,7 +15686,7 @@
             "type": "string",
             "description": "提供商"
           },
-          "userID": {
+          "userId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15695,15 +15695,15 @@
             "description": "用户。本地用户",
             "format": "int32"
           },
-          "openID": {
+          "openId": {
             "type": "string",
             "description": "身份标识。用户名、OpenID"
           },
-          "unionID": {
+          "unionId": {
             "type": "string",
             "description": "全局标识。跨应用统一"
           },
-          "linkID": {
+          "linkId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15741,7 +15741,7 @@
             "type": "boolean",
             "description": "启用"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15759,7 +15759,7 @@
             "description": "创建时间",
             "format": "date-time"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15800,7 +15800,7 @@
             "type": "string",
             "description": "提供商"
           },
-          "userID": {
+          "userId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15809,15 +15809,15 @@
             "description": "用户。本地用户",
             "format": "int32"
           },
-          "openID": {
+          "openId": {
             "type": "string",
             "description": "身份标识。用户名、OpenID"
           },
-          "unionID": {
+          "unionId": {
             "type": "string",
             "description": "全局标识。跨应用统一"
           },
-          "linkID": {
+          "linkId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15855,7 +15855,7 @@
             "type": "boolean",
             "description": "启用"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15873,7 +15873,7 @@
             "description": "创建时间",
             "format": "date-time"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15965,7 +15965,7 @@
               "string"
             ]
           },
-          "roleID": {
+          "roleId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -15979,7 +15979,7 @@
               "string"
             ]
           },
-          "departmentID": {
+          "departmentId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -16103,7 +16103,7 @@
             "description": "编号",
             "format": "int32"
           },
-          "userID": {
+          "userId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -16116,7 +16116,7 @@
             "type": "string",
             "description": "名称。当前登录人，或根据设备标识推算出来的使用人"
           },
-          "sessionID": {
+          "sessionId": {
             "type": "string",
             "description": "会话。Web的SessionID或Server的会话编号"
           },
@@ -16224,7 +16224,7 @@
             "description": "编号",
             "format": "int32"
           },
-          "userID": {
+          "userId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -16237,7 +16237,7 @@
             "type": "string",
             "description": "名称。当前登录人，或根据设备标识推算出来的使用人"
           },
-          "sessionID": {
+          "sessionId": {
             "type": "string",
             "description": "会话。Web的SessionID或Server的会话编号"
           },
@@ -16497,7 +16497,7 @@
             "type": "string",
             "description": "地址。锁定该令牌只能访问该资源路径"
           },
-          "userID": {
+          "userId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -16542,7 +16542,7 @@
             "description": "最后时间",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -16560,7 +16560,7 @@
             "description": "创建时间",
             "format": "date-time"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -16605,7 +16605,7 @@
             "type": "string",
             "description": "地址。锁定该令牌只能访问该资源路径"
           },
-          "userID": {
+          "userId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -16650,7 +16650,7 @@
             "description": "最后时间",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -16668,7 +16668,7 @@
             "description": "创建时间",
             "format": "date-time"
           },
-          "updateUserID": {
+          "updateUserId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",

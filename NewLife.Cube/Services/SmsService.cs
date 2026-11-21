@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using NewLife.Caching;
 using NewLife.Cube.Entity;
 using NewLife.Security;
@@ -137,7 +137,7 @@ public class SmsService(ICacheProvider cacheProvider)
             ConfigId = config.Id,
             ConfigName = config + "",
             Provider = config.Provider,
-            UserId = ManageProvider.User?.ID ?? 0,
+            UserId = ManageProvider.User?.Id ?? 0,
             Target = mobile,
             ExpireTime = DateTime.Now.AddSeconds(config.Expire),
         };
@@ -199,3 +199,4 @@ public class SmsService(ICacheProvider cacheProvider)
         return code;
     }
 }
+

@@ -6,7 +6,7 @@
 @if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
 {
     <div class="clearfix form-actions col-sm-12 col-md-12">
-        <a href="~/Admin/User/ClearPassword/@entity["ID"]" class="col-xs-1 btn btn-warning btn-sm" title="@L.T("When the password in the database is empty, any password can sign in")">@L.T("Clear password")</a>
+        <a href="~/Admin/User/ClearPassword/@entity["Id"]" class="col-xs-1 btn btn-warning btn-sm" title="@L.T("When the password in the database is empty, any password can sign in")">@L.T("Clear password")</a>
         <label class="control-label col-xs-3 col-sm-4 col-md-4"></label>
         <button type="submit" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-@(isNew ? "plus" : "save")"></i><strong>@L.T(isNew ? "Add" : "Save")</strong></button>
         <button type="button" class="btn btn-default btn-sm" onclick="history.go(-1);"><i class="glyphicon glyphicon-remove"></i><strong>@L.T("Cancel")</strong></button>

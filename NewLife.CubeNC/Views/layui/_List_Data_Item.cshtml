@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using Microsoft.AspNetCore.Routing
 @using XCode;
@@ -158,7 +158,7 @@ else
             {
                 <td class="@(tdClass ?? "text-right")" title="@title">@(value.ToLong().ToGMK())</td>
             }
-            else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+            else if (item.Name.EqualIgnoreCase("CreateUserId", "UpdateUserId"))
             {
                 //var provider = ViewData["Provider"] as IManageProvider;
                 if (provider != null)

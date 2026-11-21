@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.Http.Extensions
 @using NewLife.Common;
 @{
     var retUrl = Context.Request.GetEncodedPathAndQuery();
@@ -8,7 +8,7 @@
     var roleNames = "";
     if (user != null)
     {
-        uid = user.ID;
+        uid = user.Id;
         roleNames = user.Roles == null ? "" : user.Roles.Join();
     }
     var cfg = ViewBag.Config as SysConfig;

@@ -1,4 +1,4 @@
-﻿@using NewLife.Model;
+@using NewLife.Model;
 @using XCode.Membership;
 @using NewLife;
 @using NewLife.Cube.ViewModels;
@@ -26,7 +26,7 @@
             {
                 <i class="menu-icon @item.Icon" style="font-size:large"></i>
             }
-            else if(item.ParentID == 0) {
+            else if(item.ParentId == 0) {
                 if (item.Name != "Admin") { _idx++; }
                 <i class="menu-icon @icons[_idx++]" style="font-size:large"></i>
             }
@@ -62,3 +62,4 @@ else
         </a>
     </li>
 }
+

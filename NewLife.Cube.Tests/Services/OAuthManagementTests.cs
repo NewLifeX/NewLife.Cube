@@ -10,7 +10,7 @@ namespace NewLife.Cube.Tests.Services;
 
 /// <summary>
 /// OAUTH-3 / OAUTH-5 测试。覆盖 OAuth 服务商配置（新增、按名称/AppId 查找、可用与可见列表的启用/租户/授权类型过滤与排序）
-/// 与用户第三方链接（按 Provider+OpenID、用户、UnionID、设备查重与条件检索）。
+/// 与用户第三方链接（按 Provider+OpenId、用户、UnionId、设备查重与条件检索）。
 /// </summary>
 [Collection("TenantAuth")]
 public class OAuthManagementTests
@@ -49,9 +49,9 @@ public class OAuthManagementTests
         var connect = new UserConnect
         {
             Provider = provider,
-            UserID = userId,
-            OpenID = openId,
-            UnionID = unionId,
+            UserId = userId,
+            OpenId = openId,
+            UnionId = unionId,
             DeviceId = deviceId,
             NickName = "第三方昵称",
             Enable = true,
@@ -70,7 +70,7 @@ public class OAuthManagementTests
         var config = OAuthConfig.Add(name, "微信登录", "/logo.png", "测试配置");
 
         Assert.NotNull(config);
-        Assert.True(config.ID > 0);
+        Assert.True(config.Id > 0);
         Assert.Equal(name, config.Name);
         Assert.Equal("微信登录", config.NickName);
         Assert.Equal("测试配置", config.Remark);
@@ -83,10 +83,10 @@ public class OAuthManagementTests
         config.Enable = true;
         config.Update();
 
-        Assert.Equal(config.ID, OAuthConfig.FindByID(config.ID)?.ID);
-        Assert.Equal(config.ID, OAuthConfig.FindByName(name)?.ID);
-        Assert.Equal(config.ID, OAuthConfig.FindByAppId(config.AppId)?.ID);
-        Assert.Null(OAuthConfig.FindByID(0));
+        Assert.Equal(config.Id, OAuthConfig.FindById(config.Id)?.Id);
+        Assert.Equal(config.Id, OAuthConfig.FindByName(name)?.Id);
+        Assert.Equal(config.Id, OAuthConfig.FindByAppId(config.AppId)?.Id);
+        Assert.Null(OAuthConfig.FindById(0));
         Assert.Null(OAuthConfig.FindByName(Unique("missing")));
 
         // 禁用后的配置不得再被 AppId 命中（防止禁用渠道继续生效）
@@ -108,18 +108,18 @@ public class OAuthManagementTests
         OAuthConfig.Meta.Cache.Clear("OAuth 配置测试写入", true);
 
         var valids = OAuthConfig.GetValids(tenantId);
-        Assert.Contains(valids, e => e.ID == low.ID);
-        Assert.Contains(valids, e => e.ID == high.ID);
+        Assert.Contains(valids, e => e.Id == low.Id);
+        Assert.Contains(valids, e => e.Id == high.Id);
         Assert.DoesNotContain(valids, e => e.Name == "disabled");
         Assert.DoesNotContain(valids, e => e.TenantId == tenantId + 1);
-        Assert.True(valids.First().ID == high.ID, "应按 Sort 倒序，最高优先级在最前");
+        Assert.True(valids.First().Id == high.Id, "应按 Sort 倒序，最高优先级在最前");
 
         var passwordOnly = OAuthConfig.GetValids(tenantId, GrantTypes.Password);
-        Assert.Contains(passwordOnly, e => e.ID == password.ID);
-        Assert.DoesNotContain(passwordOnly, e => e.ID == high.ID);
+        Assert.Contains(passwordOnly, e => e.Id == password.Id);
+        Assert.DoesNotContain(passwordOnly, e => e.Id == high.Id);
 
         var visibles = OAuthConfig.GetVisibles(tenantId);
-        Assert.Contains(visibles, e => e.ID == high.ID);
+        Assert.Contains(visibles, e => e.Id == high.Id);
         Assert.DoesNotContain(visibles, e => e.Name == "disabled");
     }
 
@@ -131,52 +131,54 @@ public class OAuthManagementTests
 
         var page = new PageParameter { PageIndex = 1, PageSize = 10 };
         var list = OAuthConfig.Search(name, DateTime.Now.AddDays(-1), DateTime.Now.AddDays(1), null, page);
-        Assert.Contains(list, e => e.ID == config.ID);
+        Assert.Contains(list, e => e.Id == config.Id);
 
         var miss = OAuthConfig.Search(Unique("missing"), DateTime.Now.AddDays(-1), DateTime.Now.AddDays(1), null, new PageParameter { PageIndex = 1, PageSize = 10 });
-        Assert.DoesNotContain(miss, e => e.ID == config.ID);
+        Assert.DoesNotContain(miss, e => e.Id == config.Id);
     }
     #endregion
 
     #region OAUTH-5 用户链接
-    [Fact(DisplayName = "用户链接_按Provider与OpenID以及用户与UnionID查找")]
+    [Fact(DisplayName = "用户链接_按Provider与OpenId以及用户与UnionId查找")]
     public void UserConnect_FindByProviderAndUser()
     {
-        var userId = _fx.LegacyUser.ID;
+        var userId = _fx.LegacyUser.Id;
         var provider = Unique("WeChat");
         var openId = Unique("open");
         var unionId = Unique("union");
         var connect = CreateConnect(provider, userId, openId, unionId, Unique("dev"));
 
-        Assert.Equal(connect.ID, UserConnect.FindByProviderAndOpenID(provider, openId)?.ID);
-        Assert.Null(UserConnect.FindByProviderAndOpenID(provider, Unique("missing")));
-        Assert.Null(UserConnect.FindByProviderAndOpenID(Unique("missing"), openId));
+        Assert.Equal(connect.Id, UserConnect.FindByProviderAndOpenId(provider, openId)?.Id);
+        Assert.Null(UserConnect.FindByProviderAndOpenId(provider, Unique("missing")));
+        Assert.Null(UserConnect.FindByProviderAndOpenId(Unique("missing"), openId));
 
-        var byUser = UserConnect.FindAllByUserID(userId);
-        Assert.Contains(byUser, e => e.ID == connect.ID);
+        var byUser = UserConnect.FindAllByUserId(userId);
+        Assert.Contains(byUser, e => e.Id == connect.Id);
 
-        Assert.Contains(UserConnect.FindAllByUnionId(unionId), e => e.ID == connect.ID);
-        Assert.Contains(UserConnect.FindAllByOpenID(openId), e => e.ID == connect.ID);
-        Assert.Contains(UserConnect.FindAllByDeviceId(connect.DeviceId), e => e.ID == connect.ID);
+        Assert.Contains(UserConnect.FindAllByUnionId(unionId), e => e.Id == connect.Id);
+        Assert.Contains(UserConnect.FindAllByOpenId(openId), e => e.Id == connect.Id);
+        Assert.Contains(UserConnect.FindAllByDeviceId(connect.DeviceId), e => e.Id == connect.Id);
     }
 
     [Fact(DisplayName = "用户链接_按服务商与时间区间检索")]
     public void UserConnect_Search_Filters()
     {
-        var userId = _fx.LegacyUser.ID;
+        var userId = _fx.LegacyUser.Id;
         var provider = Unique("DingTalk");
         var connect = CreateConnect(provider, userId, Unique("open"));
 
         var start = DateTime.Now.AddHours(-1);
         var end = DateTime.Now.AddHours(1);
         var hit = UserConnect.Search(provider, userId, start, end, null, new PageParameter { PageIndex = 1, PageSize = 10 });
-        Assert.Contains(hit, e => e.ID == connect.ID);
+        Assert.Contains(hit, e => e.Id == connect.Id);
 
         var otherProvider = UserConnect.Search(Unique("missing"), userId, start, end, null, new PageParameter { PageIndex = 1, PageSize = 10 });
-        Assert.DoesNotContain(otherProvider, e => e.ID == connect.ID);
+        Assert.DoesNotContain(otherProvider, e => e.Id == connect.Id);
 
         var outside = UserConnect.Search(provider, userId, DateTime.Now.AddDays(-10), DateTime.Now.AddDays(-9), null, new PageParameter { PageIndex = 1, PageSize = 10 });
-        Assert.DoesNotContain(outside, e => e.ID == connect.ID);
+        Assert.DoesNotContain(outside, e => e.Id == connect.Id);
     }
     #endregion
 }
+
+

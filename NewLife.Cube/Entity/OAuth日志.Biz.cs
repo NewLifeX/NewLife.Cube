@@ -44,7 +44,7 @@ public partial class OAuthLog : Entity<OAuthLog>
     #region 扩展属性
     /// <summary>用户</summary>
     [XmlIgnore, ScriptIgnore, IgnoreDataMember]
-    public User User => Extends.Get(nameof(User), k => User.FindByID(UserId));
+    public User User => Extends.Get(nameof(User), k => User.FindById(UserId));
 
     /// <summary>用户</summary>
     [Map(__.UserId)]

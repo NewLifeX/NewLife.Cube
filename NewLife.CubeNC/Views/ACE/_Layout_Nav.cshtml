@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using XCode
 @using XCode.Membership
 @{
@@ -13,7 +13,7 @@
     {
         foreach (IMenu item in (menu as IEntityTree).AllParents)
         {
-            if (item.ID != 0)
+            if (item.Id != 0)
             {
                 @NewLife.Cube.Membership.MenuHelper.GetDisplayName(item)
             }

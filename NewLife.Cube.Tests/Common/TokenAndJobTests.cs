@@ -31,7 +31,7 @@ public class TokenAndJobTests
         var token = new UserToken
         {
             Token = Unique("tk"),
-            UserID = user.ID,
+            UserId = user.Id,
             Enable = enable,
             Expire = expire ?? DateTime.Now.AddDays(7),
             CreateIP = "127.0.0.1",
@@ -62,11 +62,11 @@ public class TokenAndJobTests
             var target = created[^1];
             var persisted = UserToken.Find(UserToken._.Token == target.Token);
             Assert.NotNull(persisted);
-            Assert.Equal(target.ID, persisted.ID);
+            Assert.Equal(target.Id, persisted.Id);
 
             // 冷查询和重复查询都必须按 Token 返回同一条记录。
-            Assert.Equal(target.ID, UserToken.FindByToken(target.Token)?.ID);
-            Assert.Equal(target.ID, UserToken.FindByToken(target.Token)?.ID);
+            Assert.Equal(target.Id, UserToken.FindByToken(target.Token)?.Id);
+            Assert.Equal(target.Id, UserToken.FindByToken(target.Token)?.Id);
             Assert.Null(UserToken.FindByToken(Unique("missing")));
             Assert.Null(UserToken.FindByToken(null));
             Assert.Null(UserToken.FindByToken(""));
@@ -100,7 +100,7 @@ public class TokenAndJobTests
         {
             Name = Unique("tkUser")[..12],
             Password = "x",
-            RoleID = user.RoleID,
+            RoleId = user.RoleId,
             Enable = false,
             RegisterTime = DateTime.Now,
         };
@@ -120,7 +120,7 @@ public class TokenAndJobTests
 
         var first = UserToken.Valid(token.Token, "10.1.2.3");
 
-        Assert.Equal(token.ID, first.ID);
+        Assert.Equal(token.Id, first.Id);
         Assert.Equal(1, first.Times);
         Assert.Equal("10.1.2.3", first.FirstIP);
         Assert.True(first.FirstTime.Year >= DateTime.Today.Year);
@@ -142,21 +142,21 @@ public class TokenAndJobTests
         CreateToken(user, false);
         CreateToken(other);
 
-        var byUser = UserToken.FindAllByUserID(user.ID);
-        Assert.Contains(byUser, e => e.ID == mine.ID);
-        Assert.DoesNotContain(byUser, e => e.UserID == other.ID);
+        var byUser = UserToken.FindAllByUserId(user.Id);
+        Assert.Contains(byUser, e => e.Id == mine.Id);
+        Assert.DoesNotContain(byUser, e => e.UserId == other.Id);
 
         
-        var byToken = UserToken.Search(mine.Token, mine.UserID, null, DateTime.Now.AddDays(-1), DateTime.Now.AddDays(30), new Pager { PageIndex = 1, PageSize = 20 });
+        var byToken = UserToken.Search(mine.Token, mine.UserId, null, DateTime.Now.AddDays(-1), DateTime.Now.AddDays(30), new Pager { PageIndex = 1, PageSize = 20 });
         Assert.Single(byToken);
-        Assert.Equal(mine.ID, byToken[0].ID);
+        Assert.Equal(mine.Id, byToken[0].Id);
 
-        var enabled = UserToken.Search(null, mine.UserID, true, DateTime.Now.AddDays(-1), DateTime.Now.AddDays(30), new Pager { PageIndex = 1, PageSize = 20 });
-        Assert.Contains(enabled, e => e.ID == mine.ID);
+        var enabled = UserToken.Search(null, mine.UserId, true, DateTime.Now.AddDays(-1), DateTime.Now.AddDays(30), new Pager { PageIndex = 1, PageSize = 20 });
+        Assert.Contains(enabled, e => e.Id == mine.Id);
         Assert.All(enabled, e => Assert.True(e.Enable));
 
         Assert.Null(UserToken.FindByToken(Unique("missing")));
-        Assert.Equal(mine.ID, UserToken.FindByToken(mine.Token)?.ID);
+        Assert.Equal(mine.Id, UserToken.FindByToken(mine.Token)?.Id);
     }
     #endregion
 
@@ -204,5 +204,7 @@ public class TokenAndJobTests
     }
     #endregion
 }
+
+
 
 

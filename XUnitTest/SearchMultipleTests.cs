@@ -4,6 +4,7 @@ using System.Linq;
 using NewLife.Cube;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
+using XCode;
 using XCode.Membership;
 using Xunit;
 
@@ -50,7 +51,7 @@ public class SearchMultipleTests
         {
             foreach (var name in names)
             {
-                new User { Name = name, DisplayName = name, RoleID = role.ID, Enable = true }.Insert();
+                new User { Name = name, DisplayName = name, RoleId = role.Id, Enable = true }.Insert();
             }
 
             var controller = new MultiUserController();
@@ -70,8 +71,9 @@ public class SearchMultipleTests
         }
         finally
         {
-            User.Delete(User._.Name.StartsWith("multi_"));
+            User.FindAll().Where(e => e.Name.StartsWith("multi_")).Delete();
             role.Delete();
         }
     }
 }
+

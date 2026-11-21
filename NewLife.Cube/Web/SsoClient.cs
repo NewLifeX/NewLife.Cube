@@ -1,4 +1,4 @@
-﻿using NewLife.Model;
+using NewLife.Model;
 using NewLife.Remoting;
 using NewLife.Security;
 using NewLife.Serialization;
@@ -130,7 +130,7 @@ public class SsoClient
 
         var user = JsonHelper.Convert<User>(dic);
 
-        if (dic.TryGetValue("userid", out var str)) user.ID = str.ToInt();
+        if (dic.TryGetValue("userid", out var str)) user.Id = str.ToInt();
         if (dic.TryGetValue("usercode", out str)) user.Code = str as String;
         if (dic.TryGetValue("username", out str)) user.Name = str as String;
         if (dic.TryGetValue("nickname", out str)) user.DisplayName = str as String;

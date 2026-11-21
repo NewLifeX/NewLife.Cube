@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
@@ -118,7 +118,7 @@ public class TestFieldController : EntityController<测试字段, 测试字段Mo
         // 真实角色（来自 Membership）
         var real = Role.FindAll().Select(r => new Dictionary<String, Object>
         {
-            ["id"] = r.ID,
+            ["id"] = r.Id,
             ["name"] = r.Name,
         }).ToList();
 
@@ -154,3 +154,4 @@ public class TestFieldController : EntityController<测试字段, 测试字段Mo
         };
     }
 }
+

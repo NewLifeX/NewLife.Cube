@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
@@ -76,7 +76,7 @@ public class Id4Client : OAuthClient
         return base.GetHtml(action, url);
     }
 
-    /// <summary>获取OpenID</summary>
+    /// <summary>获取OpenId</summary>
     public override String GetOpenID()
     {
         var url = Server.EnsureEnd("/") + OpenIDUrl.TrimStart('/');
@@ -89,7 +89,7 @@ public class Id4Client : OAuthClient
         {
             var dic = GetNameValues(html);
 
-            if (dic.TryGetValue("sub", out var v) && v != null) OpenID = v.ToString().Trim();
+            if (dic.TryGetValue("sub", out var v) && v != null) OpenId = v.ToString().Trim();
             if (dic.TryGetValue("name", out v) && v != null) UserName = v.ToString().Trim();
 
         }

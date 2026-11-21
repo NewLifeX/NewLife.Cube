@@ -17,22 +17,22 @@ namespace NewLife.Cube.Entity;
 [Serializable]
 [DataObject]
 [Description("用户链接。第三方绑定")]
-[BindIndex("IU_UserConnect_Provider_OpenID", true, "Provider,OpenID")]
-[BindIndex("IX_UserConnect_UserID", false, "UserID")]
-[BindIndex("IX_UserConnect_OpenID", false, "OpenID")]
-[BindIndex("IX_UserConnect_UnionID", false, "UnionID")]
+[BindIndex("IU_UserConnect_Provider_OpenId", true, "Provider,OpenId")]
+[BindIndex("IX_UserConnect_UserId", false, "UserId")]
+[BindIndex("IX_UserConnect_OpenId", false, "OpenId")]
+[BindIndex("IX_UserConnect_UnionId", false, "UnionId")]
 [BindIndex("IX_UserConnect_DeviceId", false, "DeviceId")]
 [BindTable("UserConnect", Description = "用户链接。第三方绑定", ConnName = "Membership", DbType = DatabaseType.None)]
 public partial class UserConnect : IEntity<UserConnectModel>
 {
     #region 属性
-    private Int32 _ID;
+    private Int32 _Id;
     /// <summary>编号</summary>
     [DisplayName("编号")]
     [Description("编号")]
     [DataObjectField(true, true, false, 0)]
-    [BindColumn("ID", "编号", "")]
-    public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+    [BindColumn("Id", "编号", "")]
+    public Int32 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
     private String _Provider;
     /// <summary>提供商</summary>
@@ -42,37 +42,37 @@ public partial class UserConnect : IEntity<UserConnectModel>
     [BindColumn("Provider", "提供商", "")]
     public String Provider { get => _Provider; set { if (OnPropertyChanging("Provider", value)) { _Provider = value; OnPropertyChanged("Provider"); } } }
 
-    private Int32 _UserID;
+    private Int32 _UserId;
     /// <summary>用户。本地用户</summary>
     [DisplayName("用户")]
     [Description("用户。本地用户")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("UserID", "用户。本地用户", "")]
-    public Int32 UserID { get => _UserID; set { if (OnPropertyChanging("UserID", value)) { _UserID = value; OnPropertyChanged("UserID"); } } }
+    [BindColumn("UserId", "用户。本地用户", "")]
+    public Int32 UserId { get => _UserId; set { if (OnPropertyChanging("UserId", value)) { _UserId = value; OnPropertyChanged("UserId"); } } }
 
-    private String _OpenID;
-    /// <summary>身份标识。用户名、OpenID</summary>
+    private String _OpenId;
+    /// <summary>身份标识。用户名、OpenId</summary>
     [DisplayName("身份标识")]
-    [Description("身份标识。用户名、OpenID")]
+    [Description("身份标识。用户名、OpenId")]
     [DataObjectField(false, false, true, 50)]
-    [BindColumn("OpenID", "身份标识。用户名、OpenID", "")]
-    public String OpenID { get => _OpenID; set { if (OnPropertyChanging("OpenID", value)) { _OpenID = value; OnPropertyChanged("OpenID"); } } }
+    [BindColumn("OpenId", "身份标识。用户名、OpenId", "")]
+    public String OpenId { get => _OpenId; set { if (OnPropertyChanging("OpenId", value)) { _OpenId = value; OnPropertyChanged("OpenId"); } } }
 
-    private String _UnionID;
+    private String _UnionId;
     /// <summary>全局标识。跨应用统一</summary>
     [DisplayName("全局标识")]
     [Description("全局标识。跨应用统一")]
     [DataObjectField(false, false, true, 50)]
-    [BindColumn("UnionID", "全局标识。跨应用统一", "")]
-    public String UnionID { get => _UnionID; set { if (OnPropertyChanging("UnionID", value)) { _UnionID = value; OnPropertyChanged("UnionID"); } } }
+    [BindColumn("UnionId", "全局标识。跨应用统一", "")]
+    public String UnionId { get => _UnionId; set { if (OnPropertyChanging("UnionId", value)) { _UnionId = value; OnPropertyChanged("UnionId"); } } }
 
-    private Int64 _LinkID;
+    private Int64 _LinkId;
     /// <summary>用户编号。第三方用户编号</summary>
     [DisplayName("用户编号")]
     [Description("用户编号。第三方用户编号")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("LinkID", "用户编号。第三方用户编号", "")]
-    public Int64 LinkID { get => _LinkID; set { if (OnPropertyChanging("LinkID", value)) { _LinkID = value; OnPropertyChanged("LinkID"); } } }
+    [BindColumn("LinkId", "用户编号。第三方用户编号", "")]
+    public Int64 LinkId { get => _LinkId; set { if (OnPropertyChanging("LinkId", value)) { _LinkId = value; OnPropertyChanged("LinkId"); } } }
 
     private String _NickName;
     /// <summary>昵称</summary>
@@ -130,14 +130,14 @@ public partial class UserConnect : IEntity<UserConnectModel>
     [BindColumn("Enable", "启用", "")]
     public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
-    private Int32 _CreateUserID;
+    private Int32 _CreateUserId;
     /// <summary>创建用户</summary>
     [Category("扩展")]
     [DisplayName("创建用户")]
     [Description("创建用户")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("CreateUserID", "创建用户", "")]
-    public Int32 CreateUserID { get => _CreateUserID; set { if (OnPropertyChanging("CreateUserID", value)) { _CreateUserID = value; OnPropertyChanged("CreateUserID"); } } }
+    [BindColumn("CreateUserId", "创建用户", "")]
+    public Int32 CreateUserId { get => _CreateUserId; set { if (OnPropertyChanging("CreateUserId", value)) { _CreateUserId = value; OnPropertyChanged("CreateUserId"); } } }
 
     private String _CreateIP;
     /// <summary>创建地址</summary>
@@ -157,14 +157,14 @@ public partial class UserConnect : IEntity<UserConnectModel>
     [BindColumn("CreateTime", "创建时间", "")]
     public DateTime CreateTime { get => _CreateTime; set { if (OnPropertyChanging("CreateTime", value)) { _CreateTime = value; OnPropertyChanged("CreateTime"); } } }
 
-    private Int32 _UpdateUserID;
+    private Int32 _UpdateUserId;
     /// <summary>更新用户</summary>
     [Category("扩展")]
     [DisplayName("更新用户")]
     [Description("更新用户")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("UpdateUserID", "更新用户", "")]
-    public Int32 UpdateUserID { get => _UpdateUserID; set { if (OnPropertyChanging("UpdateUserID", value)) { _UpdateUserID = value; OnPropertyChanged("UpdateUserID"); } } }
+    [BindColumn("UpdateUserId", "更新用户", "")]
+    public Int32 UpdateUserId { get => _UpdateUserId; set { if (OnPropertyChanging("UpdateUserId", value)) { _UpdateUserId = value; OnPropertyChanged("UpdateUserId"); } } }
 
     private String _UpdateIP;
     /// <summary>更新地址</summary>
@@ -199,12 +199,12 @@ public partial class UserConnect : IEntity<UserConnectModel>
     /// <param name="model">模型</param>
     public void Copy(UserConnectModel model)
     {
-        ID = model.ID;
+        Id = model.Id;
         Provider = model.Provider;
-        UserID = model.UserID;
-        OpenID = model.OpenID;
-        UnionID = model.UnionID;
-        LinkID = model.LinkID;
+        UserId = model.UserId;
+        OpenId = model.OpenId;
+        UnionId = model.UnionId;
+        LinkId = model.LinkId;
         NickName = model.NickName;
         DeviceId = model.DeviceId;
         Avatar = model.Avatar;
@@ -212,10 +212,10 @@ public partial class UserConnect : IEntity<UserConnectModel>
         RefreshToken = model.RefreshToken;
         Expire = model.Expire;
         Enable = model.Enable;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateIP = model.CreateIP;
         CreateTime = model.CreateTime;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateIP = model.UpdateIP;
         UpdateTime = model.UpdateTime;
         Remark = model.Remark;
@@ -230,12 +230,12 @@ public partial class UserConnect : IEntity<UserConnectModel>
     {
         get => name switch
         {
-            "ID" => _ID,
+            "Id" => _Id,
             "Provider" => _Provider,
-            "UserID" => _UserID,
-            "OpenID" => _OpenID,
-            "UnionID" => _UnionID,
-            "LinkID" => _LinkID,
+            "UserId" => _UserId,
+            "OpenId" => _OpenId,
+            "UnionId" => _UnionId,
+            "LinkId" => _LinkId,
             "NickName" => _NickName,
             "DeviceId" => _DeviceId,
             "Avatar" => _Avatar,
@@ -243,10 +243,10 @@ public partial class UserConnect : IEntity<UserConnectModel>
             "RefreshToken" => _RefreshToken,
             "Expire" => _Expire,
             "Enable" => _Enable,
-            "CreateUserID" => _CreateUserID,
+            "CreateUserId" => _CreateUserId,
             "CreateIP" => _CreateIP,
             "CreateTime" => _CreateTime,
-            "UpdateUserID" => _UpdateUserID,
+            "UpdateUserId" => _UpdateUserId,
             "UpdateIP" => _UpdateIP,
             "UpdateTime" => _UpdateTime,
             "Remark" => _Remark,
@@ -256,12 +256,12 @@ public partial class UserConnect : IEntity<UserConnectModel>
         {
             switch (name)
             {
-                case "ID": _ID = value.ToInt(); break;
+                case "Id": _Id = value.ToInt(); break;
                 case "Provider": _Provider = Convert.ToString(value); break;
-                case "UserID": _UserID = value.ToInt(); break;
-                case "OpenID": _OpenID = Convert.ToString(value); break;
-                case "UnionID": _UnionID = Convert.ToString(value); break;
-                case "LinkID": _LinkID = value.ToLong(); break;
+                case "UserId": _UserId = value.ToInt(); break;
+                case "OpenId": _OpenId = Convert.ToString(value); break;
+                case "UnionId": _UnionId = Convert.ToString(value); break;
+                case "LinkId": _LinkId = value.ToLong(); break;
                 case "NickName": _NickName = Convert.ToString(value); break;
                 case "DeviceId": _DeviceId = Convert.ToString(value); break;
                 case "Avatar": _Avatar = Convert.ToString(value); break;
@@ -269,10 +269,10 @@ public partial class UserConnect : IEntity<UserConnectModel>
                 case "RefreshToken": _RefreshToken = Convert.ToString(value); break;
                 case "Expire": _Expire = value.ToDateTime(); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
-                case "CreateUserID": _CreateUserID = value.ToInt(); break;
+                case "CreateUserId": _CreateUserId = value.ToInt(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
-                case "UpdateUserID": _UpdateUserID = value.ToInt(); break;
+                case "UpdateUserId": _UpdateUserId = value.ToInt(); break;
                 case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
                 case "UpdateTime": _UpdateTime = value.ToDateTime(); break;
                 case "Remark": _Remark = Convert.ToString(value); break;
@@ -286,6 +286,37 @@ public partial class UserConnect : IEntity<UserConnectModel>
     #endregion
 
     #region 扩展查询
+    /// <summary>根据编号查找</summary>
+    /// <param name="id">编号</param>
+    /// <returns>实体对象</returns>
+    public static UserConnect FindById(Int32 id)
+    {
+        if (id < 0) return null;
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
+
+        // 单对象缓存
+        return Meta.SingleCache[id];
+
+        //return Find(_.Id == id);
+    }
+
+    /// <summary>根据提供商、身份标识查找</summary>
+    /// <param name="provider">提供商</param>
+    /// <param name="openId">身份标识</param>
+    /// <returns>实体对象</returns>
+    public static UserConnect FindByProviderAndOpenId(String provider, String openId)
+    {
+        if (provider.IsNullOrEmpty()) return null;
+        if (openId.IsNullOrEmpty()) return null;
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Provider.EqualIgnoreCase(provider) && e.OpenId.EqualIgnoreCase(openId));
+
+        return Find(_.Provider == provider & _.OpenId == openId);
+    }
+
     /// <summary>根据提供商查找</summary>
     /// <param name="provider">提供商</param>
     /// <returns>实体列表</returns>
@@ -299,17 +330,30 @@ public partial class UserConnect : IEntity<UserConnectModel>
         return FindAll(_.Provider == provider);
     }
 
-    /// <summary>根据全局标识查找</summary>
-    /// <param name="unionId">全局标识</param>
+    /// <summary>根据用户查找</summary>
+    /// <param name="userId">用户</param>
     /// <returns>实体列表</returns>
-    public static IList<UserConnect> FindAllByUnionID(String unionId)
+    public static IList<UserConnect> FindAllByUserId(Int32 userId)
     {
-        if (unionId.IsNullOrEmpty()) return [];
+        if (userId < 0) return [];
 
         // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UnionID.EqualIgnoreCase(unionId));
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UserId == userId);
 
-        return FindAll(_.UnionID == unionId);
+        return FindAll(_.UserId == userId);
+    }
+
+    /// <summary>根据身份标识查找</summary>
+    /// <param name="openId">身份标识</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserConnect> FindAllByOpenId(String openId)
+    {
+        if (openId.IsNullOrEmpty()) return [];
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.OpenId.EqualIgnoreCase(openId));
+
+        return FindAll(_.OpenId == openId);
     }
     #endregion
 
@@ -317,7 +361,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
     /// <summary>高级查询</summary>
     /// <param name="provider">提供商</param>
     /// <param name="userId">用户。本地用户</param>
-    /// <param name="openId">身份标识。用户名、OpenID</param>
+    /// <param name="openId">身份标识。用户名、OpenId</param>
     /// <param name="unionId">全局标识。跨应用统一</param>
     /// <param name="deviceId">设备标识。企业微信用于唯一标识设备，重装后改变</param>
     /// <param name="enable">启用</param>
@@ -331,9 +375,9 @@ public partial class UserConnect : IEntity<UserConnectModel>
         var exp = new WhereExpression();
 
         if (!provider.IsNullOrEmpty()) exp &= _.Provider == provider;
-        if (userId >= 0) exp &= _.UserID == userId;
-        if (!openId.IsNullOrEmpty()) exp &= _.OpenID == openId;
-        if (!unionId.IsNullOrEmpty()) exp &= _.UnionID == unionId;
+        if (userId >= 0) exp &= _.UserId == userId;
+        if (!openId.IsNullOrEmpty()) exp &= _.OpenId == openId;
+        if (!unionId.IsNullOrEmpty()) exp &= _.UnionId == unionId;
         if (!deviceId.IsNullOrEmpty()) exp &= _.DeviceId == deviceId;
         if (enable != null) exp &= _.Enable == enable;
         exp &= _.UpdateTime.Between(start, end);
@@ -348,22 +392,22 @@ public partial class UserConnect : IEntity<UserConnectModel>
     public partial class _
     {
         /// <summary>编号</summary>
-        public static readonly Field ID = FindByName("ID");
+        public static readonly Field Id = FindByName("Id");
 
         /// <summary>提供商</summary>
         public static readonly Field Provider = FindByName("Provider");
 
         /// <summary>用户。本地用户</summary>
-        public static readonly Field UserID = FindByName("UserID");
+        public static readonly Field UserId = FindByName("UserId");
 
-        /// <summary>身份标识。用户名、OpenID</summary>
-        public static readonly Field OpenID = FindByName("OpenID");
+        /// <summary>身份标识。用户名、OpenId</summary>
+        public static readonly Field OpenId = FindByName("OpenId");
 
         /// <summary>全局标识。跨应用统一</summary>
-        public static readonly Field UnionID = FindByName("UnionID");
+        public static readonly Field UnionId = FindByName("UnionId");
 
         /// <summary>用户编号。第三方用户编号</summary>
-        public static readonly Field LinkID = FindByName("LinkID");
+        public static readonly Field LinkId = FindByName("LinkId");
 
         /// <summary>昵称</summary>
         public static readonly Field NickName = FindByName("NickName");
@@ -387,7 +431,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
         public static readonly Field Enable = FindByName("Enable");
 
         /// <summary>创建用户</summary>
-        public static readonly Field CreateUserID = FindByName("CreateUserID");
+        public static readonly Field CreateUserId = FindByName("CreateUserId");
 
         /// <summary>创建地址</summary>
         public static readonly Field CreateIP = FindByName("CreateIP");
@@ -396,7 +440,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
         public static readonly Field CreateTime = FindByName("CreateTime");
 
         /// <summary>更新用户</summary>
-        public static readonly Field UpdateUserID = FindByName("UpdateUserID");
+        public static readonly Field UpdateUserId = FindByName("UpdateUserId");
 
         /// <summary>更新地址</summary>
         public static readonly Field UpdateIP = FindByName("UpdateIP");
@@ -414,22 +458,22 @@ public partial class UserConnect : IEntity<UserConnectModel>
     public partial class __
     {
         /// <summary>编号</summary>
-        public const String ID = "ID";
+        public const String Id = "Id";
 
         /// <summary>提供商</summary>
         public const String Provider = "Provider";
 
         /// <summary>用户。本地用户</summary>
-        public const String UserID = "UserID";
+        public const String UserId = "UserId";
 
-        /// <summary>身份标识。用户名、OpenID</summary>
-        public const String OpenID = "OpenID";
+        /// <summary>身份标识。用户名、OpenId</summary>
+        public const String OpenId = "OpenId";
 
         /// <summary>全局标识。跨应用统一</summary>
-        public const String UnionID = "UnionID";
+        public const String UnionId = "UnionId";
 
         /// <summary>用户编号。第三方用户编号</summary>
-        public const String LinkID = "LinkID";
+        public const String LinkId = "LinkId";
 
         /// <summary>昵称</summary>
         public const String NickName = "NickName";
@@ -453,7 +497,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
         public const String Enable = "Enable";
 
         /// <summary>创建用户</summary>
-        public const String CreateUserID = "CreateUserID";
+        public const String CreateUserId = "CreateUserId";
 
         /// <summary>创建地址</summary>
         public const String CreateIP = "CreateIP";
@@ -462,7 +506,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
         public const String CreateTime = "CreateTime";
 
         /// <summary>更新用户</summary>
-        public const String UpdateUserID = "UpdateUserID";
+        public const String UpdateUserId = "UpdateUserId";
 
         /// <summary>更新地址</summary>
         public const String UpdateIP = "UpdateIP";

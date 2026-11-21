@@ -1,4 +1,4 @@
-﻿@model ValueTuple<IList<MenuTree>, MenuTree>
+@model ValueTuple<IList<MenuTree>, MenuTree>
 
 @{
     var menu = Model.Item1;
@@ -27,9 +27,9 @@
         var menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.Root.Childs);
         if (user?.Role != null)
         {
-            menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(item.ID, user, true));
+            menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(item.Id, user, true));
         }
-            <li data-name="@item.ID" class="layui-nav-item @(rs_active?"layui-nav-itemed":"")">
+            <li data-name="@item.Id" class="layui-nav-item @(rs_active?"layui-nav-itemed":"")">
               <a href="javascript:;" lay-tips="@item.DisplayName" lay-direction="2">
                 <i class="layui-icon layui-icon-@icon fa-@icon"></i>
                 <cite>@item.DisplayName</cite>
@@ -45,7 +45,7 @@
     }
     else
     {
-            <li data-name="@item.ID" class="layui-nav-item @(rs_active?"layui-nav-itemed":"")">
+            <li data-name="@item.Id" class="layui-nav-item @(rs_active?"layui-nav-itemed":"")">
               <a href="javascript:;" lay-tips="@item.DisplayName" lay-direction="2" lay-href="@(item.Url != null ? Url.Content(item.Url) : "#")">
                 <i class="layui-icon layui-icon-@icon fa-@icon"></i>
                 <cite>@item.DisplayName</cite>

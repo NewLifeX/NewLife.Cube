@@ -86,7 +86,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
 
         // 创建未激活账号（Enable=false），激活后置 true 方可登录
         var user = userService.CreateUserAndBindContact(username, pwd.Data, email, mobile, ip, false, false, false);
-        if (user == null || user.ID <= 0)
+        if (user == null || user.Id <= 0)
             return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("Registration failed. Please try again later.") };
 
         try
@@ -97,7 +97,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
             // 发送激活：邮箱=激活链接+验证码，手机=短信验证码
             if (requireMail && !email.IsNullOrEmpty())
             {
-                await SendMailActivation(email, user.ID, httpContext, ip);
+                await SendMailActivation(email, user.Id, httpContext, ip);
                 channels.Add("mail");
                 targets.Add(MaskTarget(email));
             }
@@ -108,7 +108,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
                 targets.Add(MaskTarget(mobile));
             }
 
-            LogProvider.Provider.WriteLog(typeof(User), L.T("Registration pending activation"), true, L.T("Email: {0}, mobile: {1}", email, mobile), user.ID, user + "", ip);
+            LogProvider.Provider.WriteLog(typeof(User), L.T("Registration pending activation"), true, L.T("Email: {0}, mobile: {1}", email, mobile), user.Id, user + "", ip);
 
             return new ServiceResult<ActivatePendingModel>
             {
@@ -148,7 +148,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
             return new ServiceResult { IsSuccess = false, Message = L.T("The activation link is invalid or has expired. Please resend the activation email.") };
 
         var user = User.FindByMail(account);
-        if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
+        if (user == null || user.Id <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
 
         // 幂等：已激活直接成功
         if (user.Enable && user.MailVerified)
@@ -182,7 +182,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         if (!cached.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         var user = FindByContact(account);
-        if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
+        if (user == null || user.Id <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
 
         // 幂等：已激活直接成功
         var verified = channel.EqualIgnoreCase("Sms") ? user.MobileVerified : user.MailVerified;
@@ -211,7 +211,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
             user.MailVerified = true;
         (user as IEntity).Update();
 
-        LogProvider.Provider.WriteLog(typeof(User), L.T(action), true, L.T("Target: {0}", target), user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T(action), true, L.T("Target: {0}", target), user.Id, user + "", ip);
     }
 
     /// <summary>重发激活：未激活账号重新发送激活邮件/短信</summary>
@@ -227,7 +227,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         if (account.IsNullOrEmpty()) return new ServiceResult<String> { IsSuccess = false, Message = L.T("Mobile number or email is required.") };
 
         var user = FindByContact(account);
-        if (user == null || user.ID <= 0) return new ServiceResult<String> { IsSuccess = false, Message = L.T("Account does not exist.") };
+        if (user == null || user.Id <= 0) return new ServiceResult<String> { IsSuccess = false, Message = L.T("Account does not exist.") };
         if (user.Enable) return new ServiceResult<String> { IsSuccess = false, Message = L.T("The account is already activated; no repeated verification is needed.") };
 
         try
@@ -239,7 +239,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
             }
             if (channel.EqualIgnoreCase("Mail") || ValidFormatHelper.IsEmail(account))
             {
-                await SendMailActivation(account, user.ID, httpContext, ip);
+                await SendMailActivation(account, user.Id, httpContext, ip);
                 return new ServiceResult<String> { IsSuccess = true, Message = L.T("Activation email sent."), Data = MaskTarget(account) };
             }
 
@@ -265,7 +265,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
     {
         using var span = tracer?.NewSpan(nameof(VerifyContact), new { channel, account, ip });
 
-        if (user == null || user.ID <= 0) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Please sign in first.") };
+        if (user == null || user.Id <= 0) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Please sign in first.") };
         if (account.IsNullOrEmpty()) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Mobile number or email is required.") };
         if (code.IsNullOrEmpty()) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Verification code is required.") };
 
@@ -278,7 +278,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         if (!cached.EqualIgnoreCase(code)) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         // 目标联系方式不得被其他账号占用
-        var entity = User.FindByID(user.ID);
+        var entity = User.FindById(user.Id);
         if (entity == null) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("User does not exist.") };
 
         var changed = false;
@@ -286,7 +286,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         {
             if (!ValidFormatHelper.IsMobile(account)) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Invalid mobile number format.") };
             var other = User.FindByMobile(account);
-            if (other != null && other.ID != entity.ID)
+            if (other != null && other.Id != entity.Id)
                 return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("This mobile number is already bound to another account.") };
             if (entity.Mobile != account) { entity.Mobile = account; changed = true; }
             if (!entity.MobileVerified) { entity.MobileVerified = true; changed = true; }
@@ -295,7 +295,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         {
             if (!ValidFormatHelper.IsEmail(account)) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Invalid email format.") };
             var other = User.FindByMail(account);
-            if (other != null && other.ID != entity.ID)
+            if (other != null && other.Id != entity.Id)
                 return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("This email is already bound to another account.") };
             if (entity.Mail != account) { entity.Mail = account; changed = true; }
             if (!entity.MailVerified) { entity.MailVerified = true; changed = true; }
@@ -304,7 +304,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         if (changed) (entity as IEntity).Update();
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), channel.EqualIgnoreCase("Sms") ? "Verify mobile" : "Verify email", true, L.T("Target: {0}", account), entity.ID, entity + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), channel.EqualIgnoreCase("Sms") ? "Verify mobile" : "Verify email", true, L.T("Target: {0}", account), entity.Id, entity + "", ip);
 
         return new ServiceResult<VerifyStatusModel>
         {
@@ -386,3 +386,4 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
     }
     #endregion
 }
+

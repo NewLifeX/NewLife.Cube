@@ -36,7 +36,7 @@ export type WidgetType =
   | 'lovMulti'       // 值集多选（LOV，多选转逗号分隔）
   | 'area'           // 地区级联（ItemType=area/area1~4）
   | 'timeSpan'       // 时长（时:分:秒，值仍是整数存储）
-  | 'mapSelect'      // 映射字段下拉（RoleName→RoleID，提交关联键）
+  | 'mapSelect'      // 映射字段下拉（RoleName→RoleId，提交关联键）
   | 'mapInput';      // 映射字段键值输入（关联表过大、无数据源时退回）
 
 /** 时长存储单位（由字段描述推断） */
@@ -200,7 +200,7 @@ export function areaLevelOf(field: DataField): number {
 }
 
 /**
- * 表单实际读写的模型键。映射字段（`RoleName`通过 Map 指向 `RoleID`）要提交的是关联键。
+ * 表单实际读写的模型键。映射字段（`RoleName`通过 Map 指向 `RoleId`）要提交的是关联键。
  *
  * @param field 字段元数据
  * @returns 模型键
@@ -212,7 +212,7 @@ export function mapValueKey(field: DataField): string {
 /**
  * 解析模型里实际存在的键（大小写不敏感兜底）。
  *
- * 后端元数据字段名为 PascalCase（`RoleID`），行数据/表单模型多为 camelCase（`roleID`），
+ * 后端元数据字段名为 PascalCase（`RoleId`），行数据/表单模型多为 camelCase（`roleId`），
  * 直接按元数据名读写会出现「同字段大小写双键共存」，提交时两个键都可能被绑定。
  *
  * @param key 期望的键
@@ -236,12 +236,12 @@ export function resolveExistingKey(key: string, model?: Record<string, unknown> 
 }
 
 /**
- * 表单实际读写的模型键：映射字段取关联键（`RoleName` → `RoleID`），并按模型大小写归一。
+ * 表单实际读写的模型键：映射字段取关联键（`RoleName` → `RoleId`），并按模型大小写归一。
  *
  * @param field 字段元数据
  * @param model 当前表单/行模型
  * @returns 模型键
- * @example resolveModelKey({ name: 'RoleName', mapField: 'RoleID' }, { roleID: 3 }) // 'roleID'
+ * @example resolveModelKey({ name: 'RoleName', mapField: 'RoleId' }, { roleId: 3 }) // 'roleId'
  */
 export function resolveModelKey(field: DataField, model?: Record<string, unknown> | null): string {
   return resolveExistingKey(mapValueKey(field), model);
@@ -271,7 +271,7 @@ export function hasDataSource(field: DataField): boolean {
  * @param field 字段元数据
  * @returns 映射结果
  * @example resolveWidget({ name: 'OnlineTime', typeName: 'Int32', itemType: 'TimeSpan' }).widget // 'timeSpan'
- * @example resolveWidget({ name: 'RoleName', mapField: 'RoleID', dataSource: { '1': '管理员' } }).widget // 'mapSelect'
+ * @example resolveWidget({ name: 'RoleName', mapField: 'RoleId', dataSource: { '1': '管理员' } }).widget // 'mapSelect'
  */
 export function resolveWidget(field: DataField): FieldMapping {
   const itemType = (field.itemType ?? '').trim().toLowerCase();
@@ -279,7 +279,7 @@ export function resolveWidget(field: DataField): FieldMapping {
   const typeName = (field.typeName ?? '').trim().toLowerCase();
   const name = field.name ?? '';
 
-  // 1. 映射字段（RoleName→RoleID 等）：虚拟属性本身只读，必须在只读判定之前处理。
+  // 1. 映射字段（RoleName→RoleId 等）：虚拟属性本身只读，必须在只读判定之前处理。
   //    有 lovCode 走远程值集，有 dataSource 走本地下拉，整型键无数据源时退回键值输入，其余只读展示。
   if (field.mapField) {
     const base = { field, props: { mapField: field.mapField, mapTypeName: field.mapTypeName, multiple: !!field.multiple } };

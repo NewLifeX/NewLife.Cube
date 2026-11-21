@@ -53,14 +53,14 @@ public class TenantRoleAuthTests
         // 客户管理员角色：只拥有 查看+添加 权限
         var adminRole = new Role { Name = tag + "客户管理员", Enable = true };
         adminRole.Insert();
-        adminRole.Set(menu.ID, PermissionFlags.Detail | PermissionFlags.Insert);
+        adminRole.Set(menu.Id, PermissionFlags.Detail | PermissionFlags.Insert);
         adminRole.Save();
 
         var user = new User
         {
             Name = tag + "cadmin",
             DisplayName = tag + "cadmin",
-            RoleID = adminRole.ID,
+            RoleId = adminRole.Id,
             Enable = true,
             RegisterTime = DateTime.Now,
         };
@@ -70,10 +70,10 @@ public class TenantRoleAuthTests
         ctx.Items["CurrentUser"] = user;
         // 表单勾选全部四种权限，尝试越界授权
         ctx.Request.QueryString = new QueryString(
-            $"?p{menu.ID}=true&pf{menu.ID}_{(Int32)PermissionFlags.Detail}=true" +
-            $"&pf{menu.ID}_{(Int32)PermissionFlags.Insert}=true" +
-            $"&pf{menu.ID}_{(Int32)PermissionFlags.Update}=true" +
-            $"&pf{menu.ID}_{(Int32)PermissionFlags.Delete}=true");
+            $"?p{menu.Id}=true&pf{menu.Id}_{(Int32)PermissionFlags.Detail}=true" +
+            $"&pf{menu.Id}_{(Int32)PermissionFlags.Insert}=true" +
+            $"&pf{menu.Id}_{(Int32)PermissionFlags.Update}=true" +
+            $"&pf{menu.Id}_{(Int32)PermissionFlags.Delete}=true");
 
         var oldTenant = TenantContext.Current;
         TenantContext.Current = new TenantContext { TenantId = _fx.Tenant1.Id };
@@ -91,10 +91,10 @@ public class TenantRoleAuthTests
             Assert.Equal(_fx.Tenant1.Id, role.TenantId);
 
             // 需求3：只能授予自己拥有的权限，越界的修改/删除被拦截
-            Assert.True(role.Has(menu.ID, PermissionFlags.Detail));
-            Assert.True(role.Has(menu.ID, PermissionFlags.Insert));
-            Assert.False(role.Has(menu.ID, PermissionFlags.Update));
-            Assert.False(role.Has(menu.ID, PermissionFlags.Delete));
+            Assert.True(role.Has(menu.Id, PermissionFlags.Detail));
+            Assert.True(role.Has(menu.Id, PermissionFlags.Insert));
+            Assert.False(role.Has(menu.Id, PermissionFlags.Update));
+            Assert.False(role.Has(menu.Id, PermissionFlags.Delete));
         }
         finally
         {
@@ -112,10 +112,10 @@ public class TenantRoleAuthTests
         // 系统管理员用户（角色 IsSystem=true）
         ctx.Items["CurrentUser"] = _fx.AdminUser;
         ctx.Request.QueryString = new QueryString(
-            $"?p{menu.ID}=true&pf{menu.ID}_{(Int32)PermissionFlags.Detail}=true" +
-            $"&pf{menu.ID}_{(Int32)PermissionFlags.Insert}=true" +
-            $"&pf{menu.ID}_{(Int32)PermissionFlags.Update}=true" +
-            $"&pf{menu.ID}_{(Int32)PermissionFlags.Delete}=true");
+            $"?p{menu.Id}=true&pf{menu.Id}_{(Int32)PermissionFlags.Detail}=true" +
+            $"&pf{menu.Id}_{(Int32)PermissionFlags.Insert}=true" +
+            $"&pf{menu.Id}_{(Int32)PermissionFlags.Update}=true" +
+            $"&pf{menu.Id}_{(Int32)PermissionFlags.Delete}=true");
 
         var oldTenant = TenantContext.Current;
         TenantContext.Current = new TenantContext { TenantId = _fx.Tenant1.Id };
@@ -130,10 +130,10 @@ public class TenantRoleAuthTests
             controller.Run(role, DataObjectMethodType.Insert);
 
             // 系统管理员即使在租户上下文中也不受限，可授予全部权限
-            Assert.True(role.Has(menu.ID, PermissionFlags.Detail));
-            Assert.True(role.Has(menu.ID, PermissionFlags.Insert));
-            Assert.True(role.Has(menu.ID, PermissionFlags.Update));
-            Assert.True(role.Has(menu.ID, PermissionFlags.Delete));
+            Assert.True(role.Has(menu.Id, PermissionFlags.Detail));
+            Assert.True(role.Has(menu.Id, PermissionFlags.Insert));
+            Assert.True(role.Has(menu.Id, PermissionFlags.Update));
+            Assert.True(role.Has(menu.Id, PermissionFlags.Delete));
         }
         finally
         {
@@ -150,14 +150,14 @@ public class TenantRoleAuthTests
         // 客户管理员角色：只拥有 查看+添加 权限
         var adminRole = new Role { Name = tag + "客户管理员", Enable = true };
         adminRole.Insert();
-        adminRole.Set(menu.ID, PermissionFlags.Detail | PermissionFlags.Insert);
+        adminRole.Set(menu.Id, PermissionFlags.Detail | PermissionFlags.Insert);
         adminRole.Save();
 
         var user = new User
         {
             Name = tag + "cadmin",
             DisplayName = tag + "cadmin",
-            RoleID = adminRole.ID,
+            RoleId = adminRole.Id,
             Enable = true,
             RegisterTime = DateTime.Now,
         };
@@ -174,7 +174,7 @@ public class TenantRoleAuthTests
         {
             // 全部权限位组合（15），模拟尝试授予 查看+添加+修改+删除
             var allFlags = (Int32)(PermissionFlags.Detail | PermissionFlags.Insert | PermissionFlags.Update | PermissionFlags.Delete);
-            var role = new Role { Name = tag + "租户角色", Enable = true, Permission = $"{menu.ID}#{allFlags}" };
+            var role = new Role { Name = tag + "租户角色", Enable = true, Permission = $"{menu.Id}#{allFlags}" };
             var controller = new TestRoleController
             {
                 ControllerContext = new ControllerContext { HttpContext = ctx }
@@ -186,10 +186,10 @@ public class TenantRoleAuthTests
             Assert.Equal(_fx.Tenant1.Id, role.TenantId);
 
             // 越界的 修改/删除 被拦截
-            Assert.True(role.Has(menu.ID, PermissionFlags.Detail));
-            Assert.True(role.Has(menu.ID, PermissionFlags.Insert));
-            Assert.False(role.Has(menu.ID, PermissionFlags.Update));
-            Assert.False(role.Has(menu.ID, PermissionFlags.Delete));
+            Assert.True(role.Has(menu.Id, PermissionFlags.Detail));
+            Assert.True(role.Has(menu.Id, PermissionFlags.Insert));
+            Assert.False(role.Has(menu.Id, PermissionFlags.Update));
+            Assert.False(role.Has(menu.Id, PermissionFlags.Delete));
         }
         finally
         {
@@ -206,14 +206,14 @@ public class TenantRoleAuthTests
         // 客户管理员角色：只拥有 查看 权限
         var adminRole = new Role { Name = tag + "客户管理员", Enable = true };
         adminRole.Insert();
-        adminRole.Set(menu.ID, PermissionFlags.Detail);
+        adminRole.Set(menu.Id, PermissionFlags.Detail);
         adminRole.Save();
 
         var user = new User
         {
             Name = tag + "cadmin",
             DisplayName = tag + "cadmin",
-            RoleID = adminRole.ID,
+            RoleId = adminRole.Id,
             Enable = true,
             RegisterTime = DateTime.Now,
         };
@@ -222,13 +222,14 @@ public class TenantRoleAuthTests
         // 目标角色已有 查看+添加（添加由系统管理员授予）
         var role = new Role { Name = tag + "租户角色", Enable = true };
         role.Insert();
-        role.Set(menu.ID, PermissionFlags.Detail | PermissionFlags.Insert);
+        role.Set(menu.Id, PermissionFlags.Detail | PermissionFlags.Insert);
         role.Save();
 
         // 租户管理员以空权限字符串提交：受限模式只回收自己拥有的 查看，系统授予的 添加 保留
         RolePermissionHelper.Apply(role, "", user, true);
 
-        Assert.False(role.Has(menu.ID, PermissionFlags.Detail));
-        Assert.True(role.Has(menu.ID, PermissionFlags.Insert));
+        Assert.False(role.Has(menu.Id, PermissionFlags.Detail));
+        Assert.True(role.Has(menu.Id, PermissionFlags.Insert));
     }
 }
+

@@ -407,7 +407,7 @@ public sealed class UserProfileTests : IAsyncLifetime
         }
         else
         {
-            // 直接访问 Admin 侧的用户 Edit（使用 userId=1 为 admin 的典型 ID）
+            // 直接访问 Admin 侧的用户 Edit（使用 userId=1 为 admin 的典型 Id）
             await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Edit?Id=1");
         }
 
@@ -595,3 +595,4 @@ public sealed class UserProfileTests : IAsyncLifetime
 
     #endregion
 }
+

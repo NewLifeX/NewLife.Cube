@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -68,7 +68,7 @@ public class AiController : ControllerBaseX
         if (error != null || request == null) return error!;
 
         // 会话键按用户+页面作用域：前端 sessionId 已按页面生成（sessionStorage），此处纵深防御，防止跨用户/跨页面串话。内联构建，不新增类型
-        var uid = HttpContext.User.Identity is IUser u ? u.ID : 0;
+        var uid = HttpContext.User.Identity is IUser u ? u.Id : 0;
         if (!request.SessionId.IsNullOrEmpty())
             request.SessionId = $"ai:{uid}:{request.Url}:{request.SessionId}";
 
@@ -198,7 +198,7 @@ public class AiController : ControllerBaseX
         // 检查点服务优先取 DI（事件总线广播，支持分布式集群），兜底进程内实例。
         var user = ctrl.HttpContext.User.Identity as IUser;
         var cp = ctrl.HttpContext.RequestServices.GetService<PageCheckpointService>();
-        var browser = new BrowserToolService(user?.ID ?? 0) { Writer = writeEvent, CheckpointService = cp };
+        var browser = new BrowserToolService(user?.Id ?? 0) { Writer = writeEvent, CheckpointService = cp };
         registry.AddTools(browser);
 
         // 页面数据上下文工具：优先目标页面控制器服务端实现（IPageDataContext），否则浏览器采集兜底
@@ -224,7 +224,7 @@ public class AiController : ControllerBaseX
         {
             Writer = writeEvent,
             CheckpointService = cp,
-            UserId = user?.ID ?? 0,
+            UserId = user?.Id ?? 0,
             TimeoutSeconds = 30,
         };
 
@@ -369,8 +369,9 @@ public class AiController : ControllerBaseX
         // 分布式：经 DI 解析检查点服务（事件总线广播，POST 命中任意实例都能唤醒等待方），兜底进程内实例
         var cp = HttpContext.RequestServices.GetService<PageCheckpointService>() ?? PageCheckpointService.Instance;
         var user = HttpContext.User.Identity as IUser;
-        var ok = await cp.Respond(req.CheckpointId, user?.ID ?? 0, req.Result ?? "{}");
+        var ok = await cp.Respond(req.CheckpointId, user?.Id ?? 0, req.Result ?? "{}");
 
         return ok ? Json(0, null, "ok") : Json(500, null, L.T("The operation does not exist or has expired."));
     }
 }
+

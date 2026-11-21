@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
 using NewLife.Cube;
@@ -66,7 +66,7 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
             var pkey = p[set.Parent].ToInt(-1);
             if (pkey >= 0)
             {
-                var m = XCode.Membership.Menu.FindByID(pkey);
+                var m = XCode.Membership.Menu.FindById(pkey);
                 menus = EntityTree<Menu>.FindAllChildsByParent(pkey).ToList();
             }
         }
@@ -87,7 +87,7 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         var count = 0;
         foreach (var id in ids)
         {
-            var entity = XCode.Membership.Menu.FindByID(id);
+            var entity = XCode.Membership.Menu.FindById(id);
             if (entity != null && MenuHelper.RefreshDisplayName(entity) && entity.Update() > 0) count++;
         }
 

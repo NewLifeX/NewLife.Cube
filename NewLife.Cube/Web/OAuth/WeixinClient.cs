@@ -1,4 +1,4 @@
-﻿using NewLife.Model;
+using NewLife.Model;
 
 namespace NewLife.Web.OAuth;
 
@@ -18,7 +18,7 @@ public class WeixinClient : OAuthClient
         AccessUrl = "https://api.weixin.qq.com/sns/oauth2/access_token?appid={key}&secret={secret}&code={code}&grant_type=authorization_code";
         UserUrl = "https://api.weixin.qq.com/sns/userinfo?access_token={token}&openid={openid}&lang=zh_CN";
 
-        // 获取用户基本信息(UnionID机制)，这里使用普通access_token，而不是OAuth2.0的网页access_token
+        // 获取用户基本信息(UnionId机制)，这里使用普通access_token，而不是OAuth2.0的网页access_token
         //UserUrl = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={token}&openid={openid}&lang=zh_CN";
 
         // snsapi_base 静默授权，用户无感知

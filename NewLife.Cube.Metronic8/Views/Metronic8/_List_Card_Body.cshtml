@@ -1,4 +1,4 @@
-﻿@*
+@*
     列表视图 - 卡片模式(卡片内容)
 *@
 @using NewLife;
@@ -27,8 +27,8 @@
                 @foreach(var fi in fields)
                 {
                     if (fi.Name.EqualIgnoreCase("Id", "Name", "DisplayName", "NickName", "Enable",
-                        "CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                        "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP",
+                        "CreateUserId", "CreateUser", "CreateTime", "CreateIP",
+                        "UpdateUserId", "UpdateUser", "UpdateTime", "UpdateIP",
                         "Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6"))
                         continue;
 
@@ -108,7 +108,7 @@
                                     catch { }
                                     <td>@val</td>
                                 }
-                                else if (fi.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+                                else if (fi.Name.EqualIgnoreCase("CreateUserId", "UpdateUserId"))
                                 {
                                     if (provider != null)
                                     {

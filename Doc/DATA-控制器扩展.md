@@ -1,4 +1,4 @@
-﻿# 第30章 控制器扩展
+# 第30章 控制器扩展
 
 > 本章介绍如何扩展和自定义魔方控制器，包括继承 EntityController、重写核心方法、以及各类特殊控制器的使用。
 
@@ -274,7 +274,7 @@ protected override Boolean Valid(Student entity, DataObjectMethodType type, Bool
         if (!user.Roles.Any(e => e.IsSystem))
         {
             // 非管理员只能操作自己创建的数据
-            if (type == DataObjectMethodType.Update && entity.CreateUserID != user.ID)
+            if (type == DataObjectMethodType.Update && entity.CreateUserId != user.Id)
                 throw new InvalidOperationException("无权修改他人创建的数据！");
         }
     }
@@ -395,7 +395,7 @@ public class DepartmentController : EntityTreeController<Department>
     /// <summary>搜索数据集</summary>
     protected override IEnumerable<Department> Search(Pager p)
     {
-        var parentId = p["ParentID"].ToInt(-1);
+        var parentId = p["ParentId"].ToInt(-1);
         
         // 根据父节点筛选
         if (parentId >= 0)

@@ -9,7 +9,7 @@ namespace XUnitTest;
 /// <summary>SVG 文字头像生成服务单元测试</summary>
 /// <remarks>
 /// 覆盖字符提取规则（中文取前N字/英文首字母）与 SVG 视觉结构（渐变背景、装饰圆、动态字号、全量调色板配色）。
-/// 通过公开入口 Generate 间接验证，各用例使用不同用户ID避免命中内存缓存。
+/// 通过公开入口 Generate 间接验证，各用例使用不同用户Id避免命中内存缓存。
 /// </remarks>
 public class SvgAvatarServiceTests
 {
@@ -17,7 +17,7 @@ public class SvgAvatarServiceTests
 
     /// <summary>创建内存用户，无需数据库</summary>
     private static User CreateUser(String name, String displayName, SexKinds sex = SexKinds.未知)
-        => new() { ID = ++_id, Name = name, DisplayName = displayName, Sex = sex };
+        => new() { Id = ++_id, Name = name, DisplayName = displayName, Sex = sex };
 
     /// <summary>生成头像并提取 text 内容</summary>
     private static String Extract(String name, Int32 chars, SexKinds sex = SexKinds.未知)
@@ -111,7 +111,7 @@ public class SvgAvatarServiceTests
     {
         var svg = SvgAvatarService.Generate(CreateUser("张三", "张三", SexKinds.男), 2);
         Assert.Contains("<linearGradient", svg);
-        // 颜色按 ID 哈希取自调色板，断言含两个渐变 stop-color 即可
+        // 颜色按 Id 哈希取自调色板，断言含两个渐变 stop-color 即可
         Assert.Contains("stop-color=\"#", svg);
     }
 
@@ -131,31 +131,31 @@ public class SvgAvatarServiceTests
         Assert.Contains("font-size=\"22\"", SvgAvatarService.Generate(CreateUser("管理员", "管理员"), 3));
     }
 
-    [Fact(DisplayName = "同用户ID不同字符数配色一致（颜色仅由ID决定）")]
+    [Fact(DisplayName = "同用户Id不同字符数配色一致（颜色仅由Id决定）")]
     public void Svg_PaletteColor_SameIdStableAcrossChars()
     {
-        var user = new User { ID = 7, Name = "张三", DisplayName = "张三", Sex = SexKinds.男 };
-        // 不同 chars 缓存 key 不同，可绕过缓存验证配色确实按 ID 哈希稳定
+        var user = new User { Id = 7, Name = "张三", DisplayName = "张三", Sex = SexKinds.男 };
+        // 不同 chars 缓存 key 不同，可绕过缓存验证配色确实按 Id 哈希稳定
         var svg2 = SvgAvatarService.Generate(user, 2);
         var svg3 = SvgAvatarService.Generate(user, 3);
         Assert.Equal(ExtractLightColor(svg2), ExtractLightColor(svg3));
     }
 
-    [Fact(DisplayName = "不同用户ID取不同配色（全量调色板）")]
+    [Fact(DisplayName = "不同用户Id取不同配色（全量调色板）")]
     public void Svg_PaletteColor_DifferentIdDifferentColor()
     {
-        // ID 1 → 色池索引1（粉），ID 2 → 色池索引2（紫），必然不同色
-        var svg1 = SvgAvatarService.Generate(new User { ID = 1, Name = "张三", DisplayName = "张三", Sex = SexKinds.男 }, 2);
-        var svg2 = SvgAvatarService.Generate(new User { ID = 2, Name = "李四", DisplayName = "李四", Sex = SexKinds.女 }, 2);
+        // Id 1 → 色池索引1（粉），Id 2 → 色池索引2（紫），必然不同色
+        var svg1 = SvgAvatarService.Generate(new User { Id = 1, Name = "张三", DisplayName = "张三", Sex = SexKinds.男 }, 2);
+        var svg2 = SvgAvatarService.Generate(new User { Id = 2, Name = "李四", DisplayName = "李四", Sex = SexKinds.女 }, 2);
         Assert.NotEqual(ExtractLightColor(svg1), ExtractLightColor(svg2));
     }
 
     [Fact(DisplayName = "性别不再决定配色（去性别分支）")]
     public void Svg_PaletteColor_GenderIndependent()
     {
-        // 同 ID 的男/女用户配色一致，证明配色与性别无关
-        var male = SvgAvatarService.Generate(new User { ID = 9, Name = "张三", DisplayName = "张三", Sex = SexKinds.男 }, 2);
-        var female = SvgAvatarService.Generate(new User { ID = 9, Name = "李四", DisplayName = "李四", Sex = SexKinds.女 }, 2);
+        // 同 Id 的男/女用户配色一致，证明配色与性别无关
+        var male = SvgAvatarService.Generate(new User { Id = 9, Name = "张三", DisplayName = "张三", Sex = SexKinds.男 }, 2);
+        var female = SvgAvatarService.Generate(new User { Id = 9, Name = "李四", DisplayName = "李四", Sex = SexKinds.女 }, 2);
         Assert.Equal(ExtractLightColor(male), ExtractLightColor(female));
     }
 
@@ -180,7 +180,7 @@ public class SvgAvatarServiceTests
     [Fact(DisplayName = "未知性别 Int32.MinValue 不崩溃（Math.Abs 溢出防御）")]
     public void UnknownSex_Int32MinValue_NoCrash()
     {
-        var user = new User { ID = Int32.MinValue, Name = "张三", DisplayName = "张三" };
+        var user = new User { Id = Int32.MinValue, Name = "张三", DisplayName = "张三" };
         var svg = SvgAvatarService.Generate(user, 2);
         Assert.Contains("<svg", svg);
     }
@@ -195,3 +195,4 @@ public class SvgAvatarServiceTests
 
     #endregion
 }
+

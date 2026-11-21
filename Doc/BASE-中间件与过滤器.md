@@ -1,4 +1,4 @@
-﻿# 第32章 中间件与过滤器
+# 第32章 中间件与过滤器
 
 > 本章介绍魔方的中间件和过滤器机制，包括 RunTimeMiddleware、DataScopeMiddleware、EntityAuthorizeAttribute 等核心组件。
 
@@ -576,7 +576,7 @@ public class DataPermissionAttribute : Attribute
 
 ```csharp
 /// <summary>订单管理</summary>
-[DataPermission(null, "CreateUserID={#userId}")]
+[DataPermission(null, "CreateUserId={#userId}")]
 public class OrderController : EntityController<Order>
 {
     // 框架在 SearchData/FindData 管道中统一应用表达式过滤，无需在 Search 内手工处理
@@ -687,7 +687,7 @@ public class AuditLogAttribute : ActionFilterAttribute
             action,
             context.Exception == null,
             $"用户操作: {action}",
-            user?.ID ?? 0,
+            user?.Id ?? 0,
             user?.ToString(),
             ip);
         

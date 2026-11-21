@@ -44,9 +44,7 @@ public class AILogSummaryJob : CubeJobBase
         // 查询过去 24h 的日志（取最近 50 条）
         var now = DateTime.Now;
         var start = now.AddHours(-24);
-        var logs = XCode.Membership.Log.FindAll(
-            XCode.Membership.Log._.CreateTime >= start & XCode.Membership.Log._.CreateTime <= now,
-            XCode.Membership.Log._.ID.Desc(), null, 0, 50);
+        var logs = XCode.Membership.Log.FindAllByCreateTimeRange(start, now, 50);
         var count = logs.Count;
         if (count == 0) return L.T("No logs in the last 24 hours");
 

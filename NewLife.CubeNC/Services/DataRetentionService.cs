@@ -76,28 +76,7 @@ public class DataRetentionService(CubeSetting setting, ITracer tracer) : IHosted
         }
     }
 
-    static Int32 DeleteLogBefore(DateTime date)
-    {
-        // 删除指定日期之前的日志
-        // SQLite下日志表较大时，删除可能报错，可以查询出来逐个删除
-        var where = XLog._.ID < XLog.Meta.Factory.Snow.GetId(date) & XLog._.CreateUserID == 0;
-        try
-        {
-            return XLog.Delete(where);
-        }
-        catch (XSqlException)
-        {
-            var rs = 0;
-            for (var i = 0; i < 100; i++)
-            {
-                var list = XLog.FindAll(where, null, null, 0, 10000);
-                if (list.Count == 0) break;
-
-                rs += list.Delete();
-            }
-            return rs;
-        }
-    }
+    static Int32 DeleteLogBefore(DateTime date) => XLog.DeleteBefore(date);
 
     private void TrimFile()
     {

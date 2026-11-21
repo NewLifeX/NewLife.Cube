@@ -25,7 +25,7 @@ public class LovEnumItemModel
     public String Extra { get; set; }
 
     /// <summary>创建用户</summary>
-    public Int32 CreateUserID { get; set; }
+    public Int32 CreateUserId { get; set; }
 
     /// <summary>创建地址</summary>
     public String CreateIP { get; set; }
@@ -34,7 +34,7 @@ public class LovEnumItemModel
     public DateTime CreateTime { get; set; }
 
     /// <summary>更新用户</summary>
-    public Int32 UpdateUserID { get; set; }
+    public Int32 UpdateUserId { get; set; }
 
     /// <summary>更新地址</summary>
     public String UpdateIP { get; set; }
@@ -45,3 +45,4 @@ public class LovEnumItemModel
     /// <summary>备注</summary>
     public String Remark { get; set; }
 }
+

@@ -1,4 +1,4 @@
-﻿@model SelectUserModel
+@model SelectUserModel
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -11,7 +11,7 @@
     if (id.IsNullOrEmpty()) { id = "userId"; }
     var userId = Model.UserId;
     if (userId <= 0) userId = page[id].ToInt();
-    var showValue = XCode.Membership.User.FindByID(userId)?.ToString();
+    var showValue = XCode.Membership.User.FindById(userId)?.ToString();
 
     var set = NewLife.Cube.CubeSetting.Current;
     var res = set.ResourceUrl;

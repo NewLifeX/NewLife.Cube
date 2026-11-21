@@ -33,7 +33,7 @@ public class ListFieldTests
     {
         var field = new ListField
         {
-            Url = "/Admin/User/Detail?id={ID}",
+            Url = "/Admin/User/Detail?id={Id}",
             Target = "_blank",
             DataAction = "ajax",
             Title = "查看详情",
@@ -44,7 +44,7 @@ public class ListFieldTests
             Class = "text-danger"
         };
 
-        Assert.Equal("/Admin/User/Detail?id={ID}", field.Url);
+        Assert.Equal("/Admin/User/Detail?id={Id}", field.Url);
         Assert.Equal("_blank", field.Target);
         Assert.Equal("ajax", field.DataAction);
         Assert.Equal("查看详情", field.Title);
@@ -132,3 +132,4 @@ public class ListFieldTests
         Assert.Equal(expected, (Int32)align);
     }
 }
+

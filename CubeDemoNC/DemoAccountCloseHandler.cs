@@ -18,7 +18,8 @@ public class DemoAccountCloseHandler : IAccountCloseHandler
     /// <returns></returns>
     public Task HandleAsync(IUser user, String ip, CancellationToken cancellationToken = default)
     {
-        XTrace.WriteLine("[DemoAccountCloseHandler] 检测到账号注销，模拟清理下游数据：{0}（ID={1}，Mail={2}，IP={3}）", user?.Name, user?.ID, user?.Mail, ip);
+        XTrace.WriteLine("[DemoAccountCloseHandler] 检测到账号注销，模拟清理下游数据：{0}（Id={1}，Mail={2}，IP={3}）", user?.Name, user?.Id, user?.Mail, ip);
         return Task.CompletedTask;
     }
 }
+

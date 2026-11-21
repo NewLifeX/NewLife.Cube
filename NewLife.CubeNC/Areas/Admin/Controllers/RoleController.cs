@@ -17,7 +17,7 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
 {
     static RoleController()
     {
-        ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "UpdateUserID", "UpdateIP", "Remark");
+        ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "UpdateUserId", "UpdateIP", "Remark");
         ListFields.RemoveCreateField();
 
         {
@@ -26,11 +26,11 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
 
         {
             var df = AddFormFields.GetField("DataDepartmentIds");
-            df.DataSource = entity => Department.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Department.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
         {
             var df = EditFormFields.GetField("DataDepartmentIds");
-            df.DataSource = entity => Department.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Department.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
     }
 
@@ -53,28 +53,19 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
         if (id > 0)
         {
             var list = new List<Role>();
-            var entity = Role.FindByID(id);
+            var entity = Role.FindById(id);
             if (entity != null) list.Add(entity);
             return list;
         }
 
-        // 关键字同时兼容列表工具栏的 q 与旧链接的 Q；显式拼接条件，避免通用 Search 忽略关键字
+        // 关键字同时兼容列表工具栏的 q 与旧链接的 Q
         var key = p["Q"];
         if (key.IsNullOrEmpty()) key = p["q"];
 
-        var where = new WhereExpression();
-        if (!key.IsNullOrWhiteSpace())
-        {
-            var exp = Role._.Name.Contains(key) | Role._.Remark.Contains(key);
-            where &= exp;
-        }
-
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
-        if (start > DateTime.MinValue) where &= Role._.CreateTime >= start;
-        if (end > DateTime.MinValue) where &= Role._.CreateTime < end.AddDays(1);
 
-        return Role.FindAll(where, p);
+        return Role.Search(start, end, key, p);
     }
 
     /// <summary>验证实体对象</summary>
@@ -110,7 +101,7 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
                 {
                     foreach (var item in XCode.Membership.Menu.Root.AllChilds)
                     {
-                        entity.Set(item.ID, PermissionFlags.All);
+                        entity.Set(item.Id, PermissionFlags.All);
                     }
                 }
 
@@ -127,18 +118,18 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
             foreach (var item in menus)
             {
                 // 是否授权该项
-                var has = GetBool("p" + item.ID);
+                var has = GetBool("p" + item.Id);
                 if (!has)
                 {
                     // 取消整项授权
                     if (!restricted)
-                        dels.Add(item.ID);
+                        dels.Add(item.Id);
                     else
                         // 受限管理员只回收自己拥有的权限子项，保留系统管理员授予的其它权限
                         foreach (var pf in item.Permissions)
                         {
                             var flag = (PermissionFlags)pf.Key;
-                            if (current != null && current.Has(item, flag)) entity.Reset(item.ID, flag);
+                            if (current != null && current.Has(item, flag)) entity.Reset(item.Id, flag);
                         }
                 }
                 else
@@ -152,26 +143,26 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
                         // 防止越界授权：受限管理员只能管理自己拥有的权限子项，其它权限保持不变
                         if (restricted && (current == null || !current.Has(item, flag))) continue;
 
-                        var has2 = GetBool("pf" + item.ID + "_" + pf.Key);
+                        var has2 = GetBool("pf" + item.Id + "_" + pf.Key);
 
                         if (has2)
-                            entity.Set(item.ID, flag);
+                            entity.Set(item.Id, flag);
                         else
-                            entity.Reset(item.ID, flag);
+                            entity.Reset(item.Id, flag);
 
                         any |= has2;
                     }
                     // 如果原来没有权限，这是首次授权，且右边没有勾选任何子项，则授权全部
-                    if (!any & !entity.Has(item.ID))
+                    if (!any & !entity.Has(item.Id))
                     {
                         if (!restricted)
-                            entity.Set(item.ID);
+                            entity.Set(item.Id);
                         else
                             // 受限管理员默认只授予自己拥有的权限子项，杜绝借助默认全量越界
                             foreach (var pf in item.Permissions)
                             {
                                 var flag = (PermissionFlags)pf.Key;
-                                if (current != null && current.Has(item, flag)) entity.Set(item.ID, flag);
+                                if (current != null && current.Has(item, flag)) entity.Set(item.Id, flag);
                             }
                     }
                 }
@@ -215,7 +206,7 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
         // 重置主键，避免重复
         foreach (var item in list)
         {
-            if (item is Role role) role.ID = 0;
+            if (item is Role role) role.Id = 0;
         }
 
         static Boolean match(IEntity e, IModel m)

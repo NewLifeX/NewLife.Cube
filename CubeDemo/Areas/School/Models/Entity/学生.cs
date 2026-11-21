@@ -116,7 +116,7 @@ public partial class Student : IStudent, IEntity<IStudent>
     [DisplayName("体重")]
     [Description("体重。小数")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("Weight", "体重。小数", "", Precision = 0, Scale = 2)]
+    [BindColumn("Weight", "体重。小数", "", Scale = 2)]
     public Double Weight { get => _Weight; set { if (OnPropertyChanging("Weight", value)) { _Weight = value; OnPropertyChanged("Weight"); } } }
 
     private Decimal _Amount;
@@ -124,17 +124,17 @@ public partial class Student : IStudent, IEntity<IStudent>
     [DisplayName("存款")]
     [Description("存款。小数")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("Amount", "存款。小数", "", Precision = 0, Scale = 3)]
+    [BindColumn("Amount", "存款。小数", "", Scale = 3)]
     public Decimal Amount { get => _Amount; set { if (OnPropertyChanging("Amount", value)) { _Amount = value; OnPropertyChanged("Amount"); } } }
 
-    private Int32 _CreateUserID;
+    private Int32 _CreateUserId;
     /// <summary>创建者</summary>
     [Category("扩展信息")]
     [DisplayName("创建者")]
     [Description("创建者")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("CreateUserID", "创建者", "")]
-    public Int32 CreateUserID { get => _CreateUserID; set { if (OnPropertyChanging("CreateUserID", value)) { _CreateUserID = value; OnPropertyChanged("CreateUserID"); } } }
+    [BindColumn("CreateUserId", "创建者", "")]
+    public Int32 CreateUserId { get => _CreateUserId; set { if (OnPropertyChanging("CreateUserId", value)) { _CreateUserId = value; OnPropertyChanged("CreateUserId"); } } }
 
     private DateTime _CreateTime;
     /// <summary>创建时间</summary>
@@ -154,14 +154,14 @@ public partial class Student : IStudent, IEntity<IStudent>
     [BindColumn("CreateIP", "创建地址", "")]
     public String CreateIP { get => _CreateIP; set { if (OnPropertyChanging("CreateIP", value)) { _CreateIP = value; OnPropertyChanged("CreateIP"); } } }
 
-    private Int32 _UpdateUserID;
+    private Int32 _UpdateUserId;
     /// <summary>更新者</summary>
     [Category("扩展信息")]
     [DisplayName("更新者")]
     [Description("更新者")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("UpdateUserID", "更新者", "")]
-    public Int32 UpdateUserID { get => _UpdateUserID; set { if (OnPropertyChanging("UpdateUserID", value)) { _UpdateUserID = value; OnPropertyChanged("UpdateUserID"); } } }
+    [BindColumn("UpdateUserId", "更新者", "")]
+    public Int32 UpdateUserId { get => _UpdateUserId; set { if (OnPropertyChanging("UpdateUserId", value)) { _UpdateUserId = value; OnPropertyChanged("UpdateUserId"); } } }
 
     private DateTime _UpdateTime;
     /// <summary>更新时间</summary>
@@ -208,10 +208,10 @@ public partial class Student : IStudent, IEntity<IStudent>
         Avatar = model.Avatar;
         Weight = model.Weight;
         Amount = model.Amount;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateTime = model.UpdateTime;
         UpdateIP = model.UpdateIP;
         Remark = model.Remark;
@@ -238,10 +238,10 @@ public partial class Student : IStudent, IEntity<IStudent>
             "Avatar" => _Avatar,
             "Weight" => _Weight,
             "Amount" => _Amount,
-            "CreateUserID" => _CreateUserID,
+            "CreateUserId" => _CreateUserId,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
-            "UpdateUserID" => _UpdateUserID,
+            "UpdateUserId" => _UpdateUserId,
             "UpdateTime" => _UpdateTime,
             "UpdateIP" => _UpdateIP,
             "Remark" => _Remark,
@@ -263,10 +263,10 @@ public partial class Student : IStudent, IEntity<IStudent>
                 case "Avatar": _Avatar = Convert.ToString(value); break;
                 case "Weight": _Weight = value.ToDouble(); break;
                 case "Amount": _Amount = Convert.ToDecimal(value); break;
-                case "CreateUserID": _CreateUserID = value.ToInt(); break;
+                case "CreateUserId": _CreateUserId = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
-                case "UpdateUserID": _UpdateUserID = value.ToInt(); break;
+                case "UpdateUserId": _UpdateUserId = value.ToInt(); break;
                 case "UpdateTime": _UpdateTime = value.ToDateTime(); break;
                 case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
                 case "Remark": _Remark = Convert.ToString(value); break;
@@ -294,6 +294,35 @@ public partial class Student : IStudent, IEntity<IStudent>
     [Category("基本信息")]
     public String ClassName => Class?.ToString();
 
+    #endregion
+
+    #region 扩展查询
+    #endregion
+
+    #region 高级查询
+    /// <summary>高级查询</summary>
+    /// <param name="tenantId">租户</param>
+    /// <param name="classId">班级</param>
+    /// <param name="sex">性别</param>
+    /// <param name="enable">启用</param>
+    /// <param name="start">更新时间开始</param>
+    /// <param name="end">更新时间结束</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
+    /// <returns>实体列表</returns>
+    public static IList<Student> Search(Int32 tenantId, Int32 classId, XCode.Membership.SexKinds sex, Boolean? enable, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        var exp = new WhereExpression();
+
+        if (tenantId >= 0) exp &= _.TenantId == tenantId;
+        if (classId >= 0) exp &= _.ClassId == classId;
+        if (sex >= 0) exp &= _.Sex == sex;
+        if (enable != null) exp &= _.Enable == enable;
+        exp &= _.UpdateTime.Between(start, end);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+
+        return FindAll(exp, page);
+    }
     #endregion
 
     #region 字段名
@@ -337,7 +366,7 @@ public partial class Student : IStudent, IEntity<IStudent>
         public static readonly Field Amount = FindByName("Amount");
 
         /// <summary>创建者</summary>
-        public static readonly Field CreateUserID = FindByName("CreateUserID");
+        public static readonly Field CreateUserId = FindByName("CreateUserId");
 
         /// <summary>创建时间</summary>
         public static readonly Field CreateTime = FindByName("CreateTime");
@@ -346,7 +375,7 @@ public partial class Student : IStudent, IEntity<IStudent>
         public static readonly Field CreateIP = FindByName("CreateIP");
 
         /// <summary>更新者</summary>
-        public static readonly Field UpdateUserID = FindByName("UpdateUserID");
+        public static readonly Field UpdateUserId = FindByName("UpdateUserId");
 
         /// <summary>更新时间</summary>
         public static readonly Field UpdateTime = FindByName("UpdateTime");
@@ -400,7 +429,7 @@ public partial class Student : IStudent, IEntity<IStudent>
         public const String Amount = "Amount";
 
         /// <summary>创建者</summary>
-        public const String CreateUserID = "CreateUserID";
+        public const String CreateUserId = "CreateUserId";
 
         /// <summary>创建时间</summary>
         public const String CreateTime = "CreateTime";
@@ -409,7 +438,7 @@ public partial class Student : IStudent, IEntity<IStudent>
         public const String CreateIP = "CreateIP";
 
         /// <summary>更新者</summary>
-        public const String UpdateUserID = "UpdateUserID";
+        public const String UpdateUserId = "UpdateUserId";
 
         /// <summary>更新时间</summary>
         public const String UpdateTime = "UpdateTime";

@@ -38,13 +38,13 @@ public interface IMfaService
     Boolean IsEnabled(IUser user);
 
     /// <summary>额发 MFA 挂起令牌（登录校验通过账密但 MFA 尚未验证时调用）</summary>
-    /// <param name="userId">用户 ID</param>
+    /// <param name="userId">用户 Id</param>
     /// <returns>不透明令牌字符串，TTL 300 秒</returns>
     String IssuePendingToken(Int32 userId);
 
-    /// <summary>从挂起令牌中解析用户 ID，解析成功后立即删除令牌（防重放）</summary>
+    /// <summary>从挂起令牌中解析用户 Id，解析成功后立即删除令牌（防重放）</summary>
     /// <param name="mfaToken">挂起令牌</param>
-    /// <returns>用户 ID；令牌无效或已过期返回 0</returns>
+    /// <returns>用户 Id；令牌无效或已过期返回 0</returns>
     Int32 ConsumePendingToken(String mfaToken);
 }
 
@@ -67,3 +67,4 @@ public class MfaVerifyModel
     /// <summary>用户输入的 6 位 TOTP 验证码或 10 位备用码</summary>
     public String Code { get; set; }
 }
+

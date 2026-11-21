@@ -3,8 +3,8 @@ import { getConfig } from '../configure';
 
 /**
  * 翻转字符串首字母大小写。
- * PascalCase 转 camelCase（如 `CreateUserID` → `createUserID`），
- * camelCase 转 PascalCase（如 `createUserID` → `CreateUserID`）。
+ * PascalCase 转 camelCase（如 `CreateUserId` → `createUserId`），
+ * camelCase 转 PascalCase（如 `createUserId` → `CreateUserId`）。
  * 用于容错后端 JSON 序列化时大小写不匹配的情况。
  */
 export function toPascalAndCamel(str: string): string {

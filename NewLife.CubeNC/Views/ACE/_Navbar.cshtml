@@ -6,7 +6,7 @@
     var roleNames = "";
     if (user != null)
     {
-        uid = user.ID;
+        uid = user.Id;
         roleNames = user.Roles == null ? "" : user.Roles.Join();
     }
     var cfg = ViewBag.Config as SysConfig;
@@ -93,7 +93,7 @@
                 <!--tenant-->
                 @if (set.EnableTenant && user != null)
                 {
-                    var tList = TenantUser.FindAllByUserId(user.ID);
+                    var tList = TenantUser.FindAllByUserId(user.Id);
                     var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
                     var tenantName = tenant?.Name;
 

@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
 using NewLife.Log;
@@ -52,7 +52,7 @@ public class ControllerBaseX : Controller
         if (user != null)
         {
             // 设置变量，数据权限使用
-            HttpContext.Items["userId"] = user.ID;
+            HttpContext.Items["userId"] = user.Id;
 
             // 批量操作需要更新或删除权限，无权限时隐藏选择列与批量按钮；没有菜单时不做权限控制
             if (Menu != null)
@@ -101,7 +101,7 @@ public class ControllerBaseX : Controller
             var act = GetControllerAction();
             var isDashboard = act.Length >= 3 && act[1].EqualIgnoreCase("Index") && act[2].EqualIgnoreCase("Dashboard");
             if (!isDashboard)
-                NewLife.Cube.Widgets.System.QuickLinkWidget.RecordVisit(user.ID, Menu);
+                NewLife.Cube.Widgets.System.QuickLinkWidget.RecordVisit(user.Id, Menu);
         }
 
         base.OnActionExecuted(context);

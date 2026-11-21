@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using NewLife.Web;
 using XCode.Membership;
 
@@ -28,12 +28,12 @@ public class TenantController : EntityController<Tenant, TenantModel>
 
         {
             var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             AddFormFields.RemoveField("RoleNames");
         }
         {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
         }
 
@@ -83,7 +83,7 @@ public class TenantController : EntityController<Tenant, TenantModel>
         {
             // 当前用户可能为空（异常会话），避免直接解引用导致保存失败
             var current = ManageProvider.Provider?.Current;
-            if (current != null) entity.ManagerId = current.ID;
+            if (current != null) entity.ManagerId = current.Id;
         }
 
         return base.Valid(entity, type, post);

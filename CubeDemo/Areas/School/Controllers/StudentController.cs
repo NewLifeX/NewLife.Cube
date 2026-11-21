@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
 using NewLife.Cube;
@@ -15,8 +15,8 @@ public class StudentController : EntityController<Student, StudentModel>
 {
     static StudentController()
     {
-        ListFields.RemoveField("CreateUserID");
-        ListFields.RemoveField("UpdateUserID");
+        ListFields.RemoveField("CreateUserId");
+        ListFields.RemoveField("UpdateUserId");
         //FormFields
 
         {

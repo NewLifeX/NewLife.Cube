@@ -1,6 +1,5 @@
 ﻿using XCode;
 using XLog = XCode.Membership.Log;
-using static XCode.Membership.Log;
 
 namespace NewLife.Cube.Widgets.System;
 
@@ -12,9 +11,7 @@ public class Error24hWidget : IWidget
     public Object GetData()
     {
         var now = DateTime.Now;
-        // Log.Id 是雪花Id，带时间信息，用 Id 时间范围过滤
-        var snow = XLog.Meta.Factory.Snow;
-        var count = XLog.FindCount(_.ID.Between(now.AddHours(-24), now, snow) & _.Success == false);
+        var count = XLog.FindCountByCreateTime(now.AddHours(-24), now, false);
 
         return new
         {

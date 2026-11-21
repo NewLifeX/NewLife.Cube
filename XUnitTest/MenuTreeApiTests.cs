@@ -133,7 +133,7 @@ public class MenuTreeApiTests
         {
             // 每个菜单节点必须有 id 和 name 字段
             Assert.True(element.TryGetProperty("id", out _) ||
-                        element.TryGetProperty("ID", out _),
+                        element.TryGetProperty("Id", out _),
                 $"菜单节点缺少 id 字段: {element}");
 
             Assert.True(element.TryGetProperty("name", out _) ||
@@ -307,3 +307,4 @@ public class MenuTreeApiTests
 
     #endregion
 }
+

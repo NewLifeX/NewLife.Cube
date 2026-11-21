@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -165,7 +165,7 @@ public static partial class MenuHelper
                     controller = adminRoot.FindByPath(name);
                     if (controller != null)
                     {
-                        controller.ParentID = root.ID;
+                        controller.ParentId = root.Id;
                         controller.Url = url;
                     }
                 }
@@ -198,7 +198,7 @@ public static partial class MenuHelper
             if (entityType != null)
             {
                 var factory = EntityFactory.CreateFactory(entityType);
-                var pk = factory?.Unique?.Name ?? "ID";
+                var pk = factory?.Unique?.Name ?? "Id";
                 EntityPageRegistry.Register(entityType, url, pk);
             }
 

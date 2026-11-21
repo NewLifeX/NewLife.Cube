@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -65,7 +65,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         if (tenantId >= 0 && set.EnableTenant)
         {
             // 判断租户关系
-            var list = TenantUser.FindAllByUserId(user.ID);
+            var list = TenantUser.FindAllByUserId(user.Id);
 
             // 管理后台（AdminBackend）仅系统管理员可切换；普通用户仅能切换到其所属的有效租户
             if (tenantId.GetTenantMode() == TenantMode.AdminBackend)
@@ -121,7 +121,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
 
         // 按用户排序与全局启停过滤，返回组件元数据
-        var widgets = _widgetManager.GetWidgets(roleNames, isAdmin, user?.ID ?? 0);
+        var widgets = _widgetManager.GetWidgets(roleNames, isAdmin, user?.Id ?? 0);
 
         // 预取组件数据，并收集图表组件以触发布局加载 echarts.min.js
         var charts = new List<ECharts>();
@@ -141,7 +141,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         ViewBag.Charts = charts;
         ViewBag.IsAdmin = isAdmin;
         // 用户已隐藏的组件（恢复面板用）
-        ViewBag.HiddenWidgets = _widgetManager.GetHiddenWidgets(user?.ID ?? 0, roleNames, isAdmin);
+        ViewBag.HiddenWidgets = _widgetManager.GetHiddenWidgets(user?.Id ?? 0, roleNames, isAdmin);
 
         return View();
     }
@@ -160,7 +160,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         if (order == null || order.Length == 0) return Json(0, null, "无排序数据");
 
         // 按显示顺序生成排序值，合并进用户布局（保留隐藏状态）
-        var layout = _widgetManager.GetLayout(user.ID);
+        var layout = _widgetManager.GetLayout(user.Id);
         for (var i = 0; i < order.Length; i++)
         {
             var name = order[i];
@@ -169,7 +169,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
             layout[name] = new WidgetLayout { Sort = i, Hide = false };
         }
 
-        _widgetManager.SaveLayout(user.ID, layout);
+        _widgetManager.SaveLayout(user.Id, layout);
 
         return Json(0, null, "排序已保存");
     }
@@ -187,7 +187,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         if (user == null) return Json(401, "未登录");
         if (name.IsNullOrEmpty()) return Json(500, null, "缺少组件名");
 
-        _widgetManager.SetHidden(user.ID, name, hide);
+        _widgetManager.SetHidden(user.Id, name, hide);
 
         return Json(0, null, hide ? "已隐藏" : "已恢复");
     }
@@ -202,7 +202,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         var user = _provider.Current as IUser;
         if (user == null) return Json(401, "未登录");
 
-        _widgetManager.ResetLayout(user.ID);
+        _widgetManager.ResetLayout(user.Id);
 
         return Json(0, null, "布局已重置");
     }
@@ -307,9 +307,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         // 查询过去 24h 错误数
         var now = DateTime.Now;
         var start = now.AddHours(-24);
-        var errorCount = XCode.Membership.Log.FindCount(
-            XCode.Membership.Log._.CreateTime >= start & XCode.Membership.Log._.CreateTime <= now,
-            null, null, 0, 0);
+        var errorCount = XCode.Membership.Log.FindCountByCreateTime(start, now);
 
         var sysInfo = new
         {
@@ -470,7 +468,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         var menus = MenuHelper.FilterAvailable(fact.Root.Childs);
         if (user?.Role != null)
         {
-            menus = MenuHelper.FilterAvailable(fact.GetMySubMenus(fact.Root.ID, user, true));
+            menus = MenuHelper.FilterAvailable(fact.GetMySubMenus(fact.Root.Id, user, true));
         }
 
         // 根据模块过滤菜单
@@ -499,7 +497,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
             {
                 foreach (var item in menus)
                 {
-                    ms = MenuHelper.FilterAvailable(fact.GetMySubMenus(item.ID, user, true));
+                    ms = MenuHelper.FilterAvailable(fact.GetMySubMenus(item.Id, user, true));
                     if (ms.Count > 0) break;
                 }
             }
@@ -513,7 +511,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
-        var menuTree = MenuTree.GetMenuTree(m => MenuHelper.FilterAvailable(fact.GetMySubMenus(m.ID, user, true)), list =>
+        var menuTree = MenuTree.GetMenuTree(m => MenuHelper.FilterAvailable(fact.GetMySubMenus(m.Id, user, true)), list =>
         {
             // GetMySubMenus 在极端情况下可能返回 null，LINQ from 会 NRE；统一按空集合处理
             if (list == null) return null;
@@ -522,7 +520,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
                                 // where m.Visible
                             select new MenuTree
                             {
-                                ID = menu.ID,
+                                Id = menu.Id,
                                 Name = menu.Name,
                                 DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                 FullName = menu.FullName,
@@ -530,7 +528,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
                                 NewWindow = menu.NewWindow,
-                                ParentID = menu.ParentID,
+                                ParentId = menu.ParentId,
                                 Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
                             }).ToList();
             return menuList.Count > 0 ? menuList : null;
@@ -569,9 +567,9 @@ public class IndexController : ControllerBaseX, IPageDataContext
             return menus;
         }
 
-        var list = GetMenus(fact.Root.ID);
+        var list = GetMenus(fact.Root.Id);
         var modules = user.GetModules();
 
-        return MenuHelper.BuildSearchMenus(list, m => GetMenus(m.ID), modules, url => Url.Content(url));
+        return MenuHelper.BuildSearchMenus(list, m => GetMenus(m.Id), modules, url => Url.Content(url));
     }
 }
