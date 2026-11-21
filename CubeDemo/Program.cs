@@ -1,4 +1,4 @@
-﻿using NewLife.Cube;
+using NewLife.Cube;
 using NewLife.Cube.ArcoVue;
 using NewLife.Cube.Services;
 using NewLife.Cube.Swagger;
@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
 // 引入星尘，设置监控中间件
-var star = services.AddStardust(null);
+var star = services.AddStardust();
 //TracerMiddleware.Tracer = star?.Tracer;
 
 //services.AddHttpContextAccessor();

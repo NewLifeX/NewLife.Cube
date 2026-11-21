@@ -45,6 +45,11 @@
     <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
   </PropertyGroup>
 
+  <!-- 本地联调：UseLocalNewLifeSource=true 时用同级 NewLife 源码项目替代 XCode 包引用；默认仍走 NuGet 包 -->
+  <PropertyGroup>
+    <NewLifeSourceRoot Condition="'$(NewLifeSourceRoot)' == ''">$(MSBuildProjectDirectory)\..\..</NewLifeSourceRoot>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
@@ -58,14 +63,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.AI" Version="1.7.2026.1024" />
-    <PackageReference Include="NewLife.Core" Version="12.0.2026.1109-beta0553" />
+    <PackageReference Include="NewLife.AI" Version="1.7.2026.1026-beta0221" />
+    <PackageReference Include="NewLife.Core" Version="12.0.2026.1119-beta1418" />
     <PackageReference Include="NewLife.IP" Version="2.6.2026.1024" />
-    <PackageReference Include="NewLife.Office" Version="1.5.2026.1103-beta0424" />
+    <PackageReference Include="NewLife.Office" Version="1.5.2026.1120-beta0617" />
     <!-- Stardust 传递依赖 NewLife.Remoting，最小版本 3.9.2026.901 面向 Core 11 构建，与 Core 12 不兼容；显式提升到 Core 12 版本 -->
-    <PackageReference Include="NewLife.Remoting" Version="4.0.2026.1109-beta0753" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1024" />
-    <PackageReference Include="NewLife.XCode" Version="12.3.2026.1108-beta1704" />
+    <PackageReference Include="NewLife.Remoting" Version="4.0.2026.1116-beta1043" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1119-beta1510" />
+  </ItemGroup>
+
+  <!-- 本地联调：UseLocalNewLifeSource=true 时改用同级 XCode 源码，避免同一程序集既包引用又项目引用 -->
+  <ItemGroup Condition="'$(UseLocalNewLifeSource)' == 'true'">
+    <ProjectReference Include="$(NewLifeSourceRoot)\NewLife.XCode\XCode\XCode.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseLocalNewLifeSource)' != 'true'">
+    <PackageReference Include="NewLife.XCode" Version="12.3.2026.1120-beta0453" />
   </ItemGroup>
 
   <ItemGroup>
@@ -206,6 +218,7 @@
     <Compile Include="..\NewLife.Cube\Web\OAuth\WxOpenClient.cs" Link="Web\OAuth\WxOpenClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoClient.cs" Link="Web\SsoClient.cs" />
     <Compile Include="..\NewLife.Cube\Services\Sso\*.cs" Link="Services\Sso\%(Filename)%(Extension)" />
+    <Compile Include="..\NewLife.Cube\Services\ConfigSync\*.cs" Link="Services\ConfigSync\%(Filename)%(Extension)" />
     <Compile Include="..\NewLife.Cube\Web\UserAgentParser.cs" Link="Web\UserAgentParser.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
     <Compile Include="..\NewLife.Cube\Widgets\IWidget.cs" Link="Widgets\IWidget.cs" />

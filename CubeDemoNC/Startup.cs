@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
 using NewLife;
 using NewLife.Caching;
@@ -27,7 +27,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         // 引入星尘，设置监控中间件
-        var star = services.AddStardust(null);
+        var star = services.AddStardust();
         //TracerMiddleware.Tracer = star?.Tracer;
 
         // 分布式服务，使用配置中心RedisCache配置
