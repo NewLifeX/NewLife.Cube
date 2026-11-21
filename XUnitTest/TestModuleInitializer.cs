@@ -19,6 +19,12 @@ internal static class TestModuleInitializer
         try
         {
             XTrace.UseConsole(true, false);
+
+            // NewLife.Core 12.0.2026.1115 起，Logger.Level 未显式赋值时会读 Setting.Current，
+            // 而配置初始化本身要写日志（Config.Create → Save → FileConfigProvider.OnWrite → XTrace.WriteLine → Level），
+            // 无配置文件时形成 Setting → OnWrite → Level → Setting 的递归并栈溢出（测试宿主直接崩溃）。
+            // 此处固定日志等级，使日志链路不再触碰 Setting。根治方案见 NewLife.Core Logger.Level 改用 TryGetCurrent。
+            XTrace.Log.Level = LogLevel.Info;
         }
         catch
         {
