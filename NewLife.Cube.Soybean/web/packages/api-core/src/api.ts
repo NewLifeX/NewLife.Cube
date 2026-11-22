@@ -1,0 +1,518 @@
+import type { AxiosRequestConfig } from 'axios';
+import { resolveRequestUrl } from './service-path';
+import { encryptPassword } from './crypto';
+import type {
+  ApiResponse,
+  AuthCategory,
+  BindsResult,
+  CaptchaResult,
+  ChangePasswordModel,
+  MfaSetupResult,
+  MfaVerifyResult,
+  DataField,
+  PageMeta,
+  PageMetaData,
+  UserInfo,
+  LoginResult,
+  LoginConfig,
+  ChallengeResult,
+  ResetPasswordModel,
+  MenuItem,
+  PageParams,
+  RegisterModel,
+  OAuthPendingInfo,
+  ActivateModel,
+  VerifyContactModel,
+  VerifyStatus,
+  AreaNode,
+} from './types';
+
+type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
+
+/** 批量删除单次主键上限，与后端 EntityController.MaxBatchDelete 保持一致 */
+export const MaxBatchDelete = 100;
+
+/** 密码登录附加参数（图画验证码与记住登录态） */
+export interface PasswordLoginOptions {
+  /** 图片验证码 ID（登录配置 login.captcha=true 时必填） */
+  captchaId?: string;
+  /** 图片验证码答案 */
+  captchaCode?: string;
+  /** 记住登录状态（true 时后端把令牌有效期延长到 365 天） */
+  remember?: boolean;
+}
+
+/**
+ * 密码登录通用业务逻辑（皮肤无关，沉淀在 api-core 供所有皮肤复用）
+ *
+ * 与后端 GET /Auth/Challenge 协作，自动尝试 RSA-OAEP 公钥加密密码；
+ * Challenge 接口不可达 / 公钥为空 / 加密失败时降级为明文传输。
+ * captchaId/captchaCode/remember 可选，仅在传值时携带对应字段。
+ *
+ * @param login 发起登录请求的 callback（sku 注入：user.login）
+ * @param getChallenge 获取 RSA 挑战的 callback（sku 注入：user.getChallenge）
+ * @param username 用户名
+ * @param password 原始明文密码（本函数内部按需加密）
+ * @param opts 附加参数（验证码 / 记住）
+ * @returns 登录结果 ApiResponse（登录成功时 data 含 accessToken）
+ */
+export async function passwordLoginWithChallenge(
+  login: (data: {
+    username: string;
+    password: string;
+    category?: AuthCategory;
+    challengeId?: string;
+    captchaId?: string;
+    captchaCode?: string;
+    remember?: boolean;
+  }) => Promise<ApiResponse<LoginResult>>,
+  getChallenge: () => Promise<ApiResponse<ChallengeResult>>,
+  username: string,
+  password: string,
+  opts: PasswordLoginOptions = {},
+): Promise<ApiResponse<LoginResult>> {
+  let finalPassword = password;
+  let challengeId: string | undefined;
+  try {
+    const challenge = (await getChallenge()).data;
+    if (challenge?.publicKey) {
+      finalPassword = await encryptPassword(password, challenge.publicKey);
+      challengeId = challenge.challengeId;
+    }
+  } catch {
+    // Challenge 接口不可达 / 公钥为空 / 加密失败：降级为明文传输
+  }
+  return login({
+    username,
+    password: finalPassword,
+    ...(challengeId ? { challengeId } : {}),
+    ...(opts.captchaId ? { captchaId: opts.captchaId } : {}),
+    ...(opts.captchaCode ? { captchaCode: opts.captchaCode } : {}),
+    ...(opts.remember ? { remember: opts.remember } : {}),
+  });
+}
+
+/**
+ * 用户认证相关 API
+ *
+ * 新版使用 /Auth/* 路径，由 AuthController 提供
+ */
+export function createUserApi(request: RequestFn) {
+  return {
+    /** 密码登录（传入 category 可切换：手机验证码登录/邮箱验证码登录） */
+    login: (data: { username: string; password: string; category?: AuthCategory; challengeId?: string; captchaId?: string; captchaCode?: string; remember?: boolean }) =>
+      request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
+
+    /**
+     * 密码登录（皮肤通用逻辑，自动 RSA Challenge 加密）
+     *
+     * 内部先 GET /Auth/Challenge 取公钥加密密码并携带 challengeId 登录；
+     * 服务端不支持 / 不可达 / 加密失败时降级明文。验证码与记住登录态按需传 opts。
+     */
+    loginWithPassword: (
+      username: string,
+      password: string,
+      opts: PasswordLoginOptions = {},
+    ) =>
+      passwordLoginWithChallenge(
+        (data) => request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
+        () => request<ChallengeResult>({ url: '/Auth/Challenge', method: 'get' }),
+        username,
+        password,
+        opts,
+      ),
+
+    /** 发送验证码 */
+    sendCode: (data: { channel: string; username: string; action?: string; captchaId?: string; captchaCode?: string }) =>
+      request<number>({ url: '/Auth/SendCode', method: 'post', data }),
+
+    /** 刷新令牌 */
+    refreshToken: (data: { refreshToken: string; userName?: string }) =>
+      request<LoginResult>({ url: '/Auth/Refresh', method: 'post', data }),
+
+    /** 登出 */
+    logout: () =>
+      request<void>({ url: '/Auth/Logout', method: 'post' }),
+
+    /** 注销账号（不可恢复：禁用账号、清空个性化数据，并通知下游清理业务数据）。成功后应清理本地登录态并跳转登录页 */
+    closeAccount: () =>
+      request<void>({ url: '/Auth/CloseAccount', method: 'post' }),
+
+    /** 获取当前用户信息 */
+    info: () =>
+      request<UserInfo>({ url: '/Auth/Info', method: 'get' }),
+
+    /** 切换当前租户（多租户开启时）。0=管理后台（仅系统管理员），>0=租户编号；成功后前端应刷新页面（菜单/数据随租户变化） */
+    switchTenant: (tenantId: number) =>
+      request<boolean>({ url: '/Auth/SwitchTenant', method: 'post', data: { tenantId } }),
+
+    /** 获取登录页配置（OAuth 提供商列表等），可传入租户标识（id/code/name/domain） */
+    getLoginConfig: (tenant?: string) =>
+      request<LoginConfig>({ url: '/Auth/LoginConfig', method: 'get', params: tenant ? { tenant } : undefined }),
+
+    /** 获取图片验证码（SVG 算数题），返回 captchaId 和 image */
+    getCaptcha: () =>
+      request<CaptchaResult>({ url: '/Auth/Captcha', method: 'get' }),
+
+    /** 注册新用户。多租户场景可传 appId（转为 X-App-Id 头）或 tenantCode（转为 X-Tenant 头） */
+    register: (data: RegisterModel & { captchaId?: string; captchaCode?: string; appId?: string; tenantCode?: string }) => {
+      const { appId, tenantCode, ...rest } = data;
+      const headers: Record<string, string> = {};
+      if (appId) headers['X-App-Id'] = appId;
+      if (tenantCode) headers['X-Tenant'] = tenantCode;
+      return request<LoginResult>({ url: '/Auth/Register', method: 'post', data: rest, headers: Object.keys(headers).length > 0 ? headers : undefined });
+    },
+
+    /** 微信小程序登录。appId 可选，后端支持请求体或 X-App-Id 头兜底 */
+    wxMiniLogin: (data: { code: string; appId?: string }) =>
+      request<LoginResult>({ url: '/Sso/WxMiniLogin', method: 'post', data }),
+
+    /** 微信APP登录。appId 可选，后端支持请求体或 X-App-Id 头兜底 */
+    wxAppLogin: (data: { code: string; appId?: string }) =>
+      request<LoginResult>({ url: '/Sso/WxAppLogin', method: 'post', data }),
+
+    /** 获取OAuth回跳待注册预填信息 */
+    getOAuthPendingInfo: (token: string) =>
+      request<OAuthPendingInfo>({ url: '/Auth/OAuthPendingInfo', method: 'get', params: { token } }),
+
+    /**
+     * 获取 RSA 公钥挑战，用于加密密码防明文传输
+     *
+    * 流程：getChallenge() → 用 publicKey 加密密码 → login(username, encryptedPwd, challengeId)
+     * 密钥有效期 300s，使用一次后服务端立即删除防重放。
+     */
+    getChallenge: () =>
+      request<ChallengeResult>({ url: '/Auth/Challenge', method: 'get' }),
+
+    /**
+     * 完成 MFA 二步验证登录
+     *
+     * 当 Login 返回消息中含有 mfa_required:xxx 时，提取 mfaToken 并让用户输入 Authenticator App 验证码
+     * 再调用此接口完成登录。
+     */
+    mfaVerify: (data: { mfaToken: string; code: string }) =>
+      request<MfaVerifyResult>({ url: '/Mfa/Verify', method: 'post', data }),
+
+    /** 初始化 MFA（返回二维码 URI 和密钥） */
+    mfaSetup: () =>
+      request<MfaSetupResult>({ url: '/Mfa/Setup', method: 'get' }),
+
+    /** 激活 MFA（输入扫码后第一个验证码），返回备用码 */
+    mfaActivate: (code: string) =>
+      request<{ backupCodes: string[] }>({ url: '/Mfa/Activate', method: 'post', data: { code } }),
+
+    /** 禁用 MFA */
+    mfaDisable: (code: string) =>
+      request<void>({ url: '/Mfa/Disable', method: 'post', data: { code } }),
+
+    /** 查询 MFA 开启状态 */
+    mfaStatus: () =>
+      request<{ enabled: boolean; available: boolean }>({ url: '/Mfa/Status', method: 'get' }),
+
+    /**
+     * 通过验证码重置密码（忘记密码流程）
+     *
+     * 先调用 sendCode({ channel, username, action: 'reset' }) 发送验证码，
+     * 再调用本接口提交验证码 + 新密码完成重置。
+     */
+    resetPassword: (data: ResetPasswordModel) =>
+      request<boolean>({ url: '/Auth/ResetPassword', method: 'post', data }),
+
+    /**
+     * 邮箱激活链接直达。激活邮件中的链接指向 {ActivateUrl}?token=&account=，前端 /activate 页解析后调用
+     */
+    activateByLink: (token: string, account: string) =>
+      request<{ activated: boolean }>({ url: '/Auth/Activate', method: 'get', params: { token, account } }),
+
+    /** 验证码激活（邮箱验证码/手机短信验证码） */
+    activateByCode: (data: ActivateModel) =>
+      request<{ activated: boolean }>({ url: '/Auth/Activate', method: 'post', data }),
+
+    /** 重发激活。未激活账号重新发送激活邮件/短信（登录页「未激活？重新发送」） */
+    sendActivateCode: (channel: string, account: string) =>
+      request<{ target: string }>({ url: '/Auth/SendActivateCode', method: 'post', data: { channel, username: account } }),
+
+    /** 已登录用户验证/更换邮箱或手机（安全中心）。验证码经 sendCode(action=bind) 发送 */
+    verifyContact: (data: VerifyContactModel) =>
+      request<VerifyStatus>({ url: '/Auth/VerifyContact', method: 'post', data }),
+
+    /** 获取当前用户详细资料（GET /Admin/User/Info，含邮箱/手机验证状态）。列表/首页信息经 /Auth/Info */
+    profile: () =>
+      request<UserInfo>({ url: '/Admin/User/Info', method: 'get' }),
+
+    /** 更新当前用户资料（昵称/性别/生日/邮箱/手机等文本字段，POST /Admin/User/Info）。
+     *  头像走 page.uploadFile('/Admin/User', file) 上传后，将返回 filePath 回填到 avatar 字段再提交 */
+    updateProfile: (data: Record<string, unknown>) =>
+      request<UserInfo>({ url: '/Admin/User/Info', method: 'post', data }),
+
+    /** 修改当前登录用户密码（SSO 登录可免原密码）。密码要求 8 位起且包含数字大小写字母和符号 */
+    changePassword: (data: ChangePasswordModel) =>
+      request<boolean>({ url: '/Admin/User/ChangePassword', method: 'post', data }),
+
+    /** 第三方授权绑定列表（GET /Admin/User/Binds）：已绑定记录 + 可绑定平台 */
+    binds: () =>
+      request<BindsResult>({ url: '/Admin/User/Binds', method: 'get' }),
+
+    /** 解绑第三方平台（GET /Sso/UnBind/{provider}） */
+    unbind: (provider: string) =>
+      request<boolean>({ url: `/Sso/UnBind/${provider}`, method: 'get' }),
+  };
+}
+
+/**
+ * 地区 API（Cube 服务接口，后端无 /api 前缀）
+ */
+export function createAreaApi(request: RequestFn) {
+  return {
+    /** 获取直接子级地区；id=0 返回省级 */
+    getChilds: (id = 0) =>
+      request<AreaNode[]>({ url: '/Cube/AreaChilds', method: 'get', params: { id } }),
+
+    /** 获取从根到指定地区的父级路径（含自身） */
+    getParents: (id: number) =>
+      request<AreaNode[]>({ url: '/Cube/AreaParents', method: 'get', params: { id, isContainSelf: true } }),
+  };
+}
+
+/**
+ * 菜单 API
+ */
+export function createMenuApi(request: RequestFn) {
+  return {
+    /** 获取菜单树，新路径 /Cube/MenuTree（旧路径 /Admin/Index/GetMenuTree 保持兼容） */
+    getMenuTree: (params?: { module?: string }) =>
+      request<MenuItem[]>({ url: '/Cube/MenuTree', method: 'get', params }),
+  };
+}
+
+/**
+ * 通用 CRUD + 数据操作 API（核心）
+ *
+ * 所有方法的 `type` 参数为路径前缀，如 "/Admin/User"、"/Cube/App"
+ */
+
+/**
+ * 页面元数据缓存（会话级内存缓存）
+ *
+ * meta 接口返回的页面配置（列表/搜索/表单字段）由控制器静态配置决定，同一会话内稳定不变。
+ * 按 scope + type 缓存后，列表页「探测 + loadFields」与表单页只需请求一次，切换/重进页面不再重复请求。
+ * 默认会话级（0 = 不按时间过期）；仅在浏览器刷新、登出换用户、切语言/租户或显式 refresh 时失效。
+ */
+interface MetaCacheEntry {
+  /** 已展开的响应 */
+  data?: ApiResponse<PageMeta>;
+  /** 过期时间戳；0 表示会话级 */
+  expireAt: number;
+  /** 进行中的请求，用于并发去重 */
+  promise?: Promise<ApiResponse<PageMeta>>;
+}
+
+const pageMetaCache = new Map<string, MetaCacheEntry>();
+
+/** 元数据缓存有效期（毫秒）。0 表示会话级 */
+let metaCacheTtl = 0;
+
+/** 清空页面元数据缓存（登出/切换用户/切语言/列设置保存时调用）。传入 type 时只清该页面 */
+export function clearPageMetaCache(type?: string): void {
+  if (!type) {
+    pageMetaCache.clear();
+    return;
+  }
+  for (const key of [...pageMetaCache.keys()]) {
+    if (key.endsWith(`|${type}`)) pageMetaCache.delete(key);
+  }
+}
+
+/** 设置元数据缓存有效期（毫秒）。0 表示会话级，SPA 不刷新不重复请求 */
+export function setMetaCacheTtl(ms: number): void {
+  metaCacheTtl = Math.max(0, ms);
+}
+
+/**
+ * 把 `/meta` 的各视图数组展开为消费端结构（list/addForm/editForm/detail/search）。
+ * 旧服务端直接返回数组的响应原样保留。
+ */
+export function expandPageMeta(raw: unknown): PageMeta | undefined {
+  if (!raw || typeof raw !== 'object') return raw as PageMeta | undefined;
+
+  const meta = raw as PageMetaData & { pageSetting?: PageMetaData['setting']; fields?: PageMeta['fields'] };
+  // 旧服务端兜底：旧结构没有 form 数组，原样返回
+  if (!meta.form) return meta as PageMeta;
+
+  const form = meta.form ?? [];
+  const result: PageMeta = {
+    setting: meta.setting,
+    entity: meta.entity,
+    addForm: meta.add ?? form,
+    editForm: form,
+    detail: meta.detail ?? form,
+  };
+  if (meta.list) result.list = meta.list;
+  if (meta.search) result.search = meta.search;
+  if (meta.toolbar) result.toolbar = meta.toolbar;
+  if (meta.ui) result.ui = meta.ui;
+
+  return result;
+}
+
+export function createPageApi(request: RequestFn, baseApiUrl?: string, metaCacheScope?: () => string) {
+  return {
+    /**
+     * 获取页面元数据（展开后为 setting + entity + list/addForm/editForm/detail/search + toolbar）。
+     * 同一 scope + type 会话内缓存；refresh=true 强制重新请求。
+     */
+    getPage: (type: string, options?: { refresh?: boolean }): Promise<ApiResponse<PageMeta>> => {
+      const key = `${metaCacheScope?.() ?? ''}|${type}`;
+      const hit = pageMetaCache.get(key);
+      if (!options?.refresh && hit) {
+        if (hit.promise) return hit.promise;
+        if (hit.data && (metaCacheTtl === 0 || Date.now() < hit.expireAt)) return Promise.resolve(hit.data);
+      }
+
+      let promise: Promise<ApiResponse<PageMeta>>;
+      promise = request<PageMetaData>({ url: `${type}/meta`, method: 'get' })
+        .then((res) => {
+          // 仅缓存实体页配置（data 为对象）；非实体页返回 HTML 字符串，不缓存
+          if (!res || !res.data || typeof res.data === 'string') {
+            pageMetaCache.delete(key);
+            return res as unknown as ApiResponse<PageMeta>;
+          }
+
+          const expanded: ApiResponse<PageMeta> = { ...res, data: expandPageMeta(res.data) as PageMeta };
+          pageMetaCache.set(key, { data: expanded, expireAt: metaCacheTtl > 0 ? Date.now() + metaCacheTtl : 0 });
+          return expanded;
+        })
+        .catch((error) => {
+          const current = pageMetaCache.get(key);
+          if (current?.promise === promise) pageMetaCache.delete(key);
+          throw error;
+        });
+
+      pageMetaCache.set(key, { data: hit?.data, expireAt: hit?.expireAt ?? 0, promise });
+      return promise;
+    },
+
+    /** 列表查询（分页） */
+    getList: <T = Record<string, unknown>>(type: string, params: PageParams) =>
+      request<T[]>({ url: type, method: 'get', params }),
+
+    /** 查看详情：GET {type}/{id}（extra 作为附加查询参数） */
+    getDetail: <T = Record<string, unknown>>(type: string, id: number | string, extra?: Record<string, unknown>) =>
+      request<T>({ url: `${type}/${encodeURIComponent(id)}`, method: 'get', params: extra }),
+
+    /** 新增 */
+    add: (type: string, data: Record<string, unknown>) =>
+      request<unknown>({ url: type, method: 'post', data }),
+
+    /** 编辑：PUT {type}/{id}。主键取自 data 的 id/Id/ID，也可由 id 显式指定；body 只需携带变更字段 */
+    update: async (type: string, data: Record<string, unknown>, id?: number | string) => {
+      // 字段元数据来自后端 C# 属性名，主键可能是 id/Id/ID（如 XCode 的 ID），统一大小写不敏感匹配
+      const key =
+        id ??
+        (data.id as number | string | undefined) ??
+        (data.Id as number | string | undefined) ??
+        (data.ID as number | string | undefined);
+      if (key === undefined || key === null || key === '') throw new Error(`缺少主键，无法更新 ${type}`);
+      return request<unknown>({ url: `${type}/${encodeURIComponent(key)}`, method: 'put', data });
+    },
+
+    /** 删除单条：DELETE {type}/{id} */
+    remove: (type: string, id: number | string) =>
+      request<unknown>({ url: `${type}/${encodeURIComponent(id)}`, method: 'delete' }),
+
+    /** 恢复软删除单条：DELETE {type}/{id}?restore=true（后端 ProcessDelete 识别 restore 参数） */
+    restore: (type: string, id: number | string) =>
+      request<unknown>({ url: `${type}/${encodeURIComponent(id)}`, method: 'delete', params: { restore: true } }),
+
+    /**
+     * 批量删除选中：DELETE {type}?ids=1,2,3。
+     * 单次最多 {@link MaxBatchDelete} 个主键，超出时自动分片串行提交，返回最后一片的响应。
+     */
+    deleteSelect: async (type: string, keys: (number | string)[]) => {
+      let res: ApiResponse<unknown> = { code: 0, data: null };
+      for (let i = 0; i < keys.length; i += MaxBatchDelete) {
+        const ids = keys.slice(i, i + MaxBatchDelete).join(',');
+        res = await request<unknown>({ url: type, method: 'delete', params: { ids } });
+      }
+      return res;
+    },
+
+    /** 按条件删除：DELETE {type}?<搜索条件>，params 与 getList 的搜索条件同形（至少一个业务条件，否则后端拒绝） */
+    deleteAll: (type: string, params?: Record<string, unknown>) =>
+      request<unknown>({ url: type, method: 'delete', params }),
+
+    /** 字典查询（codes 逗号分隔） */
+    lookup: (codes: string) =>
+      request<Record<string, Array<Record<string, unknown>>>>({ url: '/Cube/Lookup', method: 'get', params: { codes } }),
+
+    /** 获取导出 URL（直接下载，不走 ajax） */
+    getExportUrl: (type: string, format: string): string => {
+      const url = resolveRequestUrl(baseApiUrl ?? '', `/${type}/export`);
+      return `${url}?format=${encodeURIComponent(format)}`;
+    },
+
+    /** 导入文件 */
+    importFile: (type: string, file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return request<unknown>({
+        url: `${type}/import`,
+        method: 'post',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        data: formData,
+      });
+    },
+
+    /** 上传文件，type 为实体路径前缀（如 '/Admin/User'），options.id 为主记录主键（0 表示新增） */
+    uploadFile: (type: string, file: File, options?: { id?: number; title?: string }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return request<Record<string, unknown>>({
+        url: `${type}/attachments`,
+        method: 'post',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        data: formData,
+        params: options,
+      });
+    },
+
+    /** 获取图表数据 */
+    getChartData: (type: string) =>
+      request<unknown[]>({ url: `${type}/charts`, method: 'get' }),
+
+    /** 调用控制器自定义 GET Action，如 PageApi.getAction('Admin/Index', 'Dashboard') */
+    getAction: <T = unknown>(type: string, action: string, params?: Record<string, unknown>) =>
+      request<T>({ url: `${type}/${action}`, method: 'get', params }),
+
+    /** 调用控制器自定义 POST Action，如 PageApi.postAction('Admin/Index', 'SaveWidgetLayout', layout) */
+    postAction: <T = unknown>(type: string, action: string, data?: unknown) =>
+      request<T>({ url: `${type}/${action}`, method: 'post', data }),
+  };
+}
+
+/**
+ * 系统配置 API
+ */
+export function createConfigApi(request: RequestFn) {
+  return {
+    /** 获取登录页配置（系统名称/Logo/版权/OAuth 提供商等） */
+    getPageConfig: () =>
+      request<LoginConfig>({ url: '/Auth/LoginConfig', method: 'get' }),
+
+    /** 获取系统配置 */
+    getSetting: () =>
+      request<Record<string, unknown>>({ url: '/Cube/Setting', method: 'get' }),
+
+    /** 更新系统配置 */
+    updateSetting: (data: Record<string, unknown>) =>
+      request<unknown>({ url: '/Cube/Setting', method: 'put', data }),
+
+    /** 获取页面配置（用户级优先、全局兜底，后端 PageService 读取） */
+    getPageSetting: (kind: string, page: string) =>
+      request<Record<string, unknown>>({ url: '/Cube/GetPageConfig', method: 'get', params: { kind, page } }),
+
+    /** 保存页面配置（当前登录用户级；未登录写全局）。用于列显隐/顺序等页面偏好持久化 */
+    savePageSetting: (kind: string, page: string, value: Record<string, unknown>) =>
+      request<number>({ url: '/Cube/SetPageConfig', method: 'post', params: { kind, page }, data: value }),
+  };
+}

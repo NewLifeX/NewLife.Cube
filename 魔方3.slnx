@@ -30,6 +30,7 @@
     <Project Path="NewLife.Cube.MUI/NewLife.Cube.MUI.csproj" />
     <Project Path="NewLife.Cube.NaiveUI/NewLife.Cube.NaiveUI.csproj" />
     <Project Path="NewLife.Cube.Shadcn/NewLife.Cube.Shadcn.csproj" />
+    <Project Path="NewLife.Cube.Soybean/NewLife.Cube.Soybean.csproj" />
     <Project Path="NewLife.Cube.Svelte/NewLife.Cube.Svelte.csproj" />
     <Project Path="NewLife.Cube.TDesign/NewLife.Cube.TDesign.csproj" />
     <Project Path="NewLife.Cube.Vue/NewLife.Cube.Vue.csproj" />

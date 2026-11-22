@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "antfu.unocss",
+    "dbaeumer.vscode-eslint",
+    "editorconfig.editorconfig",
+    "esbenp.prettier-vscode",
+    "kisstkondoros.vscode-gutter-preview",
+    "mariusalchimavicius.json-to-ts",
+    "mhutchie.git-graph",
+    "sdras.vue-vscode-snippets",
+    "vue.volar",
+    "vue.vscode-typescript-vue-plugin"
+  ]
+}
