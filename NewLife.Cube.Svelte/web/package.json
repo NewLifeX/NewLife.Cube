@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "vitest": "^3.2.6",
-    "@sveltejs/adapter-static": "^3.0.8",
+    "@sveltejs/adapter-static": "^3.0.11",
     "@sveltejs/kit": "^2.70.2",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tailwindcss/vite": "^4.1.0",
