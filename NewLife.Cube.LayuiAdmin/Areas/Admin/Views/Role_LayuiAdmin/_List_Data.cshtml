@@ -1,4 +1,4 @@
-﻿@*
+@*
     列表集合内容
 *@
 @model IList<XCode.Membership.Role>
@@ -21,11 +21,11 @@
             {
                 <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
             }
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Id"))">编号</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
             <th class="text-center" title="系统。系统角色用于业务系统开发使用，禁止修改名称或删除"><a href="@Html.Raw(page.GetSortUrl("IsSystem"))">系统</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">说明</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateUserID"))">更新用户</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateUserId"))">更新用户</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateIP"))">更新地址</a></th>
             <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
@@ -41,15 +41,15 @@
             <tr>
                 @if (set.EnableSelect)
                 {
-                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.Id" /></td>
                 }
-                <td class="text-center">@entity.ID</td>
+                <td class="text-center">@entity.Id</td>
                 <td>@entity.Name</td>
                 <td class="text-center">
                     @await Html.PartialAsync("_Icon_Boolean", entity.IsSystem)
                 </td>
                 <td>@entity.Remark</td>
-                <td class="text-right">@provider.FindByID(entity.UpdateUserID)</td>
+                <td class="text-right">@provider.FindByID(entity.UpdateUserId)</td>
                 <td title="@entity.UpdateIP.IPToAddress()">@entity.UpdateIP</td>
                 <td>@entity.UpdateTime.ToFullString("")</td>
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))

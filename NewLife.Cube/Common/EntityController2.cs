@@ -139,7 +139,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             var log = LogProvider.Provider;
             foreach (var id in ids)
             {
-                var entity = Factory.Find("ID", id);
+                var entity = Factory.FindByKey(id);
                 if (OnSetField(entity as TEntity, "Enable", isEnable))
                 {
                     log.WriteLog("Update", entity);
@@ -786,7 +786,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
     /// <summary>创建空白实体并清空自增主键</summary>
     /// <remarks>
-    /// XCode 的 DataScopeInterceptor 会把 IUserScope.UserId 映射到 User.ID，
+    /// XCode 的 DataScopeInterceptor 会把 IUserScope.UserId 映射到 User.Id，
     /// 使新建 User 实体带出当前登录用户的主键，进而被误判为编辑并可能覆盖现有数据。
     /// </remarks>
     /// <returns>新的实体实例</returns>
@@ -806,7 +806,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     }
 
     /// <summary>从请求 QueryString 或表单中读取 attachmentIds 参数</summary>
-    /// <returns>附件 ID 数组；无则返回空数组</returns>
+    /// <returns>附件 Id 数组；无则返回空数组</returns>
     protected virtual Int64[] GetAttachmentIds()
     {
         if (Request.Query.TryGetValue("attachmentIds", out var qv) && qv.Count > 0)
@@ -948,7 +948,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             // 写日志
             var type = entity.GetType();
             var log = LogProvider.Provider.CreateLog(type, L.T("Upload"), rs, L.T("Uploaded {0} to {1}, saved as {2}", file.FileName, uploadPath, att.FilePath) + " " + msg, 0, null, UserHost);
-            log.LinkID = id.ToLong();
+            log.LinkId = id.ToLong();
             log.SaveAsync();
         }
 

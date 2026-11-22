@@ -57,7 +57,7 @@ public class TenantChecklistIntegrationTests
             Name = username,
             DisplayName = username,
             Password = _fx.Provider.PasswordProvider.Hash(TenantAuthFixture.Password),
-            RoleID = role.ID,
+            RoleId = role.Id,
             Enable = true,
             RegisterTime = DateTime.Now,
         };
@@ -138,7 +138,7 @@ public class TenantChecklistIntegrationTests
             Assert.True(Register(regCtx, username).IsSuccess);
             var user = User.FindByName(username);
             Assert.NotNull(user);
-            Assert.Equal(1, TenantUser.FindAllByUserId(user.ID).Count(e => e.Enable)); // 仅 t1
+            Assert.Equal(1, TenantUser.FindAllByUserId(user.Id).Count(e => e.Enable)); // 仅 t1
 
             // 带 X-Tenant:t2 登录 → 规则B 收紧：登录成功但拒绝自动绑定
             TenantContext.Current = null!;
@@ -147,7 +147,7 @@ public class TenantChecklistIntegrationTests
             var result = Login(loginCtx, username);
             Assert.True(result.IsSuccess, result.Message);
 
-            var binds = TenantUser.FindAllByUserId(user.ID).Where(e => e.Enable).ToList();
+            var binds = TenantUser.FindAllByUserId(user.Id).Where(e => e.Enable).ToList();
             Assert.Single(binds); // 仍只有 t1
             Assert.Equal(_fx.Tenant1.Id, binds[0].TenantId);
             Assert.DoesNotContain(binds, e => e.TenantId == _fx.Tenant2.Id); // 无 t2 误绑
@@ -213,7 +213,7 @@ public class TenantChecklistIntegrationTests
             Assert.True(result.IsSuccess, result.Message);
             var user = User.FindByName(username);
             Assert.NotNull(user);
-            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.ID);
+            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.Id);
             Assert.NotNull(tu);
             Assert.True(tu.Enable);
         }
@@ -258,7 +258,7 @@ public class TenantChecklistIntegrationTests
             Assert.True(result.IsSuccess, result.Message);
             var user = User.FindByName(username);
             Assert.NotNull(user);
-            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.ID);
+            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.Id);
             Assert.NotNull(tu);
             Assert.True(tu.Enable);
         }
@@ -303,7 +303,7 @@ public class TenantChecklistIntegrationTests
             // 准备：直接建库内无绑定存量用户（严格模式不允许无标识注册，无法经注册管线准备）
             var username = NewUser("m7u");
             var user = CreateLegacyUser(username);
-            Assert.Empty(TenantUser.FindAllByUserId(user.ID));
+            Assert.Empty(TenantUser.FindAllByUserId(user.Id));
 
             // 带 X-App-Id 登录 → 自动绑定配置租户
             TenantContext.Current = null!;
@@ -312,7 +312,7 @@ public class TenantChecklistIntegrationTests
             var result = Login(loginCtx, username);
             Assert.True(result.IsSuccess, result.Message);
 
-            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.ID);
+            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.Id);
             Assert.NotNull(tu);
             Assert.True(tu.Enable);
         }
@@ -447,7 +447,7 @@ public class TenantChecklistIntegrationTests
             // 准备：直接建库内无绑定用户（严格模式不允许无标识注册，无法经注册管线准备存量用户）
             var username = NewUser("m9u");
             var user = CreateLegacyUser(username);
-            Assert.Empty(TenantUser.FindAllByUserId(user.ID));
+            Assert.Empty(TenantUser.FindAllByUserId(user.Id));
 
             // 带 X-Tenant:t1 重新登录 → 自动绑定（规则B 自救）
             TenantContext.Current = null!;
@@ -456,7 +456,7 @@ public class TenantChecklistIntegrationTests
             var result = Login(loginCtx, username);
             Assert.True(result.IsSuccess, result.Message);
 
-            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.ID);
+            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, user.Id);
             Assert.NotNull(tu);
             Assert.True(tu.Enable);
 
@@ -582,3 +582,4 @@ public class TenantChecklistIntegrationTests
 
     #endregion
 }
+

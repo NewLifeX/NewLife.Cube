@@ -29,10 +29,11 @@
                 }
                 else
                 {
-                    <li class="">@Html.ActionLink(user + "", "Detail", "Account", new { user.ID }, null)</li>
+                    <li class="">@Html.ActionLink(user + "", "Detail", "Account", new { user.Id }, null)</li>
                     <li class="">@Html.ActionLink(L.T("Close account"), "Logout", "Account", new { r = retUrl }, null)</li>
                 }
             </ul>
         </div>
     </div>
 </div>
+

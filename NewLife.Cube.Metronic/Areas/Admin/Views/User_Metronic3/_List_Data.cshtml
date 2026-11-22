@@ -1,4 +1,4 @@
-﻿@model IList<XCode.Membership.User>
+@model IList<XCode.Membership.User>
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -25,8 +25,8 @@
 			<th><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
 			<th><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">昵称</a></th>
 			<th><a href="@Html.Raw(page.GetSortUrl("Mobile"))">手机</a></th>
-			<th class="text-center"><a href="@Html.Raw(page.GetSortUrl("RoleID"))">角色</a></th>
-			<th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DepartmentID"))">部门</a></th>
+			<th class="text-center"><a href="@Html.Raw(page.GetSortUrl("RoleId"))">角色</a></th>
+			<th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DepartmentId"))">部门</a></th>
 			<th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
 			<th class="text-center">链接</th>
 			<th class="text-center">令牌</th>
@@ -137,10 +137,10 @@
 						}
 					}
 				</td>
-				<td class="text-center align-middle"><a href="UserConnect?userId=@entity.ID">链接</a></td>
-				<td class="text-center align-middle"><a href="UserToken?userId=@entity.ID)">令牌</a></td>
-				<td class="text-center align-middle"><a href="Log?userId=@entity.ID">日志</a></td>
-				<td class="text-center align-middle"><a href="OAuthLog?userId=@entity.ID">OAuth日志</a></td>
+				<td class="text-center align-middle"><a href="UserConnect?userId=@entity.Id">链接</a></td>
+				<td class="text-center align-middle"><a href="UserToken?userId=@entity.Id">令牌</a></td>
+				<td class="text-center align-middle"><a href="Log?userId=@entity.Id">日志</a></td>
+				<td class="text-center align-middle"><a href="OAuthLog?userId=@entity.Id">OAuth日志</a></td>
 				<td>
 					<span style="width:137px">
 						<div class="text-right font-weight-bold font-size-lg mb-0" data-toggle="tooltip" data-placement="top" title="当前用户登录次数及最近登录时间">@entity.Logins</div>

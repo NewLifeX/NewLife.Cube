@@ -26,7 +26,7 @@
             <th class="text-center">@L.T("Xml data")</th>
             <th class="text-center">@L.T("Csv data")</th>
             <th class="text-center">@L.T("Excel data")</th>
-            <th class="text-center" title="@L.T("User. Local user")"><a href="@Html.Raw(page.GetSortUrl("UserID"))">@L.T("User")</a></th>
+            <th class="text-center" title="@L.T("User. Local user")"><a href="@Html.Raw(page.GetSortUrl("UserId"))">@L.T("User")</a></th>
             <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("Expire"))">@L.T("Expiration time")</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">@L.T("Enabled")</a></th>
             <th class="text-center" title="@L.T("Times. How many times this token has been used")"><a href="@Html.Raw(page.GetSortUrl("Times"))">@L.T("Share count")</a></th>
@@ -59,7 +59,7 @@
             <tr>
                 @if (set.EnableSelect)
                 {
-                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.Id" /></td>
                 }
                 <td>@entity.Token</td>
                 <td style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Url">@entity.Url</td>

@@ -2,7 +2,7 @@
     var path = Context.Request.Path + "";
 
     var user = ManageProvider.User;
-    var currentId = user?.ID ?? 0;
+    var currentId = user?.Id ?? 0;
     var userId = Context.Request.Query["userId"].ToInt(0);
     if (userId == 0 && path.StartsWithIgnoreCase("/Admin/User/Detail", "/Admin/User/Edit"))
     {
@@ -16,7 +16,7 @@
     if (user == null || !user.Roles.Any(e => e.IsSystem)) userId = currentId;
 
     // 该用户
-    user = XCode.Membership.User.FindByID(userId);
+    user = XCode.Membership.User.FindById(userId);
 
     var dic = new Dictionary<String, Object>();
     if (userId == currentId)

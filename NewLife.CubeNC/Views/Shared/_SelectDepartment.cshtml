@@ -8,7 +8,7 @@
 
     if (id.IsNullOrEmpty()) { id = "departmentId"; }
     var departmentId = page[id];
-    var showValue = Department.FindByID(departmentId.ToInt())?.ToString();
+    var showValue = Department.FindById(departmentId.ToInt())?.ToString();
 
     var set = NewLife.Cube.CubeSetting.Current;
     var res = set.ResourceUrl;
@@ -60,3 +60,4 @@
         });
     });
 </script>
+

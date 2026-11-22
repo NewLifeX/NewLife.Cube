@@ -1,4 +1,4 @@
-﻿@model IList<NewLife.Cube.Entity.UserToken>
+@model IList<NewLife.Cube.Entity.UserToken>
 @using NewLife;
 @using NewLife.Cube
 @using NewLife.Web;
@@ -32,7 +32,7 @@
                         <th>Xml数据</th>
                         <th>Csv数据</th>
                         <th>Excel数据</th>
-                        <th data-bs-toggle="tooltip" title="用户。本地用户"><a href="@Html.Raw(page.GetSortUrl("UserID"))">用户</a></th>
+                        <th data-bs-toggle="tooltip" title="用户。本地用户"><a href="@Html.Raw(page.GetSortUrl("UserId"))">用户</a></th>
                         <th style="min-width:134px;" data-bs-toggle="tooltip" title="已分享次数及令牌过期时间"><a href="@Html.Raw(page.GetSortUrl("Expire"))">次数/过期时间</a></th>
                         <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
                         <th style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("LastTime"))">最新访问</a></th>
@@ -141,3 +141,4 @@
         </div>
     </div>
 </div>
+

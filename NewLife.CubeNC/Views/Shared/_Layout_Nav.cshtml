@@ -1,4 +1,4 @@
-﻿@using XCode;
+@using XCode;
 @{
     var menu = ViewBag.Menu as IMenu;
 }
@@ -9,7 +9,7 @@
         {
             foreach (IMenu item in (menu as IEntityTree).AllParents)
             {
-                if (item.ID != 0)
+                if (item.Id != 0)
                 {
                     <li class="breadcrumb-item"><a href="@(item.Url!=null? Url.Content(item.Url):"#")">@NewLife.Cube.Membership.MenuHelper.GetDisplayName(item)</a></li>
                 }

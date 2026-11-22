@@ -48,7 +48,7 @@ export function toFieldMeta(field: BackendField): FieldMeta {
     lovCode: field.lovCode,
     multiple: field.multiple,
     dataSource: field.dataSource,
-    // 映射字段：漏了这一项，RoleName→RoleID 这类关联字段就退化成普通文本框
+    // 映射字段：漏了这一项，RoleName→RoleId 这类关联字段就退化成普通文本框
     mapField: field.mapField,
     mapTypeName: field.mapTypeName,
     // 级联子字典：漏了这一项，表单里的 LovSelect 就拿不到 :parent，「父变过滤子」静默失效
@@ -64,7 +64,7 @@ export function toFieldMeta(field: BackendField): FieldMeta {
 
 /** 后端字段 → 表单字段（过滤主键与只读） */
 export function backendFieldsToFormFields(fields: BackendField[]): FieldMeta[] {
-  // 映射字段（RoleName→RoleID）虽然属性只读，但它是可编辑的关联关系，详情视图也要显示名称，故保留
+  // 映射字段（RoleName→RoleId）虽然属性只读，但它是可编辑的关联关系，详情视图也要显示名称，故保留
   return fields.filter((f) => !f.primaryKey && (!f.readOnly || f.mapField)).map(toFieldMeta);
 }
 

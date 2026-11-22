@@ -94,7 +94,7 @@ async function load() {
     const meta = payloadOf(metaRes);
     const detail = payloadOf(detailRes);
     const form = (Array.isArray(meta.form) ? meta.form : []) as FieldMetaLite[];
-    const primary = form.find((field) => field.mapField === 'RoleID' || field.name === 'RoleName');
+    const primary = form.find((field) => field.mapField === 'RoleId' || field.mapField === 'RoleID' || field.name === 'RoleName');
     const group = form.find((field) => field.name === 'RoleIds');
 
     primaryLabel.value = primary?.displayName || t('userAdmin.primaryRole');
@@ -102,7 +102,7 @@ async function load() {
     primaryOptions.value = toOptions(primary?.dataSource);
     groupOptions.value = toOptions(group?.dataSource);
 
-    const current = readNumber(detail, ['roleID', 'RoleID', 'roleId']);
+    const current = readNumber(detail, ['roleId', 'RoleID', 'roleID']);
     const known = current !== undefined && primaryOptions.value.some((item) => item.value === current);
     if (known) {
       roleId.value = current ?? null;
@@ -134,7 +134,7 @@ async function save() {
       method: 'put',
       data: {
         name: accountName.value,
-        roleID: roleId.value ?? 0,
+        roleId: roleId.value ?? 0,
         roleIds: ids.length ? `,${ids.join(',')},` : '',
       },
     });

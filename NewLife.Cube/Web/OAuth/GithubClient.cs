@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using NewLife.Http;
 using NewLife.Log;
 
@@ -29,7 +29,7 @@ public class GithubClient : OAuthClient
     {
         base.OnGetInfo(dic);
 
-        if (dic.TryGetValue("id", out var str)) UserID = str.Trim('\"').ToLong();
+        if (dic.TryGetValue("id", out var str)) UserId = str.Trim('\"').ToLong();
         if (dic.TryGetValue("login", out str)) UserName = str.Trim();
         if (dic.TryGetValue("name", out str)) NickName = str.Trim();
         if (dic.TryGetValue("avatar_url", out str)) Avatar = str.Trim();

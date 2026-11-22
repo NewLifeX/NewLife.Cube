@@ -1,4 +1,4 @@
-﻿using System.Web;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using NewLife.Cube.ViewModels;
@@ -41,7 +41,6 @@ public class CsvResult : IActionResult
 
         // 列头
         var headers = Fields.Select(e => e.Name).ToArray();
-        if (headers[0] == "ID") headers[0] = "Id";
         await csv.WriteLineAsync(headers);
 
         // 内容
@@ -52,3 +51,4 @@ public class CsvResult : IActionResult
         }
     }
 }
+

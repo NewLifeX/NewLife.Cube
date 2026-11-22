@@ -9,5 +9,6 @@
 }
 <div class="form-group">
     <label for="parentId" class="control-label">@L.T("Parent:")</label>
-    @Html.ForDropDownList("parentId", ms.ToDictionary(e => e.ID, e => e + ""), page["parentId"], L.T("All"), true)
+    @Html.ForDropDownList("parentId", ms.ToDictionary(e => e.Id, e => e + ""), page["parentId"], L.T("All"), true)
 </div>
+

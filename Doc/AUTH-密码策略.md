@@ -101,6 +101,7 @@ public class PasswordService
 | 配置项 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
 | `PaswordStrength` | String | 默认正则 | 密码强度正则表达式 |
+| `EnablePasswordComplexity` | Boolean | true | 是否启用密码复杂度校验。仅作用于注册与修改密码，**登录页不校验**（存量弱密码必须允许登录，如默认 `admin/admin`） |
 | `MaxLoginError` | Int32 | 5 | 同一用户或 IP 连续登录失败达此次数后禁止登录 |
 | `LoginForbiddenTime` | Int32 | 300 | 触发限制后的禁止时间（秒） |
 

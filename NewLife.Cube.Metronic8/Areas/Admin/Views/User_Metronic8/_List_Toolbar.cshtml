@@ -1,4 +1,4 @@
-﻿@*
+@*
     列表视图工具栏
 *@
 @using NewLife;
@@ -14,7 +14,7 @@
     var page = ViewBag.Page as Pager;
     var user = ViewBag.User as IUser ?? ManageProvider.User;
     var title = ViewBag.Title;
-    var layoutSet = Parameter.GetOrAdd(user.ID, "LayoutSetting", ViewBag.Title as String, "table");
+    var layoutSet = Parameter.GetOrAdd(user.Id, "LayoutSetting", ViewBag.Title as String, "table");
     var mode = layoutSet.Value;
 
     var act = Context.Request.Path + "";
@@ -108,7 +108,7 @@
     $(function(){
         var btn = $('ul.nav>li.nav-item>a.mode').click(function(){
             var mode = $(this).data("mode");
-            var userid = @user.ID;
+            var userid = @user.Id;
             var title = "@title";
 
             $.ajax({

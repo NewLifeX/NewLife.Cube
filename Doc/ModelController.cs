@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 using System.Web;
@@ -442,7 +442,7 @@ public abstract class ModelController<TEntity> : ControllerBaseX
             }
 
             // 设置当前用户，用于数据权限控制
-            HttpContext.Items["userId"] = user.ID;
+            HttpContext.Items["userId"] = user.Id;
             HttpContext.Items["CurrentUser"] = user;
 
             return user?.ToString();
@@ -700,15 +700,12 @@ public abstract class ModelController<TEntity> : ControllerBaseX
 
         // 列头
         var headers = new List<String>();
-        var idx = 0;
         foreach (var fi in fs)
         {
             var name = fi.DisplayName;
             if (name.IsNullOrEmpty()) name = fi.Description;
             if (name.IsNullOrEmpty()) name = fi.Name;
 
-            // 第一行以ID开头的csv文件，容易被识别为SYLK文件
-            if (name == "ID" && idx++ == 0) name = "Id";
             headers.Add(name);
         }
         await csv.WriteLineAsync(headers);
@@ -769,7 +766,6 @@ public abstract class ModelController<TEntity> : ControllerBaseX
 
         // 列头
         var headers = fs.Select(e => e.Name).ToArray();
-        if (headers[0] == "ID") headers[0] = "Id";
         await csv.WriteLineAsync(headers);
 
         // 内容
@@ -791,7 +787,7 @@ public abstract class ModelController<TEntity> : ControllerBaseX
     public virtual ActionResult Share()
     {
         // 当前用户所有令牌
-        var userId = ManageProvider.User.ID;
+        var userId = ManageProvider.User.Id;
         var list = UserToken.Search(null, userId, true, DateTime.Now, DateTime.MinValue, null);
 
         var p = Session[CacheKey] as Pager;
@@ -808,7 +804,7 @@ public abstract class ModelController<TEntity> : ControllerBaseX
 
         // 如果该url已存在，则延长有效期
         var ut = list.FirstOrDefault(e => e.Url.EqualIgnoreCase(url));
-        ut ??= new UserToken { UserID = userId, Url = url };
+        ut ??= new UserToken { UserId = userId, Url = url };
 
         if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(8);
         ut.Enable = true;

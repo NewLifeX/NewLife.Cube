@@ -4109,7 +4109,7 @@
             "description": "限流次数。限流考察期间达到该阈值时，执行拦截",
             "format": "int32"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建者",
             "format": "int32"
@@ -4124,7 +4124,7 @@
             "description": "创建地址",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新者",
             "format": "int32"
@@ -4216,7 +4216,7 @@
             "description": "限流次数。限流考察期间达到该阈值时，执行拦截",
             "format": "int32"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建者",
             "format": "int32"
@@ -4231,7 +4231,7 @@
             "description": "创建地址",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新者",
             "format": "int32"
@@ -4390,7 +4390,7 @@
             "type": "boolean",
             "description": "删除。是否已删除，可恢复"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建者",
             "format": "int32"
@@ -4405,7 +4405,7 @@
             "description": "创建地址",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新者",
             "format": "int32"
@@ -4544,7 +4544,7 @@
             "type": "boolean",
             "description": "删除。是否已删除，可恢复"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建者",
             "format": "int32"
@@ -4559,7 +4559,7 @@
             "description": "创建地址",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新者",
             "format": "int32"
@@ -4710,22 +4710,22 @@
             "description": "提供商",
             "nullable": true
           },
-          "userID": {
+          "userId": {
             "type": "integer",
             "description": "用户。本地用户",
             "format": "int32"
           },
-          "openID": {
+          "openId": {
             "type": "string",
             "description": "身份标识。用户名、OpenID",
             "nullable": true
           },
-          "unionID": {
+          "unionId": {
             "type": "string",
             "description": "全局标识。跨应用统一",
             "nullable": true
           },
-          "linkID": {
+          "linkId": {
             "type": "integer",
             "description": "用户编号。第三方用户编号",
             "format": "int64"
@@ -4764,7 +4764,7 @@
             "type": "boolean",
             "description": "启用"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -4779,7 +4779,7 @@
             "description": "创建时间",
             "format": "date-time"
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -4816,22 +4816,22 @@
             "description": "提供商",
             "nullable": true
           },
-          "userID": {
+          "userId": {
             "type": "integer",
             "description": "用户。本地用户",
             "format": "int32"
           },
-          "openID": {
+          "openId": {
             "type": "string",
             "description": "身份标识。用户名、OpenID",
             "nullable": true
           },
-          "unionID": {
+          "unionId": {
             "type": "string",
             "description": "全局标识。跨应用统一",
             "nullable": true
           },
-          "linkID": {
+          "linkId": {
             "type": "integer",
             "description": "用户编号。第三方用户编号",
             "format": "int64"
@@ -4870,7 +4870,7 @@
             "type": "boolean",
             "description": "启用"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -4885,7 +4885,7 @@
             "description": "创建时间",
             "format": "date-time"
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -4917,7 +4917,7 @@
             "description": "编号",
             "format": "int32"
           },
-          "userID": {
+          "userId": {
             "type": "integer",
             "description": "用户。当前登录人",
             "format": "int32"
@@ -4927,7 +4927,7 @@
             "description": "名称。当前登录人，或根据设备标识推算出来的使用人",
             "nullable": true
           },
-          "sessionID": {
+          "sessionId": {
             "type": "string",
             "description": "会话。Web的SessionID或Server的会话编号",
             "nullable": true
@@ -5034,7 +5034,7 @@
             "description": "编号",
             "format": "int32"
           },
-          "userID": {
+          "userId": {
             "type": "integer",
             "description": "用户。当前登录人",
             "format": "int32"
@@ -5044,7 +5044,7 @@
             "description": "名称。当前登录人，或根据设备标识推算出来的使用人",
             "nullable": true
           },
-          "sessionID": {
+          "sessionId": {
             "type": "string",
             "description": "会话。Web的SessionID或Server的会话编号",
             "nullable": true
@@ -5257,7 +5257,7 @@
             "description": "地址。锁定该令牌只能访问该资源路径",
             "nullable": true
           },
-          "userID": {
+          "userId": {
             "type": "integer",
             "description": "用户。本地用户",
             "format": "int32"
@@ -5296,7 +5296,7 @@
             "description": "最后时间",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -5311,7 +5311,7 @@
             "description": "创建时间",
             "format": "date-time"
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -5353,7 +5353,7 @@
             "description": "地址。锁定该令牌只能访问该资源路径",
             "nullable": true
           },
-          "userID": {
+          "userId": {
             "type": "integer",
             "description": "用户。本地用户",
             "format": "int32"
@@ -5392,7 +5392,7 @@
             "description": "最后时间",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -5407,7 +5407,7 @@
             "description": "创建时间",
             "format": "date-time"
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -5738,7 +5738,7 @@
             "description": "全名",
             "nullable": true
           },
-          "parentID": {
+          "parentId": {
             "type": "integer",
             "description": "父级",
             "format": "int32"
@@ -5872,7 +5872,7 @@
             "description": "全名",
             "nullable": true
           },
-          "parentID": {
+          "parentId": {
             "type": "integer",
             "description": "父级",
             "format": "int32"
@@ -5935,7 +5935,7 @@
             "description": "创建者",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -5955,7 +5955,7 @@
             "description": "更新者",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -6017,7 +6017,7 @@
             "type": "string",
             "nullable": true
           },
-          "parentID": {
+          "parentId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6067,7 +6067,7 @@
             "type": "string",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6083,7 +6083,7 @@
             "type": "string",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6159,7 +6159,7 @@
             "type": "string",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6175,7 +6175,7 @@
             "type": "string",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6229,7 +6229,7 @@
             "description": "操作",
             "nullable": true
           },
-          "linkID": {
+          "linkId": {
             "type": "integer",
             "description": "链接",
             "format": "int64"
@@ -6283,7 +6283,7 @@
             "description": "创建者",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -6433,7 +6433,7 @@
             "description": "全名",
             "nullable": true
           },
-          "parentID": {
+          "parentId": {
             "type": "integer",
             "description": "父编号",
             "format": "int32"
@@ -6505,7 +6505,7 @@
             "description": "创建者",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -6525,7 +6525,7 @@
             "description": "更新者",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -6567,7 +6567,7 @@
             "type": "string",
             "nullable": true
           },
-          "parentID": {
+          "parentId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6624,7 +6624,7 @@
             "type": "string",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6640,7 +6640,7 @@
             "type": "string",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6667,7 +6667,7 @@
             "description": "编号",
             "format": "int32"
           },
-          "userID": {
+          "userId": {
             "type": "integer",
             "description": "用户。按用户区分参数，用户0表示系统级",
             "format": "int32"
@@ -6734,7 +6734,7 @@
             "description": "创建者",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -6754,7 +6754,7 @@
             "description": "更新者",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -6806,7 +6806,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "userID": {
+          "userId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6860,7 +6860,7 @@
             "type": "string",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6876,7 +6876,7 @@
             "type": "string",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -6995,7 +6995,7 @@
             "description": "创建者",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -7015,7 +7015,7 @@
             "description": "更新者",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -7103,7 +7103,7 @@
             "type": "string",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -7119,7 +7119,7 @@
             "type": "string",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -7521,7 +7521,7 @@
             "description": "头像",
             "nullable": true
           },
-          "roleID": {
+          "roleId": {
             "type": "integer",
             "description": "角色。主要角色",
             "format": "int32"
@@ -7531,7 +7531,7 @@
             "description": "角色组。次要角色集合",
             "nullable": true
           },
-          "departmentID": {
+          "departmentId": {
             "type": "integer",
             "description": "部门。组织机构",
             "format": "int32"
@@ -7619,7 +7619,7 @@
             "description": "更新者",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -7714,7 +7714,7 @@
             "type": "string",
             "nullable": true
           },
-          "roleID": {
+          "roleId": {
             "type": "integer",
             "format": "int32"
           },
@@ -7722,7 +7722,7 @@
             "type": "string",
             "nullable": true
           },
-          "departmentID": {
+          "departmentId": {
             "type": "integer",
             "format": "int32"
           },

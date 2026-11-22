@@ -1,4 +1,4 @@
-﻿namespace NewLife.Cube.Charts;
+namespace NewLife.Cube.Charts;
 
 /// <summary>矩形树图</summary>
 /// <remark>
@@ -28,7 +28,7 @@ public class SeriesTreemap : Series
 
     //public String Type { get; set; } = "treemap";
 
-    ///// <summary>组件 ID</summary>
+    ///// <summary>组件 Id</summary>
     ///// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
     //public String Id { get; set; }
 
@@ -505,3 +505,4 @@ public class SeriesTreemap : Series
     public String Cursor { get; set; }
 
 }
+

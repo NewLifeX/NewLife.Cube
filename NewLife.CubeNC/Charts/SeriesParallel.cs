@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace NewLife.Cube.Charts;
@@ -105,7 +105,7 @@ public class SeriesParallel : Series
 
     //public String Type { get; set; }="parallel";
 
-    ///// <summary>组件 ID</summary>
+    ///// <summary>组件 Id</summary>
     ///// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
     //public String Id { get; set; }
 
@@ -264,3 +264,4 @@ public class SeriesParallel : Series
     public Object AnimationDelayUpdate { get; set; }
 
 }
+

@@ -80,8 +80,8 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
     /// <returns>宿主数据权限上下文</returns>
     public static DataScopeContext CreateHostScope(IUser user) => new()
     {
-        UserId = user?.ID ?? 0,
-        DepartmentId = user?.DepartmentID ?? 0,
+        UserId = user?.Id ?? 0,
+        DepartmentId = user?.DepartmentId ?? 0,
         DataScope = DataScopes.全部,
     };
 

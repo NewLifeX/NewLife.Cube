@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
@@ -16,7 +16,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers
     {
         static ModelTableController()
         {
-            ListFields.RemoveField("ID", "Controller", "TableName", "ConnName");
+            ListFields.RemoveField("Id", "Controller", "TableName", "ConnName");
             ListFields.RemoveCreateField();
             ListFields.RemoveUpdateField();
 

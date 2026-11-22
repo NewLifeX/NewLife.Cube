@@ -109,8 +109,9 @@ export function parsePasswordRules(strength?: string): PasswordRuleDef[] {
  * 密码规则组合式：根据后端下发的强度正则与当前输入，
  * 派生出「规则描述符 / 实时提示列表 / 是否展示提示」三个状态。
  *
- * 抽离到独立模块后，既可供登录页直接使用，也可被 Vitest 直接单测，
- * 不再与具体页面耦合。
+ * 抽离到独立模块后，既可供注册/修改密码页面使用，也可被 Vitest 直接单测，
+ * 不再与具体页面耦合。登录页不做密码复杂度校验（存量弱密码必须允许登录），
+ * 因此登录页不再使用本组合式。
  *
  * @param strength 后端下发的 passwordStrength（响应式或 getter）
  * @param password 当前密码输入（响应式或 getter）

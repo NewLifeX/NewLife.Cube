@@ -69,7 +69,7 @@ public class PermissionControllerTests
     {
         var ctx = Setup(_fx.LegacyUser);
         var controller = CreateUserController(ctx);
-        var entity = new User { Name = "x", RoleID = _fx.LegacyUser.RoleID, Enable = true };
+        var entity = new User { Name = "x", RoleId = _fx.LegacyUser.RoleId, Enable = true };
 
         Assert.Throws<Exception>(() => controller.InvokeValid(entity, DataObjectMethodType.Update, true));
     }
@@ -146,6 +146,7 @@ public class PermissionControllerTests
     }
     #endregion
 }
+
 
 
 

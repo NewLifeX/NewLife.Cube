@@ -173,7 +173,7 @@ public override void SetCurrent(IManageUser user, IServiceProvider context = nul
     {
         // 登录/切换时保存
         session[key] = user;
-        session["userId"] = user.ID;
+        session["userId"] = user.Id;
     }
 }
 ```

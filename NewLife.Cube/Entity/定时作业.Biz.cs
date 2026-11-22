@@ -7,12 +7,16 @@ using NewLife.Reflection;
 using NewLife.Serialization;
 using XCode;
 using XCode.Membership;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 
 namespace NewLife.Cube.Entity;
 
 /// <summary>定时作业。定时执行任务</summary>
 public partial class CronJob : Entity<CronJob>
 {
+
     #region 对象操作
     static CronJob()
     {
@@ -188,7 +192,7 @@ public partial class CronJob : Entity<CronJob>
         if (action.IsNullOrEmpty()) action = Name;
 
         var log = LogProvider.Provider.CreateLog("JobService", action, success, remark);
-        if (job != null) log.LinkID = job.Id;
+        if (job != null) log.LinkId = job.Id;
         log.TraceId = DefaultSpan.Current?.TraceId;
 
         log.SaveAsync();

@@ -1,4 +1,4 @@
-﻿@using NewLife.Common;
+@using NewLife.Common;
 @using NewLife.Model;
 @using XCode.Membership;
 @using NewLife.Cube;
@@ -13,7 +13,7 @@
     var menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.Root.Childs);
     if (user?.Role != null)
     {
-        menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(fact.Root.ID, user, true));
+        menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(fact.Root.Id, user, true));
     }
 }
 
@@ -47,7 +47,7 @@
                 {
                     foreach (IMenu item in menus)
                     {
-                        if (item.ParentID == 0)
+                        if (item.ParentId == 0)
                         {
                             @await Html.PartialAsync("_Layout_Aside_MenuItem", new ValueTuple<IMenu, IMenu>(menu, item))
                         }

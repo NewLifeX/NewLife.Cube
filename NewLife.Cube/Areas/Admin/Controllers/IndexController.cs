@@ -175,7 +175,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         var roleNames = user?.Roles?.Select(e => e.Name).ToList();
         var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
         var wm = _widgetManager;
-        var layout = user != null ? wm.GetLayout(user.ID) : new Dictionary<String, WidgetLayout>();
+        var layout = user != null ? wm.GetLayout(user.Id) : new Dictionary<String, WidgetLayout>();
         var kpis = new List<Object>();
         var hiddenKpis = new List<Object>();
         var kpiWidgets = wm.Scan().Values.Where(e => e.WidgetType == WidgetTypes.Kpi && wm.IsVisible(e, roleNames, isAdmin) && wm.IsEnabled(e));
@@ -195,7 +195,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         var urls = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
         if (user != null)
         {
-            foreach (var item in QuickLinkWidget.GetRecent(user.ID))
+            foreach (var item in QuickLinkWidget.GetRecent(user.Id))
             {
                 var menu = ManageProvider.Menu?.FindByUrl(item.Url);
                 if (menu == null || !menu.Visible || menu.Url.IsNullOrEmpty() || menu.Url.StartsWith("~/")) continue;
@@ -206,7 +206,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         }
         if (links.Count < 8)
         {
-            foreach (var menu in XCode.Membership.Menu.FindAllWithCache().Where(e => e.Visible && !e.Url.IsNullOrEmpty() && !e.Url.StartsWith("~/") && !e.Url.EqualIgnoreCase("/Admin/Index/Dashboard")).OrderByDescending(e => e.UpdateTime).ThenByDescending(e => e.ID))
+            foreach (var menu in XCode.Membership.Menu.FindAllWithCache().Where(e => e.Visible && !e.Url.IsNullOrEmpty() && !e.Url.StartsWith("~/") && !e.Url.EqualIgnoreCase("/Admin/Index/Dashboard")).OrderByDescending(e => e.UpdateTime).ThenByDescending(e => e.Id))
             {
                 if (links.Count >= 8) break;
                 if (!urls.Add(menu.Url)) continue;
@@ -253,11 +253,11 @@ public class IndexController : ControllerBaseX, IPageDataContext
             data = info.WidgetType == WidgetTypes.Chart ? null : wm.GetData(info),
         };
 
-        var widgets = wm.GetWidgets(roleNames, isAdmin, user?.ID ?? 0)
+        var widgets = wm.GetWidgets(roleNames, isAdmin, user?.Id ?? 0)
             .Where(e => e.WidgetType != WidgetTypes.Kpi)
             .Select(BuildWidgetItem)
             .ToList();
-        var hiddenWidgets = wm.GetHiddenWidgets(user?.ID ?? 0, roleNames, isAdmin)
+        var hiddenWidgets = wm.GetHiddenWidgets(user?.Id ?? 0, roleNames, isAdmin)
             .Where(e => e.WidgetType != WidgetTypes.Kpi)
             .Select(BuildWidgetItem)
             .ToList();
@@ -288,7 +288,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     [HttpGet]
     public ActionResult GetWidgetLayout()
     {
-        var userId = ManageProvider.User?.ID ?? 0;
+        var userId = ManageProvider.User?.Id ?? 0;
         var layout = _widgetManager.GetLayout(userId);
         return Json(0, null, layout);
     }
@@ -301,7 +301,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     [HttpPost]
     public ActionResult SaveWidgetLayout(IDictionary<String, WidgetLayout> layout)
     {
-        var userId = ManageProvider.User?.ID ?? 0;
+        var userId = ManageProvider.User?.Id ?? 0;
         if (userId <= 0) return Json(401, null, L.T("Please sign in first."));
         if (layout == null || layout.Count == 0) return Json(1, null, L.T("The layout is empty."));
 
@@ -316,7 +316,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     [HttpPost]
     public ActionResult ResetWidgetLayout()
     {
-        var userId = ManageProvider.User?.ID ?? 0;
+        var userId = ManageProvider.User?.Id ?? 0;
         if (userId > 0) _widgetManager.ResetLayout(userId);
 
         return Json(0, null, "ok");
@@ -340,9 +340,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         // 查询过去 24h 错误数
         var now = DateTime.Now;
         var start = now.AddHours(-24);
-        var errorCount = XCode.Membership.Log.FindCount(
-            XCode.Membership.Log._.CreateTime >= start & XCode.Membership.Log._.CreateTime <= now,
-            null, null, 0, 0);
+        var errorCount = XCode.Membership.Log.FindCountByCreateTime(start, now);
 
         var sysInfo = new
         {
@@ -573,7 +571,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         {
             // 左侧菜单展示所有可见菜单，不按角色权限过滤
             // 权限控制在 Controller/Action 层通过 EntityAuthorizeAttribute 实现
-            var parent = fact.FindByID(pMenuTree.ID);
+            var parent = fact.FindByID(pMenuTree.Id);
             var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu>;
             return NewLife.Cube.Membership.MenuHelper.FilterAvailable(subMenus);
         }, list =>
@@ -582,7 +580,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
             var menuList = (from menu in list
                             select new MenuTree
                             {
-                                ID = menu.ID,
+                                Id = menu.Id,
                                 Name = menu.Name,
                                 DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                 FullName = menu.FullName,
@@ -590,7 +588,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
                                 NewWindow = menu.NewWindow,
-                                ParentID = menu.ParentID,
+                                ParentId = menu.ParentId,
                                 Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
                             }).ToList();
             return menuList.Count > 0 ? menuList : null;

@@ -15,16 +15,16 @@ public class WidgetManager
     private IDictionary<String, WidgetAttribute> _widgets;
     private readonly Object _lock = new();
 
-    /// <summary>参数分类：组件启用开关。UserID=0 全局，Name=组件名，Value=0/1</summary>
+    /// <summary>参数分类：组件启用开关。UserId=0 全局，Name=组件名，Value=0/1</summary>
     public const String EnableCategory = "Widget.Enable";
 
-    /// <summary>参数分类：组件排序（旧数据）。UserID=当前用户，Name=组件名，Value=排序值；新数据走 <see cref="LayoutCategory"/>，读取时回退兼容</summary>
+    /// <summary>参数分类：组件排序（旧数据）。UserId=当前用户，Name=组件名，Value=排序值；新数据走 <see cref="LayoutCategory"/>，读取时回退兼容</summary>
     public const String OrderCategory = "Widget.Order";
 
-    /// <summary>参数分类：用户布局。UserID=当前用户，Name=config，LongValue=JSON（排序+隐藏），每用户单行</summary>
+    /// <summary>参数分类：用户布局。UserId=当前用户，Name=config，LongValue=JSON（排序+隐藏），每用户单行</summary>
     public const String LayoutCategory = "Widget.Layout";
 
-    /// <summary>参数分类：组件分组配置。UserID=0 全局，Name=Order 是组顺序，Name={组名} 是该组内默认部件顺序</summary>
+    /// <summary>参数分类：组件分组配置。UserId=0 全局，Name=Order 是组顺序，Name={组名} 是该组内默认部件顺序</summary>
     public const String GroupCategory = "Widget.Group";
     #endregion
 
@@ -172,14 +172,14 @@ public class WidgetManager
         return info.Permission.Split(',').Any(p => roleNames.Contains(p.Trim(), StringComparer.OrdinalIgnoreCase));
     }
 
-    /// <summary>判断组件是否全局启用（Parameter 表 UserID=0，分类 Widget.Enable），默认启用</summary>
+    /// <summary>判断组件是否全局启用（Parameter 表 UserId=0，分类 Widget.Enable），默认启用</summary>
     /// <param name="info">组件元数据</param>
     /// <returns></returns>
     public Boolean IsEnabled(WidgetAttribute info)
     {
         if (info == null) return false;
 
-        var p = Parameter.FindByUserIDAndCategoryAndName(0, EnableCategory, info.Name);
+        var p = Parameter.FindByUserIdAndCategoryAndName(0, EnableCategory, info.Name);
         if (p == null) return true;
 
         return p.Value.ToInt() != 0;
@@ -206,7 +206,7 @@ public class WidgetManager
         var dic = new Dictionary<String, WidgetLayout>(StringComparer.OrdinalIgnoreCase);
         if (userId <= 0) return dic;
 
-        var p = Parameter.FindByUserIDAndCategoryAndName(userId, LayoutCategory, "config");
+        var p = Parameter.FindByUserIdAndCategoryAndName(userId, LayoutCategory, "config");
         if (p != null)
         {
             var json = p.Value ?? p.LongValue;
@@ -224,7 +224,7 @@ public class WidgetManager
         }
 
         // 兼容旧数据：逐行的 Widget.Order，读取后由首次保存统一切换为 JSON
-        var ps = Parameter.FindAllByUserID(userId, OrderCategory);
+        var ps = Parameter.FindAllByUserIdAndCategory(userId, OrderCategory);
         foreach (var item in ps)
             dic[item.Name] = new WidgetLayout { Sort = item.Value.ToInt() };
 
@@ -249,7 +249,7 @@ public class WidgetManager
     {
         if (userId <= 0) return;
 
-        var p = Parameter.FindByUserIDAndCategoryAndName(userId, LayoutCategory, "config");
+        var p = Parameter.FindByUserIdAndCategoryAndName(userId, LayoutCategory, "config");
         p?.Delete();
     }
 
@@ -288,7 +288,7 @@ public class WidgetManager
     /// <returns>组名列表，按显示顺序</returns>
     public IList<String> GetGroupOrder() => LoadGroupConfig().GroupOrder;
 
-    /// <summary>设置组件分组顺序（逗号分隔组名，Parameter 全局配置，UserID=0）</summary>
+    /// <summary>设置组件分组顺序（逗号分隔组名，Parameter 全局配置，UserId=0）</summary>
     /// <param name="groups">组名列表，按显示顺序</param>
     public void SetGroupOrder(IEnumerable<String> groups)
     {
@@ -304,13 +304,13 @@ public class WidgetManager
     {
         if (group.IsNullOrEmpty()) return null;
 
-        var p = Parameter.FindByUserIDAndCategoryAndName(0, GroupCategory, NormalizeGroup(group));
+        var p = Parameter.FindByUserIdAndCategoryAndName(0, GroupCategory, NormalizeGroup(group));
         var vs = p?.Value;
 
         return vs.IsNullOrEmpty() ? null : vs.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
     }
 
-    /// <summary>设置指定组内的默认部件顺序（逗号分隔部件名，Parameter 全局配置，UserID=0）。未列出的新部件自动排到组内末尾</summary>
+    /// <summary>设置指定组内的默认部件顺序（逗号分隔部件名，Parameter 全局配置，UserId=0）。未列出的新部件自动排到组内末尾</summary>
     /// <param name="group">组名</param>
     /// <param name="names">部件名列表，按默认顺序</param>
     public void SetGroupItemOrder(String group, IEnumerable<String> names)
@@ -339,7 +339,7 @@ public class WidgetManager
     /// <returns>组顺序与组名到部件顺序的字典</returns>
     private (IList<String> GroupOrder, IDictionary<String, IList<String>> GroupItems) LoadGroupConfig()
     {
-        var ps = Parameter.FindAllByUserID(0, GroupCategory);
+        var ps = Parameter.FindAllByUserIdAndCategory(0, GroupCategory);
 
         IList<String> order = null;
         var items = new Dictionary<String, IList<String>>(StringComparer.OrdinalIgnoreCase);
@@ -478,3 +478,6 @@ public class WidgetManager
     }
     #endregion
 }
+
+
+

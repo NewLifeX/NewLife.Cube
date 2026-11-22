@@ -1,13 +1,17 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 
 namespace NewLife.Cube.Entity;
 
 public partial class SmsConfig : Entity<SmsConfig>
 {
+
     /// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     protected override void InitData()
@@ -82,8 +86,8 @@ public partial class SmsConfig : Entity<SmsConfig>
         /*var user = ManageProvider.User;
         if (user != null)
         {
-            if (method == DataMethod.Insert && !Dirtys[nameof(CreateUserID)]) CreateUserID = user.ID;
-            if (!Dirtys[nameof(UpdateUserID)]) UpdateUserID = user.ID;
+            if (method == DataMethod.Insert && !Dirtys[nameof(CreateUserId)]) CreateUserId = user.Id;
+            if (!Dirtys[nameof(UpdateUserId)]) UpdateUserId = user.Id;
         }*/
         //if (method == DataMethod.Insert && !Dirtys[nameof(CreateTime)]) CreateTime = DateTime.Now;
         //if (!Dirtys[nameof(UpdateTime)]) UpdateTime = DateTime.Now;
@@ -172,3 +176,4 @@ public partial class SmsConfig : Entity<SmsConfig>
 
     #endregion
 }
+

@@ -1,4 +1,4 @@
-﻿namespace NewLife.Cube.Charts;
+namespace NewLife.Cube.Charts;
 
 /// <summary>折线/面积图</summary>
 /// <remark>
@@ -13,7 +13,7 @@ public class SeriesLine : Series
 
     //public String Type { get; set; } = "line";
 
-    ///// <summary>组件 ID</summary>
+    ///// <summary>组件 Id</summary>
     ///// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
     //public String Id { get; set; }
 
@@ -386,9 +386,9 @@ public class SeriesLine : Series
     ///     itemId: 2,
     ///     // 指定数据项的名称使用第三个维度在饼图等图表中有用，可以使这个名字显示在图例（legend）中。
     ///     itemName: 3,
-    ///     // 指定数据项的组 ID (groupId)。当全局过渡动画功能开启时，setOption 前后拥有相同 groupId 的数据项会进行动画过渡。
+    ///     // 指定数据项的组 Id (groupId)。当全局过渡动画功能开启时，setOption 前后拥有相同 groupId 的数据项会进行动画过渡。
     ///     itemGroupId: 4,
-    ///     // 指定数据项对应的子数据组 ID (childGroupId)，用于实现多层下钻和聚合。详见 childGroupId。
+    ///     // 指定数据项对应的子数据组 Id (childGroupId)，用于实现多层下钻和聚合。详见 childGroupId。
     ///     // 从 v5.5.0 开始支持
     ///     itemChildGroupId: 5
     /// }
@@ -467,7 +467,7 @@ public class SeriesLine : Series
     /// <remark>如果 series.data 没有指定，并且 dataset 存在，那么就会使用 dataset。datasetIndex 指定本系列使用哪个 dataset。</remark>
     public Double? DatasetIndex { get; set; }
 
-    /// <summary>该系列所有数据项的组 ID，优先级低于groupId</summary>
+    /// <summary>该系列所有数据项的组 Id，优先级低于groupId</summary>
     /// <remark>详见series.data.groupId。</remark>
     public String DataGroupId { get; set; }
 
@@ -667,3 +667,4 @@ public class SeriesLine : Series
     public Object Tooltip { get; set; }
 
 }
+

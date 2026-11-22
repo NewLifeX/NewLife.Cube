@@ -23,16 +23,16 @@ public class DataScopeDecouplingTests
     public DataScopeDecouplingTests() => SqliteDb.Ensure();
 
     [Theory(DisplayName = "控制器_数据权限特性_表达式符合页面行语义")]
-    [InlineData(typeof(DepartmentController), "ManagerID={#userId}")]
-    [InlineData(typeof(ParameterController), "UserID={#userId}")]
-    [InlineData(typeof(UserOnlineController), "UserID={#userId}")]
-    [InlineData(typeof(LogController), "CreateUserID={#userId}")]
-    [InlineData(typeof(UserController), "ID={#userId}")]
-    [InlineData(typeof(UserConnectController), "UserID={#userId}")]
-    [InlineData(typeof(UserTokenController), "UserID={#userId}")]
+    [InlineData(typeof(DepartmentController), "ManagerId={#userId}")]
+    [InlineData(typeof(ParameterController), "UserId={#userId}")]
+    [InlineData(typeof(UserOnlineController), "UserId={#userId}")]
+    [InlineData(typeof(LogController), "CreateUserId={#userId}")]
+    [InlineData(typeof(UserController), "Id={#userId}")]
+    [InlineData(typeof(UserConnectController), "UserId={#userId}")]
+    [InlineData(typeof(UserTokenController), "UserId={#userId}")]
     [InlineData(typeof(OAuthLogController), "UserId={#userId}")]
     [InlineData(typeof(NotificationRecordController), "UserId={#userId}")]
-    [InlineData(typeof(NewLife.Cube.Areas.Cube.Controllers.AttachmentController), "CreateUserID={#userId}")]
+    [InlineData(typeof(NewLife.Cube.Areas.Cube.Controllers.AttachmentController), "CreateUserId={#userId}")]
     [InlineData(typeof(NewLife.Cube.Areas.Cube.Controllers.PrincipalAgentController), "PrincipalId={#userId} or AgentId={#userId}")]
     public void Controllers_HaveExpectedDataPermission(Type controllerType, String expression)
     {
@@ -63,8 +63,8 @@ public class DataScopeDecouplingTests
     public void CrossUserQuery_NotFilteredByEntityLayer()
     {
         var provider = $"E2E_{Guid.NewGuid():N}";
-        var uc111 = new UserConnect { Provider = provider, OpenID = "openid_111", UserID = 111, Enable = true };
-        var uc222 = new UserConnect { Provider = provider, OpenID = "openid_222", UserID = 222, Enable = true };
+        var uc111 = new UserConnect { Provider = provider, OpenId = "openid_111", UserId = 111, Enable = true };
+        var uc222 = new UserConnect { Provider = provider, OpenId = "openid_222", UserId = 222, Enable = true };
 
         var old = DataScopeContext.Current;
         try
@@ -74,17 +74,17 @@ public class DataScopeDecouplingTests
 
             // (a) 无上下文
             DataScopeContext.Current = null;
-            var found = UserConnect.FindByProviderAndOpenID(provider, "openid_222");
+            var found = UserConnect.FindByProviderAndOpenId(provider, "openid_222");
             Assert.NotNull(found);
-            Assert.Equal(222, found!.UserID);
+            Assert.Equal(222, found!.UserId);
 
             // (b) 宿主系统态
             DataScopeContext.Current = DataScopeMiddleware.CreateHostScope(null!);
-            Assert.NotNull(UserConnect.FindByProviderAndOpenID(provider, "openid_222"));
+            Assert.NotNull(UserConnect.FindByProviderAndOpenId(provider, "openid_222"));
 
             // (c) 窄上下文（仅本人=111）：实体层不参与过滤，跨用户查询仍命中（严禁在此加数据范围）
             DataScopeContext.Current = new DataScopeContext { UserId = 111, DataScope = DataScopes.仅本人 };
-            Assert.NotNull(UserConnect.FindByProviderAndOpenID(provider, "openid_222"));
+            Assert.NotNull(UserConnect.FindByProviderAndOpenId(provider, "openid_222"));
         }
         finally
         {
@@ -97,3 +97,5 @@ public class DataScopeDecouplingTests
         }
     }
 }
+
+

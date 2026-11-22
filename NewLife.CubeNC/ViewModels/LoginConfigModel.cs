@@ -57,10 +57,10 @@ public class SecurityConfigModel
     /// <summary>是否开放 MFA 功能。true 时允许用户在个人设置中开启 TOTP</summary>
     public Boolean MfaAvailable { get; set; }
 
-    /// <summary>是否启用密码复杂度校验。false 时登录页仅要求密码非空，不做复杂度校验</summary>
+    /// <summary>是否启用密码复杂度校验。仅作用于注册与修改密码，登录页不校验复杂度，只要求密码非空</summary>
     public Boolean PasswordComplexity { get; set; } = true;
 
-    /// <summary>密码强度正则。* 表示无限制，前端可用于客户端校验提示</summary>
+    /// <summary>密码强度正则。* 表示无限制，前端用于注册/修改密码时的客户端校验提示</summary>
     public String PasswordStrength { get; set; }
 }
 

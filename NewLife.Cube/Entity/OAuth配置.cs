@@ -22,13 +22,13 @@ namespace NewLife.Cube.Entity;
 public partial class OAuthConfig : IEntity<OAuthConfigModel>
 {
     #region 属性
-    private Int32 _ID;
+    private Int32 _Id;
     /// <summary>编号</summary>
     [DisplayName("编号")]
     [Description("编号")]
     [DataObjectField(true, true, false, 0)]
-    [BindColumn("ID", "编号", "")]
-    public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+    [BindColumn("Id", "编号", "")]
+    public Int32 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
     private Int32 _TenantId;
     /// <summary>租户</summary>
@@ -230,14 +230,14 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     [BindColumn("IsDeleted", "删除。是否已删除，可恢复", "")]
     public Boolean IsDeleted { get => _IsDeleted; set { if (OnPropertyChanging("IsDeleted", value)) { _IsDeleted = value; OnPropertyChanged("IsDeleted"); } } }
 
-    private Int32 _CreateUserID;
+    private Int32 _CreateUserId;
     /// <summary>创建者</summary>
     [Category("扩展")]
     [DisplayName("创建者")]
     [Description("创建者")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("CreateUserID", "创建者", "")]
-    public Int32 CreateUserID { get => _CreateUserID; set { if (OnPropertyChanging("CreateUserID", value)) { _CreateUserID = value; OnPropertyChanged("CreateUserID"); } } }
+    [BindColumn("CreateUserId", "创建者", "")]
+    public Int32 CreateUserId { get => _CreateUserId; set { if (OnPropertyChanging("CreateUserId", value)) { _CreateUserId = value; OnPropertyChanged("CreateUserId"); } } }
 
     private DateTime _CreateTime;
     /// <summary>创建时间</summary>
@@ -257,14 +257,14 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     [BindColumn("CreateIP", "创建地址", "")]
     public String CreateIP { get => _CreateIP; set { if (OnPropertyChanging("CreateIP", value)) { _CreateIP = value; OnPropertyChanged("CreateIP"); } } }
 
-    private Int32 _UpdateUserID;
+    private Int32 _UpdateUserId;
     /// <summary>更新者</summary>
     [Category("扩展")]
     [DisplayName("更新者")]
     [Description("更新者")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("UpdateUserID", "更新者", "")]
-    public Int32 UpdateUserID { get => _UpdateUserID; set { if (OnPropertyChanging("UpdateUserID", value)) { _UpdateUserID = value; OnPropertyChanged("UpdateUserID"); } } }
+    [BindColumn("UpdateUserId", "更新者", "")]
+    public Int32 UpdateUserId { get => _UpdateUserId; set { if (OnPropertyChanging("UpdateUserId", value)) { _UpdateUserId = value; OnPropertyChanged("UpdateUserId"); } } }
 
     private DateTime _UpdateTime;
     /// <summary>更新时间</summary>
@@ -299,7 +299,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     /// <param name="model">模型</param>
     public void Copy(OAuthConfigModel model)
     {
-        ID = model.ID;
+        Id = model.Id;
         TenantId = model.TenantId;
         Provider = model.Provider;
         Name = model.Name;
@@ -325,10 +325,10 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         FieldMap = model.FieldMap;
         FetchAvatar = model.FetchAvatar;
         IsDeleted = model.IsDeleted;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateTime = model.UpdateTime;
         UpdateIP = model.UpdateIP;
         Remark = model.Remark;
@@ -343,7 +343,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     {
         get => name switch
         {
-            "ID" => _ID,
+            "Id" => _Id,
             "TenantId" => _TenantId,
             "Provider" => _Provider,
             "Name" => _Name,
@@ -369,10 +369,10 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
             "FieldMap" => _FieldMap,
             "FetchAvatar" => _FetchAvatar,
             "IsDeleted" => _IsDeleted,
-            "CreateUserID" => _CreateUserID,
+            "CreateUserId" => _CreateUserId,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
-            "UpdateUserID" => _UpdateUserID,
+            "UpdateUserId" => _UpdateUserId,
             "UpdateTime" => _UpdateTime,
             "UpdateIP" => _UpdateIP,
             "Remark" => _Remark,
@@ -382,7 +382,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         {
             switch (name)
             {
-                case "ID": _ID = value.ToInt(); break;
+                case "Id": _Id = value.ToInt(); break;
                 case "TenantId": _TenantId = value.ToInt(); break;
                 case "Provider": _Provider = Convert.ToString(value); break;
                 case "Name": _Name = Convert.ToString(value); break;
@@ -408,10 +408,10 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
                 case "FieldMap": _FieldMap = Convert.ToString(value); break;
                 case "FetchAvatar": _FetchAvatar = value.ToBoolean(); break;
                 case "IsDeleted": _IsDeleted = value.ToBoolean(); break;
-                case "CreateUserID": _CreateUserID = value.ToInt(); break;
+                case "CreateUserId": _CreateUserId = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
-                case "UpdateUserID": _UpdateUserID = value.ToInt(); break;
+                case "UpdateUserId": _UpdateUserId = value.ToInt(); break;
                 case "UpdateTime": _UpdateTime = value.ToDateTime(); break;
                 case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
                 case "Remark": _Remark = Convert.ToString(value); break;
@@ -433,6 +433,22 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     #endregion
 
     #region 扩展查询
+    /// <summary>根据编号查找</summary>
+    /// <param name="id">编号</param>
+    /// <returns>实体对象</returns>
+    public static OAuthConfig FindById(Int32 id)
+    {
+        if (id < 0) return null;
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
+
+        // 单对象缓存
+        return Meta.SingleCache[id];
+
+        //return Find(_.Id == id);
+    }
+
     /// <summary>根据租户、名称查找</summary>
     /// <param name="tenantId">租户</param>
     /// <param name="name">名称</param>
@@ -501,7 +517,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     public partial class _
     {
         /// <summary>编号</summary>
-        public static readonly Field ID = FindByName("ID");
+        public static readonly Field Id = FindByName("Id");
 
         /// <summary>租户</summary>
         public static readonly Field TenantId = FindByName("TenantId");
@@ -579,7 +595,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         public static readonly Field IsDeleted = FindByName("IsDeleted");
 
         /// <summary>创建者</summary>
-        public static readonly Field CreateUserID = FindByName("CreateUserID");
+        public static readonly Field CreateUserId = FindByName("CreateUserId");
 
         /// <summary>创建时间</summary>
         public static readonly Field CreateTime = FindByName("CreateTime");
@@ -588,7 +604,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         public static readonly Field CreateIP = FindByName("CreateIP");
 
         /// <summary>更新者</summary>
-        public static readonly Field UpdateUserID = FindByName("UpdateUserID");
+        public static readonly Field UpdateUserId = FindByName("UpdateUserId");
 
         /// <summary>更新时间</summary>
         public static readonly Field UpdateTime = FindByName("UpdateTime");
@@ -606,7 +622,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     public partial class __
     {
         /// <summary>编号</summary>
-        public const String ID = "ID";
+        public const String Id = "Id";
 
         /// <summary>租户</summary>
         public const String TenantId = "TenantId";
@@ -684,7 +700,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         public const String IsDeleted = "IsDeleted";
 
         /// <summary>创建者</summary>
-        public const String CreateUserID = "CreateUserID";
+        public const String CreateUserId = "CreateUserId";
 
         /// <summary>创建时间</summary>
         public const String CreateTime = "CreateTime";
@@ -693,7 +709,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         public const String CreateIP = "CreateIP";
 
         /// <summary>更新者</summary>
-        public const String UpdateUserID = "UpdateUserID";
+        public const String UpdateUserId = "UpdateUserId";
 
         /// <summary>更新时间</summary>
         public const String UpdateTime = "UpdateTime";

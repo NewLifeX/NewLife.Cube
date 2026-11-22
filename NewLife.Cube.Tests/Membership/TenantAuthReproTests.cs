@@ -163,10 +163,10 @@ public class TenantAuthFixture : IDisposable
 
         var hash = Provider.PasswordProvider.Hash(Password);
 
-        LegacyUser = CreateUser("legacy01", normal.ID, hash);
-        LegacyUser2 = CreateUser("legacy02", normal.ID, hash);
-        AdminUser = CreateUser("admin01", admin.ID, hash);
-        BoundUser = CreateUser("tenant01", normal.ID, hash);
+        LegacyUser = CreateUser("legacy01", normal.Id, hash);
+        LegacyUser2 = CreateUser("legacy02", normal.Id, hash);
+        AdminUser = CreateUser("admin01", admin.Id, hash);
+        BoundUser = CreateUser("tenant01", normal.Id, hash);
 
         Tenant1 = new Tenant { Code = TenantCode, Name = "测试租户", Enable = true };
         Tenant1.Insert();
@@ -175,7 +175,7 @@ public class TenantAuthFixture : IDisposable
         Tenant2.Insert();
 
         // 仅 tenant01 绑定到租户，legacy01/legacy02 保持无任何绑定（存量用户状态）
-        new TenantUser { TenantId = Tenant1.Id, UserId = BoundUser.ID, Enable = true }.Insert();
+        new TenantUser { TenantId = Tenant1.Id, UserId = BoundUser.Id, Enable = true }.Insert();
     }
 
     private static User CreateUser(String name, Int32 roleId, String passwordHash)
@@ -185,7 +185,7 @@ public class TenantAuthFixture : IDisposable
             Name = name,
             DisplayName = name,
             Password = passwordHash,
-            RoleID = roleId,
+            RoleId = roleId,
             Enable = true,
             RegisterTime = DateTime.Now,
         };
@@ -259,7 +259,7 @@ public class TenantAuthReproTests
             Assert.NotNull(user);
 
             // UserService.CompleteLogin 会调用 ChooseTenant，未开启多租户时为空操作
-            loginCtx.ChooseTenant(user.ID);
+            loginCtx.ChooseTenant(user.Id);
 
             // 令牌已颁发
             var token = loginCtx.Items["jwtToken"] as String;
@@ -270,7 +270,7 @@ public class TenantAuthReproTests
             ctx.Request.Headers["Authorization"] = $"Bearer {token}";
             var current = _fx.Provider.TryLogin(ctx);
             Assert.NotNull(current);
-            Assert.Equal(user.ID, current.ID);
+            Assert.Equal(user.Id, current.Id);
         }
         finally
         {
@@ -297,7 +297,7 @@ public class TenantAuthReproTests
             Assert.False(String.IsNullOrEmpty(token));
 
             // ②（P0-1 已修复）无租户信息时 ChooseTenant 不再抛 NRE，仅不设置租户上下文
-            loginCtx.ChooseTenant(user.ID);
+            loginCtx.ChooseTenant(user.Id);
             Assert.Equal(0, TenantContext.CurrentId);
 
             // ③ 无Cookie的API请求携带刚颁发的登录令牌，Enforce 严格 fail-closed 拒绝（TryLogin 返回 null）
@@ -322,7 +322,7 @@ public class TenantAuthReproTests
             Assert.Null(_fx.Provider.TryLogin(ctx3));
 
             // ⑤ 整个登录流程没有为存量用户建立任何租户绑定，用户被彻底锁死
-            Assert.Empty(TenantUser.FindAllByUserId(user.ID));
+            Assert.Empty(TenantUser.FindAllByUserId(user.Id));
 
             // ⑥ 正向对照：Enforce 下已绑定用户带 X-Tenant:t1 应正常放行——防止 TryLogin 全局损坏导致本测试误绿
             TenantContext.Current = null!;
@@ -388,7 +388,7 @@ public class TenantAuthReproTests
         TenantContext.Current = null!;
         try
         {
-            var before = UserToken.FindAllByUserID(_fx.BoundUser.ID);
+            var before = UserToken.FindAllByUserId(_fx.BoundUser.Id);
 
             var loginCtx = _fx.CreateContext();
             loginCtx.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
@@ -397,7 +397,7 @@ public class TenantAuthReproTests
             Assert.True(result.IsSuccess);
 
             // IssueLoginToken 幂等：ManageProvider2.Login 与 CompleteLogin 复用同一令牌，只新增一条 UserToken
-            var after = UserToken.FindAllByUserID(_fx.BoundUser.ID);
+            var after = UserToken.FindAllByUserId(_fx.BoundUser.Id);
             Assert.Equal(before.Count + 1, after.Count);
             Assert.Equal(before.Count(e => e.Enable) + 1, after.Count(e => e.Enable));
         }
@@ -424,7 +424,7 @@ public class TenantAuthReproTests
             loginCtx.Request.Headers["Cookie"] = $"{cookieKey}=0";
             var user = _fx.Provider.Login("admin01", TenantAuthFixture.Password, false);
             Assert.NotNull(user);
-            loginCtx.ChooseTenant(user.ID);
+            loginCtx.ChooseTenant(user.Id);
 
             // 系统管理员进入管理后台（租户0）
             Assert.Equal(0, TenantContext.CurrentId);
@@ -437,7 +437,7 @@ public class TenantAuthReproTests
             ctx.Request.Headers["Cookie"] = $"{cookieKey}=0";
             var current = _fx.Provider.TryLogin(ctx);
             Assert.NotNull(current);
-            Assert.Equal(user.ID, current.ID);
+            Assert.Equal(user.Id, current.Id);
             Assert.Equal(0, TenantContext.CurrentId); // 管理员进入管理后台（租户0）
         }
         finally
@@ -459,7 +459,7 @@ public class TenantAuthReproTests
 
             var user = _fx.Provider.Login("tenant01", TenantAuthFixture.Password, false);
             Assert.NotNull(user);
-            loginCtx.ChooseTenant(user.ID);
+            loginCtx.ChooseTenant(user.Id);
 
             // 进入已绑定的租户
             Assert.Equal(_fx.Tenant1.Id, TenantContext.CurrentId);
@@ -600,7 +600,7 @@ public class TenantAuthExpectationTests
             Assert.True(result.IsSuccess);
 
             // CompleteLogin -> EnsureTenantUser 已补建租户绑定
-            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, _fx.LegacyUser2.ID);
+            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, _fx.LegacyUser2.Id);
             Assert.NotNull(tu);
             Assert.True(tu.Enable);
 
@@ -609,7 +609,7 @@ public class TenantAuthExpectationTests
 
             // 重新选择租户后进入已绑定的租户（旧令牌无法自救，见 Repro 测试）
             TenantContext.Current = null!;
-            loginCtx.ChooseTenant(_fx.LegacyUser2.ID);
+            loginCtx.ChooseTenant(_fx.LegacyUser2.Id);
             Assert.Equal(_fx.Tenant1.Id, TenantContext.CurrentId);
 
             // 后续请求携带令牌与 X-Tenant 正常通过认证
@@ -619,7 +619,7 @@ public class TenantAuthExpectationTests
             ctx.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
             var current = _fx.Provider.TryLogin(ctx);
             Assert.NotNull(current);
-            Assert.Equal(_fx.LegacyUser2.ID, current.ID);
+            Assert.Equal(_fx.LegacyUser2.Id, current.Id);
             Assert.Equal(_fx.Tenant1.Id, TenantContext.CurrentId);
         }
         finally
@@ -781,6 +781,8 @@ public class TenantAuthExpectationTests
         }
     }
 }
+
+
 
 
 

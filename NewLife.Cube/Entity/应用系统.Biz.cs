@@ -1,11 +1,15 @@
 using XCode;
 using XCode.Membership;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 
 namespace NewLife.Cube.Entity;
 
 /// <summary>应用系统</summary>
 public partial class App : Entity<App>
 {
+
     #region 对象操作
     static App()
     {

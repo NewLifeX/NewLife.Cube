@@ -4,12 +4,16 @@ using NewLife.Log;
 using XCode;
 using XCode.Cache;
 using XCode.Membership;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 
 namespace NewLife.Cube.Entity;
 
 /// <summary>附件。用于记录各系统模块使用的文件</summary>
 public partial class Attachment : Entity<Attachment>
 {
+
     #region 对象操作
     static Attachment()
     {
@@ -66,12 +70,12 @@ public partial class Attachment : Entity<Attachment>
         if (id <= 0) return null;
 
         //// 实体缓存
-        //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
+        //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
 
         // 单对象缓存
         return Meta.SingleCache[id];
 
-        //return Find(_.ID == id);
+        //return Find(_.Id == id);
     }
 
     /// <summary>根据分类查找</summary>
@@ -143,7 +147,7 @@ public partial class Attachment : Entity<Attachment>
         return FindAll(exp, page);
     }
 
-    // Select Count(ID) as ID,Category From Attachment Where CreateTime>'2020-01-24 00:00:00' Group By Category Order By ID Desc limit 20
+    // Select Count(Id) as Id,Category From Attachment Where CreateTime>'2020-01-24 00:00:00' Group By Category Order By Id Desc limit 20
     private static readonly FieldCache<Attachment> _CategoryCache = new FieldCache<Attachment>(nameof(Category))
     {
         //Where = _.CreateTime > DateTime.Today.AddDays(-30) & Expression.Empty

@@ -29,7 +29,7 @@ public class ControllerFieldHookTests
         var controller = new AuditController();
 
         var list = controller.Fields(ViewKinds.List);
-        Assert.DoesNotContain(list, e => e.Name.EqualIgnoreCase("CreateIP", "UpdateIP", "CreateUserID", "UpdateUserID"));
+        Assert.DoesNotContain(list, e => e.Name.EqualIgnoreCase("CreateIP", "UpdateIP", "CreateUserId", "UpdateUserId"));
 
         var form = controller.Fields(ViewKinds.EditForm);
         Assert.Contains(form, e => e.Name.EqualIgnoreCase("CreateIP"));
@@ -48,3 +48,4 @@ public class ControllerFieldHookTests
         Assert.Contains(again, e => e.Name.EqualIgnoreCase("Name"));
     }
 }
+

@@ -1,4 +1,4 @@
-﻿# 用户登录验证（登录 / 注册 / 忘记密码）
+# 用户登录验证（登录 / 注册 / 忘记密码）
 
 > 本文档是魔方用户验证业务的**权威总览**，同时覆盖 **MVC（服务端渲染）** 与 **API（前后端分离）** 两种接入方式。
 > 登录、注册、忘记密码三大业务，及其下所有登录/注册/找回方式，均在此完整定义。
@@ -396,7 +396,7 @@ public class OrderAccountCloseHandler : IAccountCloseHandler
     public Task HandleAsync(IUser user, String ip, CancellationToken cancellationToken = default)
     {
         // 删除与该账号关联的业务数据（务必幂等）
-        // ErpOrder.DeleteByUserId(user.ID);
+        // ErpOrder.DeleteByUserId(user.Id);
         return Task.CompletedTask;
     }
 }
@@ -418,7 +418,7 @@ services.AddSingleton<IAccountCloseHandler, OrderAccountCloseHandler>();
 | `AutoRegister` | — | 手机/邮箱验证码登录时未注册自动建号 |
 | `AllowPlainPassword` | true | 允许明文密码；false 强制 RSA 加密传输 |
 | `PaswordStrength` | 强密码正则 | 密码强度正则（空/`*` 不校验），注意拼写 |
-| `EnablePasswordComplexity` | true | 是否启用密码复杂度校验 |
+| `EnablePasswordComplexity` | true | 是否启用密码复杂度校验（注册与修改密码；登录页不校验，仅要求密码非空） |
 | `CaptchaScene` | 0 | 图片验证码**场景强制**位（1=登录,2=注册,4=发码，可组合；强制不受自适应豁免） |
 | `CaptchaRisk` | true | 风险自适应验证码：自动感知机器安全度，不安全环境要求验证码 |
 | `CaptchaRiskThreshold` | 2 | 风险阈值（0=内网,1=公网,2=公网+失败,3=封禁），达到该值要求验证码 |
@@ -478,7 +478,7 @@ MVC 登录页采用"两大面板"结构（`~/Admin/User/Login`，ACE 风格，�
 
 - **MVC 版定位简化**：不支持手机/邮箱验证码登录、无忘记密码面板；注册仅用户名方式（手机/邮箱注册需验证码，MVC 页面不提供）
 - 图形验证码 MVC 后端未实现（见 §5.2），登录页不提供
-- 密码强度正则由 `CubeSetting.PaswordStrength` 下发前端动态校验（空/`*` 跳过）；所有密码框支持 RSA 加密传输
+- 密码强度正则由 `CubeSetting.PaswordStrength` 下发前端动态校验（空/`*` 跳过），仅用于注册面板；登录面板不校验复杂度，存量弱密码（如默认 admin）必须允许登录；所有密码框支持 RSA 加密传输
 - 样式独立于 `Cube.css`（`@res/cube-login.css`），图标用 FontAwesome；`MLogin.cshtml`（移动版）与桌面版同构
 - 完整功能参考（API 版）：`Doc/UI设计/登录页-API版.html`（含 密码/手机/邮箱 登录子Tab、三方式注册、忘记密码、第三方登录）
 

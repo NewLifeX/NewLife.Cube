@@ -1,4 +1,4 @@
-﻿@using System.Reflection
+@using System.Reflection
 @using XCode
 @using XCode.Configuration
 @using XCode.Membership
@@ -319,9 +319,9 @@ layui.use(['form'], function() {
                 <tr>
                         <td>@entity.TreeNodeName</td>
                         <td>@entity.DisplayName</td>
-                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID,lay_skin="primary",lay_filter="authorize"})
+                        <td>@Html.CheckBox("p" + entity.Id, role.Has(entity.Id), new { @class = "authorize", @child = "auth_child" + entity.Id, @parentkey = "auth_child" + entity.ParentId,lay_skin="primary",lay_filter="authorize"})
                         <script type="text/javascript">
-                                    $('input[name=p@(entity.ID)]').val("@(role.Has(entity.ID).ToString().ToLower())");
+                                    $('input[name=p@(entity.Id)]').val("@(role.Has(entity.Id).ToString().ToLower())");
                         </script>
                         </td>
                         <td>
@@ -329,12 +329,12 @@ layui.use(['form'], function() {
                             {
                                 foreach (var item in entity.Permissions.OrderBy(e => e.Key))
                                 {
-                                    var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentID,title=item.Value,lay_filter="pro_child"})
+                                    var id = "pf" + entity.Id + "_" + ((Int32)item.Key);
+                                    @Html.CheckBox(id, role.Has(entity.Id, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.Id, @proparentkey = "pro_" + item.Key + "_" + entity.ParentId, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentId,title=item.Value,lay_filter="pro_child"})
                                 @*@Html.Label(id, item.Value)*@
-                                @*var chec = role.Has(entity.ID, (PermissionFlags)item.Key)?"checked":"";*@
+                                @*var chec = role.Has(entity.Id, (PermissionFlags)item.Key)?"checked":"";*@
                                 <script type="text/javascript">
-                                    $('input[name=@id]').val("@(role.Has(entity.ID, (PermissionFlags)item.Key).ToString().ToLower())");
+                                    $('input[name=@id]').val("@(role.Has(entity.Id, (PermissionFlags)item.Key).ToString().ToLower())");
                                 </script>
                                     <text>&nbsp;</text>
                                 }
@@ -342,11 +342,11 @@ layui.use(['form'], function() {
                             else
                             {
 
-                                @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.ID,title="只读",lay_skin="primary",lay_filter="pro_detail"})
-                                @*@Html.Label("pc_readonly_" + entity.ID, "只读")*@
+                                @Html.CheckBox("pc_readonly_" + entity.Id, false, new { @class = "pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.Id,title="只读",lay_skin="primary",lay_filter="pro_detail"})
+                                @*@Html.Label("pc_readonly_" + entity.Id, "只读")*@
                                 <text>&nbsp;</text>
-                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ID,title="全部",lay_skin="primary",lay_filter="pro_all" })
-                                @*@Html.Label("pc_all_" + entity.ID, "全部")*@
+                                @Html.CheckBox("pc_all_" + entity.Id, false, new { @class = "pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.Id,title="全部",lay_skin="primary",lay_filter="pro_all" })
+                                @*@Html.Label("pc_all_" + entity.Id, "全部")*@
                             }
                         </td>
                     </tr>

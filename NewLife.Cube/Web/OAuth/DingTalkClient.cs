@@ -1,4 +1,4 @@
-﻿using System.Web;
+using System.Web;
 using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Remoting;
@@ -121,8 +121,8 @@ public class DingTalkClient : OAuthClient
             XTrace.WriteLine(dic.ToJson());
 
             //NickName = dic["nick"] as String;
-            //OpenID = dic["openid"] as String;
-            //UnionID = dic["unionid"] as String;
+            //OpenId = dic["openid"] as String;
+            //UnionId = dic["unionid"] as String;
 
             Items = dic;
 
@@ -141,7 +141,7 @@ public class DingTalkClient : OAuthClient
     {
         //return base.GetUserInfo();
 
-        if (UnionID.IsNullOrEmpty()) return null;
+        if (UnionId.IsNullOrEmpty()) return null;
 
         // 如果配置了企业级账号，可以获取更详细信息
         var token = _ding_access_token;
@@ -164,7 +164,7 @@ public class DingTalkClient : OAuthClient
             try
             {
                 // 根据UnionId换取员工Id
-                var userid = GetUseridByUnionid(token, UnionID);
+                var userid = GetUseridByUnionid(token, UnionId);
                 if (!userid.IsNullOrEmpty())
                 {
                     // 钉钉Id一般不是自己设置的，很乱，不可取

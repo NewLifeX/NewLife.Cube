@@ -171,14 +171,14 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 if (!set.DefaultRole.IsNullOrEmpty())
                 {
                     var role = Role.FindByName(set.DefaultRole);
-                    if (role != null) user.RoleID = role.ID;
+                    if (role != null) user.RoleId = role.Id;
                 }
 
                 user.RegisterIP = ip;
                 user.RegisterTime = DateTime.Now;
                 user.Insert();
 
-                LogProvider.Provider.WriteLog(typeof(User), L.T("SMS registration"), true, L.T("Mobile: {0}, auto-registered", mobile), user.ID, user + "", ip);
+                LogProvider.Provider.WriteLog(typeof(User), L.T("SMS registration"), true, L.T("Mobile: {0}, auto-registered", mobile), user.Id, user + "", ip);
             }
 
             if (!user.Enable) throw new InvalidOperationException(L.T("User is disabled."));
@@ -268,14 +268,14 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 if (!set.DefaultRole.IsNullOrEmpty())
                 {
                     var role = Role.FindByName(set.DefaultRole);
-                    if (role != null) user.RoleID = role.ID;
+                    if (role != null) user.RoleId = role.Id;
                 }
 
                 user.RegisterIP = ip;
                 user.RegisterTime = DateTime.Now;
                 user.Insert();
 
-                LogProvider.Provider.WriteLog(typeof(User), L.T("Email registration"), true, L.T("Email: {0}, auto-registered", mail), user.ID, user + "", ip);
+                LogProvider.Provider.WriteLog(typeof(User), L.T("Email registration"), true, L.T("Email: {0}, auto-registered", mail), user.Id, user + "", ip);
             }
 
             if (!user.Enable) throw new InvalidOperationException(L.T("User is disabled."));
@@ -395,7 +395,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         var user = _userService.CreateUserAndBindContact(username, pwd.Data, model.Email?.Trim(), mobile, ip, false, true);
 
         _cache.Remove(codeKey);
-        LogProvider.Provider.WriteLog(typeof(User), L.T("Mobile registration"), true, L.T("Mobile: {0}", mobile), user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Mobile registration"), true, L.T("Mobile: {0}", mobile), user.Id, user + "", ip);
 
         return _userService.CompleteLogin(user, httpContext, false, L.T("Mobile registration"), username, ip);
     }
@@ -428,7 +428,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         var user = _userService.CreateUserAndBindContact(username, pwd.Data, mail, model.Mobile?.Trim(), ip, true, false);
 
         _cache.Remove(codeKey);
-        LogProvider.Provider.WriteLog(typeof(User), L.T("Email registration"), true, L.T("Email: {0}", mail), user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Email registration"), true, L.T("Email: {0}", mail), user.Id, user + "", ip);
 
         return _userService.CompleteLogin(user, httpContext, false, L.T("Email registration"), username, ip);
     }
@@ -452,7 +452,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         if (code.IsNullOrEmpty())
             return new ServiceResult { IsSuccess = false, Message = L.T("Verification code is required.") };
 
-        if (currentUser == null || currentUser.ID <= 0)
+        if (currentUser == null || currentUser.Id <= 0)
             return new ServiceResult { IsSuccess = false, Message = L.T("Please sign in first.") };
 
         // 2. 根据账号类型分发到具体处理方法
@@ -479,11 +479,11 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         // 检查手机号是否已被其他用户绑定
         var existingUser = User.FindByMobile(mobile);
-        if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
+        if (existingUser != null && existingUser.Id > 0 && existingUser.Id != currentUser.Id)
             return new ServiceResult { IsSuccess = false, Message = L.T("This mobile number is already bound to another account.") };
 
         // 绑定到当前用户
-        var user = User.FindByID(currentUser.ID);
+        var user = User.FindById(currentUser.Id);
         if (user == null) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
 
         if (user.Mobile != mobile)
@@ -497,7 +497,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), L.T("Bind mobile"), true, L.T("Mobile: {0}", mobile), currentUser.ID, currentUser + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Bind mobile"), true, L.T("Mobile: {0}", mobile), currentUser.Id, currentUser + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Mobile number bound successfully.") };
     }
@@ -516,11 +516,11 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         // 检查邮箱是否已被其他用户绑定
         var existingUser = User.FindByMail(mail);
-        if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
+        if (existingUser != null && existingUser.Id > 0 && existingUser.Id != currentUser.Id)
             return new ServiceResult { IsSuccess = false, Message = L.T("This email is already bound to another account.") };
 
         // 绑定到当前用户
-        var user = User.FindByID(currentUser.ID);
+        var user = User.FindById(currentUser.Id);
         if (user == null) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
 
         if (user.Mail != mail)
@@ -534,7 +534,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), L.T("Bind email"), true, L.T("Email: {0}", mail), currentUser.ID, currentUser + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Bind email"), true, L.T("Email: {0}", mail), currentUser.Id, currentUser + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Email bound successfully.") };
     }
@@ -607,7 +607,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         // 查找用户并更新密码
         var user = User.FindByMobile(mobile);
-        if (user == null || user.ID <= 0)
+        if (user == null || user.Id <= 0)
             return new ServiceResult { IsSuccess = false, Message = L.T("This mobile number is not registered.") };
 
         var newPassHash = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
@@ -621,7 +621,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), L.T("Reset password"), true, L.T("Mobile: {0}", mobile), user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Reset password"), true, L.T("Mobile: {0}", mobile), user.Id, user + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Password reset succeeded.") };
     }
@@ -640,7 +640,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         // 查找用户并更新密码
         var user = User.FindByMail(mail);
-        if (user == null || user.ID <= 0)
+        if (user == null || user.Id <= 0)
             return new ServiceResult { IsSuccess = false, Message = L.T("This email is not registered.") };
 
         var newPassHash = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
@@ -654,9 +654,10 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), L.T("Reset password"), true, L.T("Email: {0}", mail), user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Reset password"), true, L.T("Email: {0}", mail), user.Id, user + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Password reset succeeded.") };
     }
     #endregion
 }
+

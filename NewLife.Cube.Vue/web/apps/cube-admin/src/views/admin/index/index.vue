@@ -272,7 +272,7 @@ interface MenuNode {
   name: string
   displayName: string
   fullName: string
-  parentID: number
+  parentId: number
   url: string
   icon: string | null
   visible: boolean

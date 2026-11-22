@@ -1,4 +1,4 @@
-﻿@using NewLife.School.Entity
+@using NewLife.School.Entity
 @using NewLife;
 @using NewLife.Cube;
 @using NewLife.Web;
@@ -12,10 +12,11 @@
 @*<div class="form-group">
     @Html.ActionLink("用户链接", "Index", "UserConnect", null, new { @class = "btn btn-success btn-sm" })
     @Html.ActionLink("用户在线", "Index", "UserOnline", null, new { @class = "btn btn-success btn-sm" })
-    <label for="RoleID" class="control-label">角色：</label>
-    @Html.ForDropDownList("RoleID", Role.FindAllWithCache().Cast<IEntity>().ToList(), page["roldId"], "全部", true)
+    <label for="RoleId" class="control-label">角色：</label>
+    @Html.ForDropDownList("RoleId", Role.FindAllWithCache().Cast<IEntity>().ToList(), page["roldId"], "全部", true)
     @Html.ForDropDownList("p", VisitStat.FindAllPageName(), page["p"], "全部页面", true)
     @Html.ForListBox("roleIds", Role.FindAllWithCache(), page["roleIds"])
 </ div>*@
 @*@await Html.PartialAsync("_SelectDepartment", "departmentId")*@
 @*@await Html.PartialAsync("_DateRange")*@
+

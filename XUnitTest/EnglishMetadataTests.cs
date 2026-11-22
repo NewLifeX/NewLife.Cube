@@ -36,7 +36,7 @@ public class EnglishMetadataTests
     [InlineData("角色", "Role")]
     [InlineData("应用系统", "Applications")]
     [InlineData("地区", "Area")]
-    [InlineData("编号", "ID")]
+    [InlineData("编号", "Id")]
     public void EntityMetadata(String source, String expected) => Assert.Equal(expected, Translate("en-US", source));
 
     [Fact(DisplayName = "英文词表 - 未登记词条按源文回退")]
@@ -45,3 +45,4 @@ public class EnglishMetadataTests
     [Fact(DisplayName = "英文词表 - 中文界面仍使用中文源文")]
     public void ChineseKeepsSource() => Assert.Equal("系统管理", Translate("zh-CN", "系统管理"));
 }
+

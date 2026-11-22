@@ -179,7 +179,7 @@ public class DataFieldLocalizationTests
         {
             // 生成的实体特性：DisplayName 是首句、Description 是整段中文源文；实体模型与文件名保持中文
             var field = new DataField();
-            field.Fill(typeof(Entity.UserConnect).GetProperty(nameof(Entity.UserConnect.UserID)));
+            field.Fill(typeof(Entity.UserConnect).GetProperty(nameof(Entity.UserConnect.UserId)));
 
             Assert.Equal("用户", field.DisplayName);
             Assert.Equal(source, field.Description);
@@ -339,3 +339,4 @@ public class DataFieldLocalizationTests
         return false;
     }
 }
+

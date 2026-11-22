@@ -1,4 +1,4 @@
-﻿using System.Web;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using NewLife.Cube.ViewModels;
@@ -55,8 +55,6 @@ public class ExcelResult : IActionResult
             if (name.IsNullOrEmpty()) name = fi.Description;
             if (name.IsNullOrEmpty()) name = fi.Name;
 
-            // 第一行以ID开头的csv文件，容易被识别为SYLK文件
-            if (name == "ID" && fi == Fields[0]) name = "Id";
             headers.Add(name);
         }
         //await csv.WriteLineAsync(headers);
@@ -70,3 +68,4 @@ public class ExcelResult : IActionResult
         return Task.CompletedTask;
     }
 }
+

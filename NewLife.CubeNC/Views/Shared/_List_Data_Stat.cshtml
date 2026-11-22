@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
@@ -118,7 +118,7 @@
                     {
                         <td class="@(tdClass ?? "text-right")">@(value.ToLong().ToGMK())</td>
                     }
-                    else if (name2.EqualIgnoreCase("CreateUserID", "UpdateUserID") || name2.EndsWith("ID") || name2.EndsWith("Id"))
+                    else if (name2.EqualIgnoreCase("CreateUserId", "UpdateUserId") || name2.EndsWith("Id") || name2.EndsWith("Id"))
                     {
                         <td></td>
                     }

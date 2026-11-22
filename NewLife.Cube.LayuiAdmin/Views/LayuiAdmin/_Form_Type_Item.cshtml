@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using NewLife.Cube.ViewModels;
@@ -17,8 +17,8 @@
 
     var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
     var display = dataField?.DisplayName ?? item.DisplayName;
-    var className = !item.Nullable&&!item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs") ? "layui-form-required" : "";
+    var className = !item.Nullable&&!item.Name.EqualIgnoreCase("CreateUserId", "CreateUser", "CreateTime", "CreateIP",
+                "UpdateUserId", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs") ? "layui-form-required" : "";
 
 
     //var total = 12;
@@ -48,8 +48,8 @@
 			var itemModel = new ItemModel(item.Name, entity[item.Name], item.Type) { Length = item.Length };
 
 			// 系统字段默认不允许编辑,不显示
-			if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-			"UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs"))
+			if (item.Name.EqualIgnoreCase("CreateUserId", "CreateUser", "CreateTime", "CreateIP",
+			"UpdateUserId", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs"))
 			{
 				@*@Html.ForString(item.Name, (String)entity[item.Name], item.Length, new { @disabled = "disabled" }.ToDictionary())*@
 				itemModel.HtmlAttributes = new { disabled = "disabled" };
@@ -111,4 +111,5 @@
 		</div>
 	}
         </div>
+
 

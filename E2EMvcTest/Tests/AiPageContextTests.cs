@@ -77,7 +77,7 @@ public sealed class AiPageContextTests : IAsyncLifetime
             });
         });
 
-        // mock AiChat SSE：checkpointId 与工具调用 ID 一致（即后端 ToolCallContext.ToolCallId）
+        // mock AiChat SSE：checkpointId 与工具调用 Id 一致（即后端 ToolCallContext.ToolCallId）
         var sse = "data: {\"type\":\"tool\",\"event\":\"start\",\"id\":\"call_pc1\",\"name\":\"run_js\",\"value\":\"{}\"}\n\n"
                 + "data: {\"type\":\"run_js\",\"checkpointId\":\"call_pc1\",\"script\":\"return document.title;\"}\n\n";
         await _page.RouteAsync("**/AiChat", async route =>
@@ -122,7 +122,7 @@ public sealed class AiPageContextTests : IAsyncLifetime
     }
 
     /// <summary>注入 AI 助手浮窗标记并加载真实 ai-assistant.js，使测试不依赖 AISwitch 设置</summary>
-    /// <remarks>markup 仅含 JS 契约所需的元素 ID，等待 window.CubeAI 出现表示脚本已加载且 init 已执行</remarks>
+    /// <remarks>markup 仅含 JS 契约所需的元素 Id，等待 window.CubeAI 出现表示脚本已加载且 init 已执行</remarks>
     /// <param name="page">当前页面</param>
     private static async Task EnsureAiAssistantAsync(IPage page)
     {
@@ -177,3 +177,4 @@ public sealed class AiPageContextTests : IAsyncLifetime
         await page.WaitForFunctionAsync("() => window.CubeAI !== undefined", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
     }
 }
+

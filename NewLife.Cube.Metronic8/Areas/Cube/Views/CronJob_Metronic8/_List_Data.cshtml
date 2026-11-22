@@ -1,4 +1,4 @@
-﻿@model IList<NewLife.Cube.Entity.CronJob>
+@model IList<NewLife.Cube.Entity.CronJob>
 @using NewLife;
 @using NewLife.Cube
 @using NewLife.Web;
@@ -32,7 +32,7 @@
                         <th><a href="@Html.Raw(page.GetSortUrl("LastTime"))">最后时间</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("NextTime"))">下次时间</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("Remark"))">内容</a></th>
-                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateUserID"))">更新者</a></th>
+                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateUserId"))">更新者</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
                         @if (this.Has(PermissionFlags.Detail))
                         {
@@ -103,7 +103,7 @@
                             <td class="align-middle">@entity.LastTime.ToFullString()</td>
                             <td class="align-middle">@entity.NextTime.ToFullString()</td>
                             <td class="align-middle" style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@entity.Remark" >@entity.Remark</td>
-                            <td class="text-center align-middle">@entity.UpdateUserID</td>
+                            <td class="text-center align-middle">@entity.UpdateUserId</td>
                             <td class="align-middle">@entity.UpdateTime.ToFullString()</td>
                             @if (this.Has(PermissionFlags.Detail))
                             {
@@ -118,3 +118,4 @@
         </div>
     </div>
 </div>
+

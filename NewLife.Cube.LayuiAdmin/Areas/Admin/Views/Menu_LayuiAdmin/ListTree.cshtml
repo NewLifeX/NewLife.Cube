@@ -92,12 +92,12 @@
                             tree: {
                                 customName:{
                                     name:"displayName",
-                                    pid:"parentID"
+                                    pid:"parentId"
                                 },
                                 async: {
                                     enable: true,
                                     url: '@Html.Raw(pager.GetFormAction(act))',
-                                    autoParam: ["parentID=id"]
+                                    autoParam: ["parentId=id"]
                                 },
                                 data:{
                                     rootPid:"0"

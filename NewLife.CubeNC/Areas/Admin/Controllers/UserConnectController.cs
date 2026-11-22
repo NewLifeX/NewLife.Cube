@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Entity;
@@ -9,7 +9,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户链接控制器</summary>
-[DataPermission(null, "UserID={#userId}")]
+[DataPermission(null, "UserId={#userId}")]
 [DisplayName("用户链接")]
 [Description("第三方登录信息")]
 [AdminArea]
@@ -18,7 +18,7 @@ public class UserConnectController : EntityController<UserConnect, UserConnectMo
 {
     static UserConnectController()
     {
-        ListFields.RemoveField("AccessToken", "RefreshToken", "Avatar", "UpdateUserID");
+        ListFields.RemoveField("AccessToken", "RefreshToken", "Avatar", "UpdateUserId");
         ListFields.RemoveCreateField();
 
         // 提供者列，增加查询
@@ -34,7 +34,7 @@ public class UserConnectController : EntityController<UserConnect, UserConnectMo
             df.Header = "User";
             df.HeaderTitle = "The corresponding local user";
             //df.DisplayName = "{UserName}";
-            df.Url = "/Admin/User/Edit?id={UserID}";
+            df.Url = "/Admin/User/Edit?id={UserId}";
             df.Target = "_blank";
         }
 
@@ -42,14 +42,14 @@ public class UserConnectController : EntityController<UserConnect, UserConnectMo
             var df = ListFields.AddListField("OAuthLog", "Enable");
             //df.Header = "OAuth log";
             df.DisplayName = "OAuth log";
-            df.Url = "/Admin/OAuthLog?connectId={ID}";
+            df.Url = "/Admin/OAuthLog?connectId={Id}";
         }
 
         //// 插入一列
         //{
-        //    var df = ListFields.AddDataField("用户信息", "CreateUserID");
+        //    var df = ListFields.AddDataField("用户信息", "CreateUserId");
         //    df.DisplayName = "用户信息";
-        //    df.Url = "User?id={UserID}";
+        //    df.Url = "User?id={UserId}";
         //}
     }
 

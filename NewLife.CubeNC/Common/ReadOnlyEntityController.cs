@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
@@ -280,7 +280,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             }
 
             // 设置当前用户，用于数据权限控制
-            HttpContext.Items["userId"] = user.ID;
+            HttpContext.Items["userId"] = user.Id;
             HttpContext.Items["CurrentUser"] = user;
 
             return user?.ToString();
@@ -439,8 +439,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             // 模板隐藏审计等字段，且要求有描述
             if (forTemplate)
             {
-                if (fi.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                            "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "Enable") || fi.Description.IsNullOrEmpty())
+                if (fi.Name.EqualIgnoreCase("CreateUserId", "CreateUser", "CreateTime", "CreateIP",
+                            "UpdateUserId", "UpdateUser", "UpdateTime", "UpdateIP", "Enable") || fi.Description.IsNullOrEmpty())
                 {
                     continue;
                 }
@@ -827,7 +827,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     public virtual ActionResult Share()
     {
         // 当前用户所有令牌
-        var userId = ManageProvider.User.ID;
+        var userId = ManageProvider.User.Id;
         var list = UserToken.Search(null, userId, true, DateTime.Now, DateTime.MinValue, null);
 
         //var p = Session[CacheKey] as Pager;
@@ -846,7 +846,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         // 如果该url已存在，则延长有效期
         var ut = list.FirstOrDefault(e => e.Url.EqualIgnoreCase(url));
-        ut ??= new UserToken { UserID = userId, Url = url };
+        ut ??= new UserToken { UserId = userId, Url = url };
 
         if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(8);
         ut.Enable = true;

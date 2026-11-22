@@ -4,7 +4,7 @@ namespace NewLife.Cube.ViewModels;
 public class MenuSearchItem
 {
     /// <summary>编号</summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>名称</summary>
     public String Name { get; set; }
@@ -39,3 +39,4 @@ public class MenuSearchItem
     /// <summary>层级路径拼音首字母</summary>
     public String PathInitials { get; set; }
 }
+

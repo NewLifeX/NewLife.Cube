@@ -87,7 +87,7 @@ public class ApiContractTests
                 Name = "mfac_" + Guid.NewGuid().ToString("N")[..8],
                 DisplayName = "MFA 契约测试用户",
                 Password = _fx.Provider.PasswordProvider.Hash(Password),
-                RoleID = _fx.LegacyUser.RoleID,
+                RoleId = _fx.LegacyUser.RoleId,
                 Enable = true,
                 RegisterTime = DateTime.Now,
             };
@@ -204,3 +204,4 @@ public class ApiContractTests
     }
     #endregion
 }
+

@@ -57,7 +57,7 @@ public class LocalizationTests
     public void SharedViewChrome()
     {
         // 共享视图（导航、通知铃铛、AI 助手、省市区选择、错误页）的界面文案以英文为源文，
-        // 每种受支持语言都必须有译文，避免非中文用户看到英文按钮。同形词（Send/ID 等）不在此列。
+        // 每种受支持语言都必须有译文，避免非中文用户看到英文按钮。同形词（Send/Id 等）不在此列。
         String[] keys =
         [
             "Notifications", "Mark all as read", "View all notifications", "No unread notifications",
@@ -298,3 +298,4 @@ public class LocalizationTests
         Assert.Equal(missing, Translate("ja-JP", missing));
     }
 }
+

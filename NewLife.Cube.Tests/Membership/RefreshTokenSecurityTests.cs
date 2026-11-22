@@ -33,7 +33,7 @@ public class RefreshTokenSecurityTests
             Name = "sec_" + Guid.NewGuid().ToString("N")[..8],
             DisplayName = "刷新令牌安全测试用户",
             Password = _fx.Provider.PasswordProvider.Hash(Password),
-            RoleID = _fx.LegacyUser.RoleID,
+            RoleId = _fx.LegacyUser.RoleId,
             Enable = true,
             RegisterTime = DateTime.Now,
         };
@@ -115,3 +115,4 @@ public class RefreshTokenSecurityTests
         Assert.Throws<ApiException>(() => ctx2.RefreshToken(user, token));
     }
 }
+

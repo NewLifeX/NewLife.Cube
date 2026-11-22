@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Cube
 @using XCode;
 @using XCode.Configuration;
@@ -39,7 +39,7 @@ else
         @await Html.PartialAsync("_Form_Type_Map", Model)
     }
     //只读属性
-    else if (item.Name.EqualIgnoreCase("ID"))
+    else if (item.Name.EqualIgnoreCase("Id"))
     {
         <label class="form-control form-control-sm">@entity[item.Name]</label>
     }
@@ -64,3 +64,4 @@ else
         @await Html.PartialAsync("_Form_Editor_Item", itemModel)
     }
 }
+

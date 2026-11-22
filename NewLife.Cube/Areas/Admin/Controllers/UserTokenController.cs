@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using NewLife.Cube.Entity;
 using NewLife.Web;
 using XCode.Membership;
@@ -6,7 +6,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户令牌控制器</summary>
-[DataPermission(null, "UserID={#userId}")]
+[DataPermission(null, "UserId={#userId}")]
 [DisplayName("用户令牌")]
 [Description("授权指定用户访问接口数据，支持有效期")]
 [AdminArea]
@@ -19,7 +19,7 @@ public class UserTokenController : EntityController<UserToken, UserTokenModel>
     protected override IEnumerable<UserToken> Search(Pager p)
     {
         var token = p["Q"];
-        var userid = p["UserID"].ToInt(-1);
+        var userid = p["UserId"].ToInt(-1);
         var enable = p["enable"]?.ToBoolean();
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
@@ -28,7 +28,7 @@ public class UserTokenController : EntityController<UserToken, UserTokenModel>
         if (userid < 0)
         {
             var user = ManageProvider.User;
-            if (!user.Roles.Any(e => e.IsSystem)) userid = user.ID;
+            if (!user.Roles.Any(e => e.IsSystem)) userid = user.Id;
         }
 
         return UserToken.Search(token, userid, enable, start, end, p);
@@ -47,9 +47,9 @@ public class UserTokenController : EntityController<UserToken, UserTokenModel>
         if (user is IUser user2 && user2.Roles.Any(e => e.IsSystem)) return true;
 
         // 特殊处理添加操作
-        if (type == DataObjectMethodType.Insert && entity.UserID <= 0)
-            entity.UserID = user.ID;
+        if (type == DataObjectMethodType.Insert && entity.UserId <= 0)
+            entity.UserId = user.Id;
 
-        return entity.UserID == user.ID;
+        return entity.UserId == user.Id;
     }
 }

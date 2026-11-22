@@ -8,7 +8,7 @@ namespace NewLife.Cube.Services.Sso;
 
 /// <summary>令牌定制扩展点。外部可注册实现来向 JWT 添加自定义 Claims 或修改令牌</summary>
 /// <remarks>
-/// 典型场景：业务系统需要在 JWT 中加入自定义字段（如租户ID、业务权限等）。
+/// 典型场景：业务系统需要在 JWT 中加入自定义字段（如租户Id、业务权限等）。
 /// </remarks>
 public interface ITokenCustomizer
 {
@@ -21,3 +21,4 @@ public interface ITokenCustomizer
     /// <returns></returns>
     Task CustomizeAsync(TokenModel token, JwtBuilder jwt, App app, IManageUser user, CancellationToken cancellationToken = default);
 }
+

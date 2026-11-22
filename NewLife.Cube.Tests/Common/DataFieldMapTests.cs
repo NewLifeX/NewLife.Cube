@@ -7,7 +7,7 @@ using Xunit;
 
 namespace NewLife.Cube.Tests.Common;
 
-/// <summary>映射字段元数据测试。验证 RoleName→RoleID 这类 Map 字段带出关联键、键类型与数据源</summary>
+/// <summary>映射字段元数据测试。验证 RoleName→RoleId 这类 Map 字段带出关联键、键类型与数据源</summary>
 public class DataFieldMapTests
 {
     #region 辅助
@@ -28,11 +28,11 @@ public class DataFieldMapTests
     {
         var df = CreateFormField("RoleName");
 
-        Assert.Equal("RoleID", df.MapField);
+        Assert.Equal("RoleId", df.MapField);
         Assert.Equal("Int32", df.MapTypeName);
 
         var dic = df.ToDictionary();
-        Assert.Equal("RoleID", dic["mapField"]);
+        Assert.Equal("RoleId", dic["mapField"]);
         Assert.Equal("Int32", dic["mapTypeName"]);
     }
 
@@ -41,8 +41,8 @@ public class DataFieldMapTests
     {
         var df = CreateFormField("RoleName");
 
-        // 前端按 mapField 读写模型：RoleName 只是显示名，提交的必须是 RoleID
-        Assert.Equal("RoleID", df.MapField);
+        // 前端按 mapField 读写模型：RoleName 只是显示名，提交的必须是 RoleId
+        Assert.Equal("RoleId", df.MapField);
         Assert.NotEqual(df.Name, df.MapField);
     }
 
@@ -67,7 +67,8 @@ public class DataFieldMapTests
         // 单测环境没有可用的关联表连接，ToDictionary 必须吞掉异常并保留 mapField/mapTypeName
         var dic = df.ToDictionary();
 
-        Assert.Equal("RoleID", dic["mapField"]);
+        Assert.Equal("RoleId", dic["mapField"]);
         Assert.Equal("Int32", dic["mapTypeName"]);
     }
 }
+

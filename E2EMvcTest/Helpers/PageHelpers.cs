@@ -151,7 +151,7 @@ public static class PageHelpers
 
     /// <summary>断言当前页面无 5xx 服务器错误（检查 URL 和页面 title）</summary>
     /// <param name="page">Playwright 页面对象</param>
-    /// <param name="testId">测试用例 ID，用于截图命名</param>
+    /// <param name="testId">测试用例 Id，用于截图命名</param>
     public static async Task AssertNoServerErrorAsync(IPage page, String testId)
     {
         String title;
@@ -191,7 +191,7 @@ public static class PageHelpers
     /// <summary>断言 URL 包含指定路径片段</summary>
     /// <param name="page">Playwright 页面对象</param>
     /// <param name="expectedPath">期望包含的路径片段</param>
-    /// <param name="testId">测试用例 ID</param>
+    /// <param name="testId">测试用例 Id</param>
     public static async Task AssertUrlContainsAsync(IPage page, String expectedPath, String testId)
     {
         var url = page.Url;
@@ -206,7 +206,7 @@ public static class PageHelpers
     /// <summary>断言页面可见指定文本，失败时截图</summary>
     /// <param name="page">Playwright 页面对象</param>
     /// <param name="text">期望出现的文本</param>
-    /// <param name="testId">测试用例 ID</param>
+    /// <param name="testId">测试用例 Id</param>
     public static async Task AssertTextVisibleAsync(IPage page, String text, String testId)
     {
         var isVisible = await page.IsVisibleAsync($"text={text}");
@@ -221,7 +221,7 @@ public static class PageHelpers
     /// <summary>断言页面不可见指定文本（反向断言）</summary>
     /// <param name="page">Playwright 页面对象</param>
     /// <param name="text">期望不出现的文本</param>
-    /// <param name="testId">测试用例 ID</param>
+    /// <param name="testId">测试用例 Id</param>
     public static async Task AssertTextNotVisibleAsync(IPage page, String text, String testId)
     {
         var isVisible = await page.IsVisibleAsync($"text={text}");
@@ -239,7 +239,7 @@ public static class PageHelpers
 
     /// <summary>在失败时截图并保存到截图目录</summary>
     /// <param name="page">Playwright 页面对象</param>
-    /// <param name="testId">测试用例 ID，用于文件命名</param>
+    /// <param name="testId">测试用例 Id，用于文件命名</param>
     public static async Task TakeScreenshotAsync(IPage page, String testId)
     {
         try
@@ -279,3 +279,4 @@ public static class PageHelpers
 
     #endregion
 }
+

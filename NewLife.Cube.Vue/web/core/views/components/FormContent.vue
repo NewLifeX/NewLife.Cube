@@ -186,7 +186,7 @@ function isRequired(field: FieldMeta): boolean {
   if (field.requiredWhen) return field.requiredWhen(props.modelValue ?? {});
   // Boolean 开关恒有值（默认 false），与 fieldControl.isRequiredField 口径一致，避免星号与校验漂移
   if (field.typeName === 'Boolean') return false;
-  // 映射字段（RoleName→RoleID）的空值由关联键决定，虚拟属性不可空不代表必须选择，与 MVC 一致不做必填
+  // 映射字段（RoleName→RoleId）的空值由关联键决定，虚拟属性不可空不代表必须选择，与 MVC 一致不做必填
   if (field.mapField) return false;
   return !field.nullable && !field.primaryKey && controlOf(field) !== 'readonly';
 }
@@ -317,7 +317,7 @@ function toMultiArray(val: unknown): string[] {
     .filter((x) => x.length > 0);
 }
 
-/** 映射字段实际读写的模型键（RoleName → RoleID） */
+/** 映射字段实际读写的模型键（RoleName → RoleId） */
 function mapKeyOf(field: FieldMeta): string {
   return mapValueKey(field);
 }
@@ -466,7 +466,7 @@ function toMultiSelectValue(field: FieldMeta, val: unknown): Array<string | numb
             />
           </el-select>
 
-          <!-- 映射下拉（RoleName→RoleID 等）：显示关联表名称，提交关联键 -->
+          <!-- 映射下拉（RoleName→RoleId 等）：显示关联表名称，提交关联键 -->
           <el-select
             v-else-if="controlOf(field) === 'mapSelect'"
             class="fmc-select"

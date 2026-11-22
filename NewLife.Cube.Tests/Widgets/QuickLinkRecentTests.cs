@@ -104,11 +104,11 @@ public class QuickLinkRecentTests : IDisposable
         Assert.Equal("/Admin/User", list[1].Url);
 
         // 新增页面立即落库（新命名 Visit/Recent_Pages）
-        var p = Parameter.FindByUserIDAndCategoryAndName(userId, "Visit", "Recent_Pages");
+        var p = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages");
         Assert.NotNull(p);
         Assert.Equal("Visit", p!.Category);
         Assert.Equal("Recent_Pages", p.Name);
-        Assert.Equal(userId, p.UserID);
+        Assert.Equal(userId, p.UserId);
 
         var json = p.Value ?? p.LongValue;
         Assert.Contains("审计日志", json);
@@ -132,7 +132,7 @@ public class QuickLinkRecentTests : IDisposable
         Assert.Equal("/Admin/Log", list[1].Url);
 
         // 数据已落库（新增即时保存，重复访问异步保存）
-        var p = Parameter.FindByUserIDAndCategoryAndName(userId, "Visit", "Recent_Pages");
+        var p = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages");
         Assert.NotNull(p);
         var json = p!.Value ?? p.LongValue;
         Assert.Contains("用户", json);
@@ -146,13 +146,13 @@ public class QuickLinkRecentTests : IDisposable
 
         QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User"));
 
-        var p = Parameter.FindByUserIDAndCategoryAndName(userId, "Visit", "Recent_Pages");
+        var p = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages");
         var json1 = p!.Value ?? p.LongValue;
 
         // 已在顶部且无变化：不触发任何写入
         QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User"));
 
-        var p2 = Parameter.FindByUserIDAndCategoryAndName(userId, "Visit", "Recent_Pages");
+        var p2 = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages");
         var json2 = p2!.Value ?? p2.LongValue;
         Assert.Equal(json1, json2);
     }
@@ -202,3 +202,5 @@ public class QuickLinkRecentTests : IDisposable
         Assert.Empty(links);
     }
 }
+
+

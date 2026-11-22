@@ -1,4 +1,4 @@
-﻿@*
+@*
     我的日志
 *@
 @using XCode;
@@ -11,15 +11,15 @@
     var snow = XLog.Meta.Factory.Snow;
 
     var exp = new WhereExpression();
-    exp &= XLog._.CreateUserID == user.ID;
-    exp &= XLog._.ID.Between(date.AddDays(-3), date, snow);
+    exp &= XLog._.CreateUserId == user.Id;
+    exp &= XLog._.Id.Between(date.AddDays(-3), date, snow);
     var logs = XLog.FindAll(exp);
 }
 
 <div class="card">
     <div class="card-header">
         <div class="card-title">
-            <a href="~/Admin/Log?userid=@user.ID">更多日志信息…</a>
+            <a href="~/Admin/Log?userid=@user.Id">更多日志信息…</a>
         </div>
         <div class="card-toolbar">
             <div class="btn btn-sm btn-icon btn-active-light-primary" id="cube_drawer_log_close">

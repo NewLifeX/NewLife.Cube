@@ -113,7 +113,7 @@ public class SsoServerService : ISsoServerService
         var ids = log.App?.RoleIds?.SplitAsInt();
         if (ids != null && ids.Length > 0 && user is XCode.Membership.User user2)
         {
-            if (!user2.Roles.Any(r => ids.Contains(r.ID)))
+            if (!user2.Roles.Any(r => ids.Contains(r.Id)))
             {
                 log.Success = false;
                 log.Remark = L.T("Application [{0}] does not support signing in with the user's role!", log.AppName);
@@ -164,3 +164,4 @@ public class SsoServerService : ISsoServerService
     public void WriteLog(String format, params Object[] args) => Log?.Info(format, args);
     #endregion
 }
+

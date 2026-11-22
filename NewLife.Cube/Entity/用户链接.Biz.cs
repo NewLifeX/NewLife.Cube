@@ -16,6 +16,7 @@ namespace NewLife.Cube.Entity;
 /// <summary>用户链接。第三方绑定</summary>
 public partial class UserConnect : Entity<UserConnect>
 {
+
     #region 对象操作
     static UserConnect()
     {
@@ -46,77 +47,27 @@ public partial class UserConnect : Entity<UserConnect>
     #region 扩展属性
     /// <summary>用户</summary>
     [XmlIgnore, ScriptIgnore, IgnoreDataMember]
-    public User User => Extends.Get(nameof(User), k => User.FindByID(UserID));
+    public User User => Extends.Get(nameof(User), k => User.FindById(UserId));
 
     /// <summary>用户</summary>
-    [Map(__.UserID)]
+    [Map(__.UserId)]
     public String UserName => User?.ToString();
     #endregion
 
     #region 扩展查询
-    /// <summary>根据编号查找</summary>
-    /// <param name="id">编号</param>
-    /// <returns>实体对象</returns>
-    public static UserConnect FindByID(Int32 id)
-    {
-        if (id <= 0) return null;
 
-        // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
-
-        // 单对象缓存
-        return Meta.SingleCache[id];
-
-        //return Find(_.ID == id);
-    }
-
-    /// <summary>根据UnionID查找。跨多应用，因为微信公众号和微信开放平台可能共用UnionID</summary>
+    /// <summary>根据UnionId查找。跨多应用，因为微信公众号和微信开放平台可能共用UnionId</summary>
     /// <param name="unionId"></param>
     /// <returns></returns>
     public static IList<UserConnect> FindAllByUnionId(String unionId)
     {
         if (unionId.IsNullOrEmpty()) return new List<UserConnect>();
 
-        return FindAll(_.UnionID == unionId);
+        return FindAll(_.UnionId == unionId);
     }
 
-    /// <summary>根据提供商、用户查找</summary>
-    /// <param name="provider">提供商</param>
-    /// <param name="openid">身份标识</param>
-    /// <returns>实体对象</returns>
-    public static UserConnect FindByProviderAndOpenID(String provider, String openid)
-    {
-        if (provider.IsNullOrEmpty() || openid.IsNullOrEmpty()) return null;
 
-        //// 实体缓存
-        //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Provider == provider && e.OpenID == openid);
 
-        return Find(_.Provider == provider & _.OpenID == openid);
-    }
-
-    /// <summary>根据用户查找</summary>
-    /// <param name="userid">用户</param>
-    /// <returns>实体列表</returns>
-    public static IList<UserConnect> FindAllByUserID(Int32 userid)
-    {
-        //// 实体缓存
-        //if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UserID == userid);
-
-        return FindAll(_.UserID == userid);
-    }
-
-/// <summary>根据身份标识查找</summary>
-/// <param name="openId">身份标识</param>
-/// <returns>实体列表</returns>
-public static IList<UserConnect> FindAllByOpenID(String openId)
-{
-    if (openId.IsNullOrEmpty()) return new List<UserConnect>();
-
-    // 实体缓存
-    if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.OpenID.EqualIgnoreCase(openId));
-
-    return FindAll(_.OpenID == openId);
-}
 
 /// <summary>根据设备标识查找</summary>
 /// <param name="deviceId">设备标识</param>
@@ -146,9 +97,9 @@ public static IList<UserConnect> FindAllByDeviceId(String deviceId)
         var exp = new WhereExpression();
 
         if (!provider.IsNullOrEmpty()) exp &= _.Provider == provider;
-        if (userid > 0) exp &= _.UserID == userid;
+        if (userid > 0) exp &= _.UserId == userid;
         exp &= _.UpdateTime.Between(start, end);
-        if (!key.IsNullOrEmpty()) exp &= _.NickName.Contains(key) | _.OpenID == key | _.UnionID == key | _.DeviceId == key;
+        if (!key.IsNullOrEmpty()) exp &= _.NickName.Contains(key) | _.OpenId == key | _.UnionId == key | _.DeviceId == key;
 
         return FindAll(exp, p);
     }
@@ -163,9 +114,9 @@ public static IList<UserConnect> FindAllByDeviceId(String deviceId)
         if (!client.NickName.IsNullOrEmpty()) uc.NickName = client.NickName;
         if (!client.Avatar.IsNullOrEmpty()) uc.Avatar = client.Avatar;
 
-        uc.LinkID = client.UserID;
-        //ub.OpenID = client.OpenID;
-        uc.UnionID = client.UnionID;
+        uc.LinkId = client.UserId;
+        //ub.OpenId = client.OpenId;
+        uc.UnionId = client.UnionId;
         uc.AccessToken = client.AccessToken;
         uc.RefreshToken = client.RefreshToken;
         uc.Expire = client.Expire;
@@ -187,3 +138,4 @@ public static IList<UserConnect> FindAllByDeviceId(String deviceId)
     public static IDictionary<String, String> FindAllProviderName() => ProviderCache.FindAllName();
     #endregion
 }
+

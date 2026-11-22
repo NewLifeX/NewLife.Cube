@@ -1,4 +1,4 @@
-﻿@using NewLife.Web;
+@using NewLife.Web;
 @using XCode;
 @using NewLife.Cube.Charts;
 @using NewLife.Serialization;
@@ -67,7 +67,7 @@
 
             var fieldName = string.Empty;
 
-            if (item.Name == "ID")
+            if (item.Name == "Id")
                 fieldName = "id";
             else
                 fieldName = item.Name.Substring(0, 1).ToLower() + item.Name.Substring(1);//转为驼峰

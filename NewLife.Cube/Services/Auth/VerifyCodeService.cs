@@ -1,4 +1,4 @@
-﻿using NewLife.Caching;
+using NewLife.Caching;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Models;
@@ -26,11 +26,11 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
 
     #region 图片验证码与风控
     /// <summary>生成图片验证码</summary>
-    /// <returns>验证码 ID（校验时回传）和图片数据（base64 PNG）</returns>
+    /// <returns>验证码 Id（校验时回传）和图片数据（base64 PNG）</returns>
     public CaptchaResult GenerateCaptcha() => _captcha.Generate();
 
     /// <summary>校验图片验证码，校验成功立即失效（防重放）</summary>
-    /// <param name="captchaId">验证码ID</param>
+    /// <param name="captchaId">验证码Id</param>
     /// <param name="captchaCode">用户输入</param>
     /// <returns>校验通过返回 true</returns>
     public Boolean ValidateCaptcha(String captchaId, String captchaCode) => _captcha.Validate(captchaId, captchaCode);
@@ -39,7 +39,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
     /// <param name="scene">场景位掩码，1=登录，2=注册，4=发验证码</param>
     /// <param name="ip">客户端IP</param>
     /// <param name="username">用户名，用于判断账号维度的登录失败记录，可为空</param>
-    /// <param name="deviceId">设备ID，可信设备可豁免风险自适应验证码，可为空</param>
+    /// <param name="deviceId">设备Id，可信设备可豁免风险自适应验证码，可为空</param>
     /// <returns>需要验证码返回 true</returns>
     public Boolean RequireCaptcha(Int32 scene, String ip, String username = null, String deviceId = null)
     {
@@ -311,3 +311,4 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
     }
     #endregion
 }
+

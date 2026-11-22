@@ -16,15 +16,15 @@ namespace NewLife.Cube.Tests.Web;
 public class DataPermissionArchitectureTests
 {
     [Theory(DisplayName = "控制器_数据权限特性_表达式符合页面行语义")]
-    [InlineData(typeof(Areas.Admin.Controllers.DepartmentController), "ManagerID={#userId}")]
-    [InlineData(typeof(Areas.Admin.Controllers.ParameterController), "UserID={#userId}")]
-    [InlineData(typeof(Areas.Admin.Controllers.UserOnlineController), "UserID={#userId}")]
-    [InlineData(typeof(Areas.Admin.Controllers.LogController), "CreateUserID={#userId}")]
-    [InlineData(typeof(Areas.Admin.Controllers.UserController), "ID={#userId}")]
-    [InlineData(typeof(Areas.Admin.Controllers.UserConnectController), "UserID={#userId}")]
-    [InlineData(typeof(Areas.Admin.Controllers.UserTokenController), "UserID={#userId}")]
+    [InlineData(typeof(Areas.Admin.Controllers.DepartmentController), "ManagerId={#userId}")]
+    [InlineData(typeof(Areas.Admin.Controllers.ParameterController), "UserId={#userId}")]
+    [InlineData(typeof(Areas.Admin.Controllers.UserOnlineController), "UserId={#userId}")]
+    [InlineData(typeof(Areas.Admin.Controllers.LogController), "CreateUserId={#userId}")]
+    [InlineData(typeof(Areas.Admin.Controllers.UserController), "Id={#userId}")]
+    [InlineData(typeof(Areas.Admin.Controllers.UserConnectController), "UserId={#userId}")]
+    [InlineData(typeof(Areas.Admin.Controllers.UserTokenController), "UserId={#userId}")]
     [InlineData(typeof(Areas.Admin.Controllers.OAuthLogController), "UserId={#userId}")]
-    [InlineData(typeof(Areas.Cube.Controllers.AttachmentController), "CreateUserID={#userId}")]
+    [InlineData(typeof(Areas.Cube.Controllers.AttachmentController), "CreateUserId={#userId}")]
     [InlineData(typeof(Areas.Cube.Controllers.PrincipalAgentController), "PrincipalId={#userId} or AgentId={#userId}")]
     public void Controllers_HaveExpectedDataPermission(Type controllerType, String expression)
     {
@@ -37,7 +37,7 @@ public class DataPermissionArchitectureTests
     [Fact(DisplayName = "宿主上下文_系统态_保留用户身份用于审计填充")]
     public void CreateHostScope_WithUser_IsSystemAndKeepsIdentity()
     {
-        var user = new User { ID = 5, DepartmentID = 3 };
+        var user = new User { Id = 5, DepartmentId = 3 };
 
         var scope = DataScopeMiddleware.CreateHostScope(user);
 
@@ -56,3 +56,4 @@ public class DataPermissionArchitectureTests
         Assert.Equal(0, scope.DepartmentId);
     }
 }
+

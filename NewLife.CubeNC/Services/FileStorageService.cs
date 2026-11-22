@@ -1,4 +1,4 @@
-﻿using NewLife.Caching;
+using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
@@ -259,8 +259,9 @@ public class CubeFileStorage : DefaultFileStorage
         var set = CubeSetting.Current;
         if (!NeedSyncPullToken(set.ValidateAttachment, set.PublicAttachmentCategories, att.Category)) return null;
 
-        var share = ViewHelper.GetAttachmentShareUrl(att, att.CreateUserID);
+        var share = ViewHelper.GetAttachmentShareUrl(att, att.CreateUserId);
         if (share.IsNullOrEmpty() || share.IndexOf("token=", StringComparison.OrdinalIgnoreCase) < 0) return null;
         return share;
     }
 }
+

@@ -20,19 +20,19 @@ public class EntityPageRegistryTests
     [Fact(DisplayName = "注册后可查询到页面信息")]
     public void Register_Get()
     {
-        EntityPageRegistry.Register(typeof(E1), "/Admin/User", "ID");
+        EntityPageRegistry.Register(typeof(E1), "/Admin/User", "Id");
 
         var info = EntityPageRegistry.Get(typeof(E1));
 
         Assert.NotNull(info);
         Assert.Equal("/Admin/User", info!.Url);
-        Assert.Equal("ID", info.PrimaryKey);
+        Assert.Equal("Id", info.PrimaryKey);
     }
 
     [Fact(DisplayName = "同一实体重复注册，后者覆盖前者")]
     public void Register_Overwrite()
     {
-        EntityPageRegistry.Register(typeof(E2), "/Admin/User", "ID");
+        EntityPageRegistry.Register(typeof(E2), "/Admin/User", "Id");
         EntityPageRegistry.Register(typeof(E2), "/Cube/User", "Id");
 
         var info = EntityPageRegistry.Get(typeof(E2));
@@ -42,14 +42,14 @@ public class EntityPageRegistryTests
         Assert.Equal("Id", info.PrimaryKey);
     }
 
-    [Fact(DisplayName = "主键为空时默认 ID")]
+    [Fact(DisplayName = "主键为空时默认 Id")]
     public void Register_NullPrimaryKey_DefaultId()
     {
         EntityPageRegistry.Register(typeof(E3), "/Admin/Role", null);
 
         var info = EntityPageRegistry.Get(typeof(E3));
 
-        Assert.Equal("ID", info!.PrimaryKey);
+        Assert.Equal("Id", info!.PrimaryKey);
     }
 
     [Fact(DisplayName = "未注册的实体返回 null")]
@@ -61,18 +61,18 @@ public class EntityPageRegistryTests
     [Fact(DisplayName = "null 实体类型注册与查询均安全")]
     public void NullType_Safe()
     {
-        EntityPageRegistry.Register(null, "/Admin/User", "ID");
+        EntityPageRegistry.Register(null, "/Admin/User", "Id");
         Assert.Null(EntityPageRegistry.Get(null));
     }
 
     [Fact(DisplayName = "GetLink 按主键拼接完整跳转链接")]
     public void GetLink_BuildsUrl()
     {
-        EntityPageRegistry.Register(typeof(E4), "/Admin/Role", "ID");
+        EntityPageRegistry.Register(typeof(E4), "/Admin/Role", "Id");
 
         var link = EntityPageRegistry.GetLink(typeof(E4), 123);
 
-        Assert.Equal("/Admin/Role?ID=123", link);
+        Assert.Equal("/Admin/Role?Id=123", link);
     }
 
     [Fact(DisplayName = "未注册时 GetLink 返回 null")]
@@ -84,11 +84,11 @@ public class EntityPageRegistryTests
     [Fact(DisplayName = "GetUrlTemplate 生成含占位符的 URL 模板")]
     public void GetUrlTemplate_BuildsTemplate()
     {
-        EntityPageRegistry.Register(typeof(E5), "/Admin/Role", "ID");
+        EntityPageRegistry.Register(typeof(E5), "/Admin/Role", "Id");
 
         var info = EntityPageRegistry.Get(typeof(E5));
 
-        Assert.Equal("/Admin/Role?ID={RoleId}", info!.GetUrlTemplate("RoleId"));
+        Assert.Equal("/Admin/Role?Id={RoleId}", info!.GetUrlTemplate("RoleId"));
     }
 
     [Fact(DisplayName = "GetAll 返回已注册快照，含本次注册的实体")]
@@ -103,3 +103,4 @@ public class EntityPageRegistryTests
         Assert.Equal("Id", all[typeof(E6)].PrimaryKey);
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using NewLife.Cube.Web.Models;
 using NewLife.Data;
 using NewLife.Log;
@@ -6,6 +6,9 @@ using NewLife.Security;
 using NewLife.Serialization;
 using XCode;
 using XCode.Membership;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 
 namespace NewLife.Cube.Entity;
 
@@ -36,12 +39,13 @@ public enum GrantTypes
 /// <summary>OAuth配置。需要连接的OAuth认证方</summary>
 public partial class OAuthConfig : Entity<OAuthConfig>, ITenantScope
 {
+
     #region 对象操作
     static OAuthConfig()
     {
         // 累加字段，生成 Update xx Set Count=Count+1234 Where xxx
         //var df = Meta.Factory.AdditionalFields;
-        //df.Add(nameof(CreateUserID));
+        //df.Add(nameof(CreateUserId));
 
         // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
         Meta.Interceptors.Add<UserInterceptor>();
@@ -165,21 +169,6 @@ public partial class OAuthConfig : Entity<OAuthConfig>, ITenantScope
     #endregion
 
     #region 扩展查询
-    /// <summary>根据编号查找</summary>
-    /// <param name="id">编号</param>
-    /// <returns>实体对象</returns>
-    public static OAuthConfig FindByID(Int32 id)
-    {
-        if (id <= 0) return null;
-
-        // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
-
-        // 单对象缓存
-        return Meta.SingleCache[id];
-
-        //return Find(_.ID == id);
-    }
 
     /// <summary>根据名称查找</summary>
     /// <param name="name">名称</param>
@@ -258,17 +247,17 @@ public partial class OAuthConfig : Entity<OAuthConfig>, ITenantScope
     /// <summary>获取全部有效设置</summary>
     /// <param name="tenantId">租户编号</param>
     /// <returns></returns>
-    public static IList<OAuthConfig> GetValids(Int32 tenantId) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.TenantId == tenantId).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
+    public static IList<OAuthConfig> GetValids(Int32 tenantId) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.TenantId == tenantId).OrderByDescending(e => e.Sort).ThenByDescending(e => e.Id).ToList();
 
     /// <summary>获取指定授权类型有效设置</summary>
     /// <param name="tenantId">租户编号</param>
     /// <param name="grantType">授权类型</param>
     /// <returns></returns>
-    public static IList<OAuthConfig> GetValids(Int32 tenantId, GrantTypes grantType) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.TenantId == tenantId && e.GrantType == grantType).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
+    public static IList<OAuthConfig> GetValids(Int32 tenantId, GrantTypes grantType) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.TenantId == tenantId && e.GrantType == grantType).OrderByDescending(e => e.Sort).ThenByDescending(e => e.Id).ToList();
 
     /// <summary>获取全部有效且可见设置</summary>
     /// <param name="tenantId">租户编号</param>
     /// <returns></returns>
-    public static IList<OAuthConfig> GetVisibles(Int32 tenantId) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.Visible && e.TenantId == tenantId).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
+    public static IList<OAuthConfig> GetVisibles(Int32 tenantId) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.Visible && e.TenantId == tenantId).OrderByDescending(e => e.Sort).ThenByDescending(e => e.Id).ToList();
     #endregion
 }

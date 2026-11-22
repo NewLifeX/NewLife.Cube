@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -51,7 +51,7 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
         if (user == null) return false;
         if (entity.UserId == 0) return user.Roles.Any(e => e.IsSystem);
 
-        return entity.UserId == user.ID;
+        return entity.UserId == user.Id;
     }
 
     /// <summary>已重载。</summary>
@@ -147,7 +147,7 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
     private (Int32 userId, Boolean admin, String name) GetCurrentUser()
     {
         var user = ManageProvider.User;
-        var userId = user?.ID ?? 0;
+        var userId = user?.Id ?? 0;
         var admin = user != null && user.Roles.Any(e => e.IsSystem);
 
         return (userId, admin, user + "");

@@ -1,4 +1,4 @@
-﻿namespace NewLife.Cube.Charts;
+namespace NewLife.Cube.Charts;
 
 /// <summary>路径图</summary>
 /// <remark>
@@ -12,7 +12,7 @@ public class SeriesLines : Series
 
     //public String Type { get; set; } = "lines";
 
-    ///// <summary>组件 ID</summary>
+    ///// <summary>组件 Id</summary>
     ///// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
     //public String Id { get; set; }
 
@@ -174,7 +174,7 @@ public class SeriesLines : Series
     /// <summary>启用渐进式渲染的图形数量阈值，在单个系列的图形数量超过该阈值时启用渐进式渲染。</summary>
     public Double? ProgressiveThreshold { get; set; }
 
-    /// <summary>该系列所有数据项的组 ID，优先级低于groupId</summary>
+    /// <summary>该系列所有数据项的组 Id，优先级低于groupId</summary>
     /// <remark>详见series.data.groupId。</remark>
     public String DataGroupId { get; set; }
 
@@ -316,3 +316,4 @@ public class SeriesLines : Series
     public Object Tooltip { get; set; }
 
 }
+

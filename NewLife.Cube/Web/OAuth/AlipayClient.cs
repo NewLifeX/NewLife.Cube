@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace NewLife.Web.OAuth
@@ -23,7 +23,7 @@ namespace NewLife.Web.OAuth
         {
             base.OnGetInfo(dic);
 
-            if (dic.ContainsKey("taobao_user_id")) UserID = dic["taobao_user_id"].Trim('\"').ToLong();
+            if (dic.ContainsKey("taobao_user_id")) UserId = dic["taobao_user_id"].Trim('\"').ToLong();
             if (dic.ContainsKey("taobao_user_nick")) UserName = dic["taobao_user_nick"].Trim();
         }
     }

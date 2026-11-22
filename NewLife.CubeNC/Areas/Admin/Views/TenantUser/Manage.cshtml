@@ -12,7 +12,7 @@
     var tenantRoleIds = new Int32[0];
     if (tenant != null && !tenant.RoleIds.IsNullOrEmpty()) tenantRoleIds = tenant.RoleIds.SplitAsInt(",");
     var roles = Role.FindAllWithCache()
-        .Where(e => tenantRoleIds.Length == 0 || tenantRoleIds.Contains(e.ID))
+        .Where(e => tenantRoleIds.Length == 0 || tenantRoleIds.Contains(e.Id))
         .OrderByDescending(e => e.Sort)
         .ToList();
 
@@ -40,7 +40,7 @@
                 <select id="roleIds" name="roleIds" class="form-control" multiple="multiple" style="min-width:180px;height:38px;" title="@L.T("Multiple roles allowed")">
                     @foreach (var role in roles)
                     {
-                        <option value="@role.ID">@role.Name</option>
+                        <option value="@role.Id">@role.Name</option>
                     }
                 </select>
             </div>
@@ -63,7 +63,7 @@
     <tbody>
         @foreach (var tu in Model)
         {
-            var user = XCode.Membership.User.FindByID(tu.UserId);
+            var user = XCode.Membership.User.FindById(tu.UserId);
             <tr>
                 <td>@(user?.ToString())</td>
                 <td>@tu.RoleNames</td>
@@ -161,3 +161,4 @@
         });
     }
 </script>
+

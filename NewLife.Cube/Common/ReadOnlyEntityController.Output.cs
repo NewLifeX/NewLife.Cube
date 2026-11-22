@@ -75,7 +75,7 @@ partial class ReadOnlyEntityController<TEntity>
             visible.Add(df.Name);
             row[camelCase ? ToCamelCase(df.Name) : df.Name] = GetProjectValue(entity, df);
 
-            // 映射列（RoleName→RoleID）只下发展示名时，表单按 mapField 回显为空。缺键才补关联值，不覆盖已有列。
+            // 映射列（RoleName→RoleId）只下发展示名时，表单按 mapField 回显为空。缺键才补关联值，不覆盖已有列。
             if (!df.MapField.IsNullOrEmpty())
             {
                 var mapKey = camelCase ? ToCamelCase(df.MapField) : df.MapField;
@@ -100,13 +100,13 @@ partial class ReadOnlyEntityController<TEntity>
         return row;
     }
 
-    /// <summary>字段名转小驼峰。ID 特例为 id，其余仅小写首字母（与实体属性序列化一致）</summary>
+    /// <summary>字段名转小驼峰。Id 特例为 id，其余仅小写首字母（与实体属性序列化一致）</summary>
     /// <param name="name">字段名</param>
     /// <returns>小驼峰字段名</returns>
     protected static String ToCamelCase(String name)
     {
         if (name.IsNullOrEmpty()) return name;
-        if (name == "ID") return "id";
+        if (name == "Id") return "id";
 
         return Char.ToLowerInvariant(name[0]) + name[1..];
     }
@@ -152,3 +152,4 @@ partial class ReadOnlyEntityController<TEntity>
     protected static Boolean IsEmpty(Object value) => value == null || value is String str && str.Length == 0;
     #endregion
 }
+

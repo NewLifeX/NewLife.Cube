@@ -1,4 +1,4 @@
-﻿using NewLife.Cube.Entity;
+using NewLife.Cube.Entity;
 using NewLife.Http;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -13,7 +13,7 @@ namespace NewLife.Cube.Services.Sso;
 /// <summary>用户绑定服务实现</summary>
 /// <remarks>
 /// 负责第三方 OAuth 登录过程中的用户身份匹配、绑定、自动注册全流程。
-/// 用户匹配级联策略（OnBind）：已登录 > 当前会话用户 > UnionID > 用户名 > Code > Mobile > Mail > NickName > OpenID-CRC 哈希 > 自动注册。
+/// 用户匹配级联策略（OnBind）：已登录 > 当前会话用户 > UnionId > 用户名 > Code > Mobile > Mail > NickName > OpenId-CRC 哈希 > 自动注册。
 /// 用户信息内容填充（Fill）：头像、角色、部门、租户和扩展字段，内置阶梯源选取策略。
 /// 外部可通过注册 <see cref="ILoginCallback"/> 实现拓展登录后行为。
 /// </remarks>
@@ -43,19 +43,19 @@ public class UserBindingService : IUserBindingService
 
     #region 连接与绑定
     /// <summary>获取连接信息</summary>
-    /// <param name="client">OAuth 客户端对象，包含 OpenID、UserName 等字段</param>
+    /// <param name="client">OAuth 客户端对象，包含 OpenId、UserName 等字段</param>
     /// <returns>匹配到的现有 UserConnect 记录，找不到则返回新建未保存的对象</returns>
     public virtual UserConnect GetConnect(OAuthClient client)
     {
-        using var span = Tracer?.NewSpan("SsoProviderConnect", $"openid={client.OpenID} username={client.UserName}");
+        using var span = Tracer?.NewSpan("SsoProviderConnect", $"openid={client.OpenId} username={client.UserName}");
 
-        var openid = client.OpenID;
+        var openid = client.OpenId;
         if (openid.IsNullOrEmpty()) openid = client.UserName;
 
         // openid 查重必须跨用户可见：同一第三方账号不能重复绑定到不同的本地用户。
         // 实体层不承担数据权限（魔方宿主以系统身份运行），此处直接查询即可；严禁添加用户范围过滤
-        var uc = UserConnect.FindByProviderAndOpenID(client.Name, openid);
-        uc ??= new UserConnect { Provider = client.Name, OpenID = openid };
+        var uc = UserConnect.FindByProviderAndOpenId(client.Name, openid);
+        uc ??= new UserConnect { Provider = client.Name, OpenId = openid };
 
         return uc;
     }
@@ -65,22 +65,22 @@ public class UserBindingService : IUserBindingService
     /// 用户匹配级联策略（按优先级依次尝试）：
     /// 1. 当前会话已登录用户（登录后手动绑定流程）
     /// 2. 传入的 userId 对应的本地用户记录
-    /// 3. UnionID 匹配（微信系列应用同一主体已登录）
+    /// 3. UnionId 匹配（微信系列应用同一主体已登录）
     /// 4. ForceBindUser 开关下按用户名匹配，优先准确名称，其次 "provider_name"
     /// 5. ForceBindUserCode 开关下按 UserCode 匹配
     /// 6. ForceBindUserMobile 开关下按手机号匹配
     /// 7. ForceBindUserMail 开关下按邮箱匹配
     /// 8. ForceBindNickName 开关下按昼称匹配（跳过微信通用卦位符）
-    /// 9. OpenID CRC32 生成统一用户名（QQ/微信等不返回用户名的场景）
+    /// 9. OpenId CRC32 生成统一用户名（QQ/微信等不返回用户名的场景）
     /// 10. 全部匹配失败则自动注册（需 AutoRegister 开关，否则返回 null）
     /// </remarks>
-    /// <param name="uc">用户连接记录，将被写入匹配到的 UserID</param>
+    /// <param name="uc">用户连接记录，将被写入匹配到的 UserId</param>
     /// <param name="client">OAuth 客户端，包含第三方返回的全部用户信息</param>
-    /// <param name="userId">前端传入的意向绑定用户ID，0 表示未指定</param>
+    /// <param name="userId">前端传入的意向绑定用户Id，0 表示未指定</param>
     /// <returns>匹配成功的本地用户；匹配失败且未开启自动注册时返回 null</returns>
     public virtual IManageUser OnBind(UserConnect uc, OAuthClient client, Int32 userId)
     {
-        using var span = Tracer?.NewSpan("SsoProviderBind", $"connectid={uc.ID} openid={uc.OpenID} username={uc.UserName} userId={userId}");
+        using var span = Tracer?.NewSpan("SsoProviderBind", $"connectid={uc.Id} openid={uc.OpenId} username={uc.UserName} userId={userId}");
 
         var log = LogProvider.Provider;
         var prv = Provider;
@@ -95,15 +95,15 @@ public class UserBindingService : IUserBindingService
         if (user == null)
         {
             // 匹配UnionId
-            if (user == null && !client.UnionID.IsNullOrEmpty())
+            if (user == null && !client.UnionId.IsNullOrEmpty())
             {
-                var list = UserConnect.FindAllByUnionId(client.UnionID);
+                var list = UserConnect.FindAllByUnionId(client.UnionId);
 
-                var ids = list.Where(e => e.Enable && e.UserID > 0).Select(e => e.UserID).Distinct().ToArray();
-                var users = ids.Select(e => User.FindByID(e)).Where(e => e != null).ToList();
+                var ids = list.Where(e => e.Enable && e.UserId > 0).Select(e => e.UserId).Distinct().ToArray();
+                var users = ids.Select(e => User.FindById(e)).Where(e => e != null).ToList();
                 if (users.Count > 0)
                 {
-                    mode = "UnionID";
+                    mode = "UnionId";
                     user = users.OrderByDescending(e => e.Logins).FirstOrDefault();
                 }
             }
@@ -180,12 +180,12 @@ public class UserBindingService : IUserBindingService
             // QQ、微信等不返回用户名
             if (user == null && name.IsNullOrEmpty())
             {
-                var openid = client.OpenID;
+                var openid = client.OpenId;
                 if (openid.IsNullOrEmpty()) openid = client.AccessToken;
 
                 var num = openid.GetBytes().Crc();
 
-                mode = "OpenID-Crc";
+                mode = "OpenId-Crc";
                 name = client.Name + "_" + num.ToString("X8");
                 user = prv.FindByName(name);
             }
@@ -194,17 +194,17 @@ public class UserBindingService : IUserBindingService
             {
                 mode = "Register";
 
-                var rid = Role.GetOrAdd(set.DefaultRole).ID;
+                var rid = Role.GetOrAdd(set.DefaultRole).Id;
 
                 user = prv.Register(name, Rand.NextString(16), rid, true);
             }
         }
 
-        uc.UserID = user.ID;
+        uc.UserId = user.Id;
         uc.Enable = true;
 
         // 写日志
-        log?.WriteLog(typeof(User), L.T("Bind"), true, L.T("[{0}] bound to [{1}] of [{2}] via [{3}].", user, client.NickName, client.Name, mode), user.ID, user + "");
+        log?.WriteLog(typeof(User), L.T("Bind"), true, L.T("[{0}] bound to [{1}] of [{2}] via [{3}].", user, client.NickName, client.Name, mode), user.Id, user + "");
 
         return user;
     }
@@ -224,20 +224,20 @@ public class UserBindingService : IUserBindingService
         if (log == null) return null;
 
         // 只允许绑定当前用户自己的 OAuth 会话，防止枚举 oauthId 把他人的第三方连接挂到当前用户名下
-        if (log.UserId > 0 && log.UserId != user.ID) return null;
+        if (log.UserId > 0 && log.UserId != user.Id) return null;
 
-        var uc = UserConnect.FindByID(log.ConnectId);
+        var uc = UserConnect.FindById(log.ConnectId);
         if (uc == null) return null;
 
-        uc.UserID = user.ID;
+        uc.UserId = user.Id;
         uc.Enable = true;
         uc.UpdateTime = DateTime.Now;
         uc.Update();
 
-        log.UserId = user.ID;
+        log.UserId = user.Id;
         log.SaveAsync();
 
-        LogProvider.Provider?.WriteLog(typeof(User), L.T("Bind"), true, L.T("[{0}] bound to [{1}] of [{2}] via [{3}].", user, uc.NickName, uc.Provider, mode), user.ID, user + "");
+        LogProvider.Provider?.WriteLog(typeof(User), L.T("Bind"), true, L.T("[{0}] bound to [{1}] of [{2}] via [{3}].", user, uc.NickName, uc.Provider, mode), user.Id, user + "");
 
         return log;
     }
@@ -280,7 +280,7 @@ public class UserBindingService : IUserBindingService
             {
                 var ps = client.AreaName.Split('/');
                 var r = Area.FindByNames(ps);
-                if (r != null) user2.AreaId = r.ID;
+                if (r != null) user2.AreaId = r.Id;
             }
 
             if (client.Birthday.Year > 1000) user2.Birthday = client.Birthday;
@@ -320,18 +320,18 @@ public class UserBindingService : IUserBindingService
             avatarUrl = client.GetUrl("Avatar", avatarUrl);
 
         // 已存在的本地头像文件按扩展名全量查找（.png/.svg/.jpg/.gif/.webp），避免仅检查 .png 造成重复抓取
-        var (existPath, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user2.ID);
+        var (existPath, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user2.Id);
         var needUpdate = false;
 
         if (existPath.IsNullOrEmpty())
         {
             needUpdate = true;
-            LogProvider.Provider?.WriteLog(user.GetType(), L.T("Update avatar"), true, L.T("Local file does not exist: {0}", avatarUrl), user.ID, user + "");
+            LogProvider.Provider?.WriteLog(user.GetType(), L.T("Update avatar"), true, L.T("Local file does not exist: {0}", avatarUrl), user.Id, user + "");
         }
         else if (!remoteHash.IsNullOrEmpty() && !existPath.AsFile().VerifyHash(remoteHash))
         {
             needUpdate = true;
-            LogProvider.Provider?.WriteLog(user.GetType(), L.T("Update avatar"), true, L.T("Hash mismatch: {0}", avatarUrl), user.ID, user + "");
+            LogProvider.Provider?.WriteLog(user.GetType(), L.T("Update avatar"), true, L.T("Hash mismatch: {0}", avatarUrl), user.Id, user + "");
         }
         else if (!user2.Avatar.IsNullOrEmpty() && user2.Avatar.StartsWithIgnoreCase("https://", "http://"))
         {
@@ -387,7 +387,7 @@ public class UserBindingService : IUserBindingService
 
         if (set.UseSsoRole)
         {
-            var sys = user.Roles.Where(e => e.IsSystem).Select(e => e.ID).ToList();
+            var sys = user.Roles.Where(e => e.IsSystem).Select(e => e.Id).ToList();
             if (sys.Count > 0)
             {
                 roleIds ??= [];
@@ -396,15 +396,15 @@ public class UserBindingService : IUserBindingService
             roleId = GetRole(dic, true);
             if (roleId > 0)
             {
-                user.RoleID = roleId;
+                user.RoleId = roleId;
 
                 var ids = GetRoles(client.Items, true).ToList();
                 roleIds ??= [];
                 roleIds.AddRange(ids);
             }
         }
-        if (user.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
-            user.RoleID = roleId = Role.GetOrAdd(set.DefaultRole).ID;
+        if (user.RoleId <= 0 && !set.DefaultRole.IsNullOrEmpty())
+            user.RoleId = roleId = Role.GetOrAdd(set.DefaultRole).Id;
 
         var cfg = OAuthConfig.FindAllWithCache().FirstOrDefault(e => e.Name.EqualIgnoreCase(client.Name));
         if (cfg != null && !cfg.AutoRole.IsNullOrEmpty())
@@ -426,7 +426,7 @@ public class UserBindingService : IUserBindingService
 
         if (!set.RoleRules.IsNullOrEmpty())
         {
-            var currentRoleName = Role.FindByID(user.RoleID)?.Name;
+            var currentRoleName = Role.FindById(user.RoleId)?.Name;
             var departmentName = client.DepartmentName;
             foreach (var token in set.RoleRules.Split([',', '\uff0c'], StringSplitOptions.RemoveEmptyEntries))
             {
@@ -447,7 +447,7 @@ public class UserBindingService : IUserBindingService
                 if (!srcRole.EqualIgnoreCase(currentRoleName)) continue;
                 if (!deptPattern.IsNullOrEmpty() && !MatchPattern(departmentName, deptPattern)) continue;
 
-                user.RoleID = Role.GetOrAdd(targetRole).ID;
+                user.RoleId = Role.GetOrAdd(targetRole).Id;
                 break;
             }
         }
@@ -479,12 +479,12 @@ public class UserBindingService : IUserBindingService
             };
             pdep.Save();
 
-            dep.ParentID = pdep.ID;
+            dep.ParentId = pdep.Id;
         }
         else if (!client.ParentDepartmentName.IsNullOrEmpty())
         {
             var pdep = Department.FindByCode(client.ParentDepartmentName);
-            pdep ??= Department.FindByNameAndParentID(client.ParentDepartmentName, 0);
+            pdep ??= Department.FindByNameAndParentId(client.ParentDepartmentName, 0);
             pdep ??= new Department
             {
                 Code = client.ParentDepartmentName,
@@ -494,12 +494,12 @@ public class UserBindingService : IUserBindingService
             };
             pdep.Save();
 
-            dep.ParentID = pdep.ID;
+            dep.ParentId = pdep.Id;
         }
 
         dep.Save();
 
-        user.DepartmentID = dep.ID;
+        user.DepartmentId = dep.Id;
     }
 
     /// <summary>填充租户信息。多租户模式下租户归属走显式管理动作（邀请/后台分配），不再按 SSO 客户端携带的租户标识自动建绑定。
@@ -546,21 +546,21 @@ public class UserBindingService : IUserBindingService
     /// <returns></returns>
     public virtual async Task<Boolean> FetchAvatar(IManageUser user, String url = null, String accessToken = null, String fallbackUrl = null)
     {
-        using var span = Tracer?.NewSpan(nameof(FetchAvatar), new { user.ID, user.Name, user.NickName, url });
+        using var span = Tracer?.NewSpan(nameof(FetchAvatar), new { user.Id, user.Name, user.NickName, url });
 
         if (url.IsNullOrEmpty()) url = user.GetValue("Avatar") as String;
 
         // 相对地址（如 /Sso/Avatar?id=1#md5$xxx）按提供商 Server 解析为完整地址
         if (!url.IsNullOrEmpty() && !url.StartsWithIgnoreCase("http://", "https://"))
         {
-            var list = UserConnect.FindAllByUserID(user.ID);
+            var list = UserConnect.FindAllByUserId(user.Id);
             var uc = list.OrderByDescending(e => e.UpdateTime).FirstOrDefault(e => !e.Avatar.IsNullOrEmpty());
             if (uc != null) url = ResolveAvatarUrl(uc.Provider, url);
         }
 
         if (url.IsNullOrEmpty() || !url.StartsWithIgnoreCase("http://", "https://"))
         {
-            var list = UserConnect.FindAllByUserID(user.ID);
+            var list = UserConnect.FindAllByUserId(user.Id);
             var uc = list.OrderByDescending(e => e.UpdateTime)
                 .FirstOrDefault(e => !e.Avatar.IsNullOrEmpty() && e.Avatar.StartsWithIgnoreCase("http://", "https://"));
             url = uc?.Avatar;
@@ -586,17 +586,17 @@ public class UserBindingService : IUserBindingService
         }
 
         var set = CubeSetting.Current;
-        var (existPath, _) = global::NewLife.Cube.Services.SvgAvatarService.FindAvatarFile(set.AvatarPath, user.ID);
-        var dest = existPath ?? set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
+        var (existPath, _) = global::NewLife.Cube.Services.SvgAvatarService.FindAvatarFile(set.AvatarPath, user.Id);
+        var dest = existPath ?? set.AvatarPath.CombinePath(user.Id + ".png").GetBasePath();
 
         try
         {
             var fi = dest.AsFile();
             if (!fi.Exists || !fi.VerifyHash(expectedHash))
             {
-                dest = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
+                dest = set.AvatarPath.CombinePath(user.Id + ".png").GetBasePath();
 
-                LogProvider.Provider?.WriteLog(user.GetType(), L.T("Fetch avatar"), true, $"{downloadUrl} => {dest} (hash={expectedHash})", user.ID, user + "");
+                LogProvider.Provider?.WriteLog(user.GetType(), L.T("Fetch avatar"), true, $"{downloadUrl} => {dest} (hash={expectedHash})", user.Id, user + "");
 
                 var client = new HttpClient();
 
@@ -615,7 +615,7 @@ public class UserBindingService : IUserBindingService
 
                     if (b == (Byte)'<')
                     {
-                        var svgDest = set.AvatarPath.CombinePath(user.ID + ".svg").GetBasePath();
+                        var svgDest = set.AvatarPath.CombinePath(user.Id + ".svg").GetBasePath();
                         if (System.IO.File.Exists(svgDest))
                             System.IO.File.Delete(svgDest);
                         System.IO.File.Move(dest, svgDest);
@@ -624,7 +624,7 @@ public class UserBindingService : IUserBindingService
                 }
             }
 
-            user.SetValue("Avatar", "/Sso/Avatar?id=" + user.ID);
+            user.SetValue("Avatar", "/Sso/Avatar?id=" + user.Id);
             (user as IEntity)?.Update();
 
             return true;
@@ -654,7 +654,7 @@ public class UserBindingService : IUserBindingService
     {
         if (user == null) return null;
 
-        var list = UserConnect.FindAllByUserID(user.ID);
+        var list = UserConnect.FindAllByUserId(user.Id);
         foreach (var item in list.OrderByDescending(e => e.UpdateTime))
         {
             var url = item.Avatar;
@@ -749,13 +749,13 @@ public class UserBindingService : IUserBindingService
         if (dic.TryGetValue("RoleName", out var v) && v is String name && !name.IsNullOrEmpty())
         {
             var r = Role.FindByName(name);
-            if (r != null) return r.ID;
+            if (r != null) return r.Id;
 
             if (create)
             {
                 r = new Role { Name = name };
                 r.Insert();
-                return r.ID;
+                return r.Id;
             }
         }
 
@@ -779,12 +779,12 @@ public class UserBindingService : IUserBindingService
 
             var r = Role.FindByName(item);
             if (r != null)
-                rs.Add(r.ID);
+                rs.Add(r.Id);
             else if (create)
             {
                 r = new Role { Name = item };
                 r.Insert();
-                rs.Add(r.ID);
+                rs.Add(r.Id);
             }
         }
 
@@ -794,3 +794,5 @@ public class UserBindingService : IUserBindingService
     }
     #endregion
 }
+
+

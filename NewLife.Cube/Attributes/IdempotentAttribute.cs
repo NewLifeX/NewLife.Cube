@@ -61,7 +61,8 @@ public class IdempotentAttribute : ActionFilterAttribute
         var id = context.HttpContext.Request.Headers[HeaderName] + "";
         if (id.IsNullOrEmpty()) return null;
 
-        var userId = ManageProvider.User?.ID ?? 0;
+        var userId = ManageProvider.User?.Id ?? 0;
         return $"Idem:{userId}:{context.HttpContext.Request.Path}:{id}";
     }
 }
+

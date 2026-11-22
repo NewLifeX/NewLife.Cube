@@ -1,4 +1,4 @@
-﻿@model IList<Area>
+@model IList<Area>
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -23,10 +23,10 @@
                     </label>
                 </th>
             }
-            <th class="text-center" title="编码。行政区划编码"><a href="@Html.Raw(page.GetSortUrl("ID"))">编码</a></th>
+            <th class="text-center" title="编码。行政区划编码"><a href="@Html.Raw(page.GetSortUrl("Id"))">编码</a></th>
             <th><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
             <th><a href="@Html.Raw(page.GetSortUrl("FullName"))">全名</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ParentID"))">父级</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ParentId"))">父级</a></th>
             <th class="text-center">下级</th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Level"))">层级</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Kind"))">类型</a></th>
@@ -44,22 +44,22 @@
     <tbody>
         @foreach (var entity in Model)
         {
-            var pstr = entity.Parent != null ? (entity.Parent + "") : (entity.ParentID + "");
+            var pstr = entity.Parent != null ? (entity.Parent + "") : (entity.ParentId + "");
         <tr>
             @if (set.EnableSelect)
             {
                 <td class="text-center align-middle pt-0 pb-0">
                     <label class="checkbox checkbox-single">
-                        <input class="checkable" type="checkbox" name="keys" value="@entity.ID" />
+                        <input class="checkable" type="checkbox" name="keys" value="@entity.Id" />
                         <span></span>
                     </label>
                 </td>
             }
-            <td class="text-center align-middle">@entity.ID</td>
+            <td class="text-center align-middle">@entity.Id</td>
             <td class="align-middle">@entity.Name</td>
             <td class="align-middle">@entity.FullName</td>
-            <td class="text-center align-middle"><a href="?Id=@entity.ParentID">@pstr</a></td>
-            <td class="text-center align-middle"><a href="?parentId=@entity.ID">下级</a></td>
+            <td class="text-center align-middle"><a href="?Id=@entity.ParentId">@pstr</a></td>
+            <td class="text-center align-middle"><a href="?parentId=@entity.Id">下级</a></td>
             <td class="text-center align-middle">@entity.Level</td>
             <td class="text-center align-middle">@entity.Kind</td>
             <td class="text-center align-middle">@entity.TelCode</td>

@@ -59,7 +59,8 @@ public class UserStatAsyncTests
 
         Assert.NotNull(first);
         Assert.NotNull(second);
-        Assert.Equal(first!.ID, second!.ID);
-        Assert.Equal(1, UserStat.FindAllByDate(DateTime.Today).Count(e => e.ID == first.ID));
+        Assert.Equal(first!.Id, second!.Id);
+        Assert.Equal(1, UserStat.FindAllByDate(DateTime.Today).Count(e => e.Id == first.Id));
     }
 }
+

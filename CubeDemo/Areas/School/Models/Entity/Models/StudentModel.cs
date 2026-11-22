@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
+using NewLife;
 using NewLife.Data;
 using NewLife.Reflection;
 
@@ -50,7 +51,7 @@ public partial class StudentModel : IModel
     public Decimal Amount { get; set; }
 
     /// <summary>创建者</summary>
-    public Int32 CreateUserID { get; set; }
+    public Int32 CreateUserId { get; set; }
 
     /// <summary>创建时间</summary>
     public DateTime CreateTime { get; set; }
@@ -59,7 +60,7 @@ public partial class StudentModel : IModel
     public String CreateIP { get; set; }
 
     /// <summary>更新者</summary>
-    public Int32 UpdateUserID { get; set; }
+    public Int32 UpdateUserId { get; set; }
 
     /// <summary>更新时间</summary>
     public DateTime UpdateTime { get; set; }
@@ -93,10 +94,10 @@ public partial class StudentModel : IModel
                 "Avatar" => Avatar,
                 "Weight" => Weight,
                 "Amount" => Amount,
-                "CreateUserID" => CreateUserID,
+                "CreateUserId" => CreateUserId,
                 "CreateTime" => CreateTime,
                 "CreateIP" => CreateIP,
-                "UpdateUserID" => UpdateUserID,
+                "UpdateUserId" => UpdateUserId,
                 "UpdateTime" => UpdateTime,
                 "UpdateIP" => UpdateIP,
                 "Remark" => Remark,
@@ -119,10 +120,10 @@ public partial class StudentModel : IModel
                 case "Avatar": Avatar = Convert.ToString(value); break;
                 case "Weight": Weight = value.ToDouble(); break;
                 case "Amount": Amount = Convert.ToDecimal(value); break;
-                case "CreateUserID": CreateUserID = value.ToInt(); break;
+                case "CreateUserId": CreateUserId = value.ToInt(); break;
                 case "CreateTime": CreateTime = value.ToDateTime(); break;
                 case "CreateIP": CreateIP = Convert.ToString(value); break;
-                case "UpdateUserID": UpdateUserID = value.ToInt(); break;
+                case "UpdateUserId": UpdateUserId = value.ToInt(); break;
                 case "UpdateTime": UpdateTime = value.ToDateTime(); break;
                 case "UpdateIP": UpdateIP = Convert.ToString(value); break;
                 case "Remark": Remark = Convert.ToString(value); break;
@@ -149,10 +150,10 @@ public partial class StudentModel : IModel
         Avatar = model.Avatar;
         Weight = model.Weight;
         Amount = model.Amount;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateTime = model.UpdateTime;
         UpdateIP = model.UpdateIP;
         Remark = model.Remark;

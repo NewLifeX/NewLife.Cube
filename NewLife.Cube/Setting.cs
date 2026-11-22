@@ -170,8 +170,8 @@ public class CubeSetting : Config<CubeSetting>
     [Category("User login")]
     public String PaswordStrength { get; set; } = @"^.{5,32}$";
 
-    /// <summary>复杂密码校验。启用后登录页校验密码复杂度（按密码强度），禁用后登录页仅要求密码非空，默认true</summary>
-    [Description("Password complexity check. When enabled the sign-in page validates password strength; when disabled it only requires a non-empty password. Default true")]
+    /// <summary>复杂密码校验。启用后在注册与修改密码时校验密码复杂度（按密码强度），登录页不校验，默认true</summary>
+    [Description("Password complexity check. When enabled, registration and password change validate password strength; sign-in never does. Default true")]
     [Category("User login")]
     public Boolean EnablePasswordComplexity { get; set; } = true;
 
@@ -714,3 +714,5 @@ public class CubeSetting : Config<CubeSetting>
     }
     #endregion
 }
+
+

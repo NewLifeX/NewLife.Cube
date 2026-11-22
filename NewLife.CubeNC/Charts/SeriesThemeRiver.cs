@@ -1,4 +1,4 @@
-﻿namespace NewLife.Cube.Charts;
+namespace NewLife.Cube.Charts;
 
 /// <summary>主题河流</summary>
 /// <remark>
@@ -15,7 +15,7 @@ public class SeriesThemeRiver : Series
 
     //public String Type { get; set; } = "themeRiver";
 
-    ///// <summary>组件 ID</summary>
+    ///// <summary>组件 Id</summary>
     ///// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
     //public String Id { get; set; }
 
@@ -195,3 +195,4 @@ public class SeriesThemeRiver : Series
     public Object Tooltip { get; set; }
 
 }
+

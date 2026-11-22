@@ -70,7 +70,7 @@ public class EntityTreeControllerTests
     /// <summary>造一棵同级三兄弟树</summary>
     private static Menu[] BuildSiblings(out Menu parent)
     {
-        parent = new Menu { Name = Unique("目录"), DisplayName = "目录", Type = MenuTypes.目录, ParentID = 0, Sort = 1, Visible = true };
+        parent = new Menu { Name = Unique("目录"), DisplayName = "目录", Type = MenuTypes.目录, ParentId = 0, Sort = 1, Visible = true };
         parent.Insert();
 
         var list = new Menu[3];
@@ -81,7 +81,7 @@ public class EntityTreeControllerTests
                 Name = Unique("菜单" + (i + 1)),
                 DisplayName = "菜单" + (i + 1),
                 Type = MenuTypes.菜单,
-                ParentID = parent.ID,
+                ParentId = parent.Id,
                 Sort = i + 1,
                 Visible = true,
             };
@@ -101,7 +101,7 @@ public class EntityTreeControllerTests
     }
 
     /// <summary>同级节点的展示顺序（与控制器/前端一致的排序口径）</summary>
-    private static Int32[] DisplayOrder(Int32 parentId) => Menu.FindAllByParent(parentId).Select(e => e.ID).ToArray();
+    private static Int32[] DisplayOrder(Int32 parentId) => Menu.FindAllByParent(parentId).Select(e => e.Id).ToArray();
 
     private static Dictionary<String, Object> ReadJson(IActionResult rs)
     {
@@ -124,30 +124,30 @@ public class EntityTreeControllerTests
     public void TreeController_SearchByParent_ReturnsNodeAndChildren()
     {
         var siblings = BuildSiblings(out var parent);
-        var other = new Menu { Name = Unique("无关"), DisplayName = "无关", Type = MenuTypes.目录, ParentID = 0, Sort = 9, Visible = true };
+        var other = new Menu { Name = Unique("无关"), DisplayName = "无关", Type = MenuTypes.目录, ParentId = 0, Sort = 9, Visible = true };
         other.Insert();
         ClearCache();
 
         var ctrl = CreateController();
         var p = new Pager { PageSize = 1000 };
-        p.Params[Menu.Setting?.Parent ?? "ParentID"] = parent.ID + "";
+        p.Params[Menu.Setting?.Parent ?? "ParentId"] = parent.Id + "";
 
         var list = ctrl.TestSearch(p).ToList();
 
         // 以父节点为根的子树，含父节点自身
-        Assert.Contains(list, e => e.ID == parent.ID);
+        Assert.Contains(list, e => e.Id == parent.Id);
         foreach (var child in siblings)
         {
-            Assert.Contains(list, e => e.ID == child.ID);
+            Assert.Contains(list, e => e.Id == child.Id);
         }
-        Assert.DoesNotContain(list, e => e.ID == other.ID);
+        Assert.DoesNotContain(list, e => e.Id == other.Id);
     }
 
     [Fact(DisplayName = "树形控制器_上移后排在兄弟节点之前")]
     public void TreeController_Up_MovesBeforePrevious()
     {
         var siblings = BuildSiblings(out var parent);
-        var before = DisplayOrder(parent.ID);
+        var before = DisplayOrder(parent.Id);
         Assert.Equal(3, before.Length);
 
         var ctrl = CreateController();
@@ -155,7 +155,7 @@ public class EntityTreeControllerTests
 
         Assert.Equal(0, ReadJson(rs)["code"].ToInt());
 
-        var after = DisplayOrder(parent.ID);
+        var after = DisplayOrder(parent.Id);
         Assert.Equal(before[1], after[0]);
         Assert.Equal(before[0], after[1]);
         Assert.Equal(before[2], after[2]);
@@ -165,14 +165,14 @@ public class EntityTreeControllerTests
     public void TreeController_Down_MovesAfterNext()
     {
         var siblings = BuildSiblings(out var parent);
-        var before = DisplayOrder(parent.ID);
+        var before = DisplayOrder(parent.Id);
 
         var ctrl = CreateController();
         var rs = ctrl.Down(before[0]);
 
         Assert.Equal(0, ReadJson(rs)["code"].ToInt());
 
-        var after = DisplayOrder(parent.ID);
+        var after = DisplayOrder(parent.Id);
         Assert.Equal(before[1], after[0]);
         Assert.Equal(before[0], after[1]);
         Assert.Equal(before[2], after[2]);
@@ -182,24 +182,24 @@ public class EntityTreeControllerTests
     public void TreeController_Down_LastSibling_NoChange()
     {
         var siblings = BuildSiblings(out var parent);
-        var before = DisplayOrder(parent.ID);
+        var before = DisplayOrder(parent.Id);
 
         var ctrl = CreateController();
         ctrl.Down(before[2]);
 
-        Assert.Equal(before, DisplayOrder(parent.ID));
+        Assert.Equal(before, DisplayOrder(parent.Id));
     }
 
     [Fact(DisplayName = "树形控制器_校验不通过时不移动")]
     public void TreeController_Up_ValidRejects_NoChange()
     {
         var siblings = BuildSiblings(out var parent);
-        var before = DisplayOrder(parent.ID);
+        var before = DisplayOrder(parent.Id);
 
         var ctrl = CreateController(false);
         ctrl.Up(before[1]);
 
-        Assert.Equal(before, DisplayOrder(parent.ID));
+        Assert.Equal(before, DisplayOrder(parent.Id));
     }
 
     [Fact(DisplayName = "树形控制器_节点不存在时返回404")]
@@ -212,3 +212,4 @@ public class EntityTreeControllerTests
         Assert.Equal(404, ReadJson(rs)["code"].ToInt());
     }
 }
+

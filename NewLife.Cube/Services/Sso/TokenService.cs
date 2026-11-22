@@ -1,4 +1,4 @@
-﻿using System.Web;
+using System.Web;
 using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Security;
@@ -488,14 +488,14 @@ public class TokenService : ITokenService
     public virtual Object GetUserInfo(String token, IManageUser user)
     {
         // 返回用户资源，可作为子系统数据权限
-        var res = Parameter.FindAllByUserID(user.ID, "Resources");
+        var res = Parameter.FindAllByUserIdAndCategory(user.Id, "Resources");
         var dic = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in res.Where(e => e.Enable))
         {
             dic[item.Name] = item.Value;
         }
 
-        var online = UserOnline.FindAllByUserID(user.ID).FirstOrDefault(e => !e.DeviceId.IsNullOrEmpty());
+        var online = UserOnline.FindAllByUserId(user.Id).FirstOrDefault(e => !e.DeviceId.IsNullOrEmpty());
 
         // 获取用户当前租户信息
         Object rs;
@@ -505,7 +505,7 @@ public class TokenService : ITokenService
             var tenantId = 0;
             String tenantCode = null;
             String tenantName = null;
-            var tenantUser = TenantUser.FindAllByUserId(user2.ID).FirstOrDefault(e => e.Enable);
+            var tenantUser = TenantUser.FindAllByUserId(user2.Id).FirstOrDefault(e => e.Enable);
             if (tenantUser != null)
             {
                 tenantId = tenantUser.TenantId;
@@ -521,8 +521,8 @@ public class TokenService : ITokenService
             // 1. 本地有头像文件 → /Sso/Avatar?id=xxx#md5$hash（附哈希供下游增量校验）
             // 2. 本地无文件 + user.Avatar 是外部 HTTP URL → 透传原始 URL
             // 3. 其他 → /Sso/Avatar?id=xxx（SVG 虚拟头像降级）
-            var avatarUrl = "/Sso/Avatar?id=" + user2.ID;
-            var (localAvatarFile, _) = global::NewLife.Cube.Services.SvgAvatarService.FindAvatarFile(CubeSetting.Current.AvatarPath, user2.ID);
+            var avatarUrl = "/Sso/Avatar?id=" + user2.Id;
+            var (localAvatarFile, _) = global::NewLife.Cube.Services.SvgAvatarService.FindAvatarFile(CubeSetting.Current.AvatarPath, user2.Id);
             if (!localAvatarFile.IsNullOrEmpty())
             {
                 var hash = localAvatarFile.AsFile().MD5().ToHex();
@@ -536,14 +536,14 @@ public class TokenService : ITokenService
 
             rs = new
             {
-                userid = user.ID,
+                userid = user.Id,
                 username = user.Name,
                 nickname = user.NickName,
                 sex = user2.Sex + "",
                 mail = user2.Mail,
                 mobile = user2.Mobile,
                 code = user2.Code,
-                roleid = user2.RoleID,
+                roleid = user2.RoleId,
                 rolename = user2.RoleName,
                 roleids = user2.RoleIds,
                 rolenames = user2.Roles.Skip(1).Join(",", e => e + ""),
@@ -566,7 +566,7 @@ public class TokenService : ITokenService
         {
             rs = new
             {
-                userid = user.ID,
+                userid = user.Id,
                 username = user.Name,
                 nickname = user.NickName,
                 resources = dic,
@@ -587,7 +587,7 @@ public class TokenService : ITokenService
                 var app = App.FindByName(jwt.Audience);
                 if (app != null)
                 {
-                    var allConnectData = BuildAllConnectData(user.ID, app.Scopes, app.OAuths);
+                    var allConnectData = BuildAllConnectData(user.Id, app.Scopes, app.OAuths);
                     if (allConnectData != null)
                     {
                         foreach (var kv in allConnectData)
@@ -647,7 +647,7 @@ public class TokenService : ITokenService
             ? oauths.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             : null;
 
-        var connects = UserConnect.FindAllByUserID(userId)
+        var connects = UserConnect.FindAllByUserId(userId)
             .Where(e => e.Enable && !e.Remark.IsNullOrEmpty())
             .OrderByDescending(e => e.UpdateTime);
 
@@ -694,3 +694,6 @@ public class TokenService : ITokenService
     public void WriteLog(String format, params Object[] args) => Log?.Info(format, args);
     #endregion
 }
+
+
+

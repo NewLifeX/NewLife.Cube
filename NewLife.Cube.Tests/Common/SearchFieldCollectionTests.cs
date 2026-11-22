@@ -34,9 +34,10 @@ public class SearchFieldCollectionTests
         Assert.DoesNotContain(fields, f => f.Name == "Password");
 
         // 主键与自增不参与
-        Assert.DoesNotContain(fields, f => f.Name == "ID");
+        Assert.DoesNotContain(fields, f => f.Name == "Id");
 
         // 无索引的布尔字段作为特殊字段补入
         Assert.Contains(fields, f => f.Name == "Enable");
     }
 }
+

@@ -53,7 +53,7 @@ public class UserPageReadOnlyTests : IDisposable
         return method.Invoke(controller, [user, DataObjectMethodType.Update, true]);
     }
 
-    /// <summary>创建指定角色类型的测试用户。角色落库，用户对象未保存（Roles 按 RoleID 实时解析）</summary>
+    /// <summary>创建指定角色类型的测试用户。角色落库，用户对象未保存（Roles 按 RoleId 实时解析）</summary>
     /// <param name="isSystem">是否系统角色</param>
     /// <returns></returns>
     private static User CreateUser(Boolean isSystem)
@@ -63,7 +63,7 @@ public class UserPageReadOnlyTests : IDisposable
 
         Role.Meta.Session.ClearCache("UserPageReadOnlyTests", true);
 
-        return new User { Name = $"测试用户_{Guid.NewGuid():N}", RoleID = role.ID };
+        return new User { Name = $"测试用户_{Guid.NewGuid():N}", RoleId = role.Id };
     }
 
     [Fact(DisplayName = "非系统角色在用户页写入被拒")]
@@ -153,3 +153,4 @@ public class UserPageReadOnlyTests : IDisposable
         Assert.Equal(typeof(UserController), method!.DeclaringType);
     }
 }
+

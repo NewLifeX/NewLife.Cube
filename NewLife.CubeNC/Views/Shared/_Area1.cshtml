@@ -15,11 +15,11 @@
     if (areaId <= 0) areaId = page[id].ToInt();
     var areaIds = "";
     var area = Area.FindByID(areaId);
-    if (area != null && area.ID > 0)
+    if (area != null && area.Id > 0)
     {
         var ps = area.GetAllParents();
         ps.Add(area);
-        areaIds = ps.Select(e => e.ID).Join("/") ?? "";
+        areaIds = ps.Select(e => e.Id).Join("/") ?? "";
     }
 
     var set = NewLife.Cube.CubeSetting.Current;

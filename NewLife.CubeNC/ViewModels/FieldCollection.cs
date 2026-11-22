@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -329,7 +329,7 @@ public class FieldCollection : List<DataField>
     /// <returns></returns>
     public FieldCollection RemoveCreateField()
     {
-        RemoveAll(e => e.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateUserName", "CreateTime", "CreateIP"));
+        RemoveAll(e => e.Name.EqualIgnoreCase("CreateUserId", "CreateUser", "CreateUserName", "CreateTime", "CreateIP"));
 
         return this;
     }
@@ -338,7 +338,7 @@ public class FieldCollection : List<DataField>
     /// <returns></returns>
     public FieldCollection RemoveUpdateField()
     {
-        RemoveAll(e => e.Name.EqualIgnoreCase("UpdateUserID", "UpdateUser", "UpdateUserName", "UpdateTime", "UpdateIP"));
+        RemoveAll(e => e.Name.EqualIgnoreCase("UpdateUserId", "UpdateUser", "UpdateUserName", "UpdateTime", "UpdateIP"));
 
         return this;
     }

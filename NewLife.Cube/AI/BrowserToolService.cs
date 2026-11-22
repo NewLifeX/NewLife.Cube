@@ -79,7 +79,7 @@ public class BrowserToolService(Int64 userId)
         var (writer, cp, uid, timeout) = ResolveChannel(context);
         if (writer == null) return new { ok = false, error = L.T("Browser channel is not ready (Writer not injected)") }.ToJson();
 
-        // 检查点编号：优先使用工具调用 ID（前端 tool 事件已携带，前后端一一对应），兜底生成
+        // 检查点编号：优先使用工具调用 Id（前端 tool 事件已携带，前后端一一对应），兜底生成
         var checkpointId = context?.ToolCallId;
         if (checkpointId.IsNullOrEmpty()) checkpointId = PageCheckpointService.NewCheckpointId();
         await writer(new { type = "run_js", checkpointId, script }.ToJson());
@@ -233,3 +233,4 @@ public class PageDataContextToolService(ControllerBaseX ctrl, BrowserToolService
         return await browser.CollectPageContextAsync(context);
     }
 }
+

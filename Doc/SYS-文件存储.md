@@ -28,7 +28,7 @@
 ### 审计字段
 
 实体集成了 `UserModule`、`TimeModule`、`IPModule`，自动记录：
-- `CreateUserId` / `UpdateUserID`：创建者/更新者 ID
+- `CreateUserId` / `UpdateUserId`：创建者/更新者 ID
 - `CreateTime` / `UpdateTime`：创建/更新时间
 - `CreateIP` / `UpdateIP`：创建/更新 IP
 

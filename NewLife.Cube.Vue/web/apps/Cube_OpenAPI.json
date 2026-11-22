@@ -1157,7 +1157,7 @@
             "description": "最后请求",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建者",
             "format": "int32"
@@ -1172,7 +1172,7 @@
             "description": "创建地址",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新者",
             "format": "int32"
@@ -1393,7 +1393,7 @@
             "description": "最后请求",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建者",
             "format": "int32"
@@ -1408,7 +1408,7 @@
             "description": "创建地址",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新者",
             "format": "int32"
@@ -1514,7 +1514,7 @@
             "description": "创建者",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -1534,7 +1534,7 @@
             "description": "更新者",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -1640,7 +1640,7 @@
             "description": "创建者",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建用户",
             "format": "int32"
@@ -1660,7 +1660,7 @@
             "description": "更新者",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新用户",
             "format": "int32"
@@ -1740,7 +1740,7 @@
             "description": "下一次时间。下一次执行作业的时间",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建者",
             "format": "int32"
@@ -1755,7 +1755,7 @@
             "description": "创建地址",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新者",
             "format": "int32"
@@ -1835,7 +1835,7 @@
             "description": "下一次时间。下一次执行作业的时间",
             "format": "date-time"
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "description": "创建者",
             "format": "int32"
@@ -1850,7 +1850,7 @@
             "description": "创建地址",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "description": "更新者",
             "format": "int32"
@@ -2226,7 +2226,7 @@
             "description": "全名",
             "nullable": true
           },
-          "parentID": {
+          "parentId": {
             "type": "integer",
             "description": "父级",
             "format": "int32"
@@ -2318,7 +2318,7 @@
             "type": "string",
             "nullable": true
           },
-          "parentID": {
+          "parentId": {
             "type": "integer",
             "format": "int32"
           },
@@ -2437,7 +2437,7 @@
             "type": "string",
             "nullable": true
           },
-          "createUserID": {
+          "createUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -2453,7 +2453,7 @@
             "type": "string",
             "nullable": true
           },
-          "updateUserID": {
+          "updateUserId": {
             "type": "integer",
             "format": "int32"
           },
@@ -2537,7 +2537,7 @@
             "type": "string",
             "nullable": true
           },
-          "roleID": {
+          "roleId": {
             "type": "integer",
             "format": "int32"
           },
@@ -2545,7 +2545,7 @@
             "type": "string",
             "nullable": true
           },
-          "departmentID": {
+          "departmentId": {
             "type": "integer",
             "format": "int32"
           },

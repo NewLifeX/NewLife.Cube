@@ -175,7 +175,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
-            // 添加失败，ID清零，否则会显示保存按钮
+            // 添加失败，Id清零，否则会显示保存按钮
             entity[Factory.Unique.Name] = 0;
 
             return BuildFailResponse(ex, L.T("Add"), OnProject(entity, OnGetOutputFields(ViewKinds.EditForm, entity)));

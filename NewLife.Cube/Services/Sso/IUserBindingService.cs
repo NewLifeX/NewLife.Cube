@@ -9,14 +9,14 @@ namespace NewLife.Cube.Services.Sso;
 public interface IUserBindingService
 {
     /// <summary>获取用户连接信息</summary>
-    /// <param name="client">OAuth 客户端对象，包含 OpenID、UserName 等字段</param>
+    /// <param name="client">OAuth 客户端对象，包含 OpenId、UserName 等字段</param>
     /// <returns>匹配到的现有 UserConnect 记录，找不到则返回新建未保存的对象</returns>
     UserConnect GetConnect(OAuthClient client);
 
     /// <summary>绑定用户，用户未有效绑定或需要强制绑定时</summary>
     /// <param name="uc">用户连接记录</param>
     /// <param name="client">OAuth 客户端</param>
-    /// <param name="userId">前端传入的意向绑定用户ID，0 表示未指定</param>
+    /// <param name="userId">前端传入的意向绑定用户Id，0 表示未指定</param>
     /// <returns>匹配成功的本地用户；未匹配时返回 null</returns>
     IManageUser OnBind(UserConnect uc, OAuthClient client, Int32 userId);
 
@@ -52,3 +52,4 @@ public interface IUserBindingService
     /// <returns>找到可用的远程头像地址时返回完整URL，否则返回 null</returns>
     String TryFetchRemoteAvatar(IManageUser user);
 }
+

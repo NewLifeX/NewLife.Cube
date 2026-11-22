@@ -152,7 +152,7 @@ public async Task<VerifyCodeRecord> SendVerifyCode(String action, String mobile,
         ConfigId = config.Id,
         ConfigName = config + "",
         Provider = config.Provider,         // Aliyun / Tencent 等
-        UserId = ManageProvider.User?.ID ?? 0,
+        UserId = ManageProvider.User?.Id ?? 0,
         Target = mobile,
         ExpireTime = DateTime.Now.AddSeconds(config.Expire > 0 ? config.Expire : 300),
     };

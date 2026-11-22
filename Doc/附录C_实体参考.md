@@ -1,4 +1,4 @@
-﻿# 附录C 实体参考
+# 附录C 实体参考
 
 > 本附录提供魔方内置实体的说明和关系图。
 
@@ -42,7 +42,7 @@
 
 | 字段名 | 类型 | 说明 |
 |--------|------|------|
-| ID | Int32 | 编号（主键） |
+| Id | Int32 | 编号（主键） |
 | Name | String | 用户名 |
 | Password | String | 密码（MD5 加密） |
 | DisplayName | String | 显示名/昵称 |
@@ -51,9 +51,9 @@
 | Mobile | String | 手机 |
 | Code | String | 代码/工号 |
 | Avatar | String | 头像 |
-| RoleID | Int32 | 角色 ID |
+| RoleId | Int32 | 角色 ID |
 | RoleIds | String | 角色组（多角色） |
-| DepartmentID | Int32 | 部门 ID |
+| DepartmentId | Int32 | 部门 ID |
 | Online | Boolean | 是否在线 |
 | Enable | Boolean | 是否启用 |
 | Logins | Int32 | 登录次数 |
@@ -68,13 +68,13 @@
 
 ```csharp
 /// <summary>角色</summary>
-public Role Role => Extends.Get(nameof(Role), k => Role.FindByID(RoleID));
+public Role Role => Extends.Get(nameof(Role), k => Role.FindById(RoleId));
 
 /// <summary>角色名</summary>
 public String RoleName => Role?.Name;
 
 /// <summary>部门</summary>
-public Department Department => Extends.Get(nameof(Department), k => Department.FindByID(DepartmentID));
+public Department Department => Extends.Get(nameof(Department), k => Department.FindById(DepartmentId));
 
 /// <summary>部门名</summary>
 public String DepartmentName => Department?.Name;
@@ -110,7 +110,7 @@ user.SetPassword("newPassword");
 
 | 字段名 | 类型 | 说明 |
 |--------|------|------|
-| ID | Int32 | 编号（主键） |
+| Id | Int32 | 编号（主键） |
 | Name | String | 角色名称 |
 | Enable | Boolean | 是否启用 |
 | IsSystem | Boolean | 是否系统角色 |
@@ -140,10 +140,10 @@ Role.FindByName("管理员");
 Role.FindAllWithCache();
 
 // 检查权限
-role.Has(menu.ID, PermissionFlags.Update);
+role.Has(menu.Id, PermissionFlags.Update);
 
 // 设置权限
-role.Set(menu.ID, PermissionFlags.Detail | PermissionFlags.Insert);
+role.Set(menu.Id, PermissionFlags.Detail | PermissionFlags.Insert);
 ```
 
 ---
@@ -154,10 +154,10 @@ role.Set(menu.ID, PermissionFlags.Detail | PermissionFlags.Insert);
 
 | 字段名 | 类型 | 说明 |
 |--------|------|------|
-| ID | Int32 | 编号（主键） |
+| Id | Int32 | 编号（主键） |
 | Name | String | 菜单名称 |
 | DisplayName | String | 显示名称 |
-| ParentID | Int32 | 父菜单 ID |
+| ParentId | Int32 | 父菜单 ID |
 | Url | String | 链接地址 |
 | Icon | String | 图标 |
 | Visible | Boolean | 是否可见 |
@@ -199,12 +199,12 @@ Menu.Root.Childs;
 
 | 字段名 | 类型 | 说明 |
 |--------|------|------|
-| ID | Int32 | 编号（主键） |
+| Id | Int32 | 编号（主键） |
 | TenantId | Int32 | 租户 ID |
 | Code | String | 编码 |
 | Name | String | 名称 |
 | FullName | String | 全名 |
-| ParentID | Int32 | 父部门 ID |
+| ParentId | Int32 | 父部门 ID |
 | Level | Int32 | 层级 |
 | Sort | Int32 | 排序 |
 | Enable | Boolean | 是否启用 |
@@ -237,13 +237,13 @@ department.FullName; // "总公司/技术部/研发组"
 
 | 字段名 | 类型 | 说明 |
 |--------|------|------|
-| ID | Int64 | 编号（主键） |
+| Id | Int64 | 编号（主键） |
 | Category | String | 类别 |
 | Action | String | 操作 |
 | Success | Boolean | 是否成功 |
 | UserName | String | 用户名 |
 | Remark | String | 详细信息 |
-| CreateUserID | Int32 | 用户 ID |
+| CreateUserId | Int32 | 用户 ID |
 | CreateIP | String | IP 地址 |
 | CreateTime | DateTime | 时间 |
 | TraceId | String | 追踪 ID |

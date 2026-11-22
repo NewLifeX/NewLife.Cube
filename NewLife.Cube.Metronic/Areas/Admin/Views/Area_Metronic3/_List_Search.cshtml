@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Web;
 @using NewLife.Cube;
 @using XCode;
@@ -8,7 +8,7 @@
 }
 
 <div class="d-inline-flex align-items-center flex-shrink-0">
-    @Html.ActionLink("所有省份", "Index", new { ParentID = 0 }, new { @class = "btn btn-primary btn-sm mr-2" }.ToDictionary())
+    @Html.ActionLink("所有省份", "Index", new { ParentId = 0 }, new { @class = "btn btn-primary btn-sm mr-2" }.ToDictionary())
     @await Html.PartialAsync("_Area3", "")
 
     <div class="d-inline-flex align-items-center">

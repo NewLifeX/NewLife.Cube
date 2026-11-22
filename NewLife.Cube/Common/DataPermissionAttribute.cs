@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using XCode.Membership;
 
@@ -10,7 +10,7 @@ namespace NewLife.Cube
         /// <summary>不受数据权限限制的系统角色</summary>
         public String SystemRoles { get; set; }
 
-        /// <summary>数据权限表达式，用于构造查询条件，如 linkid in {#SiteIds} or CreateUserID={$user.Id}</summary>
+        /// <summary>数据权限表达式，用于构造查询条件，如 linkid in {#SiteIds} or CreateUserId={$user.Id}</summary>
         public String Expression { get; set; }
 
         /// <summary>数据权限过滤器</summary>

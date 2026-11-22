@@ -43,7 +43,7 @@ public class WidgetController(WidgetManager widgetManager) : ControllerBaseX
         return View();
     }
 
-    /// <summary>保存组件分组顺序（逗号分隔组名，Parameter 全局配置，UserID=0）。未列出的组排到最后并按名称排序</summary>
+    /// <summary>保存组件分组顺序（逗号分隔组名，Parameter 全局配置，UserId=0）。未列出的组排到最后并按名称排序</summary>
     /// <param name="groups">逗号分隔的组名</param>
     /// <returns></returns>
     [HttpPost]
@@ -58,7 +58,7 @@ public class WidgetController(WidgetManager widgetManager) : ControllerBaseX
         return Json(0, null, "组顺序已保存");
     }
 
-    /// <summary>保存指定组内的默认部件顺序（逗号分隔部件名，Parameter 全局配置，UserID=0）。未列出的新部件自动排到组内末尾</summary>
+    /// <summary>保存指定组内的默认部件顺序（逗号分隔部件名，Parameter 全局配置，UserId=0）。未列出的新部件自动排到组内末尾</summary>
     /// <param name="group">组名</param>
     /// <param name="names">逗号分隔的部件名</param>
     /// <returns></returns>
@@ -74,7 +74,7 @@ public class WidgetController(WidgetManager widgetManager) : ControllerBaseX
         return Json(0, null, "组内顺序已保存");
     }
 
-    /// <summary>启用或禁用部件（Parameter 表 UserID=0，分类 Widget.Enable）</summary>
+    /// <summary>启用或禁用部件（Parameter 表 UserId=0，分类 Widget.Enable）</summary>
     /// <param name="name">部件名</param>
     /// <param name="enable">是否启用</param>
     /// <returns></returns>
@@ -96,3 +96,4 @@ public class WidgetController(WidgetManager widgetManager) : ControllerBaseX
         return null;
     }
 }
+

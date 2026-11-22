@@ -147,7 +147,7 @@
                     <tr>
                         <td>@(entity.Deepth > 0 ? new String('　', (entity.Deepth - 1) * 2) : "")@NewLife.Cube.Membership.MenuHelper.GetDisplayName(entity)</td>
                         <td>@NewLife.Cube.Membership.MenuHelper.GetDisplayName(entity)</td>
-                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID, @childchange = 0 })</td>
+                        <td>@Html.CheckBox("p" + entity.Id, role.Has(entity.Id), new { @class = "authorize", @child = "auth_child" + entity.Id, @parentkey = "auth_child" + entity.ParentId, @childchange = 0 })</td>
                         <td class="childpf">
                             @if (entity.Childs.Count == 0)
                             {
@@ -155,8 +155,8 @@
                                 {
                                     // 受限管理员：只展示自己拥有的权限子项，避免越界勾选
                                     if (!owns(entity, (PermissionFlags)item.Key)) { continue; }
-                                    var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentID, @dataid = entity.ID })
+                                    var id = "pf" + entity.Id + "_" + ((Int32)item.Key);
+                                    @Html.CheckBox(id, role.Has(entity.Id, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.Id, @proparentkey = "pro_" + item.Key + "_" + entity.ParentId, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentId, @dataid = entity.Id })
                                     @Html.Label(id, NewLife.Cube.Membership.MenuHelper.GetPermissionName(entity, item.Key, item.Value))
                                     <text>&nbsp;</text>
                                 }
@@ -164,11 +164,11 @@
                             else
                             {
 
-                                @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (UInt32)PermissionFlags.Detail + "_" + entity.ID })
-                                @Html.Label("pc_readonly_" + entity.ID, L.T("Read-only"))
+                                @Html.CheckBox("pc_readonly_" + entity.Id, false, new { @class = "pro_detail", @prochildkey = "pro_" + (UInt32)PermissionFlags.Detail + "_" + entity.Id })
+                                @Html.Label("pc_readonly_" + entity.Id, L.T("Read-only"))
                                 <text>&nbsp;</text>
-                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ID })
-                                @Html.Label("pc_all_" + entity.ID, L.T("All"))
+                                @Html.CheckBox("pc_all_" + entity.Id, false, new { @class = "pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.Id })
+                                @Html.Label("pc_all_" + entity.Id, L.T("All"))
                             }
                         </td>
                     </tr>

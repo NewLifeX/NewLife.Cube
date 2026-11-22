@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
+using NewLife;
 using NewLife.Data;
 using NewLife.Reflection;
 
@@ -32,7 +33,7 @@ public partial class ClassModel : IModel
     public String Model { get; set; }
 
     /// <summary>创建者</summary>
-    public Int32 CreateUserID { get; set; }
+    public Int32 CreateUserId { get; set; }
 
     /// <summary>创建时间</summary>
     public DateTime CreateTime { get; set; }
@@ -41,7 +42,7 @@ public partial class ClassModel : IModel
     public String CreateIP { get; set; }
 
     /// <summary>更新者</summary>
-    public Int32 UpdateUserID { get; set; }
+    public Int32 UpdateUserId { get; set; }
 
     /// <summary>更新时间</summary>
     public DateTime UpdateTime { get; set; }
@@ -69,10 +70,10 @@ public partial class ClassModel : IModel
                 "Enable" => Enable,
                 "GraduationDate" => GraduationDate,
                 "Model" => Model,
-                "CreateUserID" => CreateUserID,
+                "CreateUserId" => CreateUserId,
                 "CreateTime" => CreateTime,
                 "CreateIP" => CreateIP,
-                "UpdateUserID" => UpdateUserID,
+                "UpdateUserId" => UpdateUserId,
                 "UpdateTime" => UpdateTime,
                 "UpdateIP" => UpdateIP,
                 "Remark" => Remark,
@@ -89,10 +90,10 @@ public partial class ClassModel : IModel
                 case "Enable": Enable = value.ToBoolean(); break;
                 case "GraduationDate": GraduationDate = value.ToDateTime(); break;
                 case "Model": Model = Convert.ToString(value); break;
-                case "CreateUserID": CreateUserID = value.ToInt(); break;
+                case "CreateUserId": CreateUserId = value.ToInt(); break;
                 case "CreateTime": CreateTime = value.ToDateTime(); break;
                 case "CreateIP": CreateIP = Convert.ToString(value); break;
-                case "UpdateUserID": UpdateUserID = value.ToInt(); break;
+                case "UpdateUserId": UpdateUserId = value.ToInt(); break;
                 case "UpdateTime": UpdateTime = value.ToDateTime(); break;
                 case "UpdateIP": UpdateIP = Convert.ToString(value); break;
                 case "Remark": Remark = Convert.ToString(value); break;
@@ -113,10 +114,10 @@ public partial class ClassModel : IModel
         Enable = model.Enable;
         GraduationDate = model.GraduationDate;
         Model = model.Model;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateTime = model.UpdateTime;
         UpdateIP = model.UpdateIP;
         Remark = model.Remark;

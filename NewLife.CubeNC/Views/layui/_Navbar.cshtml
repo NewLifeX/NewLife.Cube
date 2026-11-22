@@ -6,7 +6,7 @@
     var roleNames = "";
     if (user != null)
     {
-        uid = user.ID;
+        uid = user.Id;
         roleNames = user.Roles == null ? "" : user.Roles.Join();
     }
     var cfg = ViewBag.Config as SysConfig;
@@ -83,7 +83,7 @@
         <!-- 租户菜单 -->
         @if (set.EnableTenant && user != null)
         {
-            var tList = TenantUser.FindAllByUserId(user.ID).Where(e => e.Tenant != null && e.Tenant.Enable);
+            var tList = TenantUser.FindAllByUserId(user.Id).Where(e => e.Tenant != null && e.Tenant.Enable);
             var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
             var tenantName = tenant == null ? null : tenant.Enable ? tenant.Name : null;
 

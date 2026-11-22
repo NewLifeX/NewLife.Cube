@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using XCode;
 using XCode.DataAccessLayer;
 using XCode.Membership;
 using NewLife.Cube.Tests.Membership;
@@ -51,14 +53,14 @@ public class SqliteLikeEscapeTests
         try
         {
             // 下划线必须按字面量匹配，不能当作“任意单字符”通配符
-            Assert.Equal(1, Parameter.FindCount(Parameter._.Value.Contains("sess_xxxx") & Parameter._.Category == category));
+            Assert.Equal(1, Parameter.FindAllByCategory(category).Count(e => e.Value.Contains("sess_xxxx")));
 
             // 百分号同理
-            Assert.Equal(1, Parameter.FindCount(Parameter._.Value.Contains("rate%5") & Parameter._.Category == category));
+            Assert.Equal(1, Parameter.FindAllByCategory(category).Count(e => e.Value.Contains("rate%5")));
         }
         finally
         {
-            Parameter.Delete(Parameter._.Category == category);
+            Parameter.FindAllByCategory(category).Delete();
         }
     }
 }

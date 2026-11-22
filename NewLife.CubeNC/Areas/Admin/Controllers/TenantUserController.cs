@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
 using NewLife.Cube.ViewModels;
@@ -20,16 +20,16 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
     {
         LogOnChange = true;
 
-        ListFields.RemoveField("ID", "Remark").RemoveField("CreateUserId", "CreateTime", "CreateIP", "UpdateUserId", "UpdateTime", "UpdateIP");
+        ListFields.RemoveField("Id", "Remark").RemoveField("CreateUserId", "CreateTime", "CreateIP", "UpdateUserId", "UpdateTime", "UpdateIP");
 
         {
             var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             AddFormFields.RemoveField("RoleNames");
         }
         {
             var df = AddFormFields.AddDataField("RoleId", "RoleName");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             AddFormFields.RemoveField("RoleName");
         }
         {
@@ -39,12 +39,12 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
         }
         {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
         }
         {
             var df = EditFormFields.AddDataField("RoleId", "RoleName");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
             EditFormFields.RemoveField("RoleName");
         }
         {
@@ -73,12 +73,12 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
         {
             // 角色组
             var df = AddFormFields.GetField("RoleIds");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.Id) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
         {
             // 角色
             var df = AddFormFields.GetField("RoleId");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.Id) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
         {
             // 租户
@@ -90,12 +90,12 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
         {
             // 角色组
             var df = EditFormFields.GetField("RoleIds");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.Id) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
         {
             // 角色
             var df = EditFormFields.GetField("RoleId");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.Id) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.Id, e => e.Name);
         }
         {
             // 租户
@@ -159,7 +159,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
         if (type == DataObjectMethodType.Insert)
         {
             if (entity.TenantId == 0) entity.TenantId = _tenantContext.TenantId;
-            if (entity.UserId == 0) entity.UserId = ManageProvider.Provider.Current.ID;
+            if (entity.UserId == 0) entity.UserId = ManageProvider.Provider.Current.Id;
 
             // 同一租户下不允许重复绑定同一用户
             if (post && entity.TenantId > 0 && entity.UserId > 0)
@@ -217,7 +217,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
 
         LogProvider.Provider.WriteLog(L.TLog("Tenant"), L.TLog("Add member"), true, L.TLog("Added user [{0}] to tenant [{1}]", userId, tid), userId, userId + "", ip: HttpContext.GetUserHost());
 
-        return Json(0, "Added", new { tu.Id, UserName = UserX.FindByID(userId)?.ToString() });
+        return Json(0, "Added", new { tu.Id, UserName = UserX.FindById(userId)?.ToString() });
     }
 
     /// <summary>移除成员</summary>
@@ -232,7 +232,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
         var tid = GetEffectiveTenantId(tu.TenantId);
         var tenant = Tenant.FindById(tid);
         if (tenant != null && tenant.ManagerId == tu.UserId) throw new InvalidOperationException("Cannot remove the tenant administrator");
-        if (tu.UserId == ManageProvider.Provider.Current.ID) throw new InvalidOperationException("Cannot remove yourself");
+        if (tu.UserId == ManageProvider.Provider.Current.Id) throw new InvalidOperationException("Cannot remove yourself");
 
         tu.Delete();
 

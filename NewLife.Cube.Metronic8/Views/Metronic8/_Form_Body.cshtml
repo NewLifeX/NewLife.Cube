@@ -1,4 +1,4 @@
-﻿@*
+@*
     表单内容
 *@
 
@@ -63,7 +63,7 @@
                             }
                             else
                             {
-                                var hide = item.Name.EqualIgnoreCase("ID") ? "d-none" : "";
+                                var hide = item.Name.EqualIgnoreCase("Id") ? "d-none" : "";
                                 <div class="@cls @hide">
                                     <!-- 字段标签（含帮助说明信息） -->
                                     <div class="d-inline-flex align-items-center">
@@ -127,7 +127,7 @@
                 }
                 else
                 {
-                    var hide = item.Name.EqualIgnoreCase("ID") ? "d-none" : "";
+                    var hide = item.Name.EqualIgnoreCase("Id") ? "d-none" : "";
                     <div class="@cls @hide">
                         <!-- 字段标签（含帮助说明信息） -->
                         <div class="d-inline-flex align-items-center">
@@ -162,5 +162,6 @@
 {
     @await Html.PartialAsync("_Form_Body_Audits", entity)
 }*@
+
 
 

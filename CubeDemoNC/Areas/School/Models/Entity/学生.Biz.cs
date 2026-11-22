@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -56,8 +56,8 @@ public partial class Student : Entity<Student>, ITenantSource
         /*var user = ManageProvider.User;
         if (user != null)
         {
-            if (isNew && !Dirtys[nameof(CreateUserID)]) CreateUserID = user.ID;
-            if (!Dirtys[nameof(UpdateUserID)]) UpdateUserID = user.ID;
+            if (isNew && !Dirtys[nameof(CreateUserId)]) CreateUserId = user.Id;
+            if (!Dirtys[nameof(UpdateUserId)]) UpdateUserId = user.Id;
         }*/
         //if (isNew && !Dirtys[nameof(CreateTime)]) CreateTime = DateTime.Now;
         //if (!Dirtys[nameof(UpdateTime)]) UpdateTime = DateTime.Now;
@@ -83,10 +83,10 @@ public partial class Student : Entity<Student>, ITenantSource
     //    entity.Mobile = "abc";
     //    entity.Address = "abc";
     //    entity.Enable = true;
-    //    entity.CreateUserID = 0;
+    //    entity.CreateUserId = 0;
     //    entity.CreateTime = DateTime.Now;
     //    entity.CreateIP = "abc";
-    //    entity.UpdateUserID = 0;
+    //    entity.UpdateUserId = 0;
     //    entity.UpdateTime = DateTime.Now;
     //    entity.UpdateIP = "abc";
     //    entity.Remark = "abc";
@@ -200,3 +200,4 @@ public partial class Student : Entity<Student>, ITenantSource
 
     #endregion
 }
+

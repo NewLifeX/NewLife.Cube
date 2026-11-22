@@ -1,11 +1,15 @@
 using NewLife.Data;
 using XCode;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 
 namespace NewLife.Cube.Entity;
 
 /// <summary>用户统计</summary>
 public partial class UserStat : Entity<UserStat>
 {
+
     #region 对象操作
     static UserStat()
     {
@@ -47,21 +51,6 @@ public partial class UserStat : Entity<UserStat>
     #endregion
 
     #region 扩展查询
-    /// <summary>根据编号查找</summary>
-    /// <param name="id">编号</param>
-    /// <returns>实体对象</returns>
-    public static UserStat FindByID(Int32 id)
-    {
-        if (id <= 0) return null;
-
-        // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
-
-        // 单对象缓存
-        return Meta.SingleCache[id];
-
-        //return Find(_.ID == id);
-    }
 
     /// <summary>
     /// 根据日期查找

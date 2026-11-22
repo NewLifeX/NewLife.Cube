@@ -16,7 +16,7 @@
             {
                 <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="@L.T("Select all")" /></th>
             }
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">@L.T("ID")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Id"))">@L.T("ID")</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("TreeNodeName"))">@L.T("Node name")</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Icon"))">@L.T("Icon")</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">@L.T("Display name")</a></th>
@@ -42,14 +42,14 @@
             {
                 p = fact.EntityType.GetValue("Root") as IEntityTree;
             }
-            var id = entity.ID;
+            var id = entity.Id;
             <tr>
                 @if (set.EnableSelect)
                 {
-                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.Id" /></td>
                 }
-                <td class="text-center">@entity.ID</td>
-                <td><a href="?parentId=@entity.ID">@entity.TreeNodeName</a></td>
+                <td class="text-center">@entity.Id</td>
+                <td><a href="?parentId=@entity.Id">@entity.TreeNodeName</a></td>
                 <td class="text-center">
                     @if (entity.Icon.StartsWithIgnoreCase("fa-"))
                     {

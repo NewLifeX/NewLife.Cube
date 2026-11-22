@@ -101,7 +101,7 @@ export function hasDataSource(field: FieldMeta): boolean {
 /**
  * 表单实际读写的模型键。
  *
- * 映射字段（`RoleName` 通过 Map 指向 `RoleID`）在元数据里是只读展示名，
+ * 映射字段（`RoleName` 通过 Map 指向 `RoleId`）在元数据里是只读展示名，
  * 真正要提交的是关联键，因此读写键取 `mapField`，其余字段就是自身名称。
  *
  * @param field 字段元数据
@@ -163,7 +163,7 @@ export function resolveControl(field: FieldMeta): ControlType {
   if (itemType.startsWith('image')) return 'image';
   if (itemType.startsWith('timespan')) return 'timeSpan';
 
-  // 2. 映射字段（RoleName→RoleID 等）：值集码优先走远程 LOV；有关联表数据源时渲染下拉并提交关联键；
+  // 2. 映射字段（RoleName→RoleId 等）：值集码优先走远程 LOV；有关联表数据源时渲染下拉并提交关联键；
   //    关联表过大未下发数据源时，整型键退回键值输入；
   //    字符串/复合键（如 RoleNames→RoleIds）没有可编辑语义，按只读文本展示虚拟值
   if (field.mapField) {
@@ -328,7 +328,7 @@ export function isFullWidthControl(control: ControlType): boolean {
  * 这些列由 XCode 实体基类在落库时自动填充（创建人/创建时间/创建 IP/更新人/更新时间/更新 IP），
  * /meta 因后端未标注 readOnly 而表现为 required；客户端必须整体排除出必填校验集，
  * 否则表单出现「用户不可见却必填」的死锁（区域级多个页面同因）。
- * 名单为精确名匹配：前缀命中（如 CreateUserIDEx）不算。
+ * 名单为精确名匹配：前缀命中（如 CreateUserIdEx）不算。
  */
 export const SERVER_AUDIT_FILL_FIELDS: ReadonlySet<string> = new Set([
   'createuserid',
@@ -349,7 +349,7 @@ export function isServerAuditFillField(field: FieldMeta): boolean {
  *
  * 规则：非可空 且 非主键 且 控件不是只读 —— 与 FormContent 的必填星号保持一致。
  * 例外一：Boolean 开关天然有值（false=否 即默认态），无需强制用户操作，故不计必填。
- * 例外二：XCode 审计 auto-fill 列（CreateUserID/CreateTime/CreateIP/UpdateUserID/
+ * 例外二：XCode 审计 auto-fill 列（CreateUserId/CreateTime/CreateIP/UpdateUserId/
  * UpdateTime/UpdateIP，精确名大小写不敏感）由后端落库时自动填充，
  * 元数据不携带 readOnly 标记；若按「非可空即必填」判定，用户在扩展分组看不到
  * 这些字段也会被提交校验拦死，故一律不产客户端必填。
@@ -366,7 +366,7 @@ export function isRequiredField(field: FieldMeta, model?: Record<string, unknown
   if (model && field.requiredWhen) return field.requiredWhen(model);
   // Boolean 开关恒有值（默认 false=否 即默认态），无需强制用户操作，故不计必填
   if (field.typeName === 'Boolean') return false;
-  // 映射字段（RoleName→RoleID）的取值取决于关联键，虚拟属性不可空不代表必须选择，与 MVC _Form_Map 同口径
+  // 映射字段（RoleName→RoleId）的取值取决于关联键，虚拟属性不可空不代表必须选择，与 MVC _Form_Map 同口径
   if (field.mapField) return false;
   // 审计 auto-fill 列由服务端填充，客户端不产必填（见 isServerAuditFillField）
   if (isServerAuditFillField(field)) return false;

@@ -1,4 +1,4 @@
-﻿using NewLife.Model;
+using NewLife.Model;
 
 namespace NewLife.Web.OAuth;
 
@@ -49,8 +49,9 @@ public class WxAppClient : OAuthClient
         if (!NickName.IsNullOrEmpty() && (user.NickName == "微信用户"))
             user.NickName = NickName;
 
-        // APP用户默认使用 OpenID 作为用户名
-        if (user.Name.IsNullOrEmpty() && !OpenID.IsNullOrEmpty())
-            user.Name = $"微信用户{OpenID[^8..]}";
+        // APP用户默认使用 OpenId 作为用户名
+        if (user.Name.IsNullOrEmpty() && !OpenId.IsNullOrEmpty())
+            user.Name = $"微信用户{OpenId[^8..]}";
     }
 }
+

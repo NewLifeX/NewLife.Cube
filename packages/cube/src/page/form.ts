@@ -30,8 +30,8 @@ export function isBlankValue(value: unknown): boolean {
 /**
  * 校验字段列表中的必填项
  *
- * 字段元数据名为 PascalCase（`Name`/`RoleID`），表单模型多为接口回填的 camelCase（`name`/`roleID`），
- * 因此取值按大小写不敏感匹配；映射字段（`RoleName` → `RoleID`）先取关联键，未提交时回退字段自身键。
+ * 字段元数据名为 PascalCase（`Name`/`RoleId`），表单模型多为接口回填的 camelCase（`name`/`roleId`），
+ * 因此取值按大小写不敏感匹配；映射字段（`RoleName` → `RoleId`）先取关联键，未提交时回退字段自身键。
  *
  * @param fields 表单字段（字段映射或字段元数据，按界面顺序）
  * @param values 当前表单值

@@ -37,7 +37,7 @@ public class TotpMfaServiceTests
             Name = "mfa_" + Guid.NewGuid().ToString("N")[..8],
             DisplayName = "MFA 测试用户",
             Password = "x",
-            RoleID = _fx.LegacyUser.RoleID,
+            RoleId = _fx.LegacyUser.RoleId,
             Enable = true,
             RegisterTime = DateTime.Now,
         };
@@ -210,3 +210,4 @@ public class TotpMfaServiceTests
     }
     #endregion
 }
+

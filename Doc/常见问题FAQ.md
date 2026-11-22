@@ -1,4 +1,4 @@
-﻿# 第41章 常见问题（FAQ）
+# 第41章 常见问题（FAQ）
 
 > 本章收集魔方开发中的常见问题和解答。
 
@@ -500,7 +500,7 @@ public ActionResult Approve(Int32 id, Boolean pass, String remark)
     if (order == null) return Json(new { code = 1, message = "订单不存在" });
     
     order.ApprovalStatus = pass ? 2 : 3;
-    order.ApprovalBy = ManageProvider.User.ID;
+    order.ApprovalBy = ManageProvider.User.Id;
     order.ApprovalTime = DateTime.Now;
     order.ApprovalRemark = remark;
     order.Update();

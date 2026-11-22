@@ -30,7 +30,7 @@ public partial interface IClass
     String Model { get; set; }
 
     /// <summary>创建者</summary>
-    Int32 CreateUserID { get; set; }
+    Int32 CreateUserId { get; set; }
 
     /// <summary>创建时间</summary>
     DateTime CreateTime { get; set; }
@@ -39,7 +39,7 @@ public partial interface IClass
     String CreateIP { get; set; }
 
     /// <summary>更新者</summary>
-    Int32 UpdateUserID { get; set; }
+    Int32 UpdateUserId { get; set; }
 
     /// <summary>更新时间</summary>
     DateTime UpdateTime { get; set; }

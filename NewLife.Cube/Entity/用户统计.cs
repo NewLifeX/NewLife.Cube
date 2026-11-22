@@ -22,13 +22,13 @@ namespace NewLife.Cube.Entity;
 public partial class UserStat : IEntity<UserStatModel>
 {
     #region 属性
-    private Int32 _ID;
+    private Int32 _Id;
     /// <summary>编号</summary>
     [DisplayName("编号")]
     [Description("编号")]
     [DataObjectField(true, true, false, 0)]
-    [BindColumn("ID", "编号", "")]
-    public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+    [BindColumn("Id", "编号", "")]
+    public Int32 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
     private DateTime _Date;
     /// <summary>统计日期</summary>
@@ -159,7 +159,7 @@ public partial class UserStat : IEntity<UserStatModel>
     /// <param name="model">模型</param>
     public void Copy(UserStatModel model)
     {
-        ID = model.ID;
+        Id = model.Id;
         Date = model.Date;
         Total = model.Total;
         Logins = model.Logins;
@@ -186,7 +186,7 @@ public partial class UserStat : IEntity<UserStatModel>
     {
         get => name switch
         {
-            "ID" => _ID,
+            "Id" => _Id,
             "Date" => _Date,
             "Total" => _Total,
             "Logins" => _Logins,
@@ -208,7 +208,7 @@ public partial class UserStat : IEntity<UserStatModel>
         {
             switch (name)
             {
-                case "ID": _ID = value.ToInt(); break;
+                case "Id": _Id = value.ToInt(); break;
                 case "Date": _Date = value.ToDateTime(); break;
                 case "Total": _Total = value.ToInt(); break;
                 case "Logins": _Logins = value.ToInt(); break;
@@ -234,6 +234,16 @@ public partial class UserStat : IEntity<UserStatModel>
     #endregion
 
     #region 扩展查询
+    /// <summary>根据编号查找</summary>
+    /// <param name="id">编号</param>
+    /// <returns>实体对象</returns>
+    public static UserStat FindById(Int32 id)
+    {
+        if (id < 0) return null;
+
+        return Find(_.Id == id);
+    }
+
     /// <summary>根据统计日期查找</summary>
     /// <param name="date">统计日期</param>
     /// <returns>实体对象</returns>
@@ -274,7 +284,7 @@ public partial class UserStat : IEntity<UserStatModel>
     public partial class _
     {
         /// <summary>编号</summary>
-        public static readonly Field ID = FindByName("ID");
+        public static readonly Field Id = FindByName("Id");
 
         /// <summary>统计日期</summary>
         public static readonly Field Date = FindByName("Date");
@@ -328,7 +338,7 @@ public partial class UserStat : IEntity<UserStatModel>
     public partial class __
     {
         /// <summary>编号</summary>
-        public const String ID = "ID";
+        public const String Id = "Id";
 
         /// <summary>统计日期</summary>
         public const String Date = "Date";

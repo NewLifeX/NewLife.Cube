@@ -2,7 +2,7 @@ using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.Services;
 
-/// <summary>认证辅助工具。子网/设备ID/IP判定等内部静态方法，供基础与增强认证服务共享</summary>
+/// <summary>认证辅助工具。子网/设备Id/IP判定等内部静态方法，供基础与增强认证服务共享</summary>
 internal static class AuthHelper
 {
     /// <summary>从完整IPv4地址提取三段前缀（/24 子网，如103.125.146）。非IPv4地址返回空字符串</summary>
@@ -27,9 +27,9 @@ internal static class AuthHelper
         return parts.Length >= 2 ? $"{parts[0]}.{parts[1]}" : "";
     }
 
-    /// <summary>获取设备ID。优先从 Cookie 读取，未携带时返回空</summary>
+    /// <summary>获取设备Id。优先从 Cookie 读取，未携带时返回空</summary>
     /// <param name="httpContext">HTTP上下文</param>
-    /// <returns>设备ID，无 Cookie 时返回空</returns>
+    /// <returns>设备Id，无 Cookie 时返回空</returns>
     public static String GetDeviceId(HttpContext httpContext)
     {
         if (httpContext == null || httpContext.Request == null) return null;
@@ -66,3 +66,4 @@ internal static class AuthHelper
         return false;
     }
 }
+

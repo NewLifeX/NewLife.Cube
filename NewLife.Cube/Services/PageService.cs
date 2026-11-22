@@ -1,4 +1,4 @@
-﻿using NewLife.Cube.Modules;
+using NewLife.Cube.Modules;
 using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
 using NewLife.Serialization;
@@ -83,7 +83,7 @@ public class PageService
 
     private IDictionary<String, Object> LoadConfig(Int32 userId, IList<Parameter> ps)
     {
-        var p = ps.FirstOrDefault(e => e.UserID == userId);
+        var p = ps.FirstOrDefault(e => e.UserId == userId);
         if (p != null)
         {
             var value = !p.Value.IsNullOrEmpty() ? p.Value : p.LongValue;
@@ -118,6 +118,7 @@ public class PageService
         p.LongValue = rs as String ?? rs.ToJson(true);
         p.Update();
 
-        return p.ID;
+        return p.Id;
     }
 }
+

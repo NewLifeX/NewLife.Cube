@@ -12,7 +12,7 @@ public partial class UserTokenModel
 {
     #region 属性
     /// <summary>编号</summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>令牌</summary>
     public String Token { get; set; }
@@ -21,7 +21,7 @@ public partial class UserTokenModel
     public String Url { get; set; }
 
     /// <summary>用户。本地用户</summary>
-    public Int32 UserID { get; set; }
+    public Int32 UserId { get; set; }
 
     /// <summary>过期时间</summary>
     public DateTime Expire { get; set; }
@@ -45,7 +45,7 @@ public partial class UserTokenModel
     public DateTime LastTime { get; set; }
 
     /// <summary>创建用户</summary>
-    public Int32 CreateUserID { get; set; }
+    public Int32 CreateUserId { get; set; }
 
     /// <summary>创建地址</summary>
     public String CreateIP { get; set; }
@@ -54,7 +54,7 @@ public partial class UserTokenModel
     public DateTime CreateTime { get; set; }
 
     /// <summary>更新用户</summary>
-    public Int32 UpdateUserID { get; set; }
+    public Int32 UpdateUserId { get; set; }
 
     /// <summary>更新地址</summary>
     public String UpdateIP { get; set; }
@@ -71,10 +71,10 @@ public partial class UserTokenModel
     /// <param name="model">模型</param>
     public void Copy(UserTokenModel model)
     {
-        ID = model.ID;
+        Id = model.Id;
         Token = model.Token;
         Url = model.Url;
-        UserID = model.UserID;
+        UserId = model.UserId;
         Expire = model.Expire;
         Enable = model.Enable;
         Times = model.Times;
@@ -82,10 +82,10 @@ public partial class UserTokenModel
         FirstTime = model.FirstTime;
         LastIP = model.LastIP;
         LastTime = model.LastTime;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateIP = model.CreateIP;
         CreateTime = model.CreateTime;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateIP = model.UpdateIP;
         UpdateTime = model.UpdateTime;
         Remark = model.Remark;

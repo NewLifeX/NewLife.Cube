@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using NewLife.Cube.Models;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
@@ -11,7 +11,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>部门</summary>
 /// <remarks>实例化</remarks>
 /// <param name="tenantContext">租户上下文</param>
-[DataPermission(null, "ManagerID={#userId}")]
+[DataPermission(null, "ManagerId={#userId}")]
 [DisplayName("部门")]
 [AdminArea]
 [Menu(95, true, Icon = "fa-users", Mode = MenuModes.Admin | MenuModes.Tenant)]
@@ -65,7 +65,7 @@ public class DepartmentController(ITenantContext tenantContext) : EntityControll
         if (id > 0)
         {
             var list = new List<Department>();
-            var entity = Department.FindByID(id);
+            var entity = Department.FindById(id);
             // 分页查询由 WhereBuilder 按管理者过滤，本分支需自行判断，避免绕过数据权限
             if (entity != null && CanView(entity)) list.Add(entity);
             return list;
@@ -88,7 +88,7 @@ public class DepartmentController(ITenantContext tenantContext) : EntityControll
         if (/*!post &&*/ type == DataObjectMethodType.Insert)
         {
             if (entity.TenantId == 0) entity.TenantId = tenantContext.TenantId;
-            if (entity.ManagerId == 0) entity.ManagerId = ManageProvider.Provider.Current.ID;
+            if (entity.ManagerId == 0) entity.ManagerId = ManageProvider.Provider.Current.Id;
         }
 
         return base.Valid(entity, type, post);
@@ -116,7 +116,7 @@ public class DepartmentController(ITenantContext tenantContext) : EntityControll
         var user = ManageProvider.User;
         if (user == null || user.Roles.Any(e => e.IsSystem)) return true;
 
-        return entity.ManagerId == user.ID;
+        return entity.ManagerId == user.Id;
     }
 
     /// <summary>合并导入。查出表中已有数据匹配，能匹配的更新，无法匹配的批量插入</summary>
@@ -133,16 +133,17 @@ public class DepartmentController(ITenantContext tenantContext) : EntityControll
         // 重置主键，避免重复
         foreach (var item in list)
         {
-            if (item is Department dep) dep.ID = 0;
+            if (item is Department dep) dep.Id = 0;
         }
 
         static Boolean match(IEntity e, IModel m)
         {
             var de = (Department)e;
             var dm = (Department)m;
-            return de.TenantId == dm.TenantId && de.ParentID == dm.ParentID && de.Name.EqualIgnoreCase(dm.Name);
+            return de.TenantId == dm.TenantId && de.ParentId == dm.ParentId && de.Name.EqualIgnoreCase(dm.Name);
         }
 
         return factory.Merge(list, olds.Cast<IEntity>().ToList(), context.Fields, match);
     }
 }
+

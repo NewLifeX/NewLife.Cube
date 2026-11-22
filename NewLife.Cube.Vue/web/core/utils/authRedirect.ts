@@ -6,7 +6,9 @@ export function appRelativePath(path: string): string {
 
 /** 只接受同源站内回跳，认证页回退首页以防循环。 */
 export function normalizeAuthRedirect(value: unknown): string {
-  if (typeof value !== 'string' || !value.trim() || /[\\\x00-\x1f\x7f]/.test(value)) return '/';
+  // 拦截反斜杠与控制字符，避免拼出协议相对地址（//host）或头部注入
+  const hasUnsafeChar = (s: string) => [...s].some((ch) => ch === '\\' || ch.charCodeAt(0) < 0x20 || ch.charCodeAt(0) === 0x7f);
+  if (typeof value !== 'string' || !value.trim() || hasUnsafeChar(value)) return '/';
   try {
     if (!value.startsWith('/') && !/^https?:\/\//i.test(value)) return '/';
     const url = new URL(value, window.location.origin);

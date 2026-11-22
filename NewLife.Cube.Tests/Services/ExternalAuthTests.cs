@@ -144,14 +144,14 @@ public class ExternalAuthTests
         var user = ExternalAuthHelper.CreateOrUpdateUser(ext, "127.0.0.1", CubeSetting.Current);
 
         Assert.NotNull(user);
-        Assert.True(user.ID > 0);
+        Assert.True(user.Id > 0);
         Assert.Equal(name, user.Name);
         Assert.Equal("外部用户", user.DisplayName);
         Assert.Equal($"{name}@example.com", user.Mail);
         Assert.Equal("13512345678", user.Mobile);
         Assert.Equal("E100", user.Code);
         Assert.True(user.Enable);
-        if (role != null) Assert.Equal(role.ID, user.RoleID);
+        if (role != null) Assert.Equal(role.Id, user.RoleId);
     }
 
     [Fact(DisplayName = "外部认证_存量用户仅更新非空字段")]
@@ -173,7 +173,7 @@ public class ExternalAuthTests
             Mobile = "13600001111",
         }, "127.0.0.1", CubeSetting.Current);
 
-        Assert.Equal(created.ID, updated.ID);
+        Assert.Equal(created.Id, updated.Id);
         Assert.Equal("新昵称", updated.DisplayName);
         Assert.Equal($"{name}@example.com", updated.Mail);
         Assert.Equal("13600001111", updated.Mobile);
@@ -195,3 +195,4 @@ public class ExternalAuthTests
     }
     #endregion
 }
+

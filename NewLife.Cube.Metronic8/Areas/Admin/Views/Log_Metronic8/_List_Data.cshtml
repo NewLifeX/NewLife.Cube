@@ -1,4 +1,4 @@
-﻿@model IList<XCode.Membership.Log>
+@model IList<XCode.Membership.Log>
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -26,7 +26,7 @@
                         <th><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
                         <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
-                        <th class="text-right"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">链接</a></th>
+                        <th class="text-right"><a href="@Html.Raw(page.GetSortUrl("LinkId"))">链接</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
                         <th class="" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
@@ -44,7 +44,7 @@
                         <tr>
                             @if (set.EnableSelect)
                             {
-                                <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                                <td class="text-center"><input type="checkbox" name="keys" value="@entity.Id" /></td>
                             }
                             <td class="align-middle" style="min-width:80px;">@entity.Category</td>
                             <td class="align-middle" style="min-width:80px;">@entity.Action</td>
@@ -52,7 +52,7 @@
                                 @await Html.PartialAsync("_List_Data_Item_IconBoolean", entity.Success)
                             </td>
                             <td class="align-middle" style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@entity.Remark">@entity.Remark</td>
-                            <td class="text-right align-middle"style="min-width:60px;">@entity.LinkID.ToString("n0")</td>
+                            <td class="text-right align-middle"style="min-width:60px;">@entity.LinkId.ToString("n0")</td>
                             <td class="align-middle" style="min-width:80px;">@entity.UserName</td>
                             <td class="align-middle" style="min-width:80px;">@entity.CreateIP.IPToAddress()</td>
                             <td class="align-middle" style="max-width:150px">@entity.CreateTime.ToFullString("")</td>
@@ -63,7 +63,7 @@
                                 }
                             </td>
                             <td class="text-center align-middle" style="min-width:60px;">
-                                <a href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
+                                <a href="?act=near&id=@entity.Id&range=10" title="前后10行日志">附近</a>
                             </td>
                             @if (this.Has(PermissionFlags.Detail))
                             {
@@ -79,4 +79,5 @@
 
     </div>
 </div>
+
 

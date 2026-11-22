@@ -1,4 +1,4 @@
-﻿using NewLife.Caching;
+using NewLife.Caching;
 using NewLife.Cube.Web.Models;
 using NewLife.Remoting;
 using XCode.Membership;
@@ -360,7 +360,7 @@ public class QyWeiXin : OAuthClient
 
         if (dic.TryGetValue("UserId", out var str)) UserName = str.Trim();
         if (dic.TryGetValue("DeviceId", out str)) DeviceId = str.Trim();
-        //if (dic.TryGetValue("OpenId", out str)) OpenID = str.Trim();
+        //if (dic.TryGetValue("OpenId", out str)) OpenId = str.Trim();
         if (dic.TryGetValue("biz_mail", out str)) Mail = str.Trim();
 
         if (dic.TryGetValue("errmsg", out str) && str != "ok") throw new InvalidOperationException(str);

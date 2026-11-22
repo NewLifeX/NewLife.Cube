@@ -100,7 +100,7 @@ export interface DataField {
   visible?: boolean;
   /** 映射字段名 */
   mapField?: string;
-  /** 映射键的 CLR 类型名（如 RoleID → Int32）。无数据源时据此决定退回数字输入还是只读文本 */
+  /** 映射键的 CLR 类型名（如 RoleId → Int32）。无数据源时据此决定退回数字输入还是只读文本 */
   mapTypeName?: string;
   /** 取值字段。列表单元格优先取该字段值，为空时回退到本字段（如名称列优先显示昵称：Name.valueField=DisplayName） */
   valueField?: string;
@@ -316,7 +316,7 @@ export interface UserInfo {
   mail?: string;
   mobile?: string;
   avatar?: string;
-  roleID?: number;
+  roleId?: number;
   roleName?: string;
   online?: boolean;
   enable?: boolean;
@@ -697,7 +697,7 @@ export interface MenuItem {
   id: number;
   name: string;
   displayName: string;
-  parentID: number;
+  parentId: number;
   url: string;
   icon?: string;
   visible: boolean;

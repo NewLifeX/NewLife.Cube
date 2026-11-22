@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace NewLife.Cube.Models;
 
@@ -21,7 +21,7 @@ public enum CubeCode
 
     /// <summary>参数异常：请求参数不完整或不正确</summary>
     /// <remarks>请求参数不合理，
-    /// 如： 更新数据时，未传递ID或ID=0；
+    /// 如： 更新数据时，未传递Id或Id=0；
     ///      传递number类型的值超过enum定义范围等场景</remarks>
     [Description("Invalid parameters")]
     ParamError = -2,
@@ -51,3 +51,4 @@ public enum CubeCode
     [Description("MFA required")]
     MfaRequired = -7,
 }
+

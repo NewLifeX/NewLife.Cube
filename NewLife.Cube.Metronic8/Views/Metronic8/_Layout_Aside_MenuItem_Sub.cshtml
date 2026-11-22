@@ -1,11 +1,11 @@
-﻿@model ValueTuple<IMenu, IMenu>
+@model ValueTuple<IMenu, IMenu>
 
 @{
     var menu = Model.Item1;
     var item = Model.Item2;
 
-    var rs = item.AllChilds.Where(m => m.ID == menu.ParentID).Count() > 0;
-    var rs_active = item.ID == menu.ID;
+    var rs = item.AllChilds.Where(m => m.Id == menu.ParentId).Count() > 0;
+    var rs_active = item.Id == menu.Id;
     var rs_new = (DateTime.Now - item.CreateTime).Days <= 7 ? true : false;
 
     var icon = item.Icon.IsNullOrEmpty() ? "sitemap" : "fa-" + item.Icon.TrimStart("fa-");
@@ -27,10 +27,10 @@
         var menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.Root.Childs);
         if (user?.Role != null)
         {
-            menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(item.ID, user, true));
+            menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(item.Id, user, true));
         }
 
-        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
+        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.Id == menu.ParentId || rs ? "show" : "")">
             <span class="menu-link">
                 <span class="menu-icon">
                     <span class="far @icon text-primary"></span>
@@ -71,3 +71,4 @@
         </div>
     }
 }
+

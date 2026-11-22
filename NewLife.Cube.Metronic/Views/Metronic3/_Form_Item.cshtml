@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using NewLife.Cube.ViewModels;
@@ -55,8 +55,8 @@
 			var itemModel = new ItemModel(item.Name, entity[item.Name], item.Type) { Length = item.Length };
 
 			// 系统字段默认不允许编辑
-			if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-			"UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
+			if (item.Name.EqualIgnoreCase("CreateUserId", "CreateUser", "CreateTime", "CreateIP",
+			"UpdateUserId", "UpdateUser", "UpdateTime", "UpdateIP"))
 			{
 				@*@Html.ForString(item.Name, (String)entity[item.Name], item.Length, new { @disabled = "disabled" }.ToDictionary())*@
 				itemModel.HtmlAttributes = new { disabled = "disabled" };
@@ -117,4 +117,5 @@
 		</span>
 	}
 </div>
+
 

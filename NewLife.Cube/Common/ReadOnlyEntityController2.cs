@@ -281,7 +281,7 @@ public partial class ReadOnlyEntityController<TEntity>
             }
             else
             {
-                // 租户模式（TenantId>0）：校验租户存在且启用，无效则 fail-closed，防止伪造租户ID绕过数据隔离
+                // 租户模式（TenantId>0）：校验租户存在且启用，无效则 fail-closed，防止伪造租户Id绕过数据隔离
                 var tenant = ctxTenant.Tenant;
                 tenant ??= Tenant.FindById(ctxTenant.TenantId);
                 if (tenant == null || !tenant.Enable)

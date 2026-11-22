@@ -1,4 +1,4 @@
-﻿using NewLife.Cube.Entity;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Cube.Web;
 using NewLife.Log;
@@ -78,7 +78,7 @@ public class ManageProvider2 : ManageProvider
         else
         {
             session[key] = user;
-            session["userId"] = user.ID;
+            session["userId"] = user.Id;
         }
     }
 
@@ -118,7 +118,7 @@ public class ManageProvider2 : ManageProvider
         if (context != null && user != null)
         {
             // 单设备模式：新登录踢掉旧设备，必须在颁发新令牌之前执行，否则会连带吊销刚签发的会话
-            if (!set.EnableMultiDeviceLogin) UserToken.RevokeByUser(user.ID);
+            if (!set.EnableMultiDeviceLogin) UserToken.RevokeByUser(user.Id);
 
             // 先颁发令牌（含 UserToken + JWT(jti)），JWT 缓存在 context.Items
             // 记住登录状态（Remember）：JWT 有效期与 Cookie 一致延长到 365 天，前端重开系统免登录
@@ -177,7 +177,7 @@ public class ManageProvider2 : ManageProvider
             // 新注册用户采用魔方默认角色
             var defRole = oa.AutoRole;
             if (defRole.IsNullOrEmpty()) defRole = set.DefaultRole;
-            user.RoleID = Role.GetOrAdd(defRole).ID;
+            user.RoleId = Role.GetOrAdd(defRole).Id;
         }
 
         user.Logins++;
@@ -197,7 +197,7 @@ public class ManageProvider2 : ManageProvider
         if (user == null) return user;
 
         // 查找该用户是否有可用待立项，按照创建代理的先后顺序
-        var list = PrincipalAgent.GetAllValidByAgentId(user.ID);
+        var list = PrincipalAgent.GetAllValidByAgentId(user.Id);
         if (list.Count == 0) return user;
 
         // 脏数据检查
@@ -258,7 +258,7 @@ public class ManageProvider2 : ManageProvider
             else
             {
                 // 单设备模式：吊销该用户全部令牌
-                UserToken.RevokeByUser(user.ID);
+                UserToken.RevokeByUser(user.Id);
             }
         }
 

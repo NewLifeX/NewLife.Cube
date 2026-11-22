@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Areas.Admin.Controllers;
@@ -29,7 +29,7 @@ public class MenuRefreshApiTests : IDisposable
             Url = $"/Test/refresh_{suffix}",
         };
         menu.Insert();
-        _menuId = menu.ID;
+        _menuId = menu.Id;
     }
 
     /// <summary>删除本用例插入的菜单</summary>
@@ -63,3 +63,4 @@ public class MenuRefreshApiTests : IDisposable
         Assert.Equal("菜单", db!.DisplayName);
     }
 }
+

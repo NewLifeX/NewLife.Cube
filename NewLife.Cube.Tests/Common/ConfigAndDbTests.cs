@@ -52,7 +52,7 @@ public class ConfigAndDbTests
             set.TokenExpire = 4321;
             set.Save();
 
-            var param = Parameter.FindByUserIDAndCategoryAndName(0, "Cube", nameof(CubeSetting.TokenExpire));
+            var param = Parameter.FindByUserIdAndCategoryAndName(0, "Cube", nameof(CubeSetting.TokenExpire));
             Assert.NotNull(param);
             Assert.Contains("4321", param.Value);
         }
@@ -62,7 +62,7 @@ public class ConfigAndDbTests
             set.Save();
         }
 
-        var restored = Parameter.FindByUserIDAndCategoryAndName(0, "Cube", nameof(CubeSetting.TokenExpire));
+        var restored = Parameter.FindByUserIdAndCategoryAndName(0, "Cube", nameof(CubeSetting.TokenExpire));
         Assert.NotNull(restored);
         Assert.Equal(old.ToString(), restored.Value);
 
@@ -109,3 +109,4 @@ public class ConfigAndDbTests
     }
     #endregion
 }
+

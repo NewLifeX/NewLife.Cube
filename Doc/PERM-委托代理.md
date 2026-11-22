@@ -59,7 +59,7 @@
     ↓
 CheckAgent(user) 检查委托代理
     ↓
-查询 PrincipalAgent 表：AgentId = user.ID AND Enable = true
+查询 PrincipalAgent 表：AgentId = user.Id AND Enable = true
     ↓
 ┌──── 无有效记录 ────→ 返回原用户身份
 │
@@ -76,7 +76,7 @@ public IManageUser CheckAgent(IManageUser user)
     if (user == null) return user;
 
     // 1. 查找代理人所有有效的代理项
-    var list = PrincipalAgent.GetAllValidByAgentId(user.ID);
+    var list = PrincipalAgent.GetAllValidByAgentId(user.Id);
     if (list.Count == 0) return user;
 
     // 2. 清理失效记录（次数用完或已过期）

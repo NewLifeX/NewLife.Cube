@@ -127,7 +127,7 @@ public class MfaController : ControllerBaseX
         var userId = _totp.ConsumePendingToken(model.MfaToken);
         if (userId <= 0) return Json(-1, L.T("Invalid or expired mfaToken; please sign in again."));
 
-        var user = XCode.Membership.User.FindByID(userId);
+        var user = XCode.Membership.User.FindById(userId);
         if (user == null) return Json(-1, L.T("User does not exist."));
         if (!user.Enable) return Json(-1, L.T("User is disabled."));
 

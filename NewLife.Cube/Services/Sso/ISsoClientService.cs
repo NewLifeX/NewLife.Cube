@@ -10,7 +10,7 @@ namespace NewLife.Cube.Services.Sso;
 public interface ISsoClientService
 {
     /// <summary>获取第三方 OAuth 客户端</summary>
-    /// <param name="tenantId">当前租户ID，0 表示默认租户</param>
+    /// <param name="tenantId">当前租户Id，0 表示默认租户</param>
     /// <param name="name">OAuth 提供商名称，如 WeChat、DingDing</param>
     /// <returns>封装好的 OAuthClient 实例</returns>
     OAuthClient GetClient(Int32 tenantId, String name);
@@ -62,3 +62,4 @@ public interface ISsoClientService
     /// <summary>本地登录检查地址</summary>
     String LoginUrl { get; set; }
 }
+

@@ -1,4 +1,4 @@
-﻿@using NewLife.Model;
+@using NewLife.Model;
 @using XCode.Membership;
 @using NewLife.Cube.ViewModels;
 @{
@@ -25,7 +25,7 @@
     else
     {
         <a href="@url" target="main" class="nav-link">
-            <i class="far fa-circle nav-icon @icos[item.ID % icos.Length]"></i>
+            <i class="far fa-circle nav-icon @icos[item.Id % icos.Length]"></i>
             <p>@item.DisplayName</p>
         </a>
     }

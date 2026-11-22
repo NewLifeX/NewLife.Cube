@@ -21,7 +21,7 @@
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">@L.T("Succeeded")</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">@L.T("Details")</a></th>
             <th class="text-center" title="@L.T("Trace id. Records the call chain trace id for locating the chain in APM")"><a href="@Html.Raw(page.GetSortUrl("TraceId"))">@L.T("Trace")</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">@L.T("Association")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LinkId"))">@L.T("Association")</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UserName"))">@L.T("User name")</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">@L.T("IP address")</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">@L.T("Physical address")</a></th>
@@ -39,7 +39,7 @@
             <tr>
                 @if (set.EnableSelect)
                 {
-                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.Id" /></td>
                 }
                 <td class="text-center">@entity.Category</td>
                 <td class="text-center">@entity.Action</td>
@@ -53,13 +53,13 @@
                         <a href="@StarHelper.BuildUrl(entity.TraceId)" title="@L.T("Distributed tracing for APM; restores the call chain of this event")" target="_blank">@L.T("Trace")</a>
                     }
                 </td>
-                <td class="text-right">@entity.LinkID.ToString("n0")</td>
+                <td class="text-right">@entity.LinkId.ToString("n0")</td>
                 <td>@entity.UserName</td>
                 <td>@entity.CreateIP</td>
                 <td>@entity.CreateIP.IPToAddress()</td>
                 <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("").TrimPrefix(today)</td>
                 <td class="text-center">
-                    <a href="?act=near&id=@entity.ID&range=10" title="@L.T("10 lines before and after")">@L.T("Nearby")</a>
+                    <a href="?act=near&id=@entity.Id&range=10" title="@L.T("10 lines before and after")">@L.T("Nearby")</a>
                 </td>
                 @if (this.Has(PermissionFlags.Detail))
                 {

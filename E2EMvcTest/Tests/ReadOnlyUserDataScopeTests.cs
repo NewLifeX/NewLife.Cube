@@ -154,7 +154,7 @@ public sealed class ReadOnlyUserDataScopeTests : IAsyncLifetime
         Assert.Equal(1, DatabaseHelper.CountUserConnect(_userId, provider));
         Assert.Equal(1, DatabaseHelper.CountUserConnect(adminId, provider));
 
-        // 数据权限（[DataPermission] UserID={#userId}）：非系统角色只能看到本人绑定
+        // 数据权限（[DataPermission] UserId={#userId}）：非系统角色只能看到本人绑定
         await PageHelpers.GotoAndWaitAsync(_page, $"/Admin/UserConnect?provider={provider}");
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
 
@@ -178,7 +178,7 @@ public sealed class ReadOnlyUserDataScopeTests : IAsyncLifetime
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
         await PageHelpers.AssertTextNotVisibleAsync(_page, "无法取得编号", testId);
 
-        // 管理者字段（ManagerID）决定可见性：自己管理的可见，他人管理（含管理员）不可见
+        // 管理者字段（ManagerId）决定可见性：自己管理的可见，他人管理（含管理员）不可见
         await PageHelpers.AssertTextVisibleAsync(_page, _ownDeptName!, testId);
         await PageHelpers.AssertTextNotVisibleAsync(_page, _otherDeptName!, testId);
     }
@@ -318,3 +318,4 @@ public sealed class ReadOnlyUserDataScopeTests : IAsyncLifetime
 
     #endregion
 }
+

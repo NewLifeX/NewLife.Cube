@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -136,7 +136,7 @@ public static partial class MenuHelper
                     controller = adminRoot.FindByPath(name);
                     if (controller != null)
                     {
-                        controller.ParentID = root.ID;
+                        controller.ParentId = root.Id;
                         controller.Url = url;
                     }
                 }
@@ -169,7 +169,7 @@ public static partial class MenuHelper
             if (entityType != null)
             {
                 var factory = EntityFactory.CreateFactory(entityType);
-                var pk = factory?.Unique?.Name ?? "ID";
+                var pk = factory?.Unique?.Name ?? "Id";
                 EntityPageRegistry.Register(entityType, url, pk);
             }
 
@@ -461,7 +461,7 @@ public static partial class MenuHelper
             foreach (var menu in items)
             {
                 if (menu == null) continue;
-                if (menu.ID > 0 && !visited.Add(menu.ID)) continue;
+                if (menu.Id > 0 && !visited.Add(menu.Id)) continue;
 
                 var name = GetDisplayName(menu) ?? menu.Name;
                 var path = parentPath.IsNullOrEmpty() ? name : $"{parentPath} / {name}";
@@ -483,7 +483,7 @@ public static partial class MenuHelper
 
                         list.Add(new MenuSearchItem
                         {
-                            ID = menu.ID,
+                            Id = menu.Id,
                             Name = menu.Name,
                             DisplayName = name,
                             Url = resolved,

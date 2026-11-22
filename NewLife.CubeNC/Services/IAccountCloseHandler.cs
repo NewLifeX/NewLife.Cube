@@ -19,9 +19,10 @@ namespace NewLife.Cube.Services;
 public interface IAccountCloseHandler
 {
     /// <summary>处理账号注销。可在此删除与账号关联的下游业务数据</summary>
-    /// <param name="user">用户快照。注销脱敏前的数据副本，含 ID/Name/Mail/Mobile 等原始信息</param>
+    /// <param name="user">用户快照。注销脱敏前的数据副本，含 Id/Name/Mail/Mobile 等原始信息</param>
     /// <param name="ip">客户端IP</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns></returns>
     Task HandleAsync(IUser user, String ip, CancellationToken cancellationToken = default);
 }
+

@@ -1,4 +1,4 @@
-﻿@model IList<XCode.Membership.Log>
+@model IList<XCode.Membership.Log>
 @using NewLife;
 @using NewLife.Web;
 @using NewLife.Serialization;
@@ -33,7 +33,7 @@
         if (item.Name.Contains("Remark") || item.Name.Contains("Content"))
             width = "500px";
 
-        if (item.Name == "ID")
+        if (item.Name == "Id")
             fieldName = "id";
         else
             fieldName = item.Name.Substring(0, 1).ToLower() + item.Name.Substring(1);//转为驼峰

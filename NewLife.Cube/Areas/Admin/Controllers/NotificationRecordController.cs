@@ -44,7 +44,7 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
         if (user == null) return false;
         if (entity.UserId == 0) return user.Roles.Any(e => e.IsSystem);
 
-        return entity.UserId == user.ID;
+        return entity.UserId == user.Id;
     }
 
     /// <summary>搜索</summary>
@@ -95,9 +95,10 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
     private static (Int32 userId, Boolean admin, String name) GetCurrentUser()
     {
         var user = ManageProvider.User;
-        var userId = user?.ID ?? 0;
+        var userId = user?.Id ?? 0;
         var admin = user != null && user.Roles.Any(e => e.IsSystem);
 
         return (userId, admin, user + "");
     }
 }
+

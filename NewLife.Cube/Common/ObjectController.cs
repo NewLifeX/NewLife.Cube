@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
@@ -83,7 +83,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
             PageSetting.EnableTableDoubleClick,
             PageSetting.OrderByKey,
             PageSetting.DoubleDelete,
-            menuId = Menu?.ID,
+            menuId = Menu?.Id,
             requiredPermissions = new
             {
                 add = (Int32)PermissionFlags.Insert,

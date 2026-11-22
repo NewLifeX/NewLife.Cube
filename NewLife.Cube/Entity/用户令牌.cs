@@ -18,18 +18,18 @@ namespace NewLife.Cube.Entity;
 [DataObject]
 [Description("用户令牌。授权指定用户访问接口数据，支持有效期")]
 [BindIndex("IU_UserToken_Token", true, "Token")]
-[BindIndex("IX_UserToken_UserID", false, "UserID")]
+[BindIndex("IX_UserToken_UserId", false, "UserId")]
 [BindTable("UserToken", Description = "用户令牌。授权指定用户访问接口数据，支持有效期", ConnName = "Membership", DbType = DatabaseType.None)]
 public partial class UserToken : IEntity<UserTokenModel>
 {
     #region 属性
-    private Int32 _ID;
+    private Int32 _Id;
     /// <summary>编号</summary>
     [DisplayName("编号")]
     [Description("编号")]
     [DataObjectField(true, true, false, 0)]
-    [BindColumn("ID", "编号", "")]
-    public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+    [BindColumn("Id", "编号", "")]
+    public Int32 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
     private String _Token;
     /// <summary>令牌</summary>
@@ -47,13 +47,13 @@ public partial class UserToken : IEntity<UserTokenModel>
     [BindColumn("Url", "地址。锁定该令牌只能访问该资源路径", "")]
     public String Url { get => _Url; set { if (OnPropertyChanging("Url", value)) { _Url = value; OnPropertyChanged("Url"); } } }
 
-    private Int32 _UserID;
+    private Int32 _UserId;
     /// <summary>用户。本地用户</summary>
     [DisplayName("用户")]
     [Description("用户。本地用户")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("UserID", "用户。本地用户", "")]
-    public Int32 UserID { get => _UserID; set { if (OnPropertyChanging("UserID", value)) { _UserID = value; OnPropertyChanged("UserID"); } } }
+    [BindColumn("UserId", "用户。本地用户", "")]
+    public Int32 UserId { get => _UserId; set { if (OnPropertyChanging("UserId", value)) { _UserId = value; OnPropertyChanged("UserId"); } } }
 
     private DateTime _Expire;
     /// <summary>过期时间</summary>
@@ -111,14 +111,14 @@ public partial class UserToken : IEntity<UserTokenModel>
     [BindColumn("LastTime", "最后时间", "")]
     public DateTime LastTime { get => _LastTime; set { if (OnPropertyChanging("LastTime", value)) { _LastTime = value; OnPropertyChanged("LastTime"); } } }
 
-    private Int32 _CreateUserID;
+    private Int32 _CreateUserId;
     /// <summary>创建用户</summary>
     [Category("扩展")]
     [DisplayName("创建用户")]
     [Description("创建用户")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("CreateUserID", "创建用户", "")]
-    public Int32 CreateUserID { get => _CreateUserID; set { if (OnPropertyChanging("CreateUserID", value)) { _CreateUserID = value; OnPropertyChanged("CreateUserID"); } } }
+    [BindColumn("CreateUserId", "创建用户", "")]
+    public Int32 CreateUserId { get => _CreateUserId; set { if (OnPropertyChanging("CreateUserId", value)) { _CreateUserId = value; OnPropertyChanged("CreateUserId"); } } }
 
     private String _CreateIP;
     /// <summary>创建地址</summary>
@@ -138,14 +138,14 @@ public partial class UserToken : IEntity<UserTokenModel>
     [BindColumn("CreateTime", "创建时间", "")]
     public DateTime CreateTime { get => _CreateTime; set { if (OnPropertyChanging("CreateTime", value)) { _CreateTime = value; OnPropertyChanged("CreateTime"); } } }
 
-    private Int32 _UpdateUserID;
+    private Int32 _UpdateUserId;
     /// <summary>更新用户</summary>
     [Category("扩展")]
     [DisplayName("更新用户")]
     [Description("更新用户")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("UpdateUserID", "更新用户", "")]
-    public Int32 UpdateUserID { get => _UpdateUserID; set { if (OnPropertyChanging("UpdateUserID", value)) { _UpdateUserID = value; OnPropertyChanged("UpdateUserID"); } } }
+    [BindColumn("UpdateUserId", "更新用户", "")]
+    public Int32 UpdateUserId { get => _UpdateUserId; set { if (OnPropertyChanging("UpdateUserId", value)) { _UpdateUserId = value; OnPropertyChanged("UpdateUserId"); } } }
 
     private String _UpdateIP;
     /// <summary>更新地址</summary>
@@ -180,10 +180,10 @@ public partial class UserToken : IEntity<UserTokenModel>
     /// <param name="model">模型</param>
     public void Copy(UserTokenModel model)
     {
-        ID = model.ID;
+        Id = model.Id;
         Token = model.Token;
         Url = model.Url;
-        UserID = model.UserID;
+        UserId = model.UserId;
         Expire = model.Expire;
         Enable = model.Enable;
         Times = model.Times;
@@ -191,10 +191,10 @@ public partial class UserToken : IEntity<UserTokenModel>
         FirstTime = model.FirstTime;
         LastIP = model.LastIP;
         LastTime = model.LastTime;
-        CreateUserID = model.CreateUserID;
+        CreateUserId = model.CreateUserId;
         CreateIP = model.CreateIP;
         CreateTime = model.CreateTime;
-        UpdateUserID = model.UpdateUserID;
+        UpdateUserId = model.UpdateUserId;
         UpdateIP = model.UpdateIP;
         UpdateTime = model.UpdateTime;
         Remark = model.Remark;
@@ -209,10 +209,10 @@ public partial class UserToken : IEntity<UserTokenModel>
     {
         get => name switch
         {
-            "ID" => _ID,
+            "Id" => _Id,
             "Token" => _Token,
             "Url" => _Url,
-            "UserID" => _UserID,
+            "UserId" => _UserId,
             "Expire" => _Expire,
             "Enable" => _Enable,
             "Times" => _Times,
@@ -220,10 +220,10 @@ public partial class UserToken : IEntity<UserTokenModel>
             "FirstTime" => _FirstTime,
             "LastIP" => _LastIP,
             "LastTime" => _LastTime,
-            "CreateUserID" => _CreateUserID,
+            "CreateUserId" => _CreateUserId,
             "CreateIP" => _CreateIP,
             "CreateTime" => _CreateTime,
-            "UpdateUserID" => _UpdateUserID,
+            "UpdateUserId" => _UpdateUserId,
             "UpdateIP" => _UpdateIP,
             "UpdateTime" => _UpdateTime,
             "Remark" => _Remark,
@@ -233,10 +233,10 @@ public partial class UserToken : IEntity<UserTokenModel>
         {
             switch (name)
             {
-                case "ID": _ID = value.ToInt(); break;
+                case "Id": _Id = value.ToInt(); break;
                 case "Token": _Token = Convert.ToString(value); break;
                 case "Url": _Url = Convert.ToString(value); break;
-                case "UserID": _UserID = value.ToInt(); break;
+                case "UserId": _UserId = value.ToInt(); break;
                 case "Expire": _Expire = value.ToDateTime(); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
                 case "Times": _Times = value.ToInt(); break;
@@ -244,10 +244,10 @@ public partial class UserToken : IEntity<UserTokenModel>
                 case "FirstTime": _FirstTime = value.ToDateTime(); break;
                 case "LastIP": _LastIP = Convert.ToString(value); break;
                 case "LastTime": _LastTime = value.ToDateTime(); break;
-                case "CreateUserID": _CreateUserID = value.ToInt(); break;
+                case "CreateUserId": _CreateUserId = value.ToInt(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
-                case "UpdateUserID": _UpdateUserID = value.ToInt(); break;
+                case "UpdateUserId": _UpdateUserId = value.ToInt(); break;
                 case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
                 case "UpdateTime": _UpdateTime = value.ToDateTime(); break;
                 case "Remark": _Remark = Convert.ToString(value); break;
@@ -261,6 +261,34 @@ public partial class UserToken : IEntity<UserTokenModel>
     #endregion
 
     #region 扩展查询
+    /// <summary>根据编号查找</summary>
+    /// <param name="id">编号</param>
+    /// <returns>实体对象</returns>
+    public static UserToken FindById(Int32 id)
+    {
+        if (id < 0) return null;
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
+
+        // 单对象缓存
+        return Meta.SingleCache[id];
+
+        //return Find(_.Id == id);
+    }
+
+    /// <summary>根据用户查找</summary>
+    /// <param name="userId">用户</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserToken> FindAllByUserId(Int32 userId)
+    {
+        if (userId < 0) return [];
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UserId == userId);
+
+        return FindAll(_.UserId == userId);
+    }
     #endregion
 
     #region 高级查询
@@ -278,7 +306,7 @@ public partial class UserToken : IEntity<UserTokenModel>
         var exp = new WhereExpression();
 
         if (!token.IsNullOrEmpty()) exp &= _.Token == token;
-        if (userId >= 0) exp &= _.UserID == userId;
+        if (userId >= 0) exp &= _.UserId == userId;
         if (enable != null) exp &= _.Enable == enable;
         exp &= _.UpdateTime.Between(start, end);
         if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
@@ -292,7 +320,7 @@ public partial class UserToken : IEntity<UserTokenModel>
     public partial class _
     {
         /// <summary>编号</summary>
-        public static readonly Field ID = FindByName("ID");
+        public static readonly Field Id = FindByName("Id");
 
         /// <summary>令牌</summary>
         public static readonly Field Token = FindByName("Token");
@@ -301,7 +329,7 @@ public partial class UserToken : IEntity<UserTokenModel>
         public static readonly Field Url = FindByName("Url");
 
         /// <summary>用户。本地用户</summary>
-        public static readonly Field UserID = FindByName("UserID");
+        public static readonly Field UserId = FindByName("UserId");
 
         /// <summary>过期时间</summary>
         public static readonly Field Expire = FindByName("Expire");
@@ -325,7 +353,7 @@ public partial class UserToken : IEntity<UserTokenModel>
         public static readonly Field LastTime = FindByName("LastTime");
 
         /// <summary>创建用户</summary>
-        public static readonly Field CreateUserID = FindByName("CreateUserID");
+        public static readonly Field CreateUserId = FindByName("CreateUserId");
 
         /// <summary>创建地址</summary>
         public static readonly Field CreateIP = FindByName("CreateIP");
@@ -334,7 +362,7 @@ public partial class UserToken : IEntity<UserTokenModel>
         public static readonly Field CreateTime = FindByName("CreateTime");
 
         /// <summary>更新用户</summary>
-        public static readonly Field UpdateUserID = FindByName("UpdateUserID");
+        public static readonly Field UpdateUserId = FindByName("UpdateUserId");
 
         /// <summary>更新地址</summary>
         public static readonly Field UpdateIP = FindByName("UpdateIP");
@@ -352,7 +380,7 @@ public partial class UserToken : IEntity<UserTokenModel>
     public partial class __
     {
         /// <summary>编号</summary>
-        public const String ID = "ID";
+        public const String Id = "Id";
 
         /// <summary>令牌</summary>
         public const String Token = "Token";
@@ -361,7 +389,7 @@ public partial class UserToken : IEntity<UserTokenModel>
         public const String Url = "Url";
 
         /// <summary>用户。本地用户</summary>
-        public const String UserID = "UserID";
+        public const String UserId = "UserId";
 
         /// <summary>过期时间</summary>
         public const String Expire = "Expire";
@@ -385,7 +413,7 @@ public partial class UserToken : IEntity<UserTokenModel>
         public const String LastTime = "LastTime";
 
         /// <summary>创建用户</summary>
-        public const String CreateUserID = "CreateUserID";
+        public const String CreateUserId = "CreateUserId";
 
         /// <summary>创建地址</summary>
         public const String CreateIP = "CreateIP";
@@ -394,7 +422,7 @@ public partial class UserToken : IEntity<UserTokenModel>
         public const String CreateTime = "CreateTime";
 
         /// <summary>更新用户</summary>
-        public const String UpdateUserID = "UpdateUserID";
+        public const String UpdateUserId = "UpdateUserId";
 
         /// <summary>更新地址</summary>
         public const String UpdateIP = "UpdateIP";

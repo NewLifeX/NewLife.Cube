@@ -1,4 +1,4 @@
-﻿@using NewLife.Model;
+@using NewLife.Model;
 @using NewLife.Cube.ViewModels;
 @using NewLife.Serialization;
 @{
@@ -35,14 +35,14 @@
                 if (!menu2.Icon.IsNullOrEmpty())
                     cIcon = menu2.Icon;
 
-                childJson.Add(new { id = menu2.ID, icon = cIcon, title = menu2.DisplayName, link = safeCode + menu2.Url.Replace("~", "") });
+                childJson.Add(new { id = menu2.Id, icon = cIcon, title = menu2.DisplayName, link = safeCode + menu2.Url.Replace("~", "") });
             }
 
-            menusJson.Add(new { id = menu.ID, icon = icon, title = menu.DisplayName, children = childJson });
+            menusJson.Add(new { id = menu.Id, icon = icon, title = menu.DisplayName, children = childJson });
         }
         else
         {
-            menusJson.Add(new { id = menu.ID, icon = icon, title = menu.DisplayName, link = safeCode + menu.Url.Replace("~", "") });
+            menusJson.Add(new { id = menu.Id, icon = icon, title = menu.DisplayName, link = safeCode + menu.Url.Replace("~", "") });
         }
     }
 

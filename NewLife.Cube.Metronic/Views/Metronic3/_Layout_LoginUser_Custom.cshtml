@@ -1,4 +1,4 @@
-﻿@using XCode;
+@using XCode;
 @using NewLife;
 @using NewLife.Common;
 @using XCode.Membership;
@@ -9,7 +9,7 @@
     var userName = "";
     if (user != null)
     {
-        uid = user.ID;
+        uid = user.Id;
         roleName = user.Roles == null ? " " : user.Roles.Join() + " ";
         userName = user.Name + " ( " + user.DisplayName + " ) ";
     }
@@ -67,3 +67,4 @@
     </div>
 </a>-->
 <!--end:Item-->
+

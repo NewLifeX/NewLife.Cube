@@ -1,4 +1,4 @@
-﻿@model IList<XCode.Membership.User>
+@model IList<XCode.Membership.User>
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -18,14 +18,14 @@
             {
                 <th class="text-center min-w-5px"><input type="checkbox" id="chkAll" title="全选" /></th>
             }
-            <th class="text-center min-w-50px"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="text-center min-w-50px"><a href="@Html.Raw(page.GetSortUrl("Id"))">编号</a></th>
             <th class="min-w-50px" title="名称。登录用户名"><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
             <th class="min-w-100px"><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">昵称</a></th>
             <th class="text-center min-w-50px" title="性别。未知、男、女"><a href="@Html.Raw(page.GetSortUrl("Sex"))">性别</a></th>
             <th class="min-w-50px"><a href="@Html.Raw(page.GetSortUrl("Mail"))">邮件</a></th>
             <th class="min-w-50px"><a href="@Html.Raw(page.GetSortUrl("Mobile"))">手机</a></th>
-            <th class="min-w-50px"><a href="@Html.Raw(page.GetSortUrl("DepartmentID"))">部门</a></th>
-            <th class="min-w-100px"><a href="@Html.Raw(page.GetSortUrl("RoleID"))">角色</a></th>
+            <th class="min-w-50px"><a href="@Html.Raw(page.GetSortUrl("DepartmentId"))">部门</a></th>
+            <th class="min-w-100px"><a href="@Html.Raw(page.GetSortUrl("RoleId"))">角色</a></th>
             <th class="text-center min-w-50px"><a href="@Html.Raw(page.GetSortUrl("Online"))">在线</a></th>
             <th class="text-center min-w-50px"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
             <th class="text-right min-w-100px"><a href="@Html.Raw(page.GetSortUrl("Logins"))">登录次数</a></th>
@@ -46,16 +46,16 @@
             <tr>
                 @if (set.EnableSelect)
                 {
-                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.Id" /></td>
                 }
-                <td class="text-center">@entity.ID</td>
+                <td class="text-center">@entity.Id</td>
                 <td>@entity.Name</td>
                 <td>@entity.DisplayName</td>
                 <td class="text-center">@entity.Sex</td>
                 <td>@entity.Mail</td>
                 <td>@entity.Mobile</td>
-                <td><a href="Department?ID=@entity.DepartmentID">@entity.DepartmentName</a></td>
-                <td><a href="Role?ID=@entity.RoleID">@entity.RoleName</a></td>
+                <td><a href="Department?Id=@entity.DepartmentId">@entity.DepartmentName</a></td>
+                <td><a href="Role?Id=@entity.RoleId">@entity.RoleName</a></td>
                 <td class="text-center">
                     <i class="bi bi-@(entity.Online ? "check-lg" : "x-lg") text-@(entity.Online ? "success" : "danger")"></i>
                 </td>
@@ -65,8 +65,8 @@
                 <td class="text-right">@entity.Logins.ToString("n0")</td>
                 <td>@entity.LastLogin.ToFullString("")</td>
                 <td title="@entity.LastLoginAddress">@entity.LastLoginIP</td>
-                <td>@Html.ActionLink("链接", "Index", "UserConnect", new { UserID = entity.ID }, null)</td>
-                <td>@Html.ActionLink("日志", "Index", "Log", new { UserID = entity.ID }, null)</td>
+                <td>@Html.ActionLink("链接", "Index", "UserConnect", new { UserId = entity.Id }, null)</td>
+                <td>@Html.ActionLink("日志", "Index", "Log", new { UserId = entity.Id }, null)</td>
 
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {

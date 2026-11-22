@@ -32,9 +32,18 @@ test.describe('参数管理（标准动态页）', () => {
     const expected = await readListHeaders(page, '/api/Admin/Parameter/meta');
     expect(expected.length).toBeGreaterThan(5);
 
-    const headers = (await page.locator('.el-table__header th').allInnerTexts()).join('|');
-    for (const name of expected.slice(0, 5)) {
-      expect(headers).toContain(name);
+    // 页面 preset 会隐藏部分列（如主键 Id），因此断言「渲染出的列头都来自元数据」，
+    // 而不是要求元数据字段全部出现；最后一列是操作列，不属于元数据。
+    const ths = page.locator('.el-table__header th');
+    const count = await ths.count();
+    const headers: string[] = [];
+    for (let i = 0; i < count - 1; i++) {
+      const text = (await ths.nth(i).innerText()).trim();
+      if (text) headers.push(text);
+    }
+    expect(headers.length).toBeGreaterThanOrEqual(5);
+    for (const header of headers) {
+      expect(expected).toContain(header);
     }
   });
 
@@ -69,8 +78,8 @@ test.describe('参数管理（标准动态页）', () => {
     await page.goto(basePath);
     await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 20000 });
 
-    // 工具栏第一个按钮是「新增」（文案随语言变化，按位置取）
-    await page.locator('.cube-table button').first().click();
+    // 工具栏的「新增」按钮带 data-role="add"（文案随语言变化，按角色取）
+    await page.locator('[data-role="add"]').click();
 
     const dialog = page.locator('.el-dialog').first();
     await expect(dialog).toBeVisible({ timeout: 15000 });

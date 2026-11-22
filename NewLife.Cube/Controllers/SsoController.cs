@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Net;
 using System.Security.Cryptography;
 using System.Xml.Linq;
@@ -201,7 +201,7 @@ public class SsoController : ControllerBaseX
                 var html = client.GetAccessToken(code);
 
                 // 如果拿不到访问令牌或用户信息，则重新跳转
-                if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0 && client.UserName.IsNullOrEmpty())
+                if (client.AccessToken.IsNullOrEmpty() && client.OpenId.IsNullOrEmpty() && client.UserId == 0 && client.UserName.IsNullOrEmpty())
                 {
                     XTrace.WriteLine("[{2}] Failed to obtain an access token; redirecting to SSO for reauthorization, code={0} state={1}", code, state, id);
                     XTrace.WriteLine(Request.GetRawUrl() + "");
@@ -218,7 +218,7 @@ public class SsoController : ControllerBaseX
                 log.RefreshToken = client.RefreshToken;
             }
 
-            // 获取OpenID。部分提供商不需要
+            // 获取OpenId。部分提供商不需要
             if (!client.OpenIDUrl.IsNullOrEmpty()) client.GetOpenID();
 
             // 短时间内不要重复拉取用户信息
@@ -229,13 +229,13 @@ public class SsoController : ControllerBaseX
                 if (!client.UserUrl.IsNullOrEmpty()) client.GetUserInfo();
             }
 
-            if (uc.ID == 0) uc = _bindingService.GetConnect(client);
+            if (uc.Id == 0) uc = _bindingService.GetConnect(client);
             uc.Fill(client);
 
             var url = _clientService.OnLogin(client, HttpContext.RequestServices, uc, log.Action == "Bind", log.UserId);
 
-            log.ConnectId = uc.ID;
-            log.UserId = uc.UserID;
+            log.ConnectId = uc.Id;
+            log.UserId = uc.UserId;
             log.Success = true;
             log.Update();
 
@@ -291,7 +291,7 @@ public class SsoController : ControllerBaseX
             }
 
             // 设置租户
-            HttpContext.ChooseTenant(user.ID);
+            HttpContext.ChooseTenant(user.Id);
 
             // SSO 登录显式持久化选中的租户到 Cookie（与 CompleteLogin 一致，认证路径不再写 Cookie）
             if (_tenantContext.Mode != TenantMode.None)
@@ -414,7 +414,7 @@ public class SsoController : ControllerBaseX
             Scope = client.Scope,
             State = null,
             RedirectUri = url,
-            UserId = user.ID,
+            UserId = user.Id,
             TraceId = DefaultSpan.Current?.TraceId,
         };
         log.Insert();
@@ -433,7 +433,7 @@ public class SsoController : ControllerBaseX
         var user = _clientService.Current;
         if (user == null) throw new Exception(L.T("Please sign in first."));
 
-        var binds = UserConnect.FindAllByUserID(user.ID);
+        var binds = UserConnect.FindAllByUserId(user.Id);
 
         foreach (var uc in binds)
         {
@@ -555,8 +555,8 @@ public class SsoController : ControllerBaseX
         {
             client.GetAccessToken(code);
 
-            if (client.OpenID.IsNullOrEmpty())
-                throw new ApiException(CubeCode.RemotingError.ToInt(), L.T("Failed to obtain OpenID."));
+            if (client.OpenId.IsNullOrEmpty())
+                throw new ApiException(CubeCode.RemotingError.ToInt(), L.T("Failed to obtain OpenId."));
 
             log.AccessToken = client.AccessToken;
             log.RefreshToken = client.RefreshToken;
@@ -580,8 +580,8 @@ public class SsoController : ControllerBaseX
             if (CubeSetting.Current.EnableTenant)
                 HttpContext.EnsureTenantUser(user, HttpContext.GetUserHost());
 
-            log.ConnectId = uc.ID;
-            log.UserId = uc.UserID;
+            log.ConnectId = uc.Id;
+            log.UserId = uc.UserId;
             log.Success = true;
             log.Update();
 
@@ -960,7 +960,7 @@ public class SsoController : ControllerBaseX
         }
     }
 
-    /// <summary>OpenID Connect 发现文档</summary>
+    /// <summary>OpenId Connect 发现文档</summary>
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
@@ -1013,7 +1013,7 @@ public class SsoController : ControllerBaseX
 
         if (av.IsNullOrEmpty() && !set.AvatarPath.IsNullOrEmpty())
         {
-            var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.ID);
+            var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.Id);
             av = found;
         }
 
@@ -1046,3 +1046,4 @@ public class SsoController : ControllerBaseX
     }
     #endregion
 }
+

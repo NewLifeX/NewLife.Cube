@@ -1,4 +1,4 @@
-﻿using System.Xml.Linq;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using NewLife.Log;
 using NewLife.Serialization;
@@ -43,7 +43,7 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
     /// <returns>逐条读取的密钥 XML 元素序列</returns>
     private IEnumerable<XElement> GetAllElementsCore()
     {
-        var list = Parameter.FindAllByUserID(0, _key);
+        var list = Parameter.FindAllByUserIdAndCategory(0, _key);
         foreach (var item in list)
         {
             var value = item.GetValue() as String;
@@ -66,7 +66,7 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
     /// <param name="state">定时器状态对象，未使用</param>
     private void TrimExpired(Object state)
     {
-        var list = Parameter.FindAllByUserID(0, _key);
+        var list = Parameter.FindAllByUserIdAndCategory(0, _key);
         foreach (var item in list)
         {
             var value = item.GetValue() as String;
@@ -84,3 +84,5 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
         }
     }
 }
+
+

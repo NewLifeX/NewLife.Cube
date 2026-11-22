@@ -20,7 +20,7 @@ public static class SvgAvatarService
 {
     #region 颜色常量
 
-    /// <summary>渐变配色池（亮端→暗端）。全用户按用户ID哈希选取，保证同一用户颜色稳定，对齐 ui-avatars 等主流文字头像按名称/ID 取色的做法</summary>
+    /// <summary>渐变配色池（亮端→暗端）。全用户按用户Id哈希选取，保证同一用户颜色稳定，对齐 ui-avatars 等主流文字头像按名称/Id 取色的做法</summary>
     private static readonly (String Light, String Dark)[] _colors =
     [
         ("#F44336", "#B71C1C"), // 红
@@ -46,7 +46,7 @@ public static class SvgAvatarService
     #region 主入口
 
     /// <summary>根据用户信息生成 SVG 文字头像内容，优先从缓存获取</summary>
-    /// <param name="user">用户对象，读取显示名、ID</param>
+    /// <param name="user">用户对象，读取显示名、Id</param>
     /// <param name="chars">显示字符数，支持 1~3，默认 1</param>
     /// <returns>SVG 字符串</returns>
     public static String Generate(IUser user, Int32 chars = 1)
@@ -56,7 +56,7 @@ public static class SvgAvatarService
         if (chars > 3) chars = 3;
 
         // 从缓存获取，key 含 chars 以支持运行时更改配置
-        var cacheKey = $"cube:avatar:svg:{user.ID}:{chars}";
+        var cacheKey = $"cube:avatar:svg:{user.Id}:{chars}";
         var cached = MemoryCache.Instance.Get<String>(cacheKey);
         if (!cached.IsNullOrEmpty()) return cached;
 
@@ -78,9 +78,9 @@ public static class SvgAvatarService
 
         var text = ExtractChars(name, chars);
 
-        // 全用户按用户ID哈希从调色板取色，保证同一用户颜色稳定（主流文字头像服务按名称/ID 哈希取色，不按性别）
+        // 全用户按用户Id哈希从调色板取色，保证同一用户颜色稳定（主流文字头像服务按名称/Id 哈希取色，不按性别）
         // Math.Abs(Int32) 对 Int32.MinValue 会溢出抛异常，用 Int64 取模避免极端边界崩溃
-        var (light, dark) = _colors[Math.Abs((Int64)user.ID) % _colors.Length];
+        var (light, dark) = _colors[Math.Abs((Int64)user.Id) % _colors.Length];
 
         return BuildSvg(text, light, dark);
     }
@@ -239,3 +239,4 @@ public static class SvgAvatarService
 
     #endregion
 }
+

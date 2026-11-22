@@ -1,4 +1,4 @@
-﻿using NewLife.Caching;
+using NewLife.Caching;
 using NewLife.Serialization;
 using XCode.Membership;
 
@@ -23,7 +23,7 @@ public class QuickLinkWidget : IWidget
         var urls = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
 
         // 最近访问优先：菜单需存在、可见且有权限才展示，最多 10 个
-        foreach (var item in GetRecent(user.ID))
+        foreach (var item in GetRecent(user.Id))
         {
             var menu = ManageProvider.Menu?.FindByUrl(item.Url);
             if (!CanAccess(user, menu)) continue;
@@ -166,7 +166,7 @@ public class QuickLinkWidget : IWidget
     {
         try
         {
-            var p = Parameter.FindByUserIDAndCategoryAndName(userId, "Visit", "Recent_Pages");
+            var p = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages");
             var json = p?.Value ?? p?.LongValue;
             if (json.IsNullOrEmpty()) return [];
 
@@ -212,7 +212,7 @@ public class QuickLinkWidget : IWidget
                 .Where(e => e.Visible && !e.Url.IsNullOrEmpty() && !e.Url.EqualIgnoreCase("/Admin/Index/Dashboard"))
                 .Where(e => user.Has(e, PermissionFlags.Detail))
                 .OrderByDescending(e => e.UpdateTime)
-                .ThenByDescending(e => e.ID);
+                .ThenByDescending(e => e.Id);
         }
         catch
         {
@@ -221,3 +221,5 @@ public class QuickLinkWidget : IWidget
     }
     #endregion
 }
+
+

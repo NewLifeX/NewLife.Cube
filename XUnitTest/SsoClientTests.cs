@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using NewLife.Cube.Web;
@@ -51,7 +51,7 @@ public class SsoClientTests
 
         var user = await client.GetUser(token.AccessToken) as User;
         Assert.NotNull(user);
-        Assert.Equal(1, user.ID);
+        Assert.Equal(1, user.Id);
         Assert.Equal("admin", user.Name);
         Assert.Equal("管理员", user.DisplayName);
 

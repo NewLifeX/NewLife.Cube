@@ -1,4 +1,4 @@
-﻿@model IList<XCode.Membership.Menu>
+@model IList<XCode.Membership.Menu>
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -15,7 +15,7 @@
             {
                 <th class="text-center" style="width:10px;"><label class="checkbox checkbox-single"><input class="checkable" type="checkbox" id="chkAll" title="全选" /><span/></label></th>
             }
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Id"))">编号</a></th>
             <th><a href="@Html.Raw(page.GetSortUrl("TreeNodeName"))">节点名</a></th>
             <th><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">显示名</a></th>
             <th><a href="@Html.Raw(page.GetSortUrl("Url"))">链接</a></th>
@@ -40,13 +40,13 @@
             {
                 p = fact.EntityType.GetValue("Root") as IEntityTree;
             }
-            var id = entity.ID;
+            var id = entity.Id;
             <tr>
                 @if (set.EnableSelect)
                 {
-                    <td class="text-center"><label class="checkbox checkbox-single"><input type="checkbox" name="keys" value="@entity.ID" /><span/></label></td>
+                    <td class="text-center"><label class="checkbox checkbox-single"><input type="checkbox" name="keys" value="@entity.Id" /><span/></label></td>
                 }
-                <td class="text-center">@entity.ID</td>
+                <td class="text-center">@entity.Id</td>
                 <td>@entity.TreeNodeName</td>
                 <td>@entity.DisplayName</td>
                 <td>@entity.Url</td>

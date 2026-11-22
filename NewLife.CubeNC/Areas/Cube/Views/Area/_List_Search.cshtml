@@ -7,7 +7,7 @@
     var p = ViewBag.Page as Pager;
 }
 <a href="/Cube/Area/Map" target="_blank">@L.T("Map")</a> &nbsp;
-@Html.ActionLink(L.T("All provinces"), "Index", new { ParentID = 0 })
+@Html.ActionLink(L.T("All provinces"), "Index", new { ParentId = 0 })
 @await Html.PartialAsync("_Area3", "")
 <div class="form-group">
     <label for="idStart" class="control-label">@L.T("Code range:")</label>

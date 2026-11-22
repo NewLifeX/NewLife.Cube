@@ -21,11 +21,11 @@ public class MenuTreeTests
         var perms = new Dictionary<Int32, String> { { 1, "查看" }, { 2, "编辑" } };
         var tree = new MenuTree
         {
-            ID = 2,
+            Id = 2,
             Name = "Admin",
             DisplayName = "系统管理",
             FullName = "NewLife.Cube.Areas.Admin.Controllers",
-            ParentID = 0,
+            ParentId = 0,
             Url = "/Admin",
             Icon = "fa-desktop",
             Visible = true,
@@ -33,11 +33,11 @@ public class MenuTreeTests
             Permissions = perms
         };
 
-        Assert.Equal(2, tree.ID);
+        Assert.Equal(2, tree.Id);
         Assert.Equal("Admin", tree.Name);
         Assert.Equal("系统管理", tree.DisplayName);
         Assert.Equal("NewLife.Cube.Areas.Admin.Controllers", tree.FullName);
-        Assert.Equal(0, tree.ParentID);
+        Assert.Equal(0, tree.ParentId);
         Assert.Equal("/Admin", tree.Url);
         Assert.Equal("fa-desktop", tree.Icon);
         Assert.True(tree.Visible);
@@ -46,22 +46,22 @@ public class MenuTreeTests
     }
 
     [Fact]
-    [DisplayName("ParentID 可为 null")]
+    [DisplayName("ParentId 可为 null")]
     public void ParentID_CanBeNull()
     {
         var tree = new MenuTree();
-        Assert.Null(tree.ParentID);
+        Assert.Null(tree.ParentId);
 
-        tree.ParentID = null;
-        Assert.Null(tree.ParentID);
+        tree.ParentId = null;
+        Assert.Null(tree.ParentId);
     }
 
     [Fact]
-    [DisplayName("ParentID 可设置为零")]
+    [DisplayName("ParentId 可设置为零")]
     public void ParentID_CanBeZero()
     {
-        var tree = new MenuTree { ParentID = 0 };
-        Assert.Equal(0, tree.ParentID);
+        var tree = new MenuTree { ParentId = 0 };
+        Assert.Equal(0, tree.ParentId);
     }
 
     [Fact]
@@ -131,12 +131,12 @@ public class MenuTreeTests
         // 先构建一个能懒加载子菜单的树
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin" }
+            new MockMenu { Id = 1, Name = "Admin" }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
             m => null,
-            list => list == null ? null : list.Select(x => new MenuTree { ID = x.ID, Name = x.Name }).ToList() is { Count: > 0 } l ? l : null,
+            list => list == null ? null : list.Select(x => new MenuTree { Id = x.Id, Name = x.Name }).ToList() is { Count: > 0 } l ? l : null,
             menus);
 
         Assert.NotNull(result);
@@ -145,7 +145,7 @@ public class MenuTreeTests
         // Children getter 通过静态委托返回 null（因为 getChildrenSrc 返回 null）
         var before = item.Children;
         // setter 是空实现，不应影响 getter
-        item.Children = new List<MenuTree> { new MenuTree { ID = 99 } };
+        item.Children = new List<MenuTree> { new MenuTree { Id = 99 } };
         var after = item.Children;
 
         Assert.Equal(before?.Count, after?.Count);
@@ -162,7 +162,7 @@ public class MenuTreeTests
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
             m => [],
             null,
-            [new MockMenu { ID = 1, Name = "Test" }]);
+            [new MockMenu { Id = 1, Name = "Test" }]);
 
         Assert.Null(result);
     }
@@ -200,11 +200,11 @@ public class MenuTreeTests
         {
             new MockMenu
             {
-                ID = 2,
+                Id = 2,
                 Name = "Admin",
                 DisplayName = "系统管理",
                 FullName = "NewLife.Cube.Areas.Admin.Controllers",
-                ParentID = 0,
+                ParentId = 0,
                 Url = "/Admin",
                 Icon = "fa-desktop",
                 Visible = true,
@@ -222,11 +222,11 @@ public class MenuTreeTests
         Assert.Single(result);
 
         var item = result[0];
-        Assert.Equal(2, item.ID);
+        Assert.Equal(2, item.Id);
         Assert.Equal("Admin", item.Name);
         Assert.Equal("系统管理", item.DisplayName);
         Assert.Equal("NewLife.Cube.Areas.Admin.Controllers", item.FullName);
-        Assert.Equal(0, item.ParentID);
+        Assert.Equal(0, item.ParentId);
         Assert.Equal("/Admin", item.Url);
         Assert.Equal("fa-desktop", item.Icon);
         Assert.True(item.Visible);
@@ -240,9 +240,9 @@ public class MenuTreeTests
     {
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin", DisplayName = "系统管理" },
-            new MockMenu { ID = 2, Name = "School", DisplayName = "教务系统" },
-            new MockMenu { ID = 3, Name = "Log", DisplayName = "日志" }
+            new MockMenu { Id = 1, Name = "Admin", DisplayName = "系统管理" },
+            new MockMenu { Id = 2, Name = "School", DisplayName = "教务系统" },
+            new MockMenu { Id = 3, Name = "Log", DisplayName = "日志" }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
@@ -263,18 +263,18 @@ public class MenuTreeTests
     {
         var childMap = new Dictionary<Int32, List<MockMenu>>
         {
-            [1] = [new MockMenu { ID = 11, Name = "User", ParentID = 1, Url = "/Admin/User" }],
-            [2] = [new MockMenu { ID = 21, Name = "Student", ParentID = 2, Url = "/School/Student" }]
+            [1] = [new MockMenu { Id = 11, Name = "User", ParentId = 1, Url = "/Admin/User" }],
+            [2] = [new MockMenu { Id = 21, Name = "Student", ParentId = 2, Url = "/School/Student" }]
         };
 
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin" },
-            new MockMenu { ID = 2, Name = "School" }
+            new MockMenu { Id = 1, Name = "Admin" },
+            new MockMenu { Id = 2, Name = "School" }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
-            m => childMap.TryGetValue(m.ID, out var c) ? c : null,
+            m => childMap.TryGetValue(m.Id, out var c) ? c : null,
             list => ProjectMenus(list),
             menus);
 
@@ -284,13 +284,13 @@ public class MenuTreeTests
         var adminChildren = result[0].Children;
         Assert.NotNull(adminChildren);
         Assert.Single(adminChildren);
-        Assert.Equal(11, adminChildren[0].ID);
+        Assert.Equal(11, adminChildren[0].Id);
         Assert.Equal("User", adminChildren[0].Name);
 
         var schoolChildren = result[1].Children;
         Assert.NotNull(schoolChildren);
         Assert.Single(schoolChildren);
-        Assert.Equal(21, schoolChildren[0].ID);
+        Assert.Equal(21, schoolChildren[0].Id);
         Assert.Equal("Student", schoolChildren[0].Name);
     }
 
@@ -300,7 +300,7 @@ public class MenuTreeTests
     {
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin" }
+            new MockMenu { Id = 1, Name = "Admin" }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
@@ -319,7 +319,7 @@ public class MenuTreeTests
     {
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin" }
+            new MockMenu { Id = 1, Name = "Admin" }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
@@ -339,14 +339,14 @@ public class MenuTreeTests
         // 控制器代码：DisplayName = menu.DisplayName ?? menu.Name
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Abc", DisplayName = null }
+            new MockMenu { Id = 1, Name = "Abc", DisplayName = null }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
             m => null,
             list => list?.Select(m => new MenuTree
             {
-                ID = m.ID,
+                Id = m.Id,
                 Name = m.Name,
                 DisplayName = m.DisplayName ?? m.Name
             }).ToList() is { Count: > 0 } l ? l : null,
@@ -364,8 +364,8 @@ public class MenuTreeTests
         // 控制器原代码注释掉了 where m.Visible 过滤
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin", Visible = true },
-            new MockMenu { ID = 2, Name = "Abc", Visible = false }
+            new MockMenu { Id = 1, Name = "Admin", Visible = true },
+            new MockMenu { Id = 2, Name = "Abc", Visible = false }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
@@ -385,15 +385,15 @@ public class MenuTreeTests
     {
         var level3 = new List<MockMenu>
         {
-            new MockMenu { ID = 111, Name = "Add", ParentID = 11, Url = "/Admin/User/Add" }
+            new MockMenu { Id = 111, Name = "Add", ParentId = 11, Url = "/Admin/User/Add" }
         };
         var level2 = new List<MockMenu>
         {
-            new MockMenu { ID = 11, Name = "User", ParentID = 1, Url = "/Admin/User" }
+            new MockMenu { Id = 11, Name = "User", ParentId = 1, Url = "/Admin/User" }
         };
         var level1 = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin", ParentID = 0, Url = "/Admin" }
+            new MockMenu { Id = 1, Name = "Admin", ParentId = 0, Url = "/Admin" }
         };
 
         var childMap = new Dictionary<Int32, List<MockMenu>>
@@ -403,7 +403,7 @@ public class MenuTreeTests
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
-            m => childMap.TryGetValue(m.ID, out var c) ? c : null,
+            m => childMap.TryGetValue(m.Id, out var c) ? c : null,
             list => ProjectMenus(list),
             level1);
 
@@ -428,8 +428,8 @@ public class MenuTreeTests
     [DisplayName("GetMenuTree 多次调用，后一次覆盖静态委托")]
     public void GetMenuTree_MultipleInvocations_LastWins()
     {
-        var menus1 = new List<MockMenu> { new MockMenu { ID = 1, Name = "First" } };
-        var menus2 = new List<MockMenu> { new MockMenu { ID = 2, Name = "Second" } };
+        var menus1 = new List<MockMenu> { new MockMenu { Id = 1, Name = "First" } };
+        var menus2 = new List<MockMenu> { new MockMenu { Id = 2, Name = "Second" } };
 
         var result1 = MenuTree.GetMenuTree<IList<MockMenu>>(
             m => null, list => ProjectMenus(list), menus1);
@@ -453,11 +453,11 @@ public class MenuTreeTests
     {
         // 对应控制器代码：
         // if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) menus = menus[0].Childs;
-        var child1 = new MockMenu { ID = 11, Name = "User", Childs = [new MockMenu { ID = 111 }] };
-        var child2 = new MockMenu { ID = 12, Name = "Role", Childs = [new MockMenu { ID = 121 }] };
+        var child1 = new MockMenu { Id = 11, Name = "User", Childs = [new MockMenu { Id = 111 }] };
+        var child2 = new MockMenu { Id = 12, Name = "Role", Childs = [new MockMenu { Id = 121 }] };
         var topLevel = new MockMenu
         {
-            ID = 1,
+            Id = 1,
             Name = "Root",
             Childs = new List<IMenu> { child1, child2 }
         };
@@ -477,8 +477,8 @@ public class MenuTreeTests
     [DisplayName("提升规则：多个顶级菜单时不触发提升")]
     public void FilterLogic_MultipleTopLevel_NoPromotion()
     {
-        var top1 = new MockMenu { ID = 1, Name = "Admin", Childs = [new MockMenu { ID = 11, Childs = [new MockMenu { ID = 111 }] }] };
-        var top2 = new MockMenu { ID = 2, Name = "School", Childs = [new MockMenu { ID = 21, Childs = [new MockMenu { ID = 211 }] }] };
+        var top1 = new MockMenu { Id = 1, Name = "Admin", Childs = [new MockMenu { Id = 11, Childs = [new MockMenu { Id = 111 }] }] };
+        var top2 = new MockMenu { Id = 2, Name = "School", Childs = [new MockMenu { Id = 21, Childs = [new MockMenu { Id = 211 }] }] };
         IList<IMenu> menus = new List<IMenu> { top1, top2 };
 
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0))
@@ -494,9 +494,9 @@ public class MenuTreeTests
     public void FilterLogic_SingleTopLevelWithLeafChild_NoPromotion()
     {
         // child2 没有子节点（叶子），不满足 All(m => m.Childs.Count > 0)
-        var child1 = new MockMenu { ID = 11, Name = "User", Childs = [new MockMenu { ID = 111 }] };
-        var child2 = new MockMenu { ID = 12, Name = "Role", Childs = [] };  // 叶子节点
-        var topLevel = new MockMenu { ID = 1, Name = "Root", Childs = new List<IMenu> { child1, child2 } };
+        var child1 = new MockMenu { Id = 11, Name = "User", Childs = [new MockMenu { Id = 111 }] };
+        var child2 = new MockMenu { Id = 12, Name = "Role", Childs = [] };  // 叶子节点
+        var topLevel = new MockMenu { Id = 1, Name = "Root", Childs = new List<IMenu> { child1, child2 } };
 
         IList<IMenu> menus = new List<IMenu> { topLevel };
 
@@ -512,11 +512,11 @@ public class MenuTreeTests
     public void FilterLogic_DefaultModule_KeepsOnlyTwoLevelMenus()
     {
         // 控制器逻辑：var ms = menus.Where(e => e.Childs.All(x => x.Childs.Count == 0)).ToList()
-        var adminChild = new MockMenu { ID = 21, Name = "User", Childs = [] };        // 叶子
-        var schoolChild = new MockMenu { ID = 31, Name = "Student", Childs = [new MockMenu { ID = 311 }] };  // 有子级
+        var adminChild = new MockMenu { Id = 21, Name = "User", Childs = [] };        // 叶子
+        var schoolChild = new MockMenu { Id = 31, Name = "Student", Childs = [new MockMenu { Id = 311 }] };  // 有子级
 
-        var adminMenu = new MockMenu { ID = 2, Name = "Admin", Childs = new List<IMenu> { adminChild } };
-        var schoolMenu = new MockMenu { ID = 3, Name = "School", Childs = new List<IMenu> { schoolChild } };
+        var adminMenu = new MockMenu { Id = 2, Name = "Admin", Childs = new List<IMenu> { adminChild } };
+        var schoolMenu = new MockMenu { Id = 3, Name = "School", Childs = new List<IMenu> { schoolChild } };
 
         var menus = new List<IMenu> { adminMenu, schoolMenu };
 
@@ -532,9 +532,9 @@ public class MenuTreeTests
     public void FilterLogic_DefaultModule_FallbackToFirstNonEmpty()
     {
         // 所有顶级菜单的子菜单都有更深层，导致 ms 初始为空
-        var deepChild = new MockMenu { ID = 111, Childs = [] };
-        var midChild = new MockMenu { ID = 11, Name = "User", Childs = new List<IMenu> { deepChild } };
-        var adminMenu = new MockMenu { ID = 1, Name = "Admin", Childs = new List<IMenu> { midChild } };
+        var deepChild = new MockMenu { Id = 111, Childs = [] };
+        var midChild = new MockMenu { Id = 11, Name = "User", Childs = new List<IMenu> { deepChild } };
+        var adminMenu = new MockMenu { Id = 1, Name = "Admin", Childs = new List<IMenu> { midChild } };
 
         var menus = new List<IMenu> { adminMenu };
 
@@ -577,16 +577,16 @@ public class MenuTreeTests
         // 控制器逻辑：
         // var ms = menus.FirstOrDefault(e => e.Name.EqualIgnoreCase("base"))?.Childs ?? [];
         // foreach (var item in menus) { if (!base && item.Childs.All(e => e.Childs.Count == 0)) ms.Add(item); }
-        var baseChild = new MockMenu { ID = 11, Name = "Config" };
-        var baseMenu = new MockMenu { ID = 1, Name = "Base", Childs = new List<IMenu> { baseChild } };
+        var baseChild = new MockMenu { Id = 11, Name = "Config" };
+        var baseMenu = new MockMenu { Id = 1, Name = "Base", Childs = new List<IMenu> { baseChild } };
 
-        var adminLeafChild = new MockMenu { ID = 21, Name = "Cfg", Childs = [] };  // 叶子
-        var adminMenu = new MockMenu { ID = 2, Name = "Admin", Childs = new List<IMenu> { adminLeafChild } };
+        var adminLeafChild = new MockMenu { Id = 21, Name = "Cfg", Childs = [] };  // 叶子
+        var adminMenu = new MockMenu { Id = 2, Name = "Admin", Childs = new List<IMenu> { adminLeafChild } };
 
         // School 有三级菜单，不符合条件
-        var schoolDeep = new MockMenu { ID = 311, Childs = [] };
-        var schoolChild = new MockMenu { ID = 31, Childs = new List<IMenu> { schoolDeep } };
-        var schoolMenu = new MockMenu { ID = 3, Name = "School", Childs = new List<IMenu> { schoolChild } };
+        var schoolDeep = new MockMenu { Id = 311, Childs = [] };
+        var schoolChild = new MockMenu { Id = 31, Childs = new List<IMenu> { schoolDeep } };
+        var schoolMenu = new MockMenu { Id = 3, Name = "School", Childs = new List<IMenu> { schoolChild } };
 
         var menus = new List<IMenu> { baseMenu, adminMenu, schoolMenu };
 
@@ -607,8 +607,8 @@ public class MenuTreeTests
     [DisplayName("base 模块过滤：没有 base 菜单时仅返回符合条件的其他模块")]
     public void FilterLogic_BaseModule_NoBaseMenuExists()
     {
-        var adminLeafChild = new MockMenu { ID = 21, Name = "User", Childs = [] };
-        var adminMenu = new MockMenu { ID = 2, Name = "Admin", Childs = new List<IMenu> { adminLeafChild } };
+        var adminLeafChild = new MockMenu { Id = 21, Name = "User", Childs = [] };
+        var adminMenu = new MockMenu { Id = 2, Name = "Admin", Childs = new List<IMenu> { adminLeafChild } };
         var menus = new List<IMenu> { adminMenu };
 
         var msList = (menus.FirstOrDefault(e => e.Name.EqualIgnoreCase("base"))?.Childs?.ToList() ?? []).Cast<IMenu>().ToList();
@@ -626,10 +626,10 @@ public class MenuTreeTests
     [DisplayName("指定 module 名称：返回该模块的子菜单列表")]
     public void FilterLogic_SpecificModule_ReturnsModuleChildren()
     {
-        var adminChild1 = new MockMenu { ID = 21, Name = "User", ParentID = 2 };
-        var adminChild2 = new MockMenu { ID = 22, Name = "Role", ParentID = 2 };
-        var adminMenu = new MockMenu { ID = 2, Name = "Admin", Childs = new List<IMenu> { adminChild1, adminChild2 } };
-        var schoolMenu = new MockMenu { ID = 3, Name = "School" };
+        var adminChild1 = new MockMenu { Id = 21, Name = "User", ParentId = 2 };
+        var adminChild2 = new MockMenu { Id = 22, Name = "Role", ParentId = 2 };
+        var adminMenu = new MockMenu { Id = 2, Name = "Admin", Childs = new List<IMenu> { adminChild1, adminChild2 } };
+        var schoolMenu = new MockMenu { Id = 3, Name = "School" };
 
         var menus = new List<IMenu> { adminMenu, schoolMenu };
         String module = "admin";
@@ -645,8 +645,8 @@ public class MenuTreeTests
     [DisplayName("指定 module 名称大小写不敏感")]
     public void FilterLogic_SpecificModule_CaseInsensitive()
     {
-        var child = new MockMenu { ID = 11, Name = "Index", ParentID = 1 };
-        var adminMenu = new MockMenu { ID = 1, Name = "Admin", Childs = new List<IMenu> { child } };
+        var child = new MockMenu { Id = 11, Name = "Index", ParentId = 1 };
+        var adminMenu = new MockMenu { Id = 1, Name = "Admin", Childs = new List<IMenu> { child } };
         var menus = new List<IMenu> { adminMenu };
 
         // 大写
@@ -665,7 +665,7 @@ public class MenuTreeTests
     [DisplayName("指定不存在的 module 时返回空列表")]
     public void FilterLogic_NonExistentModule_ReturnsEmptyList()
     {
-        var adminMenu = new MockMenu { ID = 2, Name = "Admin" };
+        var adminMenu = new MockMenu { Id = 2, Name = "Admin" };
         var menus = new List<IMenu> { adminMenu };
         String module = "NonExistent";
 
@@ -678,7 +678,7 @@ public class MenuTreeTests
     [DisplayName("指定模块子菜单为空时返回空列表")]
     public void FilterLogic_SpecificModule_EmptyChildren_ReturnsEmpty()
     {
-        var adminMenu = new MockMenu { ID = 2, Name = "Admin", Childs = [] };
+        var adminMenu = new MockMenu { Id = 2, Name = "Admin", Childs = [] };
         var menus = new List<IMenu> { adminMenu };
         String module = "Admin";
 
@@ -701,11 +701,11 @@ public class MenuTreeTests
         {
             new MockMenu
             {
-                ID = 2,
+                Id = 2,
                 Name = "Admin",
                 DisplayName = "系统管理",
                 FullName = "NewLife.Cube.Areas.Admin.Controllers",
-                ParentID = 0,
+                ParentId = 0,
                 Url = "/Admin",
                 Icon = "fa-desktop",
                 Visible = true,
@@ -718,7 +718,7 @@ public class MenuTreeTests
             m => null,
             list => list?.Select(x => new MenuTree
             {
-                ID = x.ID,
+                Id = x.Id,
                 Name = x.Name,
                 DisplayName = x.DisplayName ?? x.Name,
                 FullName = x.FullName,
@@ -726,7 +726,7 @@ public class MenuTreeTests
                 Icon = x.Icon,
                 Visible = x.Visible,
                 NewWindow = x.NewWindow,
-                ParentID = x.ParentID,
+                ParentId = x.ParentId,
                 Permissions = x.Permissions
             }).ToList() is { Count: > 0 } l ? l : null,
             menus);
@@ -736,11 +736,11 @@ public class MenuTreeTests
         Assert.Single(result);
 
         var admin = result[0];
-        Assert.Equal(2, admin.ID);
+        Assert.Equal(2, admin.Id);
         Assert.Equal("Admin", admin.Name);
         Assert.Equal("系统管理", admin.DisplayName);
         Assert.Equal("NewLife.Cube.Areas.Admin.Controllers", admin.FullName);
-        Assert.Equal(0, admin.ParentID);
+        Assert.Equal(0, admin.ParentId);
         Assert.Equal("/Admin", admin.Url);
         Assert.Equal("fa-desktop", admin.Icon);
         Assert.True(admin.Visible);
@@ -755,8 +755,8 @@ public class MenuTreeTests
     {
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 2, Name = "Admin", DisplayName = "系统管理", Url = "/Admin", ParentID = 0, Visible = true },
-            new MockMenu { ID = 34, Name = "School", DisplayName = "教务系统", Url = "/School", ParentID = 0, Visible = true }
+            new MockMenu { Id = 2, Name = "Admin", DisplayName = "系统管理", Url = "/Admin", ParentId = 0, Visible = true },
+            new MockMenu { Id = 34, Name = "School", DisplayName = "教务系统", Url = "/School", ParentId = 0, Visible = true }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
@@ -768,27 +768,27 @@ public class MenuTreeTests
         Assert.Equal(2, result.Count);
         Assert.Equal("Admin", result[0].Name);
         Assert.Equal("School", result[1].Name);
-        Assert.Equal(0, result[0].ParentID);
-        Assert.Equal(0, result[1].ParentID);
+        Assert.Equal(0, result[0].ParentId);
+        Assert.Equal(0, result[1].ParentId);
     }
 
     [Fact]
-    [DisplayName("GetMenuTree 子菜单 ParentID 正确映射")]
+    [DisplayName("GetMenuTree 子菜单 ParentId 正确映射")]
     public void Scenario_ChildMenus_ParentIDMappedCorrectly()
     {
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 2, Name = "Admin", ParentID = 0 }
+            new MockMenu { Id = 2, Name = "Admin", ParentId = 0 }
         };
 
         var adminChildren = new List<MockMenu>
         {
-            new MockMenu { ID = 21, Name = "User", ParentID = 2 },
-            new MockMenu { ID = 22, Name = "Role", ParentID = 2 }
+            new MockMenu { Id = 21, Name = "User", ParentId = 2 },
+            new MockMenu { Id = 22, Name = "Role", ParentId = 2 }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
-            m => m.ID == 2 ? adminChildren : null,
+            m => m.Id == 2 ? adminChildren : null,
             list => ProjectMenus(list),
             menus);
 
@@ -796,8 +796,8 @@ public class MenuTreeTests
         var children = result[0].Children;
         Assert.NotNull(children);
         Assert.Equal(2, children.Count);
-        Assert.Equal(2, children[0].ParentID);
-        Assert.Equal(2, children[1].ParentID);
+        Assert.Equal(2, children[0].ParentId);
+        Assert.Equal(2, children[1].ParentId);
     }
 
     #endregion
@@ -810,11 +810,11 @@ public class MenuTreeTests
     {
         var tree = new MenuTree();
 
-        Assert.Equal(0, tree.ID);
+        Assert.Equal(0, tree.Id);
         Assert.Null(tree.Name);
         Assert.Null(tree.DisplayName);
         Assert.Null(tree.FullName);
-        Assert.Null(tree.ParentID);
+        Assert.Null(tree.ParentId);
         Assert.Null(tree.Url);
         Assert.Null(tree.Icon);
         Assert.False(tree.Visible);
@@ -836,21 +836,21 @@ public class MenuTreeTests
     }
 
     [Fact]
-    [DisplayName("极大 ID 值可正确存储和读取")]
+    [DisplayName("极大 Id 值可正确存储和读取")]
     public void MenuTree_LargeIdValue_Stored()
     {
-        var tree = new MenuTree { ID = Int32.MaxValue, ParentID = Int32.MaxValue - 1 };
+        var tree = new MenuTree { Id = Int32.MaxValue, ParentId = Int32.MaxValue - 1 };
 
-        Assert.Equal(Int32.MaxValue, tree.ID);
-        Assert.Equal(Int32.MaxValue - 1, tree.ParentID);
+        Assert.Equal(Int32.MaxValue, tree.Id);
+        Assert.Equal(Int32.MaxValue - 1, tree.ParentId);
     }
 
     [Fact]
-    [DisplayName("负数 ParentID 可正确存储（保留原始值）")]
+    [DisplayName("负数 ParentId 可正确存储（保留原始值）")]
     public void MenuTree_NegativeParentID_Stored()
     {
-        var tree = new MenuTree { ParentID = -1 };
-        Assert.Equal(-1, tree.ParentID);
+        var tree = new MenuTree { ParentId = -1 };
+        Assert.Equal(-1, tree.ParentId);
     }
 
     [Fact]
@@ -859,7 +859,7 @@ public class MenuTreeTests
     {
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin", Permissions = [] }
+            new MockMenu { Id = 1, Name = "Admin", Permissions = [] }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
@@ -877,11 +877,11 @@ public class MenuTreeTests
     public void FilterLogic_DefaultModule_AllHaveDeepChildren_EmptyResult()
     {
         // 所有模块的子都不是叶子（都有自己的子菜单），不满足 All(x => x.Childs.Count == 0)
-        var deep = new MockMenu { ID = 111, Childs = [] };
-        var mid1 = new MockMenu { ID = 11, Childs = new List<IMenu> { deep } };
-        var mid2 = new MockMenu { ID = 21, Childs = new List<IMenu> { deep } };
-        var admin = new MockMenu { ID = 1, Name = "Admin", Childs = new List<IMenu> { mid1 } };
-        var school = new MockMenu { ID = 2, Name = "School", Childs = new List<IMenu> { mid2 } };
+        var deep = new MockMenu { Id = 111, Childs = [] };
+        var mid1 = new MockMenu { Id = 11, Childs = new List<IMenu> { deep } };
+        var mid2 = new MockMenu { Id = 21, Childs = new List<IMenu> { deep } };
+        var admin = new MockMenu { Id = 1, Name = "Admin", Childs = new List<IMenu> { mid1 } };
+        var school = new MockMenu { Id = 2, Name = "School", Childs = new List<IMenu> { mid2 } };
         var menus = new List<IMenu> { admin, school };
 
         var ms = menus.Where(e => e.Childs.All(x => x.Childs.Count == 0)).ToList();
@@ -893,7 +893,7 @@ public class MenuTreeTests
     [DisplayName("指定模块其 Childs 初始为空集合时返回空")]
     public void FilterLogic_SpecificModule_EmptyChildsList_ReturnsEmpty()
     {
-        var adminMenu = new MockMenu { ID = 1, Name = "Admin", Childs = new List<IMenu>() };
+        var adminMenu = new MockMenu { Id = 1, Name = "Admin", Childs = new List<IMenu>() };
         var menus = new List<IMenu> { adminMenu };
 
         var filtered = menus.FirstOrDefault(e => e.Name.EqualIgnoreCase("Admin"))?.Childs ?? [];
@@ -906,14 +906,14 @@ public class MenuTreeTests
     [DisplayName("base 模块过滤：所有非 base 模块都有深层子节点，只返回 base 子菜单")]
     public void FilterLogic_BaseModule_OnlyBaseChildrenWhenOthersAreDeep()
     {
-        var baseChild = new MockMenu { ID = 11, Name = "Config" };
-        var baseMenu = new MockMenu { ID = 1, Name = "base", Childs = new List<IMenu> { baseChild } };
+        var baseChild = new MockMenu { Id = 11, Name = "Config" };
+        var baseMenu = new MockMenu { Id = 1, Name = "base", Childs = new List<IMenu> { baseChild } };
 
         // Admin 和 School 都有二级嵌套（不符合"所有子项为叶子"条件）
-        var deep = new MockMenu { ID = 211, Childs = [] };
-        var mid = new MockMenu { ID = 21, Childs = new List<IMenu> { deep } };
-        var adminMenu = new MockMenu { ID = 2, Name = "Admin", Childs = new List<IMenu> { mid } };
-        var schoolMenu = new MockMenu { ID = 3, Name = "School", Childs = new List<IMenu> { mid } };
+        var deep = new MockMenu { Id = 211, Childs = [] };
+        var mid = new MockMenu { Id = 21, Childs = new List<IMenu> { deep } };
+        var adminMenu = new MockMenu { Id = 2, Name = "Admin", Childs = new List<IMenu> { mid } };
+        var schoolMenu = new MockMenu { Id = 3, Name = "School", Childs = new List<IMenu> { mid } };
 
         var menus = new List<IMenu> { baseMenu, adminMenu, schoolMenu };
 
@@ -934,7 +934,7 @@ public class MenuTreeTests
     {
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin" }
+            new MockMenu { Id = 1, Name = "Admin" }
         };
 
         // getMenuList 返回 null，意味着顶级映射失败，整体结果应为 null
@@ -950,8 +950,8 @@ public class MenuTreeTests
     [DisplayName("GetMenuTree 多次调用替换静态委托，以最后一次设置为准")]
     public void GetMenuTree_MultipleInvocations_LastDelegateWins()
     {
-        var menus1 = new List<MockMenu> { new MockMenu { ID = 1, Name = "First" } };
-        var menus2 = new List<MockMenu> { new MockMenu { ID = 2, Name = "Second" } };
+        var menus1 = new List<MockMenu> { new MockMenu { Id = 1, Name = "First" } };
+        var menus2 = new List<MockMenu> { new MockMenu { Id = 2, Name = "Second" } };
 
         // 第一次调用
         var result1 = MenuTree.GetMenuTree<IList<MockMenu>>(
@@ -984,14 +984,14 @@ public class MenuTreeTests
         };
         var menus = new List<MockMenu>
         {
-            new MockMenu { ID = 1, Name = "Admin", Permissions = perms }
+            new MockMenu { Id = 1, Name = "Admin", Permissions = perms }
         };
 
         var result = MenuTree.GetMenuTree<IList<MockMenu>>(
             m => null,
             list => list?.Select(m => new MenuTree
             {
-                ID = m.ID,
+                Id = m.Id,
                 Name = m.Name,
                 DisplayName = m.DisplayName ?? m.Name,
                 Permissions = m.Permissions
@@ -1010,9 +1010,9 @@ public class MenuTreeTests
     {
         // 构建 3 个二级子菜单，每个都有自己的子菜单
         var grandchildren = new[] { 0, 1, 2 }.Select(i =>
-            new MockMenu { ID = 100 + i, Name = $"GC{i}", Childs = [new MockMenu { ID = 200 + i }] } as IMenu).ToList();
+            new MockMenu { Id = 100 + i, Name = $"GC{i}", Childs = [new MockMenu { Id = 200 + i }] } as IMenu).ToList();
 
-        var topLevel = new MockMenu { ID = 1, Name = "Root", Childs = grandchildren };
+        var topLevel = new MockMenu { Id = 1, Name = "Root", Childs = grandchildren };
         IList<IMenu> menus = new List<IMenu> { topLevel };
 
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0))
@@ -1034,7 +1034,7 @@ public class MenuTreeTests
         if (list == null || list.Count == 0) return null;
         return list.Select(m => new MenuTree
         {
-            ID = m.ID,
+            Id = m.Id,
             Name = m.Name,
             DisplayName = m.DisplayName ?? m.Name,
             FullName = m.FullName,
@@ -1042,7 +1042,7 @@ public class MenuTreeTests
             Icon = m.Icon,
             Visible = m.Visible,
             NewWindow = m.NewWindow,
-            ParentID = m.ParentID,
+            ParentId = m.ParentId,
             Permissions = m.Permissions
         }).ToList();
     }
@@ -1059,12 +1059,12 @@ public class MenuTreeTests
 internal class MockMenu : IMenu
 {
     // ReSharper disable BuiltInTypeReferenceStyle
-    public int ID { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; }
     public string DisplayName { get; set; }
     public MenuTypes Type { get; set; }
     public string FullName { get; set; }
-    public int ParentID { get; set; }
+    public int ParentId { get; set; }
     public string Url { get; set; }
     public int Sort { get; set; }
     public string Icon { get; set; }
@@ -1081,11 +1081,11 @@ internal class MockMenu : IMenu
     public string Ex5 { get; set; }
     public string Ex6 { get; set; }
     public string CreateUser { get; set; }
-    public int CreateUserID { get; set; }
+    public int CreateUserId { get; set; }
     public string CreateIP { get; set; }
     public DateTime CreateTime { get; set; }
     public string UpdateUser { get; set; }
-    public int UpdateUserID { get; set; }
+    public int UpdateUserId { get; set; }
     public string UpdateIP { get; set; }
     public DateTime UpdateTime { get; set; }
     public string Remark { get; set; }
@@ -1116,3 +1116,4 @@ internal class MockMenu : IMenu
 
     public override String ToString() => Name;
 }
+

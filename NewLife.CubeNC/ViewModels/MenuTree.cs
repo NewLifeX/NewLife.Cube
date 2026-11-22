@@ -1,10 +1,10 @@
-﻿namespace NewLife.Cube.ViewModels;
+namespace NewLife.Cube.ViewModels;
 
 /// <summary>菜单树</summary>
 public class MenuTree
 {
     /// <summary>编号</summary>
-    public Int32 ID { get; set; }
+    public Int32 Id { get; set; }
 
     /// <summary>名称</summary>
     public String Name { get; set; }
@@ -16,7 +16,7 @@ public class MenuTree
     public String FullName { get; set; }
 
     /// <summary>父级编号</summary>
-    public Int32? ParentID { get; set; }
+    public Int32? ParentId { get; set; }
 
     /// <summary>链接</summary>
     public String Url { get; set; }

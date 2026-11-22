@@ -1,4 +1,4 @@
-﻿using System.Web.Script.Serialization;
+using System.Web.Script.Serialization;
 using NewLife.Collections;
 using NewLife.Data;
 
@@ -12,7 +12,7 @@ public class Series : IExtend
     public String Type { get; set; }
     //public SeriesTypes Type { get; set; }
 
-    /// <summary>组件 ID</summary>
+    /// <summary>组件 Id</summary>
     /// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
     public String Id { get; set; }
 

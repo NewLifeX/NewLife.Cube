@@ -13,7 +13,7 @@ namespace NewLife.Cube.Tests.Services;
 /// </remarks>
 public class DrawingCaptchaServiceTests
 {
-    [Fact(DisplayName = "Generate 返回验证码ID和PNG图片")]
+    [Fact(DisplayName = "Generate 返回验证码Id和PNG图片")]
     public void Generate_ReturnsIdAndPng()
     {
         var svc = new DrawingCaptchaService(new TestCacheProvider());
@@ -46,3 +46,4 @@ public class DrawingCaptchaServiceTests
         Assert.False(svc.Validate(r.CaptchaId, "999"));
     }
 }
+

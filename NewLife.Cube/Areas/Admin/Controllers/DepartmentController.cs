@@ -1,12 +1,11 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using NewLife.Web;
 using XCode.Membership;
-using static XCode.Membership.Department;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>部门</summary>
-[DataPermission(null, "ManagerID={#userId}")]
+[DataPermission(null, "ManagerId={#userId}")]
 [DisplayName("部门")]
 [AdminArea]
 [Menu(95, true, Icon = "UserFilled")]
@@ -24,26 +23,26 @@ public class DepartmentController : EntityController<Department, DepartmentModel
         // 管理者：后端 Search 不支持按管理者过滤（数字搜索实际无效），且用户量巨大无法全量字典，对齐 MVC 从搜索区移除
         SearchFields.RemoveField("ManagerId");
 
-        // 父级：下拉选择。部门缓存作为数据源（对齐 MVC _SelectDepartment 部门选择），单选提交 parentId=ID。
+        // 父级：下拉选择。部门缓存作为数据源（对齐 MVC _SelectDepartment 部门选择），单选提交 parentId=Id。
         // label 用层级路径（如 总公司/行政部），避免同名部门混淆；不依赖 FullName 字段的数据质量
         {
-            var df = SearchFields.GetField(_.ParentID);
+            var df = SearchFields.GetField("ParentId");
             df.DataSource = _ =>
             {
                 var deps = Department.FindAllWithCache().ToList();
-                var map = deps.ToDictionary(e => e.ID, e => e);
+                var map = deps.ToDictionary(e => e.Id, e => e);
                 var dict = new Dictionary<Int32, String>();
                 foreach (var e in deps)
                 {
                     var parts = new List<String> { e.Name };
                     var p = e;
                     var guard = 0;
-                    while (p.ParentID > 0 && map.TryGetValue(p.ParentID, out var pp) && pp.ID != p.ID && guard++ < 8)
+                    while (p.ParentId > 0 && map.TryGetValue(p.ParentId, out var pp) && pp.Id != p.Id && guard++ < 8)
                     {
                         parts.Insert(0, pp.Name);
                         p = pp;
                     }
-                    dict[e.ID] = String.Join("/", parts);
+                    dict[e.Id] = String.Join("/", parts);
                 }
                 return dict;
             };
@@ -59,7 +58,7 @@ public class DepartmentController : EntityController<Department, DepartmentModel
         if (id > 0)
         {
             var list = new List<Department>();
-            var entity = Department.FindByID(id);
+            var entity = Department.FindById(id);
             // 分页查询由 WhereBuilder 按管理者过滤，本分支需自行判断，避免绕过数据权限
             if (entity != null && CanView(entity)) list.Add(entity);
             return list;
@@ -94,6 +93,7 @@ public class DepartmentController : EntityController<Department, DepartmentModel
         var user = ManageProvider.User;
         if (user == null || user.Roles.Any(e => e.IsSystem)) return true;
 
-        return entity.ManagerId == user.ID;
+        return entity.ManagerId == user.Id;
     }
 }
+

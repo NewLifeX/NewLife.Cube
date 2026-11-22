@@ -1,12 +1,12 @@
-﻿@model ValueTuple<IMenu, IMenu>
+@model ValueTuple<IMenu, IMenu>
 
 @{
     var menu = Model.Item1;
     var item = Model.Item2;
 
-    var rs = item.AllChilds.Where(m => m.ID == menu.ParentID).Count() > 0;
-    var rs_p = item.ParentID == 0;
-    var rs_active = item.ID == menu.ID|| item.ID==menu.ParentID;
+    var rs = item.AllChilds.Where(m => m.Id == menu.ParentId).Count() > 0;
+    var rs_p = item.ParentId == 0;
+    var rs_active = item.Id == menu.Id|| item.Id==menu.ParentId;
 
     var icons = new string[] {"home", "bars", "books", "chess-queen", "certificate", "desktop", "cloud", "comment", "feather", "star",
         "hammer", "link", "leaf", "layer-group", "clone", "tags", "seedling", "shopping-bag", "sitemap", "trophy", "heart", "database", 
@@ -15,7 +15,7 @@
     var icon = item.Icon.IsNullOrEmpty() ? "cogs" : item.Icon;
     if (!item.Name.EqualIgnoreCase("admin") && item.Icon.IsNullOrEmpty())
     {
-        var indx = item.ID % 30;
+        var indx = item.Id % 30;
         icon = icons[indx];
     }
     icon = icon.Contains("fa-") ? icon : "fa-" + icon.TrimStart("fa-");
@@ -32,10 +32,10 @@
         var menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.Root.Childs);
         if (user?.Role != null)
         {
-            menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(item.ID, user, true));
+            menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(item.Id, user, true));
         }
 
-        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
+        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.Id == menu.ParentId || rs ? "show" : "")">
             <span class="menu-link">
                 <span class="menu-icon">
                     <span class="far @icon @(rs_active ? "text-primary" : "text-gray-700") @(rs_p ? " fs-3" : "")"></span>
@@ -54,7 +54,7 @@
     }
     else
     {
-        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
+        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.Id == menu.ParentId || rs ? "show" : "")">
             <span class="menu-link">
                 <span class="@(rs_p ? "menu-icon" : "menu-bullet") text-gray-700">
                     <i class="far fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></i>
@@ -69,3 +69,4 @@
         </div>
     }
 }
+

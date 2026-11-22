@@ -131,7 +131,7 @@ public class SsoAvatarFetchTests : IDisposable
     /// <summary>创建内存用户，无需数据库</summary>
     private static User CreateUser()
     {
-        var user = new User { ID = ++_id, Name = $"avatar{_id}", DisplayName = $"测试{_id}" };
+        var user = new User { Id = ++_id, Name = $"avatar{_id}", DisplayName = $"测试{_id}" };
         return user;
     }
 
@@ -164,7 +164,7 @@ public class SsoAvatarFetchTests : IDisposable
 
             var rs = await svc.FetchAvatar(user, url);
 
-            var dest = Path.Combine(_tmpDir, user.ID + ".png");
+            var dest = Path.Combine(_tmpDir, user.Id + ".png");
             Assert.True(File.Exists(dest), $"头像文件未落盘: {dest}");
             Assert.True(rs, "FetchAvatar 应返回成功");
         }
@@ -189,8 +189,8 @@ public class SsoAvatarFetchTests : IDisposable
 
             await svc.FetchAvatar(user, url);
 
-            Assert.True(File.Exists(Path.Combine(_tmpDir, user.ID + ".svg")), "SVG 应落盘为 .svg");
-            Assert.False(File.Exists(Path.Combine(_tmpDir, user.ID + ".png")), "PNG 不应存在");
+            Assert.True(File.Exists(Path.Combine(_tmpDir, user.Id + ".svg")), "SVG 应落盘为 .svg");
+            Assert.False(File.Exists(Path.Combine(_tmpDir, user.Id + ".png")), "PNG 不应存在");
         }
         finally
         {
@@ -211,7 +211,7 @@ public class SsoAvatarFetchTests : IDisposable
 
             var rs = await svc.FetchAvatar(user, url);
 
-            Assert.False(File.Exists(Path.Combine(_tmpDir, user.ID + ".png")), "哈希不匹配时不应落盘");
+            Assert.False(File.Exists(Path.Combine(_tmpDir, user.Id + ".png")), "哈希不匹配时不应落盘");
             Assert.False(rs);
         }
         finally
@@ -235,7 +235,7 @@ public class SsoAvatarFetchTests : IDisposable
             svc.CallFillAvatar(client, user, user, CubeSetting.Current);
 
             // FetchAvatar 为异步触发，此处等待落盘
-            var dest = Path.Combine(_tmpDir, user.ID + ".png");
+            var dest = Path.Combine(_tmpDir, user.Id + ".png");
             for (var i = 0; i < 50 && !File.Exists(dest); i++)
             {
                 System.Threading.Thread.Sleep(100);
@@ -265,7 +265,7 @@ public class SsoAvatarFetchTests : IDisposable
             svc.CallFillAvatar(client, user, user, CubeSetting.Current);
 
             Assert.Equal(avatarUrl, user.Avatar);
-            Assert.False(File.Exists(Path.Combine(_tmpDir, user.ID + ".png")), "未开启抓取时不应下载");
+            Assert.False(File.Exists(Path.Combine(_tmpDir, user.Id + ".png")), "未开启抓取时不应下载");
         }
         finally
         {
@@ -324,13 +324,13 @@ public class SsoAvatarFetchTests : IDisposable
         try
         {
             // 先清理可能存在的测试数据（表不存在时忽略）
-            try { UserConnect.Delete(UserConnect._.UserID == user.ID); } catch { }
+            try { UserConnect.Delete(UserConnect._.UserId == user.Id); } catch { }
             try { OAuthConfig.Delete(OAuthConfig._.Name == provider); } catch { }
 
             // 构造用户连接记录
             var uc = new UserConnect
             {
-                UserID = user.ID,
+                UserId = user.Id,
                 Provider = provider,
                 Avatar = $"/avatar.png#md5${PngMd5}",
                 AccessToken = "",
@@ -357,7 +357,7 @@ public class SsoAvatarFetchTests : IDisposable
             Assert.EndsWith($"/avatar.png#md5${PngMd5}", remote, StringComparison.Ordinal);
 
             // 等待异步下载落盘
-            var dest = Path.Combine(_tmpDir, user.ID + ".png");
+            var dest = Path.Combine(_tmpDir, user.Id + ".png");
             for (var i = 0; i < 50 && !File.Exists(dest); i++)
             {
                 await Task.Delay(100);
@@ -369,7 +369,7 @@ public class SsoAvatarFetchTests : IDisposable
             CubeSetting.Current.AvatarPath = old;
             try
             {
-                UserConnect.Delete(UserConnect._.UserID == user.ID);
+                UserConnect.Delete(UserConnect._.UserId == user.Id);
                 OAuthConfig.Delete(OAuthConfig._.Name == provider);
             }
             catch { }
@@ -401,7 +401,7 @@ public class SsoAvatarFetchTests : IDisposable
             var svc = new TestBindingService();
             svc.CallFillAvatar(client, user, user, CubeSetting.Current);
 
-            var dest = Path.Combine(_tmpDir, user.ID + ".png");
+            var dest = Path.Combine(_tmpDir, user.Id + ".png");
             for (var i = 0; i < 50 && !File.Exists(dest); i++)
             {
                 await Task.Delay(100);
@@ -416,3 +416,4 @@ public class SsoAvatarFetchTests : IDisposable
         }
     }
 }
+

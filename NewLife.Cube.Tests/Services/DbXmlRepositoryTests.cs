@@ -52,7 +52,7 @@ public class DbXmlRepositoryTests
         Assert.Single(list);
         Assert.Equal("v2", list.First().Attribute("id")?.Value);
 
-        var rows = Parameter.FindAllByUserID(0, key);
+        var rows = Parameter.FindAllByUserIdAndCategory(0, key);
         Assert.Single(rows);
     }
 
@@ -107,3 +107,5 @@ public class DbXmlRepositoryTests
         Assert.Throws<ArgumentNullException>(() => new DbXmlRepository(""));
     }
 }
+
+
