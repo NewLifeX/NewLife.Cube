@@ -13,7 +13,7 @@
     "@sa/utils": "workspace:*",
     "axios": "1.14.0",
     "axios-retry": "4.5.0",
-    "qs": "6.15.0"
+    "qs": "6.16.1"
   },
   "devDependencies": {
     "@types/qs": "6.15.0"
