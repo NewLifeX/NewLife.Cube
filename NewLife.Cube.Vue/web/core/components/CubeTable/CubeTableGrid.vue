@@ -85,6 +85,8 @@ const props = withDefaults(
     indexColumn?: boolean;
     rowActions?: boolean;
     doubleClickEdit?: boolean;
+    /** 树形表格是否默认展开全部节点；不传保持既有行为（默认展开） */
+    treeExpandAll?: boolean;
     /** 操作列宽：不传按行自适应；传了只作下限（实测更宽时以实测为准） */
     actionWidth?: number;
     /** 操作列追加动作：排在内置 编辑（或查看）/删除 之后，一起参与自适应与「更多」收起 */
@@ -95,6 +97,7 @@ const props = withDefaults(
     columnOrder: null,
     resetVisibility: null,
     height: '100%',
+    treeExpandAll: undefined,
     actionWidth: undefined,
     extraRowActions: () => [],
     selection: undefined,
@@ -336,7 +339,7 @@ function summaryMethod({ columns: tableColumns }: { columns: Array<{ property?: 
     :height="height"
     :row-key="tableRowKey"
     :tree-props="treeMode ? { children: 'children' } : undefined"
-    :default-expand-all="treeMode"
+    :default-expand-all="treeMode ? (treeExpandAll ?? true) : false"
     :show-summary="!!statRow"
     :summary-method="summaryMethod"
     border

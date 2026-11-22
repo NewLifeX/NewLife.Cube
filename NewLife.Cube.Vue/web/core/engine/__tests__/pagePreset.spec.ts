@@ -6,6 +6,7 @@ import {
   applyFieldPreset,
   applyPagePreset,
   clearPagePresets,
+  filterToolbarItems,
   getPagePreset,
   normalizePresetPath,
   registerPagePreset,
@@ -58,6 +59,18 @@ describe('applyFieldPreset', () => {
     const result = applyFieldPreset(meta().listFields, { order: ['Remark'] });
     expect(result.map((item) => item.name)).toEqual(['Remark', 'Id', 'Name']);
   });
+
+  it('visible=false 只改默认显隐，字段仍保留在列候选里', () => {
+    const result = applyFieldPreset(meta().listFields, {
+      patch: { Remark: { visible: false } },
+    });
+
+    // 字段未被移除，仍在「设置列」候选中
+    expect(result.map((item) => item.name)).toEqual(['Id', 'Name', 'Remark']);
+    expect(result[2].visible).toBe(false);
+    // 其它字段不受影响
+    expect(result[0].visible).toBeUndefined();
+  });
 });
 
 describe('applyPagePreset', () => {
@@ -88,6 +101,23 @@ describe('applyPagePreset', () => {
   it('preset 为空时原样返回', () => {
     const input = meta();
     expect(applyPagePreset(input, null)).toBe(input);
+  });
+});
+
+describe('filterToolbarItems', () => {
+  const items = [
+    { name: 'RefreshName', action: 'RefreshName' },
+    { name: 'Export', action: 'ExportFile' },
+  ];
+
+  it('按 name 或 action 忽略大小写移除按钮', () => {
+    expect(filterToolbarItems(items, { remove: ['refreshname'] })).toEqual([items[1]]);
+    expect(filterToolbarItems(items, { remove: ['exportfile'] })).toEqual([items[0]]);
+  });
+
+  it('名单为空时原样返回同一数组', () => {
+    expect(filterToolbarItems(items, { remove: [] })).toBe(items);
+    expect(filterToolbarItems(items, null)).toBe(items);
   });
 });
 

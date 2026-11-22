@@ -21,9 +21,10 @@
 ## 扩展顺序
 
 1. 优先修改后端字段元数据或菜单配置。
-2. 仅需改变区块时，用 `CubeTable` **具名插槽**覆盖（见 [customize-page.md](../guides/customize-page.md)）。
-3. 默认页面引擎确实无法承载的交互，才创建完整 `index.vue` 页面（可 `useCubeEngine({ routePath })` + `:context` 自定义引擎）。
-4. 若所有应用都需要新默认能力，修改 `core/components/CubeTable/` 或 `core/engine/` 并增加测试。
+2. 只调整呈现时，注册 [页面呈现配置（preset）](./page-preset.md)：列显隐/列名/列序、搜索条件、`grid` 表格开关。
+3. 仅需改变区块时，用 `CubeTable` **具名插槽**覆盖（见 [customize-page.md](../guides/customize-page.md)）。
+4. 默认页面引擎确实无法承载的交互，才创建完整 `index.vue` 页面（可 `useCubeEngine({ routePath })` + `:context` 自定义引擎）。
+5. 若所有应用都需要新默认能力，修改 `core/components/CubeTable/` 或 `core/engine/` 并增加测试。
 
 ## 相关入口
 
@@ -33,6 +34,8 @@
 | 默认列表页          | `core/views/index.vue`（目标态 = `<CubeTable />`） |
 | 页面引擎（纯工厂）  | `core/engine/createCubeEngine.ts`               |
 | 引擎 composable     | `core/engine/useCubeEngine.ts`（`provide`/`inject`） |
+| 页面呈现配置（preset） | `core/engine/pagePreset.ts`（见 [page-preset.md](./page-preset.md)） |
+| 字段渲染器          | `core/engine/fieldRenderers.ts`                  |
 | 集成组件 + 插槽     | `core/components/CubeTable/`                   |
 | 数据层底座          | `core/dataset/data-set/DataSet.ts`              |
 | 元数据/LOV 门面     | `core/composables/useCubeApi.ts`                |

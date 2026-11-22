@@ -2,6 +2,22 @@
 
 默认 CRUD 页面由框架 `core/views/index.vue` 渲染单个 `<CubeTable />` 组合而成。`CubeTable` 整合搜索、工具栏、表格、分页、新增/编辑弹窗，并开放**具名插槽**供业务应用定制。只需替换局部功能时，用插槽覆盖，避免复制列表或表单整页。
 
+## 先试页面呈现配置（preset）
+
+只调整列名、列序、默认显隐、搜索条件或表格开关（操作列宽、树形默认折叠）时，先注册 `registerPagePreset`，不要新建页面或整块插槽：
+
+```ts
+registerPagePreset('/Admin/Menu', {
+  list: {
+    patch: { ID: { visible: false }, DisplayName: { label: '菜单名称' } },
+    order: ['DisplayName', 'Type', 'Sort'],
+  },
+  grid: { actionWidth: 200, treeExpandAll: false },
+});
+```
+
+`visible: false` 只改默认显隐，字段仍保留在「设置列」候选中；`remove` 才会彻底移除。列序会被「设置列」的本地缓存覆盖，调整默认列序时需要做一次缓存迁移。完整 API 与缓存键名见 [page-preset.md](../reference/page-preset.md)。
+
 > **Section 覆盖（旧机制）已废除**：原 `ListSearchBar.vue` / `ListToolbar.vue` / `FormContent.vue` 等按 `SectionKeyMap` 文件名覆盖的方式，自 `decisions/0005` 起不再鼓励；存量 Section 覆盖页面在迁移完成前仍可用（由 `index.vue` 兼容桥按路由 meta 切换），最终随 P6 移除。新页面一律用下方插槽。
 
 ## 步骤（插槽定制）

@@ -18,6 +18,7 @@ import {
 import DefaultListPageHeader from '@newlifex/cube-vue/core/views/components/ListPageHeader.vue';
 import ListChartButton from '@newlifex/cube-vue/core/views/components/ListChartButton.vue';
 import CubeTable from '@newlifex/cube-vue/core/components/CubeTable/CubeTable.vue';
+import { getPagePreset } from '@newlifex/cube-vue/core/engine/pagePreset';
 import { routeToApiPrefix } from '@newlifex/cube-vue/core/utils/url';
 import type { Component } from 'vue';
 
@@ -35,6 +36,9 @@ const props = withDefaults(defineProps<Props>(), { title: undefined, subtitle: u
 const route = useRoute();
 const apiPrefix = routeToApiPrefix(route.path);
 
+/** 页面呈现配置里的表格开关（操作列宽等）；未注册时为 null */
+const pageGrid = getPagePreset(route.path)?.grid;
+
 /**
  * 页头组件：本路由的 ListPageHeader 覆盖 > 全局注入 > 框架默认。
  * 只在 setup 取一次：`inject` 不能在 computed 里延迟调用，
@@ -49,7 +53,7 @@ const PageHeaderComp: Component = headerLoader
 
 <template>
   <!-- :key 让换页时重建引擎，避免上一个实体的搜索模型/勾选/分页残留 -->
-  <CubeTable :key="route.path">
+  <CubeTable :key="route.path" :grid="pageGrid">
     <template #header>
       <component :is="PageHeaderComp" :title="props.title" :subtitle="props.subtitle" />
     </template>

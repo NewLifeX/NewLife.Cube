@@ -162,6 +162,8 @@ export interface CubeGridFlags {
   indexColumn?: boolean;
   rowActions?: boolean;
   doubleClickEdit?: boolean;
+  /** 树形表格是否默认展开全部节点。不传保持既有行为（默认展开） */
+  treeExpandAll?: boolean;
   /** 操作列宽：不传按行动作数自适应（见 `layoutRowActions`），传了只作下限（实测更宽时以实测为准） */
   actionWidth?: number;
 }

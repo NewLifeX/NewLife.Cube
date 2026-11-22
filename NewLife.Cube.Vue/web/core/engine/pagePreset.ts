@@ -13,7 +13,7 @@
  * ```
  */
 import type { FieldMeta } from '../types/field';
-import type { CubeRowAction } from '../components/CubeTable/types';
+import type { CubeGridFlags, CubeRowAction } from '../components/CubeTable/types';
 import type { NormalizedPageFields, PageSetting } from './types';
 
 /** 单字段呈现补丁 */
@@ -30,6 +30,13 @@ export interface FieldPresetPatch {
   renderer?: string;
   /** 是否隐藏 */
   hidden?: boolean;
+  /**
+   * 默认是否显示。
+   *
+   * `false` 只影响初始态：字段仍保留在列表元数据里，会出现在「设置列 → 可见列」中，
+   * 用户可自行勾选显示。需要彻底移除（连候选都不出现）请用 `ListPreset.remove`。
+   */
+  visible?: boolean;
   /** 溢出提示开关：false 关闭引擎列的 show-overflow-tooltip */
   overflowTooltip?: boolean;
   /** 行/模型级显示条件 */
@@ -76,16 +83,36 @@ export interface SearchPreset {
   append?: FieldMeta[];
 }
 
+/** 工具栏区补丁 */
+export interface ToolbarPreset {
+  /**
+   * 移除后端下发的工具栏按钮。
+   *
+   * 匹配按钮的 `name` 或 `action`（大小写不敏感）；后端按钮名通常是方法名，
+   * 不受界面语言影响，例如 `RefreshName`。
+   */
+  remove?: string[];
+}
+
 /** 页面呈现配置 */
 export interface PagePreset {
   /** 页面设置覆盖 */
   setting?: Partial<PageSetting>;
+  /**
+   * 表格区开关覆盖（勾选列 / 操作列宽等）。
+   *
+   * 与 `setting` 不同：这些是纯前端呈现项，后端 `/meta` 不下发；
+   * 由默认列表页透传给 `CubeTable` 的 `grid` 入参。
+   */
+  grid?: CubeGridFlags;
   /** 列表区 */
   list?: ListPreset;
   /** 表单区（新增与编辑共用） */
   form?: FormPreset;
   /** 搜索区 */
   search?: SearchPreset;
+  /** 工具栏区 */
+  toolbar?: ToolbarPreset;
 }
 
 /** 字段补丁规格（列表与表单共用） */
@@ -110,6 +137,7 @@ function applyFieldPatch(field: FieldMeta, patch: FieldPresetPatch): FieldMeta {
   if (patch.fixed !== undefined) next.fixed = patch.fixed;
   if (patch.renderer !== undefined) next.view = patch.renderer;
   if (patch.hidden !== undefined) next.hidden = patch.hidden;
+  if (patch.visible !== undefined) next.visible = patch.visible;
   if (patch.overflowTooltip !== undefined) next.overflowTooltip = patch.overflowTooltip;
   if (patch.visibleWhen !== undefined) next.visibleWhen = patch.visibleWhen;
   if (patch.requiredWhen !== undefined) next.requiredWhen = patch.requiredWhen;
@@ -162,6 +190,27 @@ export function applyFieldPreset(fields: FieldMeta[], spec?: FieldPatchSpec | nu
   }
 
   return result;
+}
+
+/**
+ * 过滤后端下发的工具栏按钮。
+ *
+ * 名单按 `name` 或 `action` 精确匹配（大小写不敏感、忽略首尾空格）。
+ * 不传或名单为空时原样返回，避免无谓复制。
+ */
+export function filterToolbarItems<T extends { name?: string; action?: string }>(
+  items: T[],
+  spec?: ToolbarPreset | null,
+): T[] {
+  const names = (spec?.remove ?? []).map((name) => name.trim().toLowerCase()).filter(Boolean);
+  if (!names.length) return items;
+
+  const removed = new Set(names);
+  return items.filter((item) => {
+    const name = String(item.name ?? '').trim().toLowerCase();
+    const action = String(item.action ?? '').trim().toLowerCase();
+    return !removed.has(name) && !removed.has(action);
+  });
 }
 
 /** 搜索区补丁。keyword 查询项单独处理，不进入普通字段数组 */
