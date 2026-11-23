@@ -222,6 +222,14 @@ describe('engine/logic 单元格格式化', () => {
     expect(formatCellDateTime(undefined, 'datetime')).toBe('');
   });
 
+  it('应该留空 DateTime.MinValue 当后端未填写时', () => {
+    expect(formatCellDateTime('0001-01-01T00:00:00', 'date')).toBe('');
+    expect(formatCellDateTime('0001-01-01 00:00:00', 'datetime')).toBe('');
+    expect(formatCellDateTime('0001-01-01T00:00:00', 'time')).toBe('');
+    // 正常日期不受影响
+    expect(formatCellDateTime('2026-10-19T08:30:00', 'date')).toBe('2026-10-19');
+  });
+
   it('应该把空值判为空串而 0/false 不算空 当决定显示占位符时', () => {
     expect(isBlankCell(null)).toBe(true);
     expect(isBlankCell('  ')).toBe(true);

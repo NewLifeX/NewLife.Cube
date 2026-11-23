@@ -687,12 +687,21 @@ describe('CubeTable/logic 列表呈现属性', () => {
     expect(formatTimeStampCell(custom, stamp)).toMatch(/^2026\/01\/0[1-3]$/);
   });
 
-  it('time / time-<格式> 格式化日期列', () => {
+  it('time / time-<格式> 格式化日期列，MinValue 留空', () => {
     const full: FieldMeta = { name: 'CreateTime', typeName: 'DateTime', itemType: 'time' };
     expect(formatTimeItemCell(full, '2026-01-02T03:04:05')).toMatch(/^2026-01-02 03:04:05$/);
 
     const custom: FieldMeta = { name: 'CreateTime', typeName: 'DateTime', itemType: 'time-yyyy年MM月dd日' };
     expect(formatTimeItemCell(custom, '2026-01-02T03:04:05')).toBe('2026年01月02日');
+
+    // 后端 DateTime.MinValue 表示未填写，列表留空
+    expect(formatTimeItemCell(full, '0001-01-01T00:00:00')).toBe('');
+    expect(formatTimeItemCell(full, '0001-01-01 00:00:00')).toBe('');
+  });
+
+  it('Time 时间戳 0 视为未填写', () => {
+    const plain: FieldMeta = { name: 'CreateTime', typeName: 'Int64', itemType: 'Time' };
+    expect(formatTimeStampCell(plain, 0)).toBe('');
   });
 
   it('GMK 按 1024 进制转人类可读', () => {

@@ -312,6 +312,28 @@ export function cleanRowForUpdate(row: Record<string, unknown>): Record<string, 
 }
 
 /**
+ * 是否后端「未填写」的日期值（.NET `DateTime.MinValue` 序列化为 `0001-01-01T00:00:00`）
+ *
+ * 列表/详情应留空，而不是显示 0001-01-01（对齐 MVC 不显示）。
+ */
+export function isMinDateTime(value: unknown): boolean {
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    return !Number.isNaN(year) && year <= 1;
+  }
+
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text) return false;
+
+  // 常见形态直接看年份，避免 `0001-01-01 00:00:00` 在某些引擎解析失败后漏判
+  const head = /^(\d{4})-/.exec(text);
+  if (head) return Number(head[1]) <= 1;
+
+  const date = new Date(text);
+  return !Number.isNaN(date.getTime()) && date.getFullYear() <= 1;
+}
+
+/**
  * 单元格文本格式化（列表渲染用，纯函数）。
  *
  * `ListTableContent.vue` 对 `date` / `time` 两类没有分支，直接透出后端原始串
@@ -321,6 +343,8 @@ export function cleanRowForUpdate(row: Record<string, unknown>): Record<string, 
 export function formatCellDateTime(value: unknown, mode: 'date' | 'datetime' | 'time'): string {
   const raw = typeof value === 'string' ? value.trim() : '';
   if (!raw) return '';
+  // 后端 DateTime.MinValue 表示未填写，留空
+  if (isMinDateTime(raw)) return '';
   // 已是 `YYYY-MM-DD[ T]HH:mm` 形态时直接切片，避免引入日期库依赖
   const match = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(:\d{2})?/.exec(raw);
   if (mode === 'date') {

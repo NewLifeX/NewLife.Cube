@@ -15,7 +15,7 @@ import {
   resolveListControl,
   resolveSearchControl,
 } from '../../utils/fieldControl';
-import { formatCellDateTime } from '../../engine/logic';
+import { formatCellDateTime, isMinDateTime } from '../../engine/logic';
 import { timeSpanToSeconds, timeSpanUnitOfDescription } from '../TimeSpanInput/timeSpan.logic';
 import i18n from '../../i18n';
 import type { FieldMeta, ListControlType } from '../../types/field';
@@ -674,6 +674,8 @@ export function formatTimeSpanCell(field: FieldMeta, raw: unknown): string {
 export function formatTimeStampCell(field: FieldMeta, raw: unknown): string {
   const seconds = Number(raw);
   if (!Number.isFinite(seconds)) return String(raw ?? '');
+  // 0 / 负数视为「未填写」（后端 ToDateTime(0) 得 MinValue）
+  if (seconds <= 0) return '';
 
   const date = new Date(seconds * 1000);
   if (Number.isNaN(date.getTime()) || date.getFullYear() <= 1) return '';
@@ -692,6 +694,8 @@ export function formatTimeItemCell(field: FieldMeta, raw: unknown): string {
   const itemType = (field.itemType ?? '').trim();
   const text = String(raw ?? '');
   if (!text) return '';
+  // 后端 DateTime.MinValue 表示未填写，留空而不是显示 0001-01-01
+  if (isMinDateTime(text)) return '';
 
   const date = new Date(text);
   if (Number.isNaN(date.getTime())) return text;
