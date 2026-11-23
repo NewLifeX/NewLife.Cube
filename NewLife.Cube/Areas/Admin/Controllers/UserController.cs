@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
@@ -119,35 +120,8 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             EditFormFields.RemoveField("Password");
         }
 
-        {
-            var df = ListFields.AddListField("Link", "Logins");
-            //df.Header = "链接";
-            df.HeaderTitle = "Third-party sign-in links";
-            df.DisplayName = "Links";
-            df.Title = "Third-party sign-in links";
-            df.Url = "/Admin/UserConnect?userId={Id}";
-        }
-
-        {
-            var df = ListFields.AddListField("Token", "Logins");
-            //df.Header = "令牌";
-            df.DisplayName = "Token";
-            df.Url = "/Admin/UserToken?userId={Id}";
-        }
-
-        {
-            var df = ListFields.AddListField("Log", "Logins");
-            //df.Header = "日志";
-            df.DisplayName = "Log";
-            df.Url = "/Admin/Log?userId={Id}";
-        }
-
-        {
-            var df = ListFields.AddListField("OAuthLog", "Logins");
-            //df.Header = "OAuth日志";
-            df.DisplayName = "OAuth log";
-            df.Url = "/Admin/OAuthLog?userId={Id}";
-        }
+        // API 版不再输出 MVC 时代的四个快捷导航列（各皮肤统一走用户详情页的关联 Tab，契约见 OnGetPageUi）
+        ListFields.RemoveField("Link", "Token", "Log", "OAuthLog");
 
         {
             // 主要角色 RoleName 通过 Map 指向 RoleId：显式数据源让前端在该字段位置渲染下拉并提交 RoleId。
@@ -181,6 +155,120 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         {
             AddFormFields.GroupVisible = (entity, group) => (entity as User).Id == 0 && group != "Extended" && group != L.T("Extended");
         }
+    }
+
+    /// <summary>已重载。</summary>
+    /// <param name="filterContext"></param>
+    public override void OnActionExecuting(ActionExecutingContext filterContext)
+    {
+        // 用户表数据量大时基类会关闭 OrderByKey；主键降序是高效路径，显式恢复以对齐 MVC 列表
+        PageSetting.OrderByKey = true;
+
+        base.OnActionExecuting(filterContext);
+    }
+
+    /// <summary>页面 UI 扩展。向各皮肤下发用户卡片契约，前端据此渲染该用户的关联维度 Tab</summary>
+    /// <returns></returns>
+    protected override IDictionary<String, Object> OnGetPageUi()
+    {
+        var relations = new List<Object>
+        {
+            new
+            {
+                key = "binds",
+                title = L.T("Third-party authorization"),
+                icon = "link",
+                entity = "Admin/UserConnect",
+                query = new Dictionary<String, String> { ["userId"] = "{id}" },
+                sort = "Id",
+                desc = true,
+                columns = new[] { "Provider", "NickName", "OpenId", "UnionId", "Enable", "UpdateTime" },
+                mask = new[] { "OpenId", "UnionId" },
+            },
+            new
+            {
+                key = "tokens",
+                title = L.T("Tokens"),
+                icon = "key",
+                entity = "Admin/UserToken",
+                query = new Dictionary<String, String> { ["userId"] = "{id}" },
+                sort = "Id",
+                desc = true,
+                columns = new[] { "Token", "Url", "Expire", "Enable", "LastTime", "LastIP" },
+                mask = new[] { "Token" },
+            },
+            new
+            {
+                key = "sessions",
+                title = L.T("Online sessions"),
+                icon = "laptop",
+                entity = "Admin/UserOnline",
+                query = new Dictionary<String, String> { ["userId"] = "{id}" },
+                sort = "UpdateTime",
+                desc = true,
+                columns = new[] { "Platform", "OS", "Brower", "Device", "Address", "OnlineTime", "UpdateTime" },
+            },
+            new
+            {
+                key = "logs",
+                title = L.T("Logs"),
+                icon = "file-text",
+                entity = "Admin/Log",
+                query = new Dictionary<String, String> { ["userId"] = "{id}" },
+                sort = "Id",
+                desc = true,
+                columns = new[] { "Category", "Action", "Remark", "CreateTime" },
+            },
+            new
+            {
+                key = "oauth",
+                title = L.T("OAuth log"),
+                icon = "history",
+                entity = "Admin/OAuthLog",
+                query = new Dictionary<String, String> { ["userId"] = "{id}" },
+                sort = "Id",
+                desc = true,
+                columns = new[] { "Provider", "Action", "Success", "CreateTime" },
+            },
+            new
+            {
+                key = "notices",
+                title = L.T("Notification records"),
+                icon = "bell",
+                entity = "Admin/NotificationRecord",
+                query = new Dictionary<String, String> { ["userId"] = "{id}", ["channel"] = "InApp" },
+                sort = "Id",
+                desc = true,
+                columns = new[] { "Channel", "Title", "Success", "Read", "CreateTime" },
+            },
+        };
+
+        // 多租户部署才下发租户成员维度，单租户下不显示空 Tab
+        if (CubeSetting.Current.EnableTenant)
+        {
+            relations.Add(new
+            {
+                key = "tenants",
+                title = L.T("Tenant members"),
+                icon = "team",
+                entity = "Admin/TenantUser",
+                query = new Dictionary<String, String> { ["userId"] = "{id}" },
+                sort = "Id",
+                desc = true,
+                columns = new[] { "TenantId", "RoleId", "Enable", "CreateTime" },
+            });
+        }
+
+        return new Dictionary<String, Object>
+        {
+            ["userCard"] = new
+            {
+                avatarField = "Avatar",
+                titleField = "DisplayName",
+                subtitleField = "Name",
+                relations,
+            },
+        };
     }
 
     /// <summary>搜索数据集</summary>
