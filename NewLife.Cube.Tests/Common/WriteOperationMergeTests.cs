@@ -49,6 +49,16 @@ public class WriteOperationMergeTests
         [DisplayName("密码")]
         [DataObjectField(false, false, true, 200)]
         public String? Password { get => _Password; set { if (OnPropertyChanging("Password", value)) { _Password = value; OnPropertyChanged("Password"); } } }
+
+        private Int32 _RoleId;
+        /// <summary>角色。模拟 XCode 内置实体保留的大小写兼容别名</summary>
+        [DisplayName("角色")]
+        [DataObjectField(false, false, true, 0)]
+        public Int32 RoleId { get => _RoleId; set { if (OnPropertyChanging("RoleId", value)) { _RoleId = value; OnPropertyChanged("RoleId"); } } }
+
+        /// <summary>兼容旧版字段名</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Int32 RoleID { get => RoleId; set => RoleId = value; }
     }
 
     private class MergeTestModel
@@ -57,6 +67,7 @@ public class WriteOperationMergeTests
         public String? Name { get; set; }
         public String? Remark { get; set; }
         public String? Password { get; set; }
+        public Int32 RoleId { get; set; }
     }
 
     private class EntityMergeController : EntityController<MergeTestEntity>
@@ -147,6 +158,18 @@ public class WriteOperationMergeTests
         // 提交非空密码时正常覆盖
         controller.Copy(target, new MergeTestModel { Id = 1, Password = "新密码" }, new HashSet<String>(StringComparer.OrdinalIgnoreCase) { "password" });
         Assert.Equal("新密码", target.Password);
+    }
+
+    [Fact(DisplayName = "带大小写兼容别名的字段按精确属性写入，不抛歧义异常")]
+    public void Copy_AliasProperty_WritesExactProperty()
+    {
+        var controller = Create(() => new ModelMergeController());
+        var target = new MergeTestEntity { Id = 1, RoleId = 5 };
+        var model = new MergeTestModel { Id = 1, RoleId = 3 };
+
+        controller.Copy(target, model, new HashSet<String>(StringComparer.OrdinalIgnoreCase) { "roleid" });
+
+        Assert.Equal(3, target.RoleId);
     }
 
     [Fact(DisplayName = "能从请求 JSON 解析出实际提交的顶层字段名")]

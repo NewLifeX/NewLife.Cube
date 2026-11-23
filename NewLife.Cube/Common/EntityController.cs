@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Attributes;
@@ -201,7 +200,7 @@ public partial class EntityController<TEntity, TModel>
         var uk = Factory.Unique;
         // 路径与请求体都带主键时必须一致，避免"路径指向 A、内容改 B"。
         // 注意用属性反射取值：XCode 实体索引器只读扩展字典，属性赋过的值取不到
-        var pi = typeof(TModel).GetProperty(uk.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+        var pi = typeof(TModel).GetPropertyEx(uk.Name, true);
         var current = ((pi != null && pi.CanRead ? pi.GetValue(model) : model.GetValue(uk.Name)) + "").Trim();
         if (!current.IsNullOrEmpty() && current != "0" && current != id)
             throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("The primary key in the route does not match the one in the request body."));
@@ -246,7 +245,7 @@ public partial class EntityController<TEntity, TModel>
             if (fi.Name.EqualIgnoreCase(uk.Name)) continue;
             if (!dirtys[fi.Name]) continue;
 
-            var pi = type.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var pi = type.GetPropertyEx(fi.Name, true);
             if (pi == null || !pi.CanRead || !pi.CanWrite) continue;
 
             // 只写字段留空表示不修改：编辑表单不回填密码，原样提交会把库中密码清空
@@ -270,8 +269,8 @@ public partial class EntityController<TEntity, TModel>
             if (fi.Name.EqualIgnoreCase(keyName)) continue;
             if (!fields.Contains(fi.Name)) continue;
 
-            var tpi = targetType.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            var spi = modelType.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var tpi = targetType.GetPropertyEx(fi.Name, true);
+            var spi = modelType.GetPropertyEx(fi.Name, true);
             if (tpi == null || !tpi.CanWrite || spi == null || !spi.CanRead) continue;
 
             // 只写字段留空表示不修改：编辑表单不回填密码，原样提交会把库中密码清空

@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
+using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
 
@@ -126,8 +127,8 @@ partial class ReadOnlyEntityController<TEntity>
         if (value != null) return value;
 
         // TreeNodeText 等虚拟属性不在实体表结构中，索引器取不到，退回属性反射（按类型缓存 PropertyInfo）
-        var key = (entity.GetType(), field.Name.ToLowerInvariant());
-        var pi = _propertyCache.GetOrAdd(key, static k => k.Item1.GetProperty(k.Item2, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase));
+        var key = (entity.GetType(), field.Name);
+        var pi = _propertyCache.GetOrAdd(key, static k => k.Item1.GetPropertyEx(k.Item2, true));
         if (pi != null && pi.CanRead && pi.GetIndexParameters().Length == 0) return pi.GetValue(entity);
 
         return null;
