@@ -103,6 +103,14 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
     [BindColumn("SchemaName", "方案名称。短信方案名称，可选", "")]
     public String SchemaName { get => _SchemaName; set { if (OnPropertyChanging("SchemaName", value)) { _SchemaName = value; OnPropertyChanged("SchemaName"); } } }
 
+    private String _NotifyTemplateCode;
+    /// <summary>通知模板。普通通知使用的服务商模板编号</summary>
+    [DisplayName("通知模板")]
+    [Description("通知模板。普通通知使用的服务商模板编号")]
+    [DataObjectField(false, false, true, 50)]
+    [BindColumn("NotifyTemplateCode", "通知模板。普通通知使用的服务商模板编号", "")]
+    public String NotifyTemplateCode { get => _NotifyTemplateCode; set { if (OnPropertyChanging("NotifyTemplateCode", value)) { _NotifyTemplateCode = value; OnPropertyChanged("NotifyTemplateCode"); } } }
+
     private Int32 _CodeLength;
     /// <summary>验证码长度。默认4位</summary>
     [DisplayName("验证码长度")]
@@ -246,6 +254,7 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
         AppSecret = model.AppSecret;
         SignName = model.SignName;
         SchemaName = model.SchemaName;
+        NotifyTemplateCode = model.NotifyTemplateCode;
         CodeLength = model.CodeLength;
         Expire = model.Expire;
         Enable = model.Enable;
@@ -282,6 +291,7 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
             "AppSecret" => _AppSecret,
             "SignName" => _SignName,
             "SchemaName" => _SchemaName,
+            "NotifyTemplateCode" => _NotifyTemplateCode,
             "CodeLength" => _CodeLength,
             "Expire" => _Expire,
             "Enable" => _Enable,
@@ -313,6 +323,7 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
                 case "AppSecret": _AppSecret = Convert.ToString(value); break;
                 case "SignName": _SignName = Convert.ToString(value); break;
                 case "SchemaName": _SchemaName = Convert.ToString(value); break;
+                case "NotifyTemplateCode": _NotifyTemplateCode = Convert.ToString(value); break;
                 case "CodeLength": _CodeLength = value.ToInt(); break;
                 case "Expire": _Expire = value.ToInt(); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
@@ -472,6 +483,9 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
         /// <summary>方案名称。短信方案名称，可选</summary>
         public static readonly Field SchemaName = FindByName("SchemaName");
 
+        /// <summary>通知模板。普通通知使用的服务商模板编号</summary>
+        public static readonly Field NotifyTemplateCode = FindByName("NotifyTemplateCode");
+
         /// <summary>验证码长度。默认4位</summary>
         public static readonly Field CodeLength = FindByName("CodeLength");
 
@@ -552,6 +566,9 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
 
         /// <summary>方案名称。短信方案名称，可选</summary>
         public const String SchemaName = "SchemaName";
+
+        /// <summary>通知模板。普通通知使用的服务商模板编号</summary>
+        public const String NotifyTemplateCode = "NotifyTemplateCode";
 
         /// <summary>验证码长度。默认4位</summary>
         public const String CodeLength = "CodeLength";

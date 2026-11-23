@@ -143,6 +143,14 @@ public partial class MailConfig : IEntity<MailConfigModel>
     [BindColumn("Enable", "启用", "")]
     public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
+    private Boolean _EnableNotify;
+    /// <summary>通知。用于普通通知场景</summary>
+    [DisplayName("通知")]
+    [Description("通知。用于普通通知场景")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("EnableNotify", "通知。用于普通通知场景", "")]
+    public Boolean EnableNotify { get => _EnableNotify; set { if (OnPropertyChanging("EnableNotify", value)) { _EnableNotify = value; OnPropertyChanged("EnableNotify"); } } }
+
     private Int32 _Priority;
     /// <summary>优先级。较大优先</summary>
     [DisplayName("优先级")]
@@ -235,6 +243,7 @@ public partial class MailConfig : IEntity<MailConfigModel>
         CodeLength = model.CodeLength;
         Expire = model.Expire;
         Enable = model.Enable;
+        EnableNotify = model.EnableNotify;
         Priority = model.Priority;
         CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;
@@ -269,6 +278,7 @@ public partial class MailConfig : IEntity<MailConfigModel>
             "CodeLength" => _CodeLength,
             "Expire" => _Expire,
             "Enable" => _Enable,
+            "EnableNotify" => _EnableNotify,
             "Priority" => _Priority,
             "CreateUserId" => _CreateUserId,
             "CreateTime" => _CreateTime,
@@ -298,6 +308,7 @@ public partial class MailConfig : IEntity<MailConfigModel>
                 case "CodeLength": _CodeLength = value.ToInt(); break;
                 case "Expire": _Expire = value.ToInt(); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
+                case "EnableNotify": _EnableNotify = value.ToBoolean(); break;
                 case "Priority": _Priority = value.ToInt(); break;
                 case "CreateUserId": _CreateUserId = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
@@ -389,19 +400,21 @@ public partial class MailConfig : IEntity<MailConfigModel>
     /// <param name="tenantId">租户</param>
     /// <param name="priority">优先级。较大优先</param>
     /// <param name="enableSsl">启用SSL。是否使用SSL加密连接</param>
+    /// <param name="enableNotify">通知。用于普通通知场景</param>
     /// <param name="enable">启用</param>
     /// <param name="start">更新时间开始</param>
     /// <param name="end">更新时间结束</param>
     /// <param name="key">关键字</param>
     /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
     /// <returns>实体列表</returns>
-    public static IList<MailConfig> Search(Int32 tenantId, Int32 priority, Boolean? enableSsl, Boolean? enable, DateTime start, DateTime end, String key, PageParameter page)
+    public static IList<MailConfig> Search(Int32 tenantId, Int32 priority, Boolean? enableSsl, Boolean? enableNotify, Boolean? enable, DateTime start, DateTime end, String key, PageParameter page)
     {
         var exp = new WhereExpression();
 
         if (tenantId >= 0) exp &= _.TenantId == tenantId;
         if (priority >= 0) exp &= _.Priority == priority;
         if (enableSsl != null) exp &= _.EnableSsl == enableSsl;
+        if (enableNotify != null) exp &= _.EnableNotify == enableNotify;
         if (enable != null) exp &= _.Enable == enable;
         exp &= _.UpdateTime.Between(start, end);
         if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
@@ -458,6 +471,9 @@ public partial class MailConfig : IEntity<MailConfigModel>
 
         /// <summary>启用</summary>
         public static readonly Field Enable = FindByName("Enable");
+
+        /// <summary>通知。用于普通通知场景</summary>
+        public static readonly Field EnableNotify = FindByName("EnableNotify");
 
         /// <summary>优先级。较大优先</summary>
         public static readonly Field Priority = FindByName("Priority");
@@ -533,6 +549,9 @@ public partial class MailConfig : IEntity<MailConfigModel>
 
         /// <summary>启用</summary>
         public const String Enable = "Enable";
+
+        /// <summary>通知。用于普通通知场景</summary>
+        public const String EnableNotify = "EnableNotify";
 
         /// <summary>优先级。较大优先</summary>
         public const String Priority = "Priority";

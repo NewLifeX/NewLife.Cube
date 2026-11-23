@@ -65,7 +65,17 @@ public class SmtpMailVerifyCode : IMailVerifyCode
     /// <param name="body">邮件正文</param>
     /// <param name="options">可选项</param>
     /// <returns>发送结果</returns>
-    protected virtual async Task<String> SendCore(String mail, String subject, String body, MailVerifyCodeOptions options = null)
+    protected virtual Task<String> SendCore(String mail, String subject, String body, MailVerifyCodeOptions options = null)
+        => SendCore(mail, subject, body, false, options);
+
+    /// <summary>核心发送。校验 SMTP 配置并发送邮件</summary>
+    /// <param name="mail">邮箱地址</param>
+    /// <param name="subject">邮件主题</param>
+    /// <param name="body">邮件正文</param>
+    /// <param name="html">是否HTML正文</param>
+    /// <param name="options">可选项</param>
+    /// <returns>发送结果</returns>
+    protected virtual async Task<String> SendCore(String mail, String subject, String body, Boolean html, MailVerifyCodeOptions options = null)
     {
         if (Server.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Server));
         if (From.IsNullOrEmpty()) throw new ArgumentNullException(nameof(From));
@@ -82,13 +92,22 @@ public class SmtpMailVerifyCode : IMailVerifyCode
         {
             Subject = subject,
             Body = body,
-            IsBodyHtml = false
+            IsBodyHtml = html
         };
 
         await client.SendMailAsync(message).ConfigureAwait(false);
 
         return L.T("Sent successfully");
     }
+
+    /// <summary>发送普通通知邮件</summary>
+    /// <param name="mail">邮箱地址</param>
+    /// <param name="subject">邮件主题</param>
+    /// <param name="body">邮件正文</param>
+    /// <param name="html">是否HTML正文</param>
+    /// <returns>发送结果</returns>
+    public Task<String> SendNotify(String mail, String subject, String body, Boolean html = false)
+        => SendCore(mail, subject, body, html);
 
     /// <summary>发送登录验证码</summary>
     /// <param name="mail">邮箱地址</param>

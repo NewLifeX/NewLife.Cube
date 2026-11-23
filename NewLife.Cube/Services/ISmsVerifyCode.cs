@@ -41,4 +41,13 @@ public interface ISmsVerifyCode
     /// <param name="options">可选项</param>
     /// <returns>内部生成的验证码</returns>
     Task<String> SendActivate(String mobile, String code, Int32 expire, SmsVerifyCodeOptions options = null);
+
+    /// <summary>发送普通通知短信</summary>
+    /// <param name="mobile">手机号</param>
+    /// <param name="templateCode">服务商模板编号</param>
+    /// <param name="templateParam">模板参数 JSON</param>
+    /// <param name="options">可选项</param>
+    /// <returns>发送结果</returns>
+    Task<String> SendNotify(String mobile, String templateCode, String templateParam, SmsVerifyCodeOptions options = null)
+        => throw new NotSupportedException("The SMS provider does not support notification messages.");
 }

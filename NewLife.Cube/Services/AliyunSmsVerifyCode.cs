@@ -36,20 +36,6 @@ public class AliyunSmsVerifyCode : ISmsVerifyCode
     /// <exception cref="NotImplementedException"></exception>
     protected virtual Task<String> SendAsync(String mobile, String templateCode, String code, Int32 expire, SmsVerifyCodeOptions options = null)
     {
-        var client = Client;
-        /* Yann：手动设置服务器地址到 Services 列表，避免 InvokeAsync 中 Services.Count == 0 的问题;
-        --这里应该使用Client的SendAsync方法AliyunClient.SendAsync，SendAsync方法内部处理了Services为空时设置服务器地址的问题。但由于SendAsync方法是protected的，无法直接调用，所以只能手动设置服务器地址。
-        看看后续是否需要调整。
-         */
-        if (client.Services.Count == 0)
-        {
-            var url = client.Endpoint;
-            if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client.Endpoint));
-            if (!url.StartsWithIgnoreCase("http://", "https://")) url = "https://" + url;
-            client.SetServer(url);
-        }
-        //client.SetServer($"https://{client.Endpoint}");
-
         var expireMinutes = (expire + 59) / 60;
 
         if (!code.IsNullOrEmpty())
@@ -64,7 +50,7 @@ public class AliyunSmsVerifyCode : ISmsVerifyCode
                 options?.OutId,
             };
 
-            return client.PostAsync<String>("SendSmsVerifyCode", args);
+            return SendRawAsync(args);
         }
         else
         {
@@ -83,8 +69,52 @@ public class AliyunSmsVerifyCode : ISmsVerifyCode
                 options?.OutId,
             };
 
-            return client.PostAsync<String>("SendSmsVerifyCode", args);
+            return SendRawAsync(args);
         }
+    }
+
+    /// <summary>发送普通通知短信</summary>
+    /// <param name="mobile">手机号</param>
+    /// <param name="templateCode">服务商模板编号</param>
+    /// <param name="templateParam">模板参数 JSON</param>
+    /// <param name="options">可选项</param>
+    /// <returns>发送结果</returns>
+    public Task<String> SendNotify(String mobile, String templateCode, String templateParam, SmsVerifyCodeOptions options = null)
+    {
+        if (templateCode.IsNullOrEmpty()) throw new ArgumentNullException(nameof(templateCode));
+
+        var args = new
+        {
+            SchemaName,
+            SignName,
+            TemplateCode = templateCode,
+            PhoneNumber = mobile,
+            TemplateParam = templateParam.IsNullOrEmpty() ? "{}" : templateParam,
+            options?.OutId,
+        };
+
+        return SendRawAsync(args);
+    }
+
+    /// <summary>发送原始请求。统一处理服务器地址与调用</summary>
+    /// <param name="args">请求参数</param>
+    /// <returns>发送结果</returns>
+    private Task<String> SendRawAsync(Object args)
+    {
+        var client = Client;
+        /* Yann：手动设置服务器地址到 Services 列表，避免 InvokeAsync 中 Services.Count == 0 的问题;
+        --这里应该使用Client的SendAsync方法AliyunClient.SendAsync，SendAsync方法内部处理了Services为空时设置服务器地址的问题。但由于SendAsync方法是protected的，无法直接调用，所以只能手动设置服务器地址。
+        看看后续是否需要调整。
+         */
+        if (client.Services.Count == 0)
+        {
+            var url = client.Endpoint;
+            if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client.Endpoint));
+            if (!url.StartsWithIgnoreCase("http://", "https://")) url = "https://" + url;
+            client.SetServer(url);
+        }
+
+        return client.PostAsync<String>("SendSmsVerifyCode", args);
     }
 
     /// <summary>发送登录验证码</summary>

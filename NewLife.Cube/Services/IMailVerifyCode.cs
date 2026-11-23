@@ -42,4 +42,13 @@ public interface IMailVerifyCode
     /// <param name="options">可选项</param>
     /// <returns>发送结果</returns>
     Task<String> SendActivate(String mail, String link, String code, Int32 expire, MailVerifyCodeOptions options = null);
+
+    /// <summary>发送普通通知邮件</summary>
+    /// <param name="mail">邮箱地址</param>
+    /// <param name="subject">邮件主题</param>
+    /// <param name="body">邮件正文</param>
+    /// <param name="html">是否HTML正文</param>
+    /// <returns>发送结果</returns>
+    Task<String> SendNotify(String mail, String subject, String body, Boolean html = false)
+        => throw new NotSupportedException("The mail provider does not support notification emails.");
 }

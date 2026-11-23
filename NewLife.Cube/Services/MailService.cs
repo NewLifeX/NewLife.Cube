@@ -53,6 +53,9 @@ public class MailService(ICacheProvider cacheProvider)
             // 筛选启用的配置
             var configs = list.Where(e => e.Enable);
 
+            // 通知场景只使用开启通知的渠道
+            if (action2 == "notify") configs = configs.Where(e => e.EnableNotify);
+
             // 按优先级降序排序，选择第一个
             var config = configs.OrderByDescending(e => e.Priority).FirstOrDefault();
             if (config != null)
@@ -151,6 +154,28 @@ public class MailService(ICacheProvider cacheProvider)
         }
 
         return record;
+    }
+
+    /// <summary>发送普通通知邮件</summary>
+    /// <param name="mail">邮箱地址</param>
+    /// <param name="subject">邮件主题</param>
+    /// <param name="body">邮件正文</param>
+    /// <param name="config">邮件配置</param>
+    /// <param name="html">是否HTML正文</param>
+    /// <returns>发送结果</returns>
+    public async Task<String> SendNotify(String mail, String subject, String body, MailConfigModel config, Boolean html = true)
+    {
+        if (config == null) throw new ArgumentNullException(nameof(config));
+
+        var key = $"MailVerify:{config.Provider}:{config.Id}";
+        var provider = cacheProvider.InnerCache.Get<IMailVerifyCode>(key);
+        if (provider == null)
+        {
+            provider = CreateProvider(config);
+            cacheProvider.InnerCache.Set(key, provider, 600);
+        }
+
+        return await provider.SendNotify(mail, subject, body, html);
     }
 
     /// <summary>根据配置创建邮件验证码提供者，未知类型抛出明确异常</summary>

@@ -466,6 +466,7 @@
         <Column Name="AppSecret" DataType="String" ShowIn="Auto,-List" Length="200" Description="应用密钥。AccessKeySecret" />
         <Column Name="SignName" DataType="String" Description="签名。短信签名名称" />
         <Column Name="SchemaName" DataType="String" Description="方案名称。短信方案名称，可选" />
+        <Column Name="NotifyTemplateCode" DataType="String" Description="通知模板。普通通知使用的服务商模板编号" />
         <Column Name="CodeLength" DataType="Int32" Description="验证码长度。默认4位" />
         <Column Name="Expire" DataType="Int32" Description="有效期。验证码有效期，单位秒，默认300秒(5分钟)" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
@@ -504,6 +505,7 @@
         <Column Name="CodeLength" DataType="Int32" Description="验证码长度。默认6位" />
         <Column Name="Expire" DataType="Int32" Description="有效期。验证码有效期，单位秒，默认600秒(10分钟)" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
+        <Column Name="EnableNotify" DataType="Boolean" Description="通知。用于普通通知场景" />
         <Column Name="Priority" DataType="Int32" Description="优先级。较大优先" />
         <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
@@ -518,23 +520,45 @@
         <Index Columns="TenantId,Priority" />
       </Indexes>
     </Table>
-    <Table Name="NotificationRecord" Description="通知记录。站内信/短信通知/邮件通知/公众号通知/钉钉机器人/企业微信机器人等" ConnName="Log">
+    <Table Name="NotificationRecord" Description="通知记录。站内信/短信/邮件/APP推送/Webhook/钉钉/企业微信等" ConnName="Log">
       <Columns>
         <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
         <Column Name="TenantId" DataType="Int32" Description="租户" />
+        <Column Name="BizId" DataType="String" Description="业务消息。同一BizId共享已读/处理状态" />
+        <Column Name="Shared" DataType="Boolean" Description="共享读状态。团队任一收件人已读即全员已读" />
+        <Column Name="CancelOnRead" DataType="Boolean" Description="已读后停止后续渠道。true 表示任一渠道已读即取消未发送渠道" />
         <Column Name="Action" DataType="String" Description="操作。Notify/Alert等" />
-        <Column Name="Channel" DataType="String" Description="渠道。InApp/Sms/Mail/WxMp/DingTalk/WeCom等" />
+        <Column Name="Channel" DataType="String" Description="渠道。InApp/Sms/Mail/AppPush/Webhook/DingTalk/WeCom等" />
         <Column Name="ConfigId" DataType="Int32" Description="渠道编号" />
         <Column Name="ConfigName" DataType="String" Description="渠道配置" />
         <Column Name="Provider" DataType="String" Description="提供者。渠道实现标识" />
         <Column Name="UserId" DataType="Int32" Description="用户。站内信/已知用户" />
-        <Column Name="Target" DataType="String" Length="200" Description="目标。手机号/邮箱/openid/机器人地址等" />
+        <Column Name="Target" DataType="String" Length="500" Description="目标。手机号/邮箱/openid/机器人地址等" />
         <Column Name="Title" DataType="String" Master="True" Length="200" Description="标题。站内信/邮件主题" />
-        <Column Name="Content" DataType="String" Length="2000" Description="内容" />
-        <Column Name="Success" DataType="Boolean" Description="成功" />
-        <Column Name="Result" DataType="String" Length="500" Description="结果。包含错误信息" />
+        <Column Name="Content" DataType="String" Length="-1" Description="内容。站内信正文/邮件正文，支持长文本" />
+        <Column Name="Category" DataType="String" Description="分类。System/Business/Security/Marketing/Todo等" />
+        <Column Name="Level" DataType="String" Description="级别。Info/Success/Warning/Error/Urgent" />
+        <Column Name="Link" DataType="String" Length="500" Description="跳转。点击通知打开的前端地址" />
+        <Column Name="Data" DataType="String" Length="-1" Description="数据。JSON业务载荷，供模板渲染与跳转" />
+        <Column Name="TemplateCode" DataType="String" Description="模板。通知模板编码" />
+        <Column Name="Language" DataType="String" Description="语言。渲染时使用的语言" />
+        <Column Name="SenderId" DataType="Int32" Description="发送人。0表示系统" />
         <Column Name="Read" DataType="Boolean" Description="已读。站内信/弹窗" />
         <Column Name="ReadTime" DataType="DateTime" Description="已读时间" />
+        <Column Name="ReadBy" DataType="Int32" Description="已读人。实际触发已读的用户" />
+        <Column Name="ReadChannel" DataType="String" Description="已读渠道。InApp/AppPush/Sms/Mail/Batch" />
+        <Column Name="Handled" DataType="Boolean" Description="已处理。业务确认，不等于已读" />
+        <Column Name="HandledBy" DataType="Int32" Description="处理人" />
+        <Column Name="HandledTime" DataType="DateTime" Description="处理时间" />
+        <Column Name="HandleResult" DataType="String" Length="500" Description="处理结果" />
+        <Column Name="Deleted" DataType="Boolean" Description="已删除。站内信软删除" />
+        <Column Name="Status" DataType="Int32" Description="状态。0待发送/1发送中/2成功/3失败/4跳过" />
+        <Column Name="Attempts" DataType="Int32" Description="尝试次数" />
+        <Column Name="NextRetryTime" DataType="DateTime" Description="下次重试时间" />
+        <Column Name="SentTime" DataType="DateTime" Description="发送完成时间" />
+        <Column Name="ExpireTime" DataType="DateTime" Description="过期时间。过期后不再展示与发送" />
+        <Column Name="Success" DataType="Boolean" Description="成功" />
+        <Column Name="Result" DataType="String" Length="1000" Description="结果。包含错误信息" />
         <Column Name="TraceId" DataType="String" Description="追踪。链路追踪" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
@@ -543,10 +567,10 @@
         <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
       </Columns>
       <Indexes>
-        <Index Columns="TenantId,Channel,UserId,Target,Id" />
+        <Index Columns="UserId,Channel,Deleted,Read,Id" />
         <Index Columns="TenantId,Channel,Id" />
-        <Index Columns="Channel,Target,Id" />
-        <Index Columns="UserId,Read,Id" />
+        <Index Columns="TenantId,BizId,Channel" />
+        <Index Columns="Status,NextRetryTime" />
       </Indexes>
     </Table>
     <Table Name="VerifyCodeRecord" Description="验证码记录。短信/邮件等验证码生命周期与验证结果" ConnName="Log">

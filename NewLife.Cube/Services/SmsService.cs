@@ -2,6 +2,7 @@ using System.Text;
 using NewLife.Caching;
 using NewLife.Cube.Entity;
 using NewLife.Security;
+using NewLife.Serialization;
 using XCode.Membership;
 
 namespace NewLife.Cube.Services;
@@ -104,30 +105,7 @@ public class SmsService(ICacheProvider cacheProvider)
     /// <returns></returns>
     public async Task<VerifyCodeRecord> SendVerifyCode(String action, String mobile, String code, SmsConfigModel config)
     {
-        var key = $"SmsVerify:{config.Provider}:{config.Id}";
-        var provider = cacheProvider.InnerCache.Get<ISmsVerifyCode>(key);
-        if (provider == null)
-        {
-            //!! 暂时硬编码为阿里云短信验证码服务，后续可扩展为多种短信服务提供商
-            if (config.Provider == "Aliyun")
-            {
-                provider = new AliyunSmsVerifyCode
-                {
-                    SignName = config.SignName,
-                    SchemaName = config.SchemaName,
-                    CodeLength = config.CodeLength,
-                    Client =
-                    {
-                        Endpoint = config.Server,
-                        AccessKeyId = config.AppKey,
-                        AccessKeySecret = config.AppSecret,
-                    }
-                };
-
-                cacheProvider.InnerCache.Set(key, provider, 600);
-            }
-            provider = cacheProvider.InnerCache.Get<ISmsVerifyCode>(key);
-        }
+        var provider = GetProvider(config);
 
         var record = new VerifyCodeRecord
         {
@@ -176,6 +154,57 @@ public class SmsService(ICacheProvider cacheProvider)
         }
 
         return record;
+    }
+
+    /// <summary>发送普通通知短信</summary>
+    /// <param name="mobile">手机号</param>
+    /// <param name="content">通知内容摘要</param>
+    /// <param name="config">短信配置</param>
+    /// <param name="templateParam">模板参数 JSON。为空时用 content 生成</param>
+    /// <returns>发送结果</returns>
+    public async Task<String> SendNotify(String mobile, String content, SmsConfigModel config, String templateParam = null)
+    {
+        if (config == null) throw new ArgumentNullException(nameof(config));
+
+        var templateCode = config.NotifyTemplateCode;
+        if (templateCode.IsNullOrEmpty()) throw new InvalidOperationException("Notification template is not configured on the SMS channel.");
+
+        var provider = GetProvider(config);
+        if (provider == null) throw new InvalidOperationException($"SMS provider '{config.Provider}' is not supported.");
+        var param = templateParam.IsNullOrEmpty() ? new { content }.ToJson() : templateParam;
+
+        return await provider.SendNotify(mobile, templateCode, param);
+    }
+
+    /// <summary>获取短信提供者。暂只支持阿里云，未知类型返回null</summary>
+    /// <param name="config">短信配置</param>
+    /// <returns>短信提供者</returns>
+    private ISmsVerifyCode GetProvider(SmsConfigModel config)
+    {
+        var key = $"SmsVerify:{config.Provider}:{config.Id}";
+        var provider = cacheProvider.InnerCache.Get<ISmsVerifyCode>(key);
+        if (provider != null) return provider;
+
+        //!! 暂时硬编码为阿里云短信验证码服务，后续可扩展为多种短信服务提供商
+        if (config.Provider.EqualIgnoreCase("Aliyun"))
+        {
+            provider = new AliyunSmsVerifyCode
+            {
+                SignName = config.SignName,
+                SchemaName = config.SchemaName,
+                CodeLength = config.CodeLength,
+                Client =
+                {
+                    Endpoint = config.Server,
+                    AccessKeyId = config.AppKey,
+                    AccessKeySecret = config.AppSecret,
+                }
+            };
+
+            cacheProvider.InnerCache.Set(key, provider, 600);
+        }
+
+        return provider;
     }
 
     /// <summary>默认验证码长度</summary>

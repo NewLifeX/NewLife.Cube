@@ -56,6 +56,9 @@ public partial class MailConfigModel
     /// <summary>启用</summary>
     public Boolean Enable { get; set; }
 
+    /// <summary>通知。用于普通通知场景</summary>
+    public Boolean EnableNotify { get; set; }
+
     /// <summary>优先级。较大优先</summary>
     public Int32 Priority { get; set; }
 
@@ -101,6 +104,7 @@ public partial class MailConfigModel
         CodeLength = model.CodeLength;
         Expire = model.Expire;
         Enable = model.Enable;
+        EnableNotify = model.EnableNotify;
         Priority = model.Priority;
         CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;

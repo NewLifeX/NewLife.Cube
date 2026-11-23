@@ -41,6 +41,9 @@ public partial class SmsConfigModel
     /// <summary>方案名称。短信方案名称，可选</summary>
     public String SchemaName { get; set; }
 
+    /// <summary>通知模板。普通通知使用的服务商模板编号</summary>
+    public String NotifyTemplateCode { get; set; }
+
     /// <summary>验证码长度。默认4位</summary>
     public Int32 CodeLength { get; set; }
 
@@ -102,6 +105,7 @@ public partial class SmsConfigModel
         AppSecret = model.AppSecret;
         SignName = model.SignName;
         SchemaName = model.SchemaName;
+        NotifyTemplateCode = model.NotifyTemplateCode;
         CodeLength = model.CodeLength;
         Expire = model.Expire;
         Enable = model.Enable;
