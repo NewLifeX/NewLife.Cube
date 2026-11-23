@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    .NET 11 SDK（11.0.100）的热重载浏览器工具会给每个 Web SDK 项目生成
+    _framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js 静态资源，不区分应用与类库。
+    类库被 Web 项目引用时，两份同内容资源指纹相同、路由相同，引用方合并端点只保留自己那一份，
+    类库那一份找不到端点，编译报错：
+    The following scoped css bundles do not have matching endpoints: _framework/Microsoft.NET.Sdk.BlazorWeb.HotReload#[.{fingerprint}]!.lib.module.js
+    类库不需要该资源（浏览器工具端点由应用项目提供），这里对 Web SDK 类库关闭生成。
+    SDK 修复后（类库不再生成该资源）可删除本文件。
+  -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' and '$(OutputType)' == 'Library'">
+    <EnableHotReloadInRuntimeConfigDevFile>false</EnableHotReloadInRuntimeConfigDevFile>
+  </PropertyGroup>
+</Project>
