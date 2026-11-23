@@ -46,6 +46,15 @@ const routes: ConfigRoute[] = [
     component: () => import('../pages/ForgotPasswordPage.vue'),
   },
   {
+    path: '/notifications',
+    name: 'notifications',
+    meta: {
+      ...titleOf('route.notifications'),
+      auth: true,
+    },
+    component: () => import('../pages/NotificationPage.vue'),
+  },
+  {
     path: '/profile',
     name: 'profile',
     meta: {
