@@ -15,6 +15,7 @@ using NewLife.Data;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using NewLife.Threading;
 using NewLife.Web;
 using XCode;
@@ -129,7 +130,7 @@ public partial class NotificationRecord : Entity<NotificationRecord>
     public NotificationRecordModel ToModel()
     {
         var model = new NotificationRecordModel();
-        model.Copy(this);
+        Reflect.Copy(model, this);
 
         return model;
     }
@@ -143,7 +144,8 @@ public partial class NotificationRecord : Entity<NotificationRecord>
     /// <returns>查询条件</returns>
     public static Expression GetInAppExp(Int32 userId, Boolean admin)
     {
-        var exp = _.Channel == "InApp";
+        var exp = _.Channel == "InApp" & (_.Deleted == false | _.Deleted.IsNull());
+        exp &= _.ExpireTime.IsNull() | _.ExpireTime <= DateTime.MinValue | _.ExpireTime > DateTime.Now;
         if (admin)
             exp &= _.UserId == 0 | _.UserId == userId;
         else
@@ -179,6 +181,23 @@ public partial class NotificationRecord : Entity<NotificationRecord>
         return FindAll(exp, _.Id.Desc(), null, 0, size);
     }
 
+    /// <summary>获取指定编号之后的站内信增量，用于 SSE 与轮询兜底</summary>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="admin">是否系统管理员（IsSystem 角色）</param>
+    /// <param name="sinceId">起始编号，不含</param>
+    /// <param name="size">条数。默认20</param>
+    /// <returns>增量列表，按编号升序</returns>
+    public static IList<NotificationRecord> GetIncremental(Int32 userId, Boolean admin, Int64 sinceId, Int32 size = 20)
+    {
+        if (userId <= 0 && !admin) return [];
+        if (size <= 0) size = 20;
+
+        var exp = GetInAppExp(userId, admin);
+        if (sinceId > 0) exp &= _.Id > sinceId;
+
+        return FindAll(exp, _.Id.Asc(), null, 0, size);
+    }
+
     /// <summary>标记站内信已读。广播消息(UserId=0)任意系统管理员可标记，个人消息仅本人可标记</summary>
     /// <param name="id">通知编号</param>
     /// <param name="userId">当前用户编号</param>
@@ -194,10 +213,12 @@ public partial class NotificationRecord : Entity<NotificationRecord>
         if (entity.UserId == 0 && !admin) return null;
         if (entity.UserId != 0 && entity.UserId != userId) return null;
 
-        if (!entity.Read)
+        if (!entity.Read || entity.ReadBy != userId)
         {
             entity.Read = true;
             entity.ReadTime = DateTime.Now;
+            entity.ReadBy = userId;
+            if (entity.ReadChannel.IsNullOrEmpty()) entity.ReadChannel = "InApp";
             if (!userName.IsNullOrEmpty()) entity.Result = $"已读：{userName}";
             entity.Update();
         }
@@ -205,7 +226,118 @@ public partial class NotificationRecord : Entity<NotificationRecord>
         return entity;
     }
 
-    /// <summary>批量标记当前用户可见的全部未读站内信为已读</summary>
+    /// <summary>按 BizId 标记已读。团队共享消息会同时更新同 BizId 的所有站内信行</summary>
+    /// <param name="bizId">业务消息编号</param>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="userName">当前用户名称，写入已读人便于审计</param>
+    /// <param name="tenantId">租户编号</param>
+    /// <param name="channel">触发已读的渠道。InApp/AppPush/Sms/Mail</param>
+    /// <returns>当前用户的站内信记录；记录不存在或无权时返回null</returns>
+    public static NotificationRecord MarkReadByBizId(String bizId, Int32 userId, String userName, Int32 tenantId, String channel)
+    {
+        if (bizId.IsNullOrEmpty() || userId <= 0) return null;
+
+        var exp = _.TenantId == tenantId & _.BizId == bizId & (_.Deleted == false | _.Deleted.IsNull());
+        var list = FindAll(exp, null, null, 0, 0);
+        if (list.Count == 0) return null;
+
+        var own = list.FirstOrDefault(e => e.UserId == userId && e.Channel.EqualIgnoreCase("InApp"))
+            ?? list.FirstOrDefault(e => e.UserId == userId);
+        if (own == null) return null;
+
+        var now = DateTime.Now;
+        var channel2 = channel.IsNullOrEmpty() ? "InApp" : channel;
+        var reason = $"Cancelled because read on {channel2}.";
+        var targets = new List<NotificationRecord>();
+        foreach (var entity in list)
+        {
+            // 团队共享时更新全组；普通消息只更新本人
+            if (!own.Shared && entity.UserId != userId) continue;
+
+            if (!entity.Read)
+            {
+                entity.Read = true;
+                entity.ReadTime = now;
+                entity.ReadBy = userId;
+                entity.ReadChannel = channel2;
+            }
+
+            // 任一渠道已读后，取消尚未发送的后续渠道
+            if (own.CancelOnRead && entity.Status == 0 && entity.SentTime == DateTime.MinValue)
+            {
+                entity.Status = 4;
+                entity.Success = true;
+                entity.Result = reason;
+            }
+
+            targets.Add(entity);
+        }
+
+        var count = targets.Save();
+
+        WriteLog(own.Shared ? "TeamRead" : "Read", bizId, own.Id, userId, userName, tenantId, channel2, null, count);
+
+        return own;
+    }
+
+    /// <summary>按 BizId 处理通知。团队共享消息任一成员处理即闭环</summary>
+    /// <param name="bizId">业务消息编号</param>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="userName">当前用户名称，写入处理人便于审计</param>
+    /// <param name="tenantId">租户编号</param>
+    /// <param name="result">处理结果摘要</param>
+    /// <returns>当前用户的站内信记录；记录不存在或无权时返回null</returns>
+    public static NotificationRecord HandleByBizId(String bizId, Int32 userId, String userName, Int32 tenantId, String result)
+    {
+        if (bizId.IsNullOrEmpty() || userId <= 0) return null;
+
+        var exp = _.TenantId == tenantId & _.BizId == bizId & (_.Deleted == false | _.Deleted.IsNull());
+        var list = FindAll(exp, null, null, 0, 0);
+        if (list.Count == 0) return null;
+
+        var own = list.FirstOrDefault(e => e.UserId == userId && e.Channel.EqualIgnoreCase("InApp"))
+            ?? list.FirstOrDefault(e => e.UserId == userId);
+        if (own == null) return null;
+
+        var now = DateTime.Now;
+        var reason = "Cancelled because handled.";
+        var targets = new List<NotificationRecord>();
+        foreach (var entity in list)
+        {
+            if (!own.Shared && entity.UserId != userId) continue;
+
+            if (!entity.Handled)
+            {
+                entity.Handled = true;
+                entity.HandledBy = userId;
+                entity.HandledTime = now;
+                entity.HandleResult = result;
+            }
+            if (!entity.Read)
+            {
+                entity.Read = true;
+                entity.ReadTime = now;
+                entity.ReadBy = userId;
+                entity.ReadChannel = "InApp";
+            }
+            if (own.CancelOnRead && entity.Status == 0 && entity.SentTime == DateTime.MinValue)
+            {
+                entity.Status = 4;
+                entity.Success = true;
+                entity.Result = reason;
+            }
+
+            targets.Add(entity);
+        }
+
+        var count = targets.Save();
+
+        WriteLog("Handle", bizId, own.Id, userId, userName, tenantId, "InApp", result, count);
+
+        return own;
+    }
+
+    /// <summary>批量标记当前用户可见的全部未读站内信为已读。只处理个人消息，不关闭团队共享消息</summary>
     /// <param name="userId">当前用户编号</param>
     /// <param name="userName">当前用户名称，写入已读人便于审计</param>
     /// <param name="admin">是否系统管理员（IsSystem 角色）</param>
@@ -214,18 +346,176 @@ public partial class NotificationRecord : Entity<NotificationRecord>
     {
         if (userId <= 0 && !admin) return 0;
 
-        var exp = GetInAppExp(userId, admin) & _.Read == false;
+        var exp = GetInAppExp(userId, admin) & _.Read == false & (_.Shared == false | _.Shared.IsNull());
+        var list = FindAll(exp, null, null, 0, 0);
+        if (list.Count == 0) return 0;
+
+        var now = DateTime.Now;
+        foreach (var entity in list)
+        {
+            entity.Read = true;
+            entity.ReadTime = now;
+            entity.ReadBy = userId;
+            entity.ReadChannel = "Batch";
+            if (!userName.IsNullOrEmpty()) entity.Result = $"已读：{userName}";
+        }
+
+        var count = list.Save();
+        if (count > 0)
+        {
+            var bizIds = list.Where(e => e.CancelOnRead).Select(e => e.BizId);
+            var cancelled = CancelPending(bizIds, userId, "Cancelled by batch read.");
+            WriteLog("BatchRead", "", 0, userId, userName, 0, "Batch", $"cancelled={cancelled}", count);
+        }
+
+        return count;
+    }
+
+    /// <summary>取消指定业务消息下尚未发送的个人渠道记录</summary>
+    /// <param name="bizIds">业务消息编号集合</param>
+    /// <param name="userId">用户编号</param>
+    /// <param name="reason">取消原因</param>
+    /// <returns>取消行数</returns>
+    private static Int32 CancelPending(IEnumerable<String> bizIds, Int32 userId, String reason)
+    {
+        var ids = bizIds.Where(e => !e.IsNullOrEmpty()).Distinct().ToArray();
+        if (ids.Length == 0) return 0;
+
+        var exp = _.UserId == userId
+            & _.BizId.In(ids)
+            & _.Status == 0
+            & (_.SentTime.IsNull() | _.SentTime == DateTime.MinValue)
+            & (_.Deleted == false | _.Deleted.IsNull());
         var list = FindAll(exp, null, null, 0, 0);
         if (list.Count == 0) return 0;
 
         foreach (var entity in list)
         {
-            entity.Read = true;
-            entity.ReadTime = DateTime.Now;
-            if (!userName.IsNullOrEmpty()) entity.Result = $"已读：{userName}";
+            entity.Status = 4;
+            entity.Success = true;
+            entity.Result = reason;
         }
 
         return list.Save();
+    }
+
+    /// <summary>软删除站内信。个人只能删除自己的非共享消息，管理员可清理共享消息</summary>
+    /// <param name="id">通知编号</param>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="admin">是否系统管理员（IsSystem 角色）</param>
+    /// <returns>影响行数</returns>
+    public static Int32 SoftDelete(Int64 id, Int32 userId, Boolean admin)
+    {
+        var entity = FindById(id);
+        if (entity == null || !entity.Channel.EqualIgnoreCase("InApp")) return 0;
+
+        if (!admin && (entity.Shared || entity.UserId != userId)) return 0;
+
+        entity.Deleted = true;
+
+        return entity.Update();
+    }
+
+    /// <summary>写入通知已读/处理审计日志。失败只记日志，不影响主流程</summary>
+    /// <param name="action">动作。Read/TeamRead/BatchRead/Handle</param>
+    /// <param name="bizId">业务消息编号</param>
+    /// <param name="recordId">通知记录编号</param>
+    /// <param name="actorId">操作人编号</param>
+    /// <param name="actorName">操作人名称</param>
+    /// <param name="tenantId">租户编号</param>
+    /// <param name="channel">渠道</param>
+    /// <param name="result">处理结果</param>
+    /// <param name="affected">影响行数</param>
+    private static void WriteLog(String action, String bizId, Int64 recordId, Int32 actorId, String actorName, Int32 tenantId, String channel, String result, Int32 affected)
+    {
+        try
+        {
+            var log = new XCode.Membership.Log
+            {
+                Category = "Notification",
+                Action = action,
+                LinkId = recordId,
+                CreateUserId = actorId,
+                CreateUser = actorName,
+                CreateTime = DateTime.Now,
+                Success = true,
+                Ex1 = tenantId,
+                Ex4 = bizId,
+                Ex5 = channel,
+                Remark = new { recordId, bizId, actorId, channel, result, affected }.ToJson(),
+            };
+            log.Insert();
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+        }
+    }
+    #endregion
+
+    /// <summary>分页获取当前用户可见的站内信</summary>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="admin">是否系统管理员</param>
+    /// <param name="category">分类</param>
+    /// <param name="read">已读状态</param>
+    /// <param name="start">开始时间</param>
+    /// <param name="end">结束时间</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页</param>
+    /// <returns>站内信列表</returns>
+    public static IList<NotificationRecord> GetInAppPage(Int32 userId, Boolean admin, String category, Boolean? read, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        if (userId <= 0 && !admin) return [];
+
+        var exp = GetInAppExp(userId, admin);
+        if (!category.IsNullOrEmpty()) exp &= _.Category == category;
+        if (read != null) exp &= _.Read == read;
+        exp &= _.Id.Between(start, end, Meta.Factory.Snow);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+
+        page ??= new PageParameter();
+        if (page.Sort.IsNullOrEmpty()) page.Sort = _.Id.Desc();
+
+        return FindAll(exp, page);
+    }
+
+    #region 高级查询
+    /// <summary>按业务字段高级查询，供管理端列表使用</summary>
+    /// <param name="tenantId">租户</param>
+    /// <param name="bizId">业务消息编号</param>
+    /// <param name="channel">渠道</param>
+    /// <param name="userId">用户</param>
+    /// <param name="category">分类</param>
+    /// <param name="level">级别</param>
+    /// <param name="read">已读</param>
+    /// <param name="handled">已处理</param>
+    /// <param name="success">成功</param>
+    /// <param name="start">开始时间</param>
+    /// <param name="end">结束时间</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页</param>
+    /// <returns>通知记录列表</returns>
+    public static IList<NotificationRecord> SearchBy(Int32 tenantId, String bizId, String channel, Int32 userId, String category, String level, Boolean? read, Boolean? handled, Boolean? success, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        var exp = new WhereExpression();
+
+        if (tenantId >= 0) exp &= _.TenantId == tenantId;
+        if (!bizId.IsNullOrEmpty()) exp &= _.BizId == bizId;
+        if (!channel.IsNullOrEmpty()) exp &= _.Channel == channel;
+        if (userId >= 0) exp &= _.UserId == userId;
+        if (!category.IsNullOrEmpty()) exp &= _.Category == category;
+        if (!level.IsNullOrEmpty()) exp &= _.Level == level;
+        if (read != null) exp &= _.Read == read;
+        if (handled != null) exp &= _.Handled == handled;
+        if (success != null) exp &= _.Success == success;
+        exp &= _.Id.Between(start, end, Meta.Factory.Snow);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+        if (page?.State is Expression state) exp &= state;
+
+        page ??= new PageParameter();
+        if (page.Sort.IsNullOrEmpty()) page.Sort = _.Id.Desc();
+
+        return FindAll(exp, page);
     }
     #endregion
 }

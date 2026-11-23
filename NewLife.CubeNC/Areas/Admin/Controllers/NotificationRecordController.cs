@@ -75,9 +75,13 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
     protected override IEnumerable<NotificationRecord> Search(Pager p)
     {
         var tenantId = p["tenantId"].ToInt(-1);
+        var bizId = p["bizId"];
         var channel = p["channel"];
         var userId = p["userId"].ToInt(-1);
+        var category = p["category"];
+        var level = p["level"];
         var read = p["read"]?.ToBoolean();
+        var handled = p["handled"]?.ToBoolean();
         var success = p["success"]?.ToBoolean();
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
@@ -85,7 +89,7 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
 
         if (p.Sort.IsNullOrEmpty()) p.Sort = NotificationRecord._.Id.Desc();
 
-        return NotificationRecord.Search(tenantId, channel, userId, null, read, success, start, end, key, p);
+        return NotificationRecord.SearchBy(tenantId, bizId, channel, userId, category, level, read, handled, success, start, end, key, p);
     }
 
     #region 站内信未读
@@ -109,8 +113,13 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
         var rs = list.Select(e => new
         {
             e.Id,
+            e.BizId,
+            e.Shared,
             e.Title,
             e.Content,
+            e.Category,
+            e.Level,
+            e.Link,
             e.CreateTime,
             Broadcast = e.UserId == 0,
         });
@@ -120,15 +129,21 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
 
     /// <summary>标记站内信已读</summary>
     /// <param name="id">通知编号</param>
+    /// <param name="bizId">业务消息编号。非空时按业务消息批量标记</param>
+    /// <param name="channel">触发已读的渠道</param>
     /// <returns>JSON 结果</returns>
     [HttpPost]
-    public ActionResult NotifyMarkRead(Int64 id)
+    public ActionResult NotifyMarkRead(Int64 id, String bizId = null, String channel = "InApp")
     {
         var (userId, admin, name) = GetCurrentUser();
-        var entity = NotificationRecord.MarkRead(id, userId, name, admin);
+        var tenantId = TenantContext.CurrentId;
+
+        var entity = !bizId.IsNullOrEmpty()
+            ? NotificationRecord.MarkReadByBizId(bizId, userId, name, tenantId, channel)
+            : NotificationRecord.MarkRead(id, userId, name, admin);
         if (entity == null) return Json(500, "Record not found or no permission to mark as read");
 
-        return Json(0, "Read", new { entity.Id, entity.Read });
+        return Json(0, "Read", new { entity.Id, entity.BizId, entity.Read, entity.ReadBy, entity.ReadChannel });
     }
 
     /// <summary>全部标记已读</summary>

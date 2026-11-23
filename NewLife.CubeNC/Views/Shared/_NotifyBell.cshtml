@@ -90,9 +90,13 @@
                     for (var i = 0; i < items.length; i++) {
                         var it = items[i];
                         var time = (it.createTime || '').toString().substring(5, 16);
+                        var level = (it.level || 'Info').toLowerCase();
+                        var color = level === 'warning' ? '#faad14' : (level === 'error' || level === 'urgent') ? '#ff4d4f' : (level === 'success' ? '#52c41a' : '#1E9FFF');
                         // 完整正文直接入DOM（转义后），收起态由CSS单行省略，点击展开显示全文
-                        html += '<li class="cube-notify-item" data-id="' + it.id + '">'
-                            + '<div class="cube-notify-title"><span class="cube-notify-readtag">@L.T("Read")</span>' + esc(it.title) + '</div>'
+                        html += '<li class="cube-notify-item" data-id="' + it.id + '" data-bizid="' + esc(it.bizId) + '">'
+                            + '<div class="cube-notify-title"><span class="cube-notify-readtag">@L.T("Read")</span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + color + ';margin-right:5px;"></span>' + esc(it.title)
+                            + (it.shared ? ' <span style="color:#999;font-size:10px;border:1px solid #e6e6e6;border-radius:2px;padding:0 3px;">@L.T("Team shared")</span>' : '')
+                            + '</div>'
                             + '<div class="cube-notify-text">' + esc(it.content) + '</div>'
                             + '<div class="cube-notify-time">' + esc(time) + (it.broadcast ? ' · @L.T("System")' : '') + '</div>'
                             + '</li>';
@@ -103,11 +107,11 @@
 
             // 标记已读：成功后刷新红点计数并给当前列表中的同一条目加上已读标记；
             // 不重载列表，条目与正文继续留在面板中，直到下次打开面板（仅未读）或全部已读
-            function markRead(id) {
+            function markRead(id, bizId) {
                 fetch(markReadUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'id=' + id
+                    body: 'id=' + encodeURIComponent(id) + '&bizId=' + encodeURIComponent(bizId || '') + '&channel=InApp'
                 }).then(function (r) { return r.json(); }).then(function (d) {
                     if (!d || d.code !== 0) return;
 
@@ -115,6 +119,8 @@
 
                     var li = list.querySelector('li[data-id="' + id + '"]');
                     if (li) li.classList.add('read');
+                    // 团队共享消息会在同一 BizId 下同步全组，刷新列表让其他条目也消失
+                    if (bizId) loadList();
                 }).catch(function () { });
             }
 
@@ -141,9 +147,10 @@
 
                 // 展开即开始计时，停留数秒后自动已读（每条只提交一次）
                 var id = li.getAttribute('data-id');
+                var bizId = li.getAttribute('data-bizid');
                 if (readStarted[id]) return;
                 readStarted[id] = true;
-                setTimeout(function () { markRead(id); }, READ_DELAY);
+                setTimeout(function () { markRead(id, bizId); }, READ_DELAY);
             });
 
             // 全部已读
