@@ -61,6 +61,27 @@ public class RunTimeMiddleware
         ManageProvider.UserHost = ip;
         var user = ManageProvider.User;
 
+        // SPA/API 走 JWT 且无 Cookie，控制器认证在本中间件之后执行，此处直接按令牌解析用户。
+        // 否则在线会话表和访问规则只能看到匿名访客（UserId=0），在线会话里就看不到已登录用户。
+        // 注意：不写 HttpContext.Items["CurrentUser"]，认证与租户校验仍由控制器完成，避免绕过租户校验。
+        if (user == null)
+        {
+            var token = ctx.LoadToken();
+            if (!token.IsNullOrEmpty())
+            {
+                try
+                {
+                    var (login, _) = ManagerProviderHelper.LoadUser(ManageProvider.Provider, token);
+                    user = login as IUser;
+                }
+                catch (Exception ex)
+                {
+                    // 令牌非法/过期时保持匿名，不影响后续控制器返回 401；避免刷异常堆栈
+                    XTrace.WriteLine("[Cube] invalid token when resolving online user: {0}", ex.Message);
+                }
+            }
+        }
+
         // 安全访问。读取请求体用于威胁检测（仅文本类内容，超限不读）
         var body = await MiddlewareHelper.ReadRequestBodyAsync(ctx);
         var rule = _accessService.Valid(ctx.Request.GetDisplayUrl(), body, ua, ip, user, session, ctx);
