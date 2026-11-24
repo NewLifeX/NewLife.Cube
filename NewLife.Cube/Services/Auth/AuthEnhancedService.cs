@@ -357,7 +357,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 IsSuccess = result.IsSuccess,
                 Message = result.Message,
                 MfaToken = result.MfaToken,
-                Data = result.Data == null ? null : new RegisterResult { AccessToken = result.Data.AccessToken, RefreshToken = result.Data.RefreshToken },
+                Data = result.Data == null ? null : new RegisterResult { AccessToken = result.Data.AccessToken, RefreshToken = result.Data.RefreshToken, ExpireIn = result.Data.ExpireIn },
             };
         }
         catch (Exception ex)

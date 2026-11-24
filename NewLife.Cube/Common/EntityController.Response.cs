@@ -81,12 +81,17 @@ public partial class EntityController<TEntity, TModel>
 
         var fieldErrors = BuildFieldErrors(ex);
 
-        // ApiException 保留自身码与消息；其余异常统一 500，XException 视为已知业务异常、消息保留，未知异常仅开发模式暴露细节
-        var isBiz = trueEx is ApiException or XException;
+        // ApiException 保留自身码与消息；NoPermission 统一 403；其余异常统一 500，XException 视为已知业务异常、消息保留，未知异常仅开发模式暴露细节
+        var isBiz = trueEx is ApiException or XException or NoPermissionException;
         var tip = fieldErrors != null && fieldErrors.Count > 0 ? fieldErrors[0].Message : detail;
         var err = isBiz || SysConfig.Develop ? $"{L.T("{0} failed!", action)} {tip}" : L.T("{0} failed!", action);
 
-        var code = trueEx is ApiException ae ? ae.Code : ApiCode.InternalServerError.ToInt();
+        var code = trueEx switch
+        {
+            ApiException ae => ae.Code,
+            NoPermissionException => ApiCode.Forbidden.ToInt(),
+            _ => ApiCode.InternalServerError.ToInt(),
+        };
         return new ApiResponse<T>
         {
             Code = code,

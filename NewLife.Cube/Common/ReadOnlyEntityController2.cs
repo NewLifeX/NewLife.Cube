@@ -7,6 +7,7 @@ using NewLife.Cube.AI;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Remoting;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -234,7 +235,8 @@ public partial class ReadOnlyEntityController<TEntity>
         {
             // 数据权限
             var builder = CreateWhere();
-            if (builder != null && !builder.Eval(entity)) throw new InvalidOperationException(L.T("Illegal data access [{0}]", key));
+            // 行级数据权限拒绝属于授权失败，按 403 返回（HTTP 状态码是否同步由 EnableHttpStatusCodes 控制）
+            if (builder != null && !builder.Eval(entity)) throw new ApiException(ApiCode.Forbidden.ToInt(), L.T("Illegal data access [{0}]", key));
         }
 
         return entity;

@@ -187,13 +187,19 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         }
         else if (context.Exception != null && !context.ExceptionHandled && !HttpContext.Response.HasStarted)
         {
-            // 与实体控制器 BuildFailResponse 保持同一套映射：ApiException 用自身码，其余异常统一 500
+            // 与实体控制器 BuildFailResponse 保持同一套映射：ApiException 用自身码，NoPermission 统一 403，其余异常统一 500
             var code = ApiCode.InternalServerError.ToInt();
             var message = NewLife.Common.SysConfig.Current.Develop ? ex.Message : L.T("The server is busy. Please try again later.");
             if (ex is ApiException aex)
             {
                 code = aex.Code;
                 message = aex.Message;
+            }
+            else if (ex is NoPermissionException nex)
+            {
+                // 行级数据权限 / 租户上下文等授权拒绝，返回 403 而不是 500
+                code = ApiCode.Forbidden.ToInt();
+                message = nex.Message;
             }
             else if (ex is XException)
             {

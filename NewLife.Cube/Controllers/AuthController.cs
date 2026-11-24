@@ -361,6 +361,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
 
         res.AccessToken = registerResult.Data.AccessToken;
         res.RefreshToken = registerResult.Data.RefreshToken;
+        res.ExpireIn = registerResult.Data.ExpireIn;
         return res.ToOkApiResponse(registerResult.Message ?? L.T("Registered successfully."));
     }
 
