@@ -162,6 +162,11 @@
 
                 if (challengeId && challengeId.length > 0) {
                     var resultPWD = encryptPwd(password);
+                    if (!resultPWD) {
+                        alert(@Json.Serialize(L.T("The login challenge has expired or is invalid. Please obtain the public key again and retry.")));
+                        btn.prop('disabled', false);
+                        return;
+                    }
                     $('#pwd').val(resultPWD);
                 } else {
                     $('#pwd').val(password);
@@ -171,10 +176,14 @@
             }
 
             function encryptPwd(p) {
-                var rsa = new JSEncrypt();
-                rsa.setPublicKey($('#challenge_id_container').val());
+                try {
+                    var rsa = new JSEncrypt();
+                    rsa.setPublicKey($('#challenge_id_container').val());
 
-                return rsa.encrypt(p);
+                    return rsa.encrypt(p);
+                } catch (e) {
+                    return null;
+                }
             }
         });
     </script>

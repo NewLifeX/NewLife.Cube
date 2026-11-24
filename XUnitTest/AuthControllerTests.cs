@@ -1,10 +1,15 @@
 using System;
+using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using NewLife.Caching;
+using NewLife.Cube;
+using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Services;
+using XCode.Membership;
 using Xunit;
 
 namespace XUnitTest;
@@ -228,6 +233,39 @@ public class AuthControllerTests
         var decrypted = (String)method.Invoke(null, [pemPrivate, cipher])!;
 
         Assert.Equal(plain, decrypted);
+    }
+
+    [Fact(DisplayName = "登录挑战：密文不是合法 Base64 时返回可重试提示，不暴露内部异常")]
+    public void Login_MalformedCiphertext_ReturnsFriendlyError()
+    {
+        var provider = new MemoryCacheProvider();
+        var svc = new UserService(null!, provider, null!, null!, null!, null!, null!);
+
+        var (challengeId, _) = svc.GetPublicKey();
+
+        var prevPlain = CubeSetting.Current.AllowPlainPassword;
+        var prevLog = LogProvider.Provider.Enable;
+        CubeSetting.Current.AllowPlainPassword = false;
+        LogProvider.Provider.Enable = false;
+        try
+        {
+            var ctx = new DefaultHttpContext();
+            ctx.Connection.RemoteIpAddress = IPAddress.Loopback;
+
+            // 挑战存在，但提交内容不是 Base64 密文（模拟前端加密失败/被篡改）
+            var model = new LoginModel { Username = "challenge_test", Password = "not-base64!!", ChallengeId = challengeId };
+            var ex = Assert.Throws<InvalidOperationException>(() => svc.Login(model, ctx));
+
+            // 与挑战过期使用同一套可重试提示，不把 FormatException 原文暴露到登录页
+            Assert.DoesNotContain("Base-64", ex.Message);
+            Assert.DoesNotContain("padding", ex.Message);
+            Assert.False(String.IsNullOrEmpty(ex.Message));
+        }
+        finally
+        {
+            CubeSetting.Current.AllowPlainPassword = prevPlain;
+            LogProvider.Provider.Enable = prevLog;
+        }
     }
 
     #endregion

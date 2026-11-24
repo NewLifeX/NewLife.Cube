@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Controllers;
@@ -145,7 +146,18 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
                 var rsaKey = pdic?.Item2;
                 if (rsaKey.IsNullOrEmpty())
                     throw new InvalidOperationException(L.T("The login challenge has expired or is invalid. Please obtain the public key again and retry."));
-                password = DecryptByPrivateKey(rsaKey, password);
+
+                try
+                {
+                    password = DecryptByPrivateKey(rsaKey, password);
+                }
+                catch (Exception ex) when (ex is FormatException or CryptographicException)
+                {
+                    // 客户端加密失败或密文损坏：允许明文登录时按明文继续，否则提示重新获取公钥，
+                    // 不把 Base64/RSA 内部异常直接暴露到登录页
+                    if (!set.AllowPlainPassword)
+                        throw new InvalidOperationException(L.T("The login challenge has expired or is invalid. Please obtain the public key again and retry."), ex);
+                }
             }
 
             var provider = ManageProvider.Provider;
