@@ -35,6 +35,9 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
     private static String[] _attachmentApis = [nameof(Avatar), nameof(Image), nameof(File)];
 
+    /// <summary>分布式文件存储是否可用于拉取附件。未初始化完成时跳过，避免事件总线尚未创建导致异常</summary>
+    private Boolean CanRequestFile => FileStorageExtensions.CanRequestFile(fileStorage);
+
     #region 拦截
     /// <summary>执行前</summary>
     public override void OnActionExecuting(ActionExecutingContext context)
@@ -504,7 +507,7 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
-        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch)
+        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch && CanRequestFile)
         {
             // 如果本地文件不存在，则从分布式文件存储获取
             await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");
@@ -561,7 +564,7 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
-        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch)
+        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch && CanRequestFile)
         {
             // 如果本地文件不存在，则从分布式文件存储获取
             await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");

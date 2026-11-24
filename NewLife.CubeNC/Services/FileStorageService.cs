@@ -87,6 +87,17 @@ public static class FileStorageExtensions
         return services;
     }
 
+    /// <summary>判断文件存储是否可以发起远端拉取。未初始化或事件总线未就绪时不可用，避免事件总线尚未创建时抛异常</summary>
+    /// <param name="storage">文件存储。为空时不可用</param>
+    /// <returns></returns>
+    public static Boolean CanRequestFile(IFileStorage? storage)
+    {
+        if (storage == null) return false;
+
+        // 自定义实现不参与就绪判断，保持原有行为
+        return storage is not CubeFileStorage cube || cube.IsReady;
+    }
+
     /// <summary>注册附件存储提供者。根据配置在本地磁盘与对象存储（OSS/COS/七牛/EasyIO）之间切换</summary>
     /// <param name="services">服务集合</param>
     /// <param name="set">魔方设置。为空时使用<see cref="CubeSetting"/>的当前实例</param>
@@ -131,6 +142,9 @@ public class CubeFileStorage : DefaultFileStorage
     // 基类从实例属性读取下载地址。并发拉取时不能互相改掉对方的 token。
     private readonly SemaphoreSlim _pullGate = new(1, 1);
 
+    /// <summary>是否已就绪。事件总线创建前不可用，此时请求文件会抛异常；星尘总线还需完成远程订阅才会真正发出请求</summary>
+    public Boolean IsReady => FileRequestBus != null && (FileRequestBus is not StarEventBus<FileRequest> bus || bus.IsReady);
+
     /// <summary>实例化魔方文件分布式存储</summary>
     /// <param name="setting">魔方设置</param>
     /// <param name="serviceProvider">服务提供者</param>
@@ -168,7 +182,7 @@ public class CubeFileStorage : DefaultFileStorage
     /// <summary>扫描本地文件</summary>
     public override async Task<Int32> ScanFilesAsync(DateTime startTime, CancellationToken cancellationToken = default)
     {
-        if (FileRequestBus is StarEventBus<FileRequest> bus && !bus.IsReady) return -1;
+        if (!IsReady) return -1;
 
         return await base.ScanFilesAsync(startTime, cancellationToken);
     }
