@@ -49,7 +49,7 @@ public class NotificationSendController(NotificationService notifyService) : Con
     public ActionResult Retry(Int64 id)
     {
         var entity = NotificationRecord.FindById(id);
-        if (entity == null || entity.Channel.EqualIgnoreCase("InApp")) return Json(404, "Record not found");
+        if (entity == null || entity.Channel.EqualIgnoreCase(NotificationChannels.InApp)) return Json(404, "Record not found");
 
         entity.Status = (Int32)NotificationStatus.Pending;
         entity.Attempts = 0;
@@ -142,15 +142,14 @@ public class NotificationSendController(NotificationService notifyService) : Con
 
     /// <summary>删除通知模板</summary>
     /// <param name="code">模板编码</param>
-    /// <param name="language">语言。为空时删除默认模板</param>
     /// <returns>JSON 删除结果</returns>
     [HttpPost]
-    public ActionResult DeleteTemplate(String code, String language = null)
+    public ActionResult DeleteTemplate(String code)
     {
         if (code.IsNullOrEmpty()) return Json(400, "Template code is required");
 
         var tenantId = (CurrentTenant as TenantUser)?.TenantId ?? 0;
-        var count = notifyService.DeleteTemplate(tenantId, code, language);
+        var count = notifyService.DeleteTemplate(tenantId, code);
 
         return Json(0, null, new { count });
     }

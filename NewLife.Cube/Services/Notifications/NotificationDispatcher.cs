@@ -1,163 +1,182 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NewLife.Caching;
 using NewLife.Cube.Entity;
 using NewLife.Log;
-using XCode;
 
 namespace NewLife.Cube.Services.Notifications;
 
-/// <summary>通知投递调度器。后台扫描待发送记录，按渠道投递并做有限重试</summary>
-public class NotificationDispatcher : BackgroundService
+/// <summary>通知投递调度器。定时兜底扫描待发送记录，收到总线事件时立即唤醒</summary>
+/// <param name="provider">服务提供者</param>
+/// <param name="bus">通知事件总线</param>
+/// <param name="log">日志</param>
+public class NotificationDispatcher(IServiceProvider provider, NotificationBus bus = null, ILog log = null) : BackgroundService
 {
-    private readonly IServiceProvider _provider;
-    private readonly ILog _log;
-    private readonly TimeSpan _interval = TimeSpan.FromSeconds(10);
-
-    /// <summary>实例化调度器</summary>
-    /// <param name="provider">服务提供者</param>
-    /// <param name="log">日志</param>
-    public NotificationDispatcher(IServiceProvider provider, ILog log = null)
+    private readonly ILog _log = log ?? XTrace.Log;
+    private readonly Channel<Boolean> _signal = Channel.CreateBounded<Boolean>(new BoundedChannelOptions(1)
     {
-        _provider = provider;
-        _log = log ?? XTrace.Log;
-    }
+        FullMode = BoundedChannelFullMode.DropOldest,
+        SingleReader = true,
+    });
+    private static readonly SemaphoreSlim _processLock = new(1, 1);
+    private readonly TimeSpan _interval = TimeSpan.FromSeconds(60);
 
-    /// <summary>后台循环投递</summary>
+    /// <summary>后台循环投递。总线事件到来立即执行，否则每60秒兜底一次</summary>
     /// <param name="stoppingToken">停止令牌</param>
     /// <returns>异步任务</returns>
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)    {
-        await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken).ConfigureAwait(false);
-
-        while (!stoppingToken.IsCancellationRequested)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        if (bus != null)
         {
-            try
-            {
-                await DispatchOnce(stoppingToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _log?.Error("Notification dispatch failed: {0}", ex.Message);
-            }
+            bus.Dispatch += OnDispatch;
+            bus.Start();
+        }
 
-            try
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken).ConfigureAwait(false);
+
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(_interval, stoppingToken).ConfigureAwait(false);
+                try
+                {
+                    await DispatchOnce(stoppingToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _log?.Error("Notification dispatch failed: {0}", ex.Message);
+                }
+
+                // 有事件立即唤醒，否则等待一个兜底周期
+                using var wait = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                wait.CancelAfter(_interval);
+                try
+                {
+                    await _signal.Reader.ReadAsync(wait.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) { }
             }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
+        }
+        finally
+        {
+            if (bus != null) bus.Dispatch -= OnDispatch;
         }
     }
 
-    /// <summary>执行一轮投递</summary>
+    private void OnDispatch(Object sender, NotificationEvent e) => _signal.Writer.TryWrite(true);
+
+    /// <summary>执行一轮投递。单实例用进程锁，多实例用缓存提供者的分布式锁</summary>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>投递数量</returns>
     public async Task<Int32> DispatchOnce(CancellationToken cancellationToken = default)
     {
-        var now = DateTime.Now;
-        var pending = (Int32)NotificationStatus.Pending;
-        var failed = (Int32)NotificationStatus.Failed;
-        var sending = (Int32)NotificationStatus.Sending;
-
-        // 节点崩溃或重启后，Sending 超过 5 分钟视为遗留，重新入队
-        var db = NotificationRecord.Meta.Session.Dal.Db;
-        var nowText = db.FormatDateTime(now);
-        var stale = db.FormatDateTime(now.AddMinutes(-5));
-        NotificationRecord.Update($"Status={pending}", $"Status={sending} AND UpdateTime < {stale}");
-
-        var list = NotificationRecord.FindAll(
-            NotificationRecord._.Channel != "InApp"
-            & NotificationRecord._.Deleted == false
-            & NotificationRecord._.Attempts < 3
-            & (NotificationRecord._.Status == pending | NotificationRecord._.Status == failed)
-            & (NotificationRecord._.NextRetryTime.IsNull() | NotificationRecord._.NextRetryTime <= now),
-            NotificationRecord._.Id.Asc(), null, 0, 50);
-
-        if (list.Count == 0) return 0;
-
-        var channels = new Dictionary<String, INotificationChannel>(StringComparer.OrdinalIgnoreCase);
-        foreach (var channel in _provider.GetServices<INotificationChannel>())
+        IDisposable? cacheLock = null;
+        var processLocked = false;
+        var cache = provider.GetService<ICacheProvider>()?.Cache ?? provider.GetService<ICache>();
+        if (cache != null)
         {
-            if (!channel.Name.IsNullOrEmpty()) channels[channel.Name] = channel;
+            cacheLock = cache.AcquireLock("CubeNotificationDispatch", 0, 120_000, false);
+            if (cacheLock == null) return 0;
+        }
+        else
+        {
+            if (!await _processLock.WaitAsync(0, cancellationToken).ConfigureAwait(false)) return 0;
+            processLocked = true;
         }
 
-        var count = 0;
-        foreach (var record in list)
+        try
         {
-            if (cancellationToken.IsCancellationRequested) break;
+            var now = DateTime.Now;
 
-            // 抢占记录，避免多节点重复投递
-            var rows = NotificationRecord.Update(
-                $"Status={sending}, UpdateTime={nowText}",
-                $"Id={record.Id} AND (Status={pending} OR Status={failed})");
-            if (rows == 0) continue;
+            // 节点崩溃或重启后，Sending 超过 5 分钟视为遗留，重新入队
+            NotificationRecord.ResetStaleSending(now);
 
-            record.Status = (Int32)NotificationStatus.Sending;
+            var list = NotificationRecord.FindDispatchable(now);
+            if (list.Count == 0) return 0;
 
-            // 任一渠道已读/已处理，取消尚未发送的后续渠道
-            if (record.CancelOnRead && !record.BizId.IsNullOrEmpty())
+            var channels = new Dictionary<String, INotificationChannel>(StringComparer.OrdinalIgnoreCase);
+            foreach (var channel in provider.GetServices<INotificationChannel>())
             {
-                var read = NotificationRecord.FindCount(NotificationRecord._.TenantId == record.TenantId
-                    & NotificationRecord._.BizId == record.BizId
-                    & (NotificationRecord._.Read == true | NotificationRecord._.Handled == true)) > 0;
-                if (read)
+                if (!channel.Name.IsNullOrEmpty()) channels[channel.Name] = channel;
+            }
+
+            var count = 0;
+            foreach (var record in list)
+            {
+                if (cancellationToken.IsCancellationRequested) break;
+
+                // 抢占记录，避免多节点重复投递
+                if (NotificationRecord.TryClaimForSending(record.Id, DateTime.Now) == 0) continue;
+
+                record.Status = (Int32)NotificationStatus.Sending;
+
+                // 任一渠道已读/已处理，取消尚未发送的后续渠道
+                if (record.CancelOnRead && !record.BizId.IsNullOrEmpty())
                 {
-                    record.Status = (Int32)NotificationStatus.Skipped;
-                    record.Success = true;
-                    record.Result = "Cancelled because read or handled.";
-                    record.Update();
-                    count++;
+                    if (NotificationRecord.ExistsReadOrHandled(record.TenantId, record.BizId))
+                    {
+                        record.Status = (Int32)NotificationStatus.Skipped;
+                        record.Success = true;
+                        record.Result = "Cancelled because read or handled.";
+                        record.Update();
+                        count++;
+                        continue;
+                    }
+                }
+
+                if (!channels.TryGetValue(record.Channel, out var channel))
+                {
+                    await MarkFailed(record, $"Channel '{record.Channel}' is not registered.", cancellationToken).ConfigureAwait(false);
                     continue;
                 }
-            }
 
-            if (!channels.TryGetValue(record.Channel, out var channel))
-            {
-                await MarkFailed(record, $"Channel '{record.Channel}' is not registered.", cancellationToken).ConfigureAwait(false);
-                continue;
-            }
-
-            try
-            {
-                var result = await channel.SendAsync(record, cancellationToken).ConfigureAwait(false);
-                if (result == null)
-                    await MarkFailed(record, "Channel returned no result.", cancellationToken).ConfigureAwait(false);
-                else if (!result.Success)
-                    await MarkFailed(record, result.Message, cancellationToken).ConfigureAwait(false);
-                else
+                try
                 {
-                    record.Status = result.Skipped ? (Int32)NotificationStatus.Skipped : (Int32)NotificationStatus.Success;
-                    record.Success = true;
-                    record.Result = result.Message;
-                    record.SentTime = DateTime.Now;
-                    record.Attempts++;
-                    record.Update();
+                    var result = await channel.SendAsync(record, cancellationToken).ConfigureAwait(false);
+                    if (result == null)
+                        await MarkFailed(record, "Channel returned no result.", cancellationToken).ConfigureAwait(false);
+                    else if (!result.Success)
+                        await MarkFailed(record, result.Message, cancellationToken).ConfigureAwait(false);
+                    else
+                    {
+                        record.Status = result.Skipped ? (Int32)NotificationStatus.Skipped : (Int32)NotificationStatus.Success;
+                        record.Success = true;
+                        record.Result = result.Message;
+                        record.SentTime = DateTime.Now;
+                        record.Attempts++;
+                        record.Update();
+                    }
                 }
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                record.Status = pending;
-                record.Update();
-                break;
-            }
-            catch (Exception ex)
-            {
-                await MarkFailed(record, ex.Message, cancellationToken).ConfigureAwait(false);
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    record.Status = (Int32)NotificationStatus.Pending;
+                    record.Update();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    await MarkFailed(record, ex.Message, cancellationToken).ConfigureAwait(false);
+                }
+
+                count++;
             }
 
-            count++;
+            return count;
         }
-
-        return count;
+        finally
+        {
+            cacheLock?.Dispose();
+            if (processLocked) _processLock.Release();
+        }
     }
 
     private static Task MarkFailed(NotificationRecord record, String message, CancellationToken cancellationToken)

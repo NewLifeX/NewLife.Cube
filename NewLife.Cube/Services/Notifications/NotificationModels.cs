@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using NewLife.Data;
 
 namespace NewLife.Cube.Services.Notifications;
 
@@ -38,7 +39,7 @@ public enum NotificationStatus
 }
 
 /// <summary>通知发布请求</summary>
-public class NotificationRequest
+public class NotificationRequest : IExtend
 {
     /// <summary>租户编号</summary>
     public Int32 TenantId { get; set; }
@@ -58,6 +59,9 @@ public class NotificationRequest
     /// <summary>收件人部门编号</summary>
     public Int32[] DepartmentIds { get; set; }
 
+    /// <summary>是否发送给系统管理员。与 All 互斥</summary>
+    public Boolean ToAdmins { get; set; }
+
     /// <summary>是否发送给全部用户。受 1000 人上限保护</summary>
     public Boolean All { get; set; }
 
@@ -70,7 +74,7 @@ public class NotificationRequest
     /// <summary>级别。Info/Success/Warning/Error/Urgent</summary>
     public String Level { get; set; } = "Info";
 
-    /// <summary>模板编码</summary>
+    /// <summary>模板编码。可选；为空时直接使用 Title/Content，非空时从 Parameter(Category=NotifyTemplate) 读取默认文案</summary>
     public String TemplateCode { get; set; }
 
     /// <summary>标题。未指定模板时直接使用</summary>
@@ -103,8 +107,19 @@ public class NotificationRequest
     /// <summary>发送人。0 表示系统</summary>
     public Int32 SenderId { get; set; }
 
-    /// <summary>渲染语言</summary>
-    public String Language { get; set; }
+    /// <summary>扩展数据。下游可写入自定义字段，参与模板渲染与业务载荷</summary>
+    [JsonIgnore]
+    public IDictionary<String, Object?> Items { get; } = new Dictionary<String, Object?>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>设置 或 获取 扩展数据项</summary>
+    /// <param name="key">键</param>
+    /// <returns>扩展数据</returns>
+    [JsonIgnore]
+    public Object? this[String key]
+    {
+        get => Items.TryGetValue(key, out var value) ? value : null;
+        set => Items[key] = value;
+    }
 }
 
 /// <summary>通知发布结果</summary>

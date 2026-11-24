@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,9 +17,10 @@ namespace NewLife.Cube.Controllers;
 /// <summary>消息通知。站内信、已读、处理、偏好与实时推送</summary>
 /// <param name="notifyService">通知服务</param>
 /// <param name="ticketService">SSE 票据服务</param>
+/// <param name="notificationBus">通知事件总线</param>
 [DisplayName("消息通知")]
 [Route("[controller]/[action]")]
-public class NotifyController(NotificationService notifyService, NotificationStreamTicketService ticketService) : ControllerBaseX
+public class NotifyController(NotificationService notifyService, NotificationStreamTicketService ticketService, NotificationBus notificationBus) : ControllerBaseX
 {
     /// <summary>未读站内信数量</summary>
     /// <returns>JSON 未读数</returns>
@@ -193,13 +195,43 @@ public class NotifyController(NotificationService notifyService, NotificationStr
         var countAt = 0L;
         var lastCount = -1;
 
+        // 总线条目只做"唤醒"，真正内容仍从数据库读取；慢客户端丢弃旧事件，避免阻塞总线
+        var channel = Channel.CreateBounded<NotificationEvent>(new BoundedChannelOptions(100)
+        {
+            FullMode = BoundedChannelFullMode.DropOldest,
+            SingleReader = true,
+        });
+        void OnCreated(Object sender, NotificationEvent e)
+        {
+            if (e.Kind != NotificationEventKind.Created) return;
+            if (e.UserId > 0 ? e.UserId == userId : admin) channel.Writer.TryWrite(e);
+        }
+
+        notificationBus.Start();
+        notificationBus.Created += OnCreated;
+
         try
         {
             while (!token.IsCancellationRequested)
             {
+                // 轮询兜底：总线不可用、事件丢失或断线重连后的补偿
                 var list = notifyService.GetIncremental(userId, admin, lastId, 20);
                 foreach (var item in list)
                 {
+                    lastId = item.Id;
+                    var json = item.ToModel().ToJson();
+                    await Response.WriteAsync($"id: {item.Id}\nevent: notification\ndata: {json}\n\n", token);
+                }
+
+                // 总线事件：近实时推送，按 lastId 去重
+                while (channel.Reader.TryRead(out var e))
+                {
+                    if (e.Id <= lastId) continue;
+
+                    var item = NotificationRecord.FindById(e.Id);
+                    if (item == null || item.Deleted || !item.Channel.EqualIgnoreCase(NotificationChannels.InApp)) continue;
+                    if (item.UserId > 0 ? item.UserId != userId : !admin) continue;
+
                     lastId = item.Id;
                     var json = item.ToModel().ToJson();
                     await Response.WriteAsync($"id: {item.Id}\nevent: notification\ndata: {json}\n\n", token);
@@ -227,11 +259,23 @@ public class NotifyController(NotificationService notifyService, NotificationStr
                     await Response.Body.FlushAsync(token);
                 }
 
-                await Task.Delay(3000, token);
+                // 有总线事件立即唤醒，否则 3 秒后继续轮询
+                using var wait = CancellationTokenSource.CreateLinkedTokenSource(token);
+                wait.CancelAfter(3000);
+                try
+                {
+                    await channel.Reader.WaitToReadAsync(wait.Token);
+                }
+                catch (OperationCanceledException) { }
             }
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }
+        finally
+        {
+            notificationBus.Created -= OnCreated;
+            channel.Writer.TryComplete();
+        }
     }
 
     /// <summary>获取当前用户的分类偏好</summary>
@@ -244,7 +288,7 @@ public class NotifyController(NotificationService notifyService, NotificationStr
         var items = categories.Select(e => new
         {
             category = e,
-            channels = notifyService.GetPreferences(userId, e) ?? ["InApp", "Mail", "Sms", "AppPush"],
+            channels = notifyService.GetPreferences(userId, e) ?? [NotificationChannels.InApp, NotificationChannels.Mail, NotificationChannels.Sms, NotificationChannels.AppPush],
         });
 
         return Json(0, null, items);
@@ -332,7 +376,7 @@ public class NotificationReadRequest
     public Int64 Id { get; set; }
 
     /// <summary>触发已读的渠道</summary>
-    public String Channel { get; set; } = "InApp";
+    public String Channel { get; set; } = NotificationChannels.InApp;
 }
 
 /// <summary>处理通知请求</summary>

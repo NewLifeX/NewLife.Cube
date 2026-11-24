@@ -5,14 +5,11 @@ using XCode.Membership;
 
 namespace NewLife.Cube.Services.Notifications;
 
-/// <summary>通知模板</summary>
+/// <summary>通知模板。存 Parameter(Category=NotifyTemplate)，供管理端配置可复用文案</summary>
 public class NotificationTemplate
 {
     /// <summary>模板编码</summary>
     public String Code { get; set; }
-
-    /// <summary>语言</summary>
-    public String Language { get; set; }
 
     /// <summary>标题模板</summary>
     public String Title { get; set; }
@@ -33,7 +30,7 @@ public class NotificationTemplate
     public String Channels { get; set; }
 }
 
-/// <summary>通知模板注册表。模板存放在系统参数表，不新增数据表</summary>
+/// <summary>通知模板注册表。模板存放在系统参数表，不新增数据表；模板可选，模块直接传 Title/Content 时无需模板</summary>
 public class NotificationTemplateRegistry
 {
     /// <summary>参数分类</summary>
@@ -53,7 +50,6 @@ public class NotificationTemplateRegistry
             if (template == null) continue;
 
             template.Code ??= item.Name;
-            template.Language ??= item.Value;
             list.Add(template);
         }
 
@@ -63,22 +59,18 @@ public class NotificationTemplateRegistry
     /// <summary>获取模板</summary>
     /// <param name="tenantId">租户编号</param>
     /// <param name="code">模板编码</param>
-    /// <param name="language">语言。为空时取默认模板</param>
     /// <returns>模板</returns>
-    public NotificationTemplate Get(Int32 tenantId, String code, String language = null)
+    public NotificationTemplate Get(Int32 tenantId, String code)
     {
         if (code.IsNullOrEmpty()) return null;
 
-        var name = language.IsNullOrEmpty() ? code : $"{code}:{language}";
-        var parameter = Parameter.FindByUserIdAndCategoryAndName(tenantId, Category, name)
-            ?? Parameter.FindByUserIdAndCategoryAndName(tenantId, Category, code);
+        var parameter = Parameter.FindByUserIdAndCategoryAndName(tenantId, Category, code);
         if (parameter == null || parameter.LongValue.IsNullOrEmpty()) return null;
 
         var template = parameter.LongValue.ToJsonEntity<NotificationTemplate>();
         if (template == null) return null;
 
         template.Code ??= code;
-        template.Language ??= parameter.Value;
 
         return template;
     }
@@ -91,9 +83,8 @@ public class NotificationTemplateRegistry
         if (template == null) throw new ArgumentNullException(nameof(template));
         if (template.Code.IsNullOrEmpty()) throw new ArgumentException("Template code is required.", nameof(template));
 
-        var name = template.Language.IsNullOrEmpty() ? template.Code : $"{template.Code}:{template.Language}";
-        var parameter = Parameter.GetOrAdd(tenantId, Category, name);
-        parameter.Value = template.Language;
+        var parameter = Parameter.GetOrAdd(tenantId, Category, template.Code);
+        parameter.Value = null;
         parameter.LongValue = template.ToJson();
         parameter.Save();
     }
@@ -101,15 +92,11 @@ public class NotificationTemplateRegistry
     /// <summary>删除模板</summary>
     /// <param name="tenantId">租户编号</param>
     /// <param name="code">模板编码</param>
-    /// <param name="language">语言</param>
     /// <returns>删除行数</returns>
-    public Int32 Delete(Int32 tenantId, String code, String language = null)
+    public Int32 Delete(Int32 tenantId, String code)
     {
-        var name = language.IsNullOrEmpty() ? code : $"{code}:{language}";
-
-        return Parameter.Delete(Parameter._.UserId == tenantId
-            & Parameter._.Category == Category
-            & Parameter._.Name == name);
+        var parameter = Parameter.FindByUserIdAndCategoryAndName(tenantId, Category, code);
+        return parameter?.Delete() ?? 0;
     }
 
     /// <summary>渲染模板。使用 {key} 占位符替换业务数据</summary>

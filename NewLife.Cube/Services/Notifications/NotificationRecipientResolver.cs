@@ -19,6 +19,8 @@ public class NotificationRecipientResolver
     public IList<NotificationRecipient> Resolve(NotificationRequest request)
     {
         if (request == null) throw new ArgumentNullException(nameof(request));
+        if (request.ToAdmins && request.All)
+            throw new InvalidOperationException("ToAdmins and All cannot both be true.");
         if (request.All && request.Scope == NotificationScope.Any)
             throw new InvalidOperationException("Broadcast notifications cannot share read state. Use scope=Each.");
 
@@ -51,6 +53,8 @@ public class NotificationRecipientResolver
 
     private static IList<User> LoadUsers(NotificationRequest request, IList<TenantUser> tenantUsers)
     {
+        if (request.ToAdmins) return LoadAdminUsers(request, tenantUsers);
+
         if (request.UserIds is { Length: > 0 })
         {
             var ids = request.UserIds.Where(e => e > 0).Distinct().ToArray();
@@ -88,6 +92,27 @@ public class NotificationRecipientResolver
         }
 
         return [];
+    }
+
+    private static IList<User> LoadAdminUsers(NotificationRequest request, IList<TenantUser> tenantUsers)
+    {
+        var adminRoleIds = Role.FindAllWithCache().Where(e => e.IsSystem).Select(e => e.Id).ToArray();
+        if (adminRoleIds.Length == 0) return [];
+
+        // 多租户下管理员名单以租户成员为准；没有租户成员时宁可不发也不越权
+        if (request.TenantId > 0)
+        {
+            var ids = tenantUsers?
+                .Where(e => e.Enable && MatchRole(e, adminRoleIds))
+                .Select(e => e.UserId)
+                .Distinct()
+                .ToArray() ?? [];
+
+            return LoadUsersByIds(ids);
+        }
+
+        var page = new PageParameter { PageSize = MaxRecipients + 1 };
+        return User.Search(adminRoleIds, null, true, DateTime.MinValue, DateTime.MinValue, null, page);
     }
 
     private static IList<User> LoadUsersByIds(Int32[] ids)
