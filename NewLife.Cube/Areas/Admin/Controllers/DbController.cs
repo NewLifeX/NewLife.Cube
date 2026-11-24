@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Models;
 using NewLife.Cube.Jobs;
 using NewLife.Reflection;
 using NewLife.Serialization;
@@ -134,6 +135,8 @@ public class DbController : ControllerBaseX, IPageDataContext
     [HttpGet("/api/[area]/[controller]/tables")]
     public ActionResult ShowTables(String name)
     {
+        if (name.IsNullOrEmpty()) return Json(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter"));
+
         ValidateConnName(name);
 
         var dal = DAL.Create(name);
@@ -180,6 +183,8 @@ public class DbController : ControllerBaseX, IPageDataContext
     [HttpGet("/api/[area]/[controller]/entities")]
     public ActionResult ShowEntities(String name)
     {
+        if (name.IsNullOrEmpty()) return Json(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter"));
+
         ValidateConnName(name);
 
         var dal = DAL.Create(name);
@@ -234,6 +239,8 @@ public class DbController : ControllerBaseX, IPageDataContext
     [HttpGet("/api/[area]/[controller]/diff")]
     public ActionResult ModelDiff(String name)
     {
+        if (name.IsNullOrEmpty()) return Json(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter"));
+
         ValidateConnName(name);
 
         var dal = DAL.Create(name);
@@ -297,7 +304,7 @@ public class DbController : ControllerBaseX, IPageDataContext
     /// <param name="name">连接名</param>
     private static void ValidateConnName(String name)
     {
-        if (!DAL.ConnStrs.ContainsKey(name)) throw new XException("Illegal operation!");
+        if (name.IsNullOrEmpty() || !DAL.ConnStrs.ContainsKey(name)) throw new XException("Illegal operation!");
     }
 
     /// <summary>将数据列集合序列化为 XCode Model.xml 格式的 Column XML 片段</summary>
@@ -427,6 +434,8 @@ public class DbController : ControllerBaseX, IPageDataContext
     [HttpGet]
     public ActionResult Download(String name)
     {
+        if (name.IsNullOrEmpty()) return Json(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter"));
+
         var dal = DAL.Create(name);
         var xml = DAL.Export(dal.Tables);
 
