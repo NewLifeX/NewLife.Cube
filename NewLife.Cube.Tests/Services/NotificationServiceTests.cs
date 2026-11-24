@@ -1,10 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NewLife.Caching;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services.Notifications;
+using NewLife.Cube.Services.Notifications.Channels;
 using NewLife.Cube.Tests.Membership;
+using NewLife.Messaging;
 using XCode.Membership;
 using Xunit;
 
@@ -403,11 +413,172 @@ public class NotificationServiceTests
 
         row = Rows(result.BizId).Single();
         Assert.True(channel.Called);
+        Assert.Equal("测试通知", channel.LastRecord.Title);
+        Assert.Equal("测试内容", channel.LastRecord.Content);
+        Assert.Equal("https://example.test/hook", channel.LastRecord.Target);
         Assert.True(row.Success);
         Assert.Equal((Int32)NotificationStatus.Success, row.Status);
         Assert.True(row.Attempts >= 1);
+        Assert.True(row.SentTime > DateTime.Now.AddMinutes(-1));
 
         Cleanup(result.BizId);
+    }
+
+    [Fact(DisplayName = "通知_Webhook渠道_真实HTTP投递成功")]
+    public async Task Dispatcher_Webhook_DeliversOverHttp()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Logging.ClearProviders();
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        var app = builder.Build();
+        var received = new TaskCompletionSource<String>(TaskCreationOptions.RunContinuationsAsynchronously);
+        app.MapPost("/hook", async context =>
+        {
+            using var reader = new StreamReader(context.Request.Body, Encoding.UTF8);
+            received.TrySetResult(await reader.ReadToEndAsync());
+            await context.Response.WriteAsync("ok");
+        });
+        await app.StartAsync();
+
+        NotificationPublishResult? result = null;
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<INotificationChannel>(new WebhookNotificationChannel(NotificationChannels.Webhook));
+            using var provider = services.BuildServiceProvider();
+            var dispatcher = new NotificationDispatcher(provider);
+
+            var request = Request(_fixture.BoundUser.Id);
+            request.Channels = [NotificationChannels.Webhook];
+            request.Target = app.Urls.First() + "/hook";
+            result = CreateService().Publish(request);
+
+            await dispatcher.DispatchOnce();
+
+            var body = await received.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Contains("测试通知", body);
+            Assert.Contains("测试内容", body);
+
+            var row = Rows(result.BizId).Single();
+            Assert.True(row.Success);
+            Assert.Equal((Int32)NotificationStatus.Success, row.Status);
+        }
+        finally
+        {
+            if (result != null) Cleanup(result.BizId);
+            await app.StopAsync();
+            await app.DisposeAsync();
+        }
+    }
+
+    [Fact(DisplayName = "通知_投递锁被占用_调度器跳过")]
+    public async Task Dispatcher_LockHeld_Skips()
+    {
+        var channel = new FakeChannel();
+        var cache = new MemoryCache();
+        var services = new ServiceCollection();
+        services.AddSingleton<ICacheProvider>(new TestCacheProvider { Cache = cache });
+        services.AddSingleton<INotificationChannel>(channel);
+        using var provider = services.BuildServiceProvider();
+        var dispatcher = new NotificationDispatcher(provider);
+
+        var request = Request(_fixture.BoundUser.Id);
+        request.Channels = ["TestChannel"];
+        request.Target = "https://example.test/hook";
+        var result = CreateService().Publish(request);
+
+        try
+        {
+            using var held = cache.AcquireLock("CubeNotificationDispatch", 0, 120_000, false);
+            Assert.NotNull(held);
+
+            var count = await dispatcher.DispatchOnce();
+
+            Assert.Equal(0, count);
+            Assert.False(channel.Called);
+            Assert.Equal((Int32)NotificationStatus.Pending, Rows(result.BizId).Single().Status);
+        }
+        finally
+        {
+            Cleanup(result.BizId);
+        }
+    }
+
+    [Fact(DisplayName = "通知_外部渠道失败_按退避重试且最多三次")]
+    public async Task Dispatcher_Failure_RetriesWithBackoff()
+    {
+        var channel = new FailingChannel();
+        var services = new ServiceCollection();
+        services.AddSingleton<INotificationChannel>(channel);
+        using var provider = services.BuildServiceProvider();
+        var dispatcher = new NotificationDispatcher(provider);
+
+        var request = Request(_fixture.BoundUser.Id);
+        request.Channels = ["FailChannel"];
+        request.Target = "https://example.test/hook";
+        var result = CreateService().Publish(request);
+
+        try
+        {
+            await dispatcher.DispatchOnce();
+            var row = Rows(result.BizId).Single();
+            Assert.Equal(1, row.Attempts);
+            Assert.Equal((Int32)NotificationStatus.Failed, row.Status);
+            Assert.True(row.NextRetryTime > DateTime.Now.AddSeconds(50));
+
+            row.NextRetryTime = DateTime.Now.AddSeconds(-1);
+            row.Update();
+            await dispatcher.DispatchOnce();
+            row = Rows(result.BizId).Single();
+            Assert.Equal(2, row.Attempts);
+            Assert.True(row.NextRetryTime > DateTime.Now.AddMinutes(4));
+
+            row.NextRetryTime = DateTime.Now.AddSeconds(-1);
+            row.Update();
+            await dispatcher.DispatchOnce();
+            row = Rows(result.BizId).Single();
+            Assert.Equal(3, row.Attempts);
+            Assert.Equal((Int32)NotificationStatus.Failed, row.Status);
+            Assert.True(row.NextRetryTime > DateTime.Now.AddHours(23));
+
+            await dispatcher.DispatchOnce();
+            Assert.Equal(3, channel.Calls);
+            Assert.Equal(3, row.Attempts);
+        }
+        finally
+        {
+            Cleanup(result.BizId);
+        }
+    }
+
+    [Fact(DisplayName = "通知_外部渠道待投递_发布Dispatch事件")]
+    public async Task Publish_PendingExternal_PublishesDispatch()
+    {
+        var factory = new FakeEventBusFactory();
+        var services = new ServiceCollection();
+        services.AddSingleton<IEventBusFactory>(factory);
+        using var provider = services.BuildServiceProvider();
+        using var bus = new NotificationBus(provider, "TestNotification_" + Guid.NewGuid().ToString("N"));
+
+        var tcs = new TaskCompletionSource<NotificationEvent>(TaskCreationOptions.RunContinuationsAsynchronously);
+        bus.Dispatch += (s, e) => tcs.TrySetResult(e);
+        bus.Start();
+
+        var service = new NotificationService(new NotificationRecipientResolver(), new NotificationTemplateRegistry(), bus);
+        var request = Request(_fixture.BoundUser.Id);
+        request.Channels = ["TestChannel"];
+        request.Target = "https://example.test/hook";
+        var result = service.Publish(request);
+
+        try
+        {
+            var actual = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(NotificationEventKind.Dispatch, actual.Kind);
+        }
+        finally
+        {
+            Cleanup(result.BizId);
+        }
     }
 
     [Fact(DisplayName = "通知_SSE票据_一次性且绑定用户")]
@@ -442,15 +613,42 @@ public class NotificationServiceTests
 
     private class FakeChannel : INotificationChannel
     {
-        public Boolean Called { get; private set; }
+        public Boolean Called => Calls > 0;
+
+        public Int32 Calls { get; private set; }
+
+        public NotificationRecord LastRecord { get; private set; }
 
         public String Name => "TestChannel";
 
-        public System.Threading.Tasks.Task<NotificationSendResult> SendAsync(NotificationRecord record, System.Threading.CancellationToken cancellationToken = default)
+        public Task<NotificationSendResult> SendAsync(NotificationRecord record, System.Threading.CancellationToken cancellationToken = default)
         {
-            Called = true;
+            Calls++;
+            LastRecord = record;
 
-            return System.Threading.Tasks.Task.FromResult(NotificationSendResult.Ok("sent"));
+            return Task.FromResult(NotificationSendResult.Ok("sent"));
         }
+    }
+
+    private class FailingChannel : INotificationChannel
+    {
+        public Int32 Calls { get; private set; }
+
+        public String Name => "FailChannel";
+
+        public Task<NotificationSendResult> SendAsync(NotificationRecord record, System.Threading.CancellationToken cancellationToken = default)
+        {
+            Calls++;
+
+            return Task.FromResult(NotificationSendResult.Fail("simulated failure"));
+        }
+    }
+
+    private sealed class FakeEventBusFactory : IEventBusFactory
+    {
+        public EventBus<NotificationEvent> Bus { get; } = new();
+
+        public IEventBus<TEvent>? CreateEventBus<TEvent>(String topic, String clientId = "")
+            => typeof(TEvent) == typeof(NotificationEvent) ? (IEventBus<TEvent>)(Object)Bus : null;
     }
 }
