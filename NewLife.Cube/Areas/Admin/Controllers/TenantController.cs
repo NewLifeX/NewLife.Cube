@@ -15,6 +15,18 @@ public class TenantController : EntityController<Tenant, TenantModel>
         //ListFields.RemoveField("Secret", "Logo", "AuthUrl", "AccessUrl", "UserUrl", "Remark");
     }
 
+    /// <summary>删除前校验：仍有成员的租户不允许直接删除</summary>
+    /// <remarks>TenantUser 没有级联删除，直接删租户会留下指向已删除租户的孤儿关系，影响后续成员查询与租户隔离判断</remarks>
+    /// <param name="entity">租户</param>
+    /// <returns>受影响行数</returns>
+    protected override Int32 OnDelete(Tenant entity)
+    {
+        var count = TenantUser.FindAllByTenantId(entity.Id).Count;
+        if (count > 0) throw new XException(L.T("Tenant [{0}] still has {1} member(s); remove them before deleting.", entity.Name, count));
+
+        return base.OnDelete(entity);
+    }
+
     /// <summary>搜索数据集</summary>
     /// <param name="p"></param>
     /// <returns></returns>
