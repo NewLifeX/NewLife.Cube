@@ -120,15 +120,20 @@ public sealed class AceUiTests : IAsyncLifetime
         Assert.Equal("rgb(248, 248, 248)", topBg);
 
         // 二级菜单图标显示（功能修复：ACE 原生隐藏了 submenu 图标）
-        // 先展开第一个含子菜单的一级菜单，否则 submenu 整体不可见、display 取值为 none
-        var withSubIcon = _page.Locator("#sidebar .nav-list > li:has(> ul.submenu)").First;
-        if (await withSubIcon.CountAsync() > 0)
+        // ACE 展开态由父级 .open + 内联 display 控制，nav-show 不是稳定标记；
+        // 直接找当前可见的二级菜单图标，没有可见项时再点击第一个含子菜单的一级菜单
+        const String findVisibleIcon = "(() => { const el = [...document.querySelectorAll('#sidebar .submenu .menu-icon')].find(e => e.offsetParent !== null && getComputedStyle(e).display !== 'none'); return el ? getComputedStyle(el).display : ''; })()";
+        var subIconDisplay = await _page.EvaluateAsync<String>(findVisibleIcon);
+        if (String.IsNullOrEmpty(subIconDisplay))
         {
-            await withSubIcon.Locator("a.dropdown-toggle").First.EvaluateAsync("el => el.click()");
-            await _page.WaitForTimeoutAsync(300);
+            var withSubIcon = _page.Locator("#sidebar .nav-list > li:has(> ul.submenu)").First;
+            if (await withSubIcon.CountAsync() > 0)
+            {
+                await withSubIcon.Locator("a.dropdown-toggle").First.EvaluateAsync("el => el.click()");
+                await _page.WaitForTimeoutAsync(300);
+                subIconDisplay = await _page.EvaluateAsync<String>(findVisibleIcon);
+            }
         }
-        var subIconDisplay = await _page.EvaluateAsync<String>(
-            "(() => { const el = document.querySelector('#sidebar .submenu.nav-show > li > a .menu-icon'); return el ? getComputedStyle(el).display : ''; })()");
         Assert.True(!String.IsNullOrEmpty(subIconDisplay) && subIconDisplay != "none",
             $"[{testId}] 二级菜单图标未显示（display={subIconDisplay}）");
 
@@ -139,19 +144,19 @@ public sealed class AceUiTests : IAsyncLifetime
         await _page.WaitForTimeoutAsync(300);
         Assert.True(await _page.IsVisibleAsync("#navbar .dropdown-menu"), $"[{testId}] 用户菜单下拉未展开");
 
-        // 侧边栏菜单展开态：ACE 默认首个一级菜单 active open；若首个菜单无子项，
-        // 则点击第一个带子菜单的一级菜单，验证交互后可展开出可见子菜单（nav-show）
-        var visibleSub = _page.Locator("#sidebar .submenu.nav-show").First;
-        if (await visibleSub.CountAsync() == 0 || !await visibleSub.IsVisibleAsync())
+        // 侧边栏菜单展开态：ACE 展开由父级 .open 与内联 display 控制（nav-show 不是稳定标记）；
+        // 无可见子菜单时点击第一个带子菜单的一级菜单，验证交互后可展开
+        const String hasVisibleSub = "(() => [...document.querySelectorAll('#sidebar .submenu')].some(e => e.offsetParent !== null && getComputedStyle(e).display !== 'none'))()";
+        var hasVisible = await _page.EvaluateAsync<Boolean>(hasVisibleSub);
+        if (!hasVisible)
         {
             var withSub = _page.Locator("#sidebar .nav-list > li:has(> ul.submenu)").First;
             Assert.True(await withSub.CountAsync() > 0, $"[{testId}] 侧边栏没有任何含子菜单的一级菜单");
             await withSub.Locator("a.dropdown-toggle").First.EvaluateAsync("el => el.click()");
             await _page.WaitForTimeoutAsync(300);
-            visibleSub = _page.Locator("#sidebar .submenu.nav-show").First;
+            hasVisible = await _page.EvaluateAsync<Boolean>(hasVisibleSub);
         }
-        Assert.True(await visibleSub.CountAsync() > 0 && await visibleSub.IsVisibleAsync(),
-            $"[{testId}] 侧边栏无可见子菜单");
+        Assert.True(hasVisible, $"[{testId}] 侧边栏无可见子菜单");
     }
 
     #endregion

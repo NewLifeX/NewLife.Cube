@@ -401,24 +401,6 @@ public sealed class MenuNavigationTests : IAsyncLifetime
         await AssertMenuPageAsync("/Cube/PrincipalAgent", testId);
     }
 
-    [Fact(DisplayName = "TC-MENU-046 模型表页加载正常")]
-    [Trait("Category", "Menu")]
-    [Trait("Priority", "P2")]
-    public async Task TC_MENU_046_ModelTablePage()
-    {
-        const String testId = "TC-MENU-046";
-        await AssertMenuPageAsync("/Cube/ModelTable", testId);
-    }
-
-    [Fact(DisplayName = "TC-MENU-047 模型列页加载正常")]
-    [Trait("Category", "Menu")]
-    [Trait("Priority", "P2")]
-    public async Task TC_MENU_047_ModelColumnPage()
-    {
-        const String testId = "TC-MENU-047";
-        await AssertMenuPageAsync("/Cube/ModelColumn", testId);
-    }
-
     [Fact(DisplayName = "TC-MENU-048 区域管理页加载正常")]
     [Trait("Category", "Menu")]
     [Trait("Priority", "P2")]

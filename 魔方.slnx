@@ -36,6 +36,7 @@
   </Folder>
   <Folder Name="/测试/">
     <Project Path="AotSmoke/AotSmoke.csproj" />
+    <Project Path="E2EApiTest/E2EApiTest.csproj" />
     <Project Path="E2EMvcTest/E2EMvcTest.csproj" />
     <Project Path="Test/Test.csproj" />
     <Project Path="WebSmoke/WebSmoke.csproj" />

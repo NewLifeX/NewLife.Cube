@@ -144,8 +144,16 @@ Console.WriteLine("[E2E] 确认 Playwright Chromium 已安装...");
 var binOutput = Path.Combine(repoRoot, "Bin", "E2ETest");
 var playwrightInstalled = false;
 
+// 已显式指定本机 Chromium 时跳过下载（内网/离线环境无法访问 cdn.playwright.dev）
+var chromiumPath = Environment.GetEnvironmentVariable("E2E_CHROMIUM_PATH");
+if (!chromiumPath.IsNullOrEmpty() && File.Exists(chromiumPath))
+{
+    Console.WriteLine($"[E2E] 使用本机 Chromium: {chromiumPath}");
+    playwrightInstalled = true;
+}
+
 // 策略 1：playwright.ps1（优先 pwsh，回退 powershell.exe）
-var pwScripts = Directory.GetFiles(binOutput, "playwright.ps1", SearchOption.AllDirectories);
+var pwScripts = playwrightInstalled ? [] : Directory.GetFiles(binOutput, "playwright.ps1", SearchOption.AllDirectories);
 if (pwScripts.Length > 0)
 {
     var pwScript = pwScripts[0];

@@ -82,6 +82,8 @@ public sealed class AppFixture : IAsyncLifetime
             Headless = !String.Equals(
                 Environment.GetEnvironmentVariable("E2E_HEADLESS"), "false",
                 StringComparison.OrdinalIgnoreCase),
+            // 内网/离线环境无法下载浏览器时，可指向本机已安装的 Chromium 可执行文件
+            ExecutablePath = Environment.GetEnvironmentVariable("E2E_CHROMIUM_PATH"),
         });
     }
 
