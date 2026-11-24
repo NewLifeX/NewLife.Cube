@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.MySql" Version="1.5.2026.1117-beta1613" />
+    <PackageReference Include="NewLife.MySql" Version="1.5.2026.1122-beta0740" />
     <!-- 编译期生成 OpenAPI json 的 build target 来源；本地源码直连消费者需自行显式引用 -->
     <!-- 固定 10.0.14：10.0.15 的 dotnet-getdocument 内置 Microsoft.OpenApi 2.13，与站点 Microsoft.AspNetCore.OpenApi 10.0.14 带来的 2.12 冲突，生成文档时抛 FileLoadException -->
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.14" PrivateAssets="all" GeneratePathProperty="true" />
