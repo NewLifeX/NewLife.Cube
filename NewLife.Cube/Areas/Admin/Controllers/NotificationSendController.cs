@@ -75,7 +75,7 @@ public class NotificationSendController(NotificationService notifyService) : Con
     /// <param name="key">关键字</param>
     /// <returns>JSON 分页列表</returns>
     [HttpGet]
-    public ActionResult Records(PageParameter page, String bizId = null, String channel = null, Int32 userId = -1,
+    public ActionResult Records([FromQuery] PageParameter page, String bizId = null, String channel = null, Int32 userId = -1,
         String category = null, String level = null, Boolean? read = null, Boolean? handled = null, Boolean? success = null,
         DateTime start = default, DateTime end = default, String key = null)
     {

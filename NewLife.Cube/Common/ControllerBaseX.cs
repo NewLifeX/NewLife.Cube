@@ -109,7 +109,8 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
             if (CurrentUser == null && context.ActionDescriptor is ControllerActionDescriptor act && !act.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))
             {
-                throw new ApiException(403, L.T("Authentication failed."));
+                // 未认证统一 401（与 EntityAuthorizeAttribute 一致）；HTTP 状态码是否同步由 EnableHttpStatusCodes 控制
+                throw new ApiException(ApiCode.Unauthorized.ToInt(), L.T("Authentication failed."));
             }
 
             if (CurrentUser != null)

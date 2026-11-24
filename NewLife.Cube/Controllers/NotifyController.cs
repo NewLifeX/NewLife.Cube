@@ -54,7 +54,7 @@ public class NotifyController(NotificationService notifyService, NotificationStr
     /// <param name="key">关键字</param>
     /// <returns>JSON 分页列表</returns>
     [HttpGet]
-    public ActionResult List(PageParameter page, String category = null, Boolean? read = null, DateTime start = default, DateTime end = default, String key = null)
+    public ActionResult List([FromQuery] PageParameter page, String category = null, Boolean? read = null, DateTime start = default, DateTime end = default, String key = null)
     {
         var (userId, admin, _, _) = GetCurrentUser();
         var list = notifyService.GetPage(userId, admin, category, read, start, end, key, page);
