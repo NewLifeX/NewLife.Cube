@@ -442,14 +442,26 @@ public partial class EntityController<TEntity, TModel>
         using var stream = file.OpenReadStream();
         var name = file.FileName;
         var ext = Path.GetExtension(file.FileName).ToLower();
-        var rs = ext switch
+        Int32 rs;
+        try
         {
-            ".xls" or ".xlsx" => ImportExcel(name, stream, factory, page),
-            ".csv" => ImportCsv(name, stream, factory, page),
-            ".json" => ImportJson(name, stream, factory, page),
-            ".zip" => ImportZip(name, stream, factory, page),
-            _ => throw new NotSupportedException(L.T("Unsupported import file type [{0}].", ext)),
-        };
+            rs = ext switch
+            {
+                ".xls" or ".xlsx" => ImportExcel(name, stream, factory, page),
+                ".csv" => ImportCsv(name, stream, factory, page),
+                ".json" => ImportJson(name, stream, factory, page),
+                ".zip" => ImportZip(name, stream, factory, page),
+                _ => throw new NotSupportedException(L.T("Unsupported import file type [{0}].", ext)),
+            };
+        }
+        catch (Exception ex) when (ex is not ApiException and not NoPermissionException)
+        {
+            // 文件类型不识别、内容解析失败等属于客户端问题：返回 -2，避免当服务端故障，也不把解析细节抛给前端
+            var detail = ex.GetTrue().Message;
+            WriteLog(nameof(Import), false, L.T("Failed to import file [{0}]: {1}", name, detail));
+            throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Failed to parse the import file. Check the file format and column types."));
+        }
+
         var msg = L.T("Imported [{0}], {1} rows.", name, rs);
         WriteLog(nameof(Import), true, msg);
 
