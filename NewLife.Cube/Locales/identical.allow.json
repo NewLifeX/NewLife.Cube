@@ -35,7 +35,12 @@
     "Skin",
     "{0}, {1}",
     "{0}",
-    "HeaderTitle"
+    "HeaderTitle",
+    "Alibaba Cloud OSS",
+    "Tencent Cloud COS",
+    "EasyIO",
+    "Intranet",
+    "Internet"
   ],
   "ja": [
     "AI",
@@ -138,7 +143,8 @@
     "Normal",
     "Full",
     "{0}, {1}",
-    "NewLife Team, NewLife, Cube, XCode"
+    "NewLife Team, NewLife, Cube, XCode",
+    "Fatal"
   ],
   "cs": [
     "Tenant",
@@ -212,7 +218,8 @@
     "Desc",
     "Tokens",
     "{0}, {1}",
-    "Personal"
+    "Personal",
+    "Fatal"
   ],
   "fr": [
     "Agent",
@@ -252,7 +259,13 @@
     "Performance",
     "{0}",
     "Province",
-    "District"
+    "District",
+    "Strict",
+    "Alibaba Cloud OSS",
+    "Tencent Cloud COS",
+    "EasyIO",
+    "Intranet",
+    "Internet"
   ],
   "it": [
     "Backup",
@@ -325,7 +338,8 @@
     "Offline",
     "Email",
     "Online",
-    "{0}, {1}"
+    "{0}, {1}",
+    "Fatal"
   ],
   "ms": [
     "Status",
@@ -475,7 +489,8 @@
     "Caches",
     "Online",
     "Tokens",
-    "{0}, {1}"
+    "{0}, {1}",
+    "Fatal"
   ],
   "hi": [
     "AI",
@@ -663,7 +678,8 @@
     "Online",
     "Tokens",
     "{0}, {1}",
-    "{0} assemblies"
+    "{0} assemblies",
+    "Fatal"
   ],
   "ro": [
     "{value}s",

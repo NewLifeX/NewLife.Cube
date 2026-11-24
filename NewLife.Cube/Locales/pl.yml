@@ -1518,13 +1518,16 @@
 "District": "Dystrykt"
 "Town": "Gmina"
 "API explorer. Allow system administrators to list routes; off by default": "Eksplorator API. Pozwala administratorom systemu wyświetlać trasy; domyślnie wyłączony"
-"Upload size limit in MB; 0 means unlimited": "Limit rozmiaru przesyłania w MB; 0 oznacza brak limitu"
 "The file size must not exceed {0} MB.": "Rozmiar pliku nie może przekraczać {0} MB."
 "MFA required": "Wymagane MFA"
-"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Kody stanu protokołu. Ustawia 401/403/404/409/429/500 przy błędach; domyślnie wyłączone"
-"Rate limit per IP for sign-in, code, lookup and site; default on": "Limit na IP dla logowania, kodu, wyszukiwania i witryny; domyślnie włączone"
 
 # 菜单搜索
 "Menu search": "Wyszukiwanie menu"
 "Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Wyszukiwanie menu. Pokazuje pole wyszukiwania na pasku nawigacji do przybliżonego wyszukiwania menu; domyślnie true"
 "Search menu": "Szukaj menu"
+
+# 日志等级
+"Info": "Informacje"
+"Warn": "Ostrzeżenie"
+"Fatal": "Krytyczny"
+"Off": "Wyłączone"

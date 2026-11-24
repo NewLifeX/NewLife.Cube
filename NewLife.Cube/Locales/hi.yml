@@ -1518,13 +1518,16 @@
 "District": "जिला"
 "Town": "कस्बा"
 "API explorer. Allow system administrators to list routes; off by default": "API एक्सप्लोरर. सिस्टम प्रशासकों को रूट सूचीबद्ध करने की अनुमति देता है; डिफ़ॉल्ट रूप से बंद"
-"Upload size limit in MB; 0 means unlimited": "अपलोड आकार सीमा (MB); 0 का अर्थ असीमित है"
 "The file size must not exceed {0} MB.": "फ़ाइल आकार {0} MB से अधिक नहीं होना चाहिए।"
 "MFA required": "MFA आवश्यक है"
-"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "प्रोटोकॉल स्थिति कोड। विफलता पर 401/403/404/409/429/500 सेट करता है; डिफ़ॉल्ट रूप से बंद"
-"Rate limit per IP for sign-in, code, lookup and site; default on": "साइन-इन, कोड, लुकअप और साइट के लिए प्रति IP दर सीमा; डिफ़ॉल्ट रूप से चालू"
 
 # 菜单搜索
 "Menu search": "मेनू खोज"
 "Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "मेनू खोज। नेविगेशन बार में फ़ज़ी मेनू खोज के लिए एक खोज बॉक्स दिखाता है; डिफ़ॉल्ट true"
 "Search menu": "मेनू खोजें"
+
+# 日志等级
+"Info": "जानकारी"
+"Warn": "चेतावनी"
+"Fatal": "घातक"
+"Off": "बंद"

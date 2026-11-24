@@ -1518,13 +1518,16 @@
 "District": "Piirikunta"
 "Town": "Kunta"
 "API explorer. Allow system administrators to list routes; off by default": "API-selain. Sallii järjestelmänvalvojien luetella reitit; oletuksena pois"
-"Upload size limit in MB; 0 means unlimited": "Latauksen kokoraja megatavuina; 0 tarkoittaa rajoittamatonta"
 "The file size must not exceed {0} MB.": "Tiedoston koko ei saa ylittää {0} Mt."
 "MFA required": "MFA vaaditaan"
-"Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default": "Protokollan tilakoodit. Asettaa 401/403/404/409/429/500 virheissä; oletuksena pois"
-"Rate limit per IP for sign-in, code, lookup and site; default on": "Nopeusraja IP-kohtaisesti kirjautumiselle, koodille, haulle ja sivustolle; oletuksena päällä"
 
 # 菜单搜索
 "Menu search": "Valikon haku"
 "Menu search. Shows a search box in the navigation bar for fuzzy menu search, default true": "Valikon haku. Näyttää hakukentän navigointipalkissa valikon sumeaan hakuun; oletus true"
 "Search menu": "Hae valikkoa"
+
+# 日志等级
+"Info": "Tiedot"
+"Warn": "Varoitus"
+"Fatal": "Vakava"
+"Off": "Pois"
