@@ -9,7 +9,7 @@ namespace NewLife.Cube.Services.Notifications.Channels;
 public class InAppNotificationChannel : INotificationChannel
 {
     /// <summary>渠道名称</summary>
-    public String Name => "InApp";
+    public String Name => NotificationChannels.InApp;
 
     /// <summary>发送通知</summary>
     /// <param name="record">通知记录</param>

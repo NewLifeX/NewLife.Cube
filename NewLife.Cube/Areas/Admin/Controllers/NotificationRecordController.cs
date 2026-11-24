@@ -38,7 +38,7 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
     /// <returns>是否可标记已读</returns>
     private static Boolean CanRead(NotificationRecord entity)
     {
-        if (entity == null || !entity.Channel.EqualIgnoreCase("InApp") || entity.Read) return false;
+        if (entity == null || !entity.Channel.EqualIgnoreCase(NotificationChannels.InApp) || entity.Read) return false;
 
         var user = ManageProvider.User;
         if (user == null) return false;
@@ -65,7 +65,7 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
         var end = p["dtEnd"].ToDateTime();
         var key = p["Q"];
 
-        if (p.Sort.IsNullOrEmpty()) p.Sort = NotificationRecord._.Id.Desc();
+        if (p.Sort.IsNullOrEmpty()) p.Sort = NotificationRecord.__.Id + " Desc";
 
         return NotificationRecord.SearchBy(tenantId, bizId, channel, userId, category, level, read, handled, success, start, end, key, p);
     }
@@ -76,7 +76,7 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
     /// <param name="channel">触发已读的渠道</param>
     /// <returns>标记结果</returns>
     [HttpPost("/api/[area]/[controller]/NotifyMarkRead")]
-    public ActionResult NotifyMarkRead(Int64 id, String bizId = null, String channel = "InApp")
+    public ActionResult NotifyMarkRead(Int64 id, String bizId = null, String channel = NotificationChannels.InApp)
     {
         var (userId, admin, name) = GetCurrentUser();
         var tenantId = (CurrentTenant as TenantUser)?.TenantId ?? 0;

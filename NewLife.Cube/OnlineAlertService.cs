@@ -65,8 +65,7 @@ public static class OnlineAlertService
     /// <summary>是否今日已发送过在线告警</summary>
     /// <param name="now">当前时间</param>
     /// <returns>是否已发送</returns>
-    private static Boolean HasAlertedToday(DateTime now)
-        => NotificationRecord.FindCount(NotificationRecord._.Action == "OnlineAlert" & NotificationRecord._.CreateTime >= now.Date) > 0;
+    private static Boolean HasAlertedToday(DateTime now) => NotificationRecord.ExistsActionSince("OnlineAlert", now.Date);
 
     /// <summary>写入系统级站内信告警广播（UserId=0，系统管理员可见，任意一人已读即全体消除）</summary>
     /// <param name="total">当前在线数</param>
@@ -77,7 +76,7 @@ public static class OnlineAlertService
         var record = new NotificationRecord
         {
             Action = "OnlineAlert",
-            Channel = "InApp",
+            Channel = NotificationChannels.InApp,
             Title = L.T("Online peak warning {0}", now.ToString("MM-dd HH:mm")),
             Content = L.T("There are {0} users online, exceeding the {1}-day record of {2} (threshold {3:0}). This may be a campaign, a crawler scan or abnormal traffic; check the online list and sign-in log.", total, Days, max, max * Ratio),
             Success = true,

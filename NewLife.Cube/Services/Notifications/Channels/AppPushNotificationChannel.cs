@@ -10,7 +10,7 @@ namespace NewLife.Cube.Services.Notifications.Channels;
 public class AppPushNotificationChannel(IAppPushProvider provider) : INotificationChannel
 {
     /// <summary>渠道名称</summary>
-    public String Name => "AppPush";
+    public String Name => NotificationChannels.AppPush;
 
     /// <summary>发送通知</summary>
     /// <param name="record">通知记录</param>

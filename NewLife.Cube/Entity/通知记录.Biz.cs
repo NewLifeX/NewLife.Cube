@@ -137,6 +137,101 @@ public partial class NotificationRecord : Entity<NotificationRecord>
 
     #endregion
 
+    #region 投递
+    /// <summary>把超时的发送中记录重置为待发送。节点崩溃或重启后，Sending 超过指定时间视为遗留</summary>
+    /// <param name="now">当前时间</param>
+    /// <param name="timeout">超时时间。默认5分钟</param>
+    /// <returns>重置行数</returns>
+    public static Int32 ResetStaleSending(DateTime now, TimeSpan? timeout = null)
+    {
+        // 0=待发送，1=发送中
+        var pending = 0;
+        var sending = 1;
+        var db = Meta.Session.Dal.Db;
+        var stale = db.FormatDateTime(now.AddMinutes(-(timeout?.TotalMinutes ?? 5)));
+
+        return Update($"Status={pending}", $"Status={sending} AND UpdateTime < {stale}");
+    }
+
+    /// <summary>查找待投递的外部渠道记录</summary>
+    /// <param name="now">当前时间</param>
+    /// <param name="maxAttempts">最大尝试次数。默认3</param>
+    /// <param name="size">批量大小。默认50</param>
+    /// <returns>记录列表</returns>
+    public static IList<NotificationRecord> FindDispatchable(DateTime now, Int32 maxAttempts = 3, Int32 size = 50)
+    {
+        if (size <= 0) size = 50;
+
+        // 0=待发送，3=失败
+        var pending = 0;
+        var failed = 3;
+
+        return FindAll(
+            _.Channel != NotificationChannels.InApp
+            & _.Deleted == false
+            & _.Attempts < maxAttempts
+            & (_.Status == pending | _.Status == failed)
+            & (_.NextRetryTime.IsNull() | _.NextRetryTime <= now),
+            _.Id.Asc(), null, 0, size);
+    }
+
+    /// <summary>抢占一条待投递记录，避免多节点重复投递</summary>
+    /// <param name="id">记录编号</param>
+    /// <param name="now">当前时间</param>
+    /// <returns>影响行数</returns>
+    public static Int32 TryClaimForSending(Int64 id, DateTime now)
+    {
+        // 0=待发送，1=发送中，3=失败
+        var pending = 0;
+        var sending = 1;
+        var failed = 3;
+        var db = Meta.Session.Dal.Db;
+        var nowText = db.FormatDateTime(now);
+
+        return Update($"Status={sending}, UpdateTime={nowText}", $"Id={id} AND (Status={pending} OR Status={failed})");
+    }
+
+    /// <summary>判断同一业务消息是否已被任一收件人已读或处理</summary>
+    /// <param name="tenantId">租户编号</param>
+    /// <param name="bizId">业务消息编号</param>
+    /// <returns>是否已读或已处理</returns>
+    public static Boolean ExistsReadOrHandled(Int32 tenantId, String bizId)
+    {
+        if (bizId.IsNullOrEmpty()) return false;
+
+        return FindCount(_.TenantId == tenantId & _.BizId == bizId & (_.Read == true | _.Handled == true)) > 0;
+    }
+
+    /// <summary>判断指定业务消息在时间窗口内是否已存在</summary>
+    /// <param name="tenantId">租户编号</param>
+    /// <param name="bizId">业务消息编号</param>
+    /// <param name="since">起始时间</param>
+    /// <param name="prefix">是否按前缀匹配（每人一个 BizId 的场景）</param>
+    /// <returns>是否存在</returns>
+    public static Boolean ExistsBizId(Int32 tenantId, String bizId, DateTime since, Boolean prefix)
+    {
+        if (bizId.IsNullOrEmpty()) return false;
+
+        var exp = _.TenantId == tenantId & _.CreateTime >= since
+            & (prefix
+                ? _.BizId == bizId | _.BizId.StartsWith(bizId + ":")
+                : _.BizId == bizId);
+
+        return FindCount(exp) > 0;
+    }
+
+    /// <summary>判断指定动作在时间之后是否已有记录</summary>
+    /// <param name="action">动作</param>
+    /// <param name="since">起始时间</param>
+    /// <returns>是否存在</returns>
+    public static Boolean ExistsActionSince(String action, DateTime since)
+    {
+        if (action.IsNullOrEmpty()) return false;
+
+        return FindCount(_.Action == action & _.CreateTime >= since) > 0;
+    }
+    #endregion
+
     #region 站内信
     /// <summary>构建当前用户可见的站内信查询条件。广播消息(UserId=0)仅系统管理员可见，个人消息(UserId&gt;0)仅本人可见</summary>
     /// <param name="userId">当前用户编号</param>
@@ -144,7 +239,7 @@ public partial class NotificationRecord : Entity<NotificationRecord>
     /// <returns>查询条件</returns>
     public static Expression GetInAppExp(Int32 userId, Boolean admin)
     {
-        var exp = _.Channel == "InApp" & (_.Deleted == false | _.Deleted.IsNull());
+        var exp = _.Channel == NotificationChannels.InApp & (_.Deleted == false | _.Deleted.IsNull());
         exp &= _.ExpireTime.IsNull() | _.ExpireTime <= DateTime.MinValue | _.ExpireTime > DateTime.Now;
         if (admin)
             exp &= _.UserId == 0 | _.UserId == userId;
@@ -207,7 +302,7 @@ public partial class NotificationRecord : Entity<NotificationRecord>
     public static NotificationRecord MarkRead(Int64 id, Int32 userId, String userName, Boolean admin)
     {
         var entity = FindById(id);
-        if (entity == null || !entity.Channel.EqualIgnoreCase("InApp")) return null;
+        if (entity == null || !entity.Channel.EqualIgnoreCase(NotificationChannels.InApp)) return null;
 
         // 广播消息仅系统管理员可读，个人消息仅本人可读
         if (entity.UserId == 0 && !admin) return null;
@@ -218,7 +313,7 @@ public partial class NotificationRecord : Entity<NotificationRecord>
             entity.Read = true;
             entity.ReadTime = DateTime.Now;
             entity.ReadBy = userId;
-            if (entity.ReadChannel.IsNullOrEmpty()) entity.ReadChannel = "InApp";
+            if (entity.ReadChannel.IsNullOrEmpty()) entity.ReadChannel = NotificationChannels.InApp;
             if (!userName.IsNullOrEmpty()) entity.Result = $"已读：{userName}";
             entity.Update();
         }
@@ -241,12 +336,12 @@ public partial class NotificationRecord : Entity<NotificationRecord>
         var list = FindAll(exp, null, null, 0, 0);
         if (list.Count == 0) return null;
 
-        var own = list.FirstOrDefault(e => e.UserId == userId && e.Channel.EqualIgnoreCase("InApp"))
+        var own = list.FirstOrDefault(e => e.UserId == userId && e.Channel.EqualIgnoreCase(NotificationChannels.InApp))
             ?? list.FirstOrDefault(e => e.UserId == userId);
         if (own == null) return null;
 
         var now = DateTime.Now;
-        var channel2 = channel.IsNullOrEmpty() ? "InApp" : channel;
+        var channel2 = channel.IsNullOrEmpty() ? NotificationChannels.InApp : channel;
         var reason = $"Cancelled because read on {channel2}.";
         var targets = new List<NotificationRecord>();
         foreach (var entity in list)
@@ -295,7 +390,7 @@ public partial class NotificationRecord : Entity<NotificationRecord>
         var list = FindAll(exp, null, null, 0, 0);
         if (list.Count == 0) return null;
 
-        var own = list.FirstOrDefault(e => e.UserId == userId && e.Channel.EqualIgnoreCase("InApp"))
+        var own = list.FirstOrDefault(e => e.UserId == userId && e.Channel.EqualIgnoreCase(NotificationChannels.InApp))
             ?? list.FirstOrDefault(e => e.UserId == userId);
         if (own == null) return null;
 
@@ -318,7 +413,7 @@ public partial class NotificationRecord : Entity<NotificationRecord>
                 entity.Read = true;
                 entity.ReadTime = now;
                 entity.ReadBy = userId;
-                entity.ReadChannel = "InApp";
+                entity.ReadChannel = NotificationChannels.InApp;
             }
             if (own.CancelOnRead && entity.Status == 0 && entity.SentTime == DateTime.MinValue)
             {
@@ -332,7 +427,7 @@ public partial class NotificationRecord : Entity<NotificationRecord>
 
         var count = targets.Save();
 
-        WriteLog("Handle", bizId, own.Id, userId, userName, tenantId, "InApp", result, count);
+        WriteLog("Handle", bizId, own.Id, userId, userName, tenantId, NotificationChannels.InApp, result, count);
 
         return own;
     }
@@ -407,7 +502,7 @@ public partial class NotificationRecord : Entity<NotificationRecord>
     public static Int32 SoftDelete(Int64 id, Int32 userId, Boolean admin)
     {
         var entity = FindById(id);
-        if (entity == null || !entity.Channel.EqualIgnoreCase("InApp")) return 0;
+        if (entity == null || !entity.Channel.EqualIgnoreCase(NotificationChannels.InApp)) return 0;
 
         if (!admin && (entity.Shared || entity.UserId != userId)) return 0;
 

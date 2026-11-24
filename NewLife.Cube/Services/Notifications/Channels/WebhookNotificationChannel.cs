@@ -11,7 +11,7 @@ namespace NewLife.Cube.Services.Notifications.Channels;
 
 /// <summary>Webhook 通知渠道。支持通用 JSON、钉钉和企业微信文本格式</summary>
 /// <param name="name">渠道名称</param>
-public class WebhookNotificationChannel(String name = "Webhook") : INotificationChannel
+public class WebhookNotificationChannel(String name = NotificationChannels.Webhook) : INotificationChannel
 {
     private static readonly HttpClient _client = new();
 
@@ -30,7 +30,7 @@ public class WebhookNotificationChannel(String name = "Webhook") : INotification
         var text = $"{record.Title}\n{record.Content}".Trim();
         if (!record.Link.IsNullOrEmpty()) text += $"\n{record.Link}";
 
-        var body = name.EqualIgnoreCase("DingTalk", "WeCom")
+        var body = name.EqualIgnoreCase(NotificationChannels.DingTalk, NotificationChannels.WeCom)
             ? new { msgtype = "text", text = new { content = text } }.ToJson()
             : new { title = record.Title, content = record.Content, link = record.Link, bizId = record.BizId }.ToJson();
 

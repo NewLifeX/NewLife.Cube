@@ -10,7 +10,7 @@ namespace NewLife.Cube.Services.Notifications.Channels;
 public class SmsNotificationChannel(SmsService smsService) : INotificationChannel
 {
     /// <summary>渠道名称</summary>
-    public String Name => "Sms";
+    public String Name => NotificationChannels.Sms;
 
     /// <summary>发送通知</summary>
     /// <param name="record">通知记录</param>

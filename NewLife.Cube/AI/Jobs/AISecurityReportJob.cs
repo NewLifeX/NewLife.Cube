@@ -79,7 +79,7 @@ Output the report directly without extra explanation."), securityData);
         var record = new NotificationRecord
         {
             Action = "AI_SecurityReport",
-            Channel = "InApp",
+            Channel = NotificationChannels.InApp,
             Title = L.T("Security weekly report {0} ~ {1}", start.ToString("yyyy-MM-dd"), now.ToString("yyyy-MM-dd")),
             Content = result,
             Success = true,

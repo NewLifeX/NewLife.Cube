@@ -102,7 +102,7 @@ public class MailService(ICacheProvider cacheProvider)
         {
             TenantId = config.TenantId,
             Action = action,
-            Channel = "Mail",
+            Channel = NotificationChannels.Mail,
             ConfigId = config.Id,
             ConfigName = config + "",
             Provider = config.Provider,

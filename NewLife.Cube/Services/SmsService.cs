@@ -111,7 +111,7 @@ public class SmsService(ICacheProvider cacheProvider)
         {
             TenantId = config.TenantId,
             Action = action,
-            Channel = "Sms",
+            Channel = NotificationChannels.Sms,
             ConfigId = config.Id,
             ConfigName = config + "",
             Provider = config.Provider,

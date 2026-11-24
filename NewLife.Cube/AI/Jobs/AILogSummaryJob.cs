@@ -71,7 +71,7 @@ Output the analysis report directly without extra explanation.");
         var record = new NotificationRecord
         {
             Action = "AI_LogSummary",
-            Channel = "InApp",
+            Channel = NotificationChannels.InApp,
             Title = L.T("Daily log report {0}", now.ToString("yyyy-MM-dd")),
             Content = result,
             Success = true,

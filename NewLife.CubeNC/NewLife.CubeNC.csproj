@@ -167,6 +167,7 @@
     <Compile Include="..\NewLife.Cube\Entity\短信配置.cs" Link="Entity\短信配置.cs" />
     <Compile Include="..\NewLife.Cube\Entity\访问规则.Biz.cs" Link="Entity\访问规则.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\访问规则.cs" Link="Entity\访问规则.cs" />
+    <Compile Include="..\NewLife.Cube\NotificationChannels.cs" Link="NotificationChannels.cs" />
     <Compile Include="..\NewLife.Cube\Entity\通知记录.Biz.cs" Link="Entity\通知记录.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\通知记录.cs" Link="Entity\通知记录.cs" />
     <Compile Include="..\NewLife.Cube\OnlineAlertService.cs" Link="OnlineAlertService.cs" />
