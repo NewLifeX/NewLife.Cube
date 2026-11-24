@@ -119,6 +119,18 @@ public sealed class ApiAccountTests : ApiTestBase
         }
     }
 
+    [Fact(DisplayName = "TC-API-ACCT-005 业务参数校验失败返回 -2 与字段级错误而非服务端错误")]
+    [Trait("Category", "Account")]
+    public async Task TC_API_ACCT_005_ParamErrorMapping()
+    {
+        var rs = await Admin.PostJsonAsync("/api/Admin/User/ChangePassword", Json(new { oldPassword = Password1, newPassword2 = Password2 }));
+
+        ApiAssert.Fail(rs, -2, "TC-API-ACCT-005");
+        var field = rs.FieldErrors?[0]?["field"]?.ToString();
+        Assert.Equal("NewPassword", field);
+        Assert.DoesNotContain("Parameter", rs.Message ?? "");
+    }
+
     [Fact(DisplayName = "TC-API-ACCT-004 用户绑定列表不回传令牌与密钥")]
     [Trait("Category", "Account")]
     public async Task TC_API_ACCT_004_Binds()
