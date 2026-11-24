@@ -341,6 +341,11 @@ jobs:
         }
     - name: Test
       run: dotnet test E2EMvcTest/E2EMvcTest.csproj -c Release --nologo --logger "trx;LogFileName=E2E-${{ matrix.name }}.trx" --results-directory TestResults
+    # WebAPI 版端到端：构建 CubeDemo 后由 E2EApiTest 夹具启动独立实例（端口 8082 + 临时 SQLite）
+    - name: Build CubeDemo
+      run: dotnet build CubeDemo/CubeDemo.csproj -c Release --nologo
+    - name: API E2E Test
+      run: dotnet test E2EApiTest/E2EApiTest.csproj -c Release --nologo --logger "trx;LogFileName=E2E-Api-${{ matrix.name }}.trx" --results-directory TestResults
     - name: Upload E2E artifacts
       if: always()
       uses: actions/upload-artifact@v7
@@ -350,6 +355,7 @@ jobs:
           TestResults/*.trx
           Bin/E2ETest/Run-*/server-*.log
           Bin/E2ETest/Run-*/screenshots/**
+          Bin/E2ETest/Api-Run-*/server-*.log
         if-no-files-found: ignore
 
   # 多语言词表、运行时消息与 README 切换行守门。

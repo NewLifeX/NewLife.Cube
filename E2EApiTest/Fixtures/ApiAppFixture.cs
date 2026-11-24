@@ -114,6 +114,7 @@ public sealed class ApiAppFixture : IAsyncLifetime
             WorkingDirectory = AppDir,
         };
         psi.Environment["URLS"] = BaseUrl;
+        psi.Environment["ASPNETCORE_URLS"] = BaseUrl;
 
         var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
 
