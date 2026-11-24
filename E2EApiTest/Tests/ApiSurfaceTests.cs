@@ -117,6 +117,29 @@ public class ApiSurfaceTests : ApiTestBase
         Assert.True(failures.Count == 0, "以下配置页表单结构接口异常：\n" + String.Join("\n", failures));
     }
 
+    [Fact(DisplayName = "TC-API-SURF-005 数据库管理接口缺少连接名返回参数错误，正常连接名返回结构")]
+    [Trait("Category", "Surface")]
+    public async Task DbTools_ShouldValidateParam()
+    {
+        foreach (var action in new[] { "tables", "entities", "diff" })
+        {
+            var missing = await Admin.GetAsync($"/api/Admin/Db/{action}");
+            ApiAssert.Fail(missing, -2, $"TC-API-SURF-005 {action} 缺参数");
+
+            var rs = await Admin.GetAsync($"/api/Admin/Db/{action}?name=Cube");
+            ApiAssert.Ok(rs, $"TC-API-SURF-005 {action}");
+            Assert.NotNull(rs.Rows);
+            Assert.True(rs.Rows!.Count > 0, $"{action} 未返回数据");
+        }
+
+        var download = await Admin.GetAsync("/api/Admin/Db/Download");
+        ApiAssert.Fail(download, -2, "TC-API-SURF-005 download");
+
+        var list = await Admin.GetAsync("/api/Admin/Db");
+        ApiAssert.Ok(list, "TC-API-SURF-005 index");
+        Assert.True(list.Rows?.Count > 0, "数据库列表为空");
+    }
+
     /// <summary>记录非预期响应：只允许 200 且业务码为 0，或 401/403 这类鉴权拒绝</summary>
     /// <param name="failures">失败明细收集器</param>
     /// <param name="label">接口标签</param>
