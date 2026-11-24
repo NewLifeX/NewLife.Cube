@@ -88,7 +88,7 @@ public class AiController : ControllerBaseX
         if (target is IEntityAiContext eac)
         {
             // 实体控制器：按目标实体页 Detail 权限校验（等价原 {controller}/AiChat 的 EntityAuthorize），拒绝越权对话
-            if (!CheckEntityPermission(target.GetType())) return Json(403, null, L.T("You do not have permission to access the data on this page."));
+            if (!CheckEntityPermission(target.GetType())) return Json(403, L.T("You do not have permission to access the data on this page."));
 
             // 实体上下文工具集由目标控制器自建（保留子类重载 CreateCubeTools），数据查询委托走其 SearchData
             registry.AddTools(eac.CreateCubeTools(pager, request.Id));
@@ -147,13 +147,13 @@ public class AiController : ControllerBaseX
     private static async Task<(ActionResult? Error, CubeAiChatRequest? Req)> ParseAsync(ControllerBaseX ctrl)
     {
         var set = CubeSetting.Current;
-        if (!set.AISwitch) return (ctrl.Json(500, null, L.T("AI is not enabled. Please contact the system administrator to enable AISwitch.")), null);
+        if (!set.AISwitch) return (ctrl.Json(500, L.T("AI is not enabled. Please contact the system administrator to enable AISwitch.")), null);
 
         // 读取 JSON 请求体
         var body = await new StreamReader(ctrl.Request.Body).ReadToEndAsync();
-        if (body.IsNullOrEmpty()) return (ctrl.Json(500, null, L.T("The request body is empty.")), null);
+        if (body.IsNullOrEmpty()) return (ctrl.Json(500, L.T("The request body is empty.")), null);
         var req = body.ToJsonEntity<CubeAiChatRequest>();
-        if (req == null || req.Message.IsNullOrEmpty()) return (ctrl.Json(500, null, L.T("The message cannot be empty.")), null);
+        if (req == null || req.Message.IsNullOrEmpty()) return (ctrl.Json(500, L.T("The message cannot be empty.")), null);
 
         return (null, req);
     }
@@ -362,16 +362,16 @@ public class AiController : ControllerBaseX
     public async Task<ActionResult> OperationResult()
     {
         var body = await new StreamReader(Request.Body).ReadToEndAsync();
-        if (body.IsNullOrEmpty()) return Json(500, null, L.T("The request body is empty."));
+        if (body.IsNullOrEmpty()) return Json(500, L.T("The request body is empty."));
         var req = body.ToJsonEntity<BrowserOpResult>();
-        if (req == null || req.CheckpointId.IsNullOrEmpty()) return Json(500, null, L.T("Invalid request parameter"));
+        if (req == null || req.CheckpointId.IsNullOrEmpty()) return Json(500, L.T("Invalid request parameter"));
 
         // 分布式：经 DI 解析检查点服务（事件总线广播，POST 命中任意实例都能唤醒等待方），兜底进程内实例
         var cp = HttpContext.RequestServices.GetService<PageCheckpointService>() ?? PageCheckpointService.Instance;
         var user = HttpContext.User.Identity as IUser;
         var ok = await cp.Respond(req.CheckpointId, user?.Id ?? 0, req.Result ?? "{}");
 
-        return ok ? Json(0, null, "ok") : Json(500, null, L.T("The operation does not exist or has expired."));
+        return ok ? Json(0, null, "ok") : Json(500, L.T("The operation does not exist or has expired."));
     }
 }
 

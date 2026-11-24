@@ -392,7 +392,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult GetArea(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
-        if (r == null) return Json(500, null, L.T("Region not found."));
+        if (r == null) return Json(500, L.T("Region not found."));
 
         return Json(0, null, new
         {
@@ -416,7 +416,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         AreaController.InitAreaData();
 
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
-        if (r == null) return Json(500, null, L.T("Region not found."));
+        if (r == null) return Json(500, L.T("Region not found."));
 
         if (r.Id == 0)
             return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.Id, e.Name, e.FullName, e.ParentId, e.Level, BigArea = e.GetBig() }).ToArray());
@@ -432,22 +432,25 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult AreaParents(Int32 id = 0, Boolean isContainSelf = false)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
-        if (r == null) return Json(500, null, L.T("Region not found."));
+        if (r == null) return Json(500, L.T("Region not found."));
 
         var list = new List<Object>();
         foreach (var e in r.GetAllParents())
         {
             if (e.Id == 0) continue;
-            if (r.Id == 0)
-                list.Add(new { e.Id, e.Name, e.FullName, e.ParentId, e.Level, BigArea = e.GetBig() });
-            else
-                list.Add(new { e.Id, e.Name, e.FullName, e.ParentId, e.Level });
+            list.Add(ToAreaItem(e, r.Id == 0));
         }
 
-        if (isContainSelf) list.Add(r);
+        // 包含自身时使用与祖先相同的字段投影，避免数组中混入整套实体字段
+        if (isContainSelf) list.Add(ToAreaItem(r, r.Id == 0));
 
         return Json(0, null, list);
     }
+
+    /// <summary>地区下拉/级联使用的精简字段投影</summary>
+    private static Object ToAreaItem(AreaX area, Boolean withBigArea) => withBigArea
+        ? new { area.Id, area.Name, area.FullName, area.ParentId, area.Level, BigArea = area.GetBig() }
+        : (Object)new { area.Id, area.Name, area.FullName, area.ParentId, area.Level };
 
     /// <summary>获取地区所有父级</summary>
     /// <param name="id"></param>
@@ -456,7 +459,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult AreaAllParents(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
-        if (r == null) return Json(500, null, L.T("Region not found."));
+        if (r == null) return Json(500, L.T("Region not found."));
 
         var rs = new List<AreaX>();
         foreach (var item in r.GetAllParents())
@@ -664,6 +667,9 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpGet]
     public ActionResult GetPageConfig(String kind, String page)
     {
+        // 调用方参数缺失属于客户端错误：返回 -2 参数错误，避免 ArgumentNullException 变成 500 并泄露内部参数名
+        if (page.IsNullOrEmpty()) return Json(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter"));
+
         var rs = pageService.GetPageConfig(kind, page, CurrentUser?.Id ?? 0);
         return Json(0, null, rs);
     }
@@ -676,6 +682,9 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpPost]
     public ActionResult SetPageConfig(String kind, String page, [FromBody] JsonElement value)
     {
+        if (page.IsNullOrEmpty() || value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            return Json(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter"));
+
         // 当前登录用户配置优先；未登录时写全局配置
         var rs = pageService.SetPageConfig(kind, page, value.ToDictionary(), CurrentUser?.Id ?? 0);
         return Json(0, null, rs);
