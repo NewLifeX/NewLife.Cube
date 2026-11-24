@@ -101,6 +101,44 @@ public sealed class ApiPermissionTests : ApiTestBase
         }
     }
 
+    [Fact(DisplayName = "TC-API-PERM-004 角色权限树可读取且保存权限生效")]
+    [Trait("Category", "Permission")]
+    public async Task TC_API_PERM_004_PermissionTree()
+    {
+        var roleName = NewName("permrole");
+        var roleId = 0;
+        try
+        {
+            var role = await Admin.PostJsonAsync("/api/Admin/Role", Json(new { name = roleName, type = 2, enable = true }));
+            ApiAssert.Ok(role, "TC-API-PERM-004");
+            roleId = ApiResult.GetInt32(role.Data?["id"]) ?? 0;
+            Assert.True(roleId > 0, "新增角色未返回主键");
+
+            var tree = await Admin.GetAsync($"/api/Admin/Role/PermissionTree?roleId={roleId}");
+            ApiAssert.Ok(tree, "TC-API-PERM-004");
+            Assert.Equal(roleId, ApiResult.GetInt32(tree.Data?["role"]?["id"]));
+            Assert.True((tree.Data?["tree"] as JsonArray)?.Count > 0, "权限树为空");
+
+            var meta = await Admin.GetAsync("/api/School/Student/meta");
+            ApiAssert.Ok(meta, "TC-API-PERM-004");
+            var menuId = ApiResult.GetInt32(meta.Data?["setting"]?["menuId"]);
+            Assert.True(menuId > 0);
+
+            var save = await Admin.PostJsonAsync("/api/Admin/Role/SavePermission", Json(new { roleId, permission = $"{menuId}#1" }));
+            ApiAssert.Ok(save, "TC-API-PERM-004");
+            Assert.True(ApiResult.GetBoolean(save.Data?["success"]) == true, "保存权限未返回成功");
+
+            var detail = await Admin.GetAsync($"/api/Admin/Role/{roleId}");
+            ApiAssert.Ok(detail, "TC-API-PERM-004");
+            Assert.Contains($"{menuId}#1", ApiResult.GetString(detail.Data?["permission"]));
+        }
+        finally
+        {
+            if (roleId > 0) await Admin.DeleteAsync($"/api/Admin/Role/{roleId}");
+            ApiDatabaseHelper.DeleteRoleByName(roleName);
+        }
+    }
+
     private async Task<Int32> CreateRoleAsync(String name, String permission)
     {
         var rs = await Admin.PostJsonAsync("/api/Admin/Role", Json(new { name, type = 2, enable = true, permission }));
