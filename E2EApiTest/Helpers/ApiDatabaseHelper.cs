@@ -160,4 +160,18 @@ public static class ApiDatabaseHelper
         ExecuteWrite(ConnStr("Membership.db", false), "DELETE FROM UserToken WHERE Token = @token", ("@token", token));
 
     #endregion
+
+    #region 凭据字段（Cube.db）
+
+    /// <summary>读取 OAuth 配置的应用密钥（用于校验只写字段未被清空）</summary>
+    /// <param name="id">配置编号</param>
+    public static String? GetOAuthSecret(Int32 id) =>
+        ExecuteScalar<String>(CubeConnStr, "SELECT Secret FROM OAuthConfig WHERE Id = @id", ("@id", id));
+
+    /// <summary>读取短信配置的应用密钥</summary>
+    /// <param name="id">配置编号</param>
+    public static String? GetSmsAppSecret(Int32 id) =>
+        ExecuteScalar<String>(CubeConnStr, "SELECT AppSecret FROM SmsConfig WHERE Id = @id", ("@id", id));
+
+    #endregion
 }
