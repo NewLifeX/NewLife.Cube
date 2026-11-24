@@ -10,6 +10,7 @@ using NewLife.Cube.ViewModels;
 using NewLife.IO;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Remoting;
 using NewLife.Serialization;
 using NewLife.Web;
 using Stardust.Storages;
@@ -133,7 +134,13 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     {
         var count = 0;
         var ids = GetRequest("keys").SplitAsInt();
+        // 未选择任何数据时不能静默返回“成功 0 条”，否则前端误以为操作生效
+        if (ids.Length == 0) throw new ApiException(CubeCode.ParamError.ToInt(), L.T("No data specified for operation."));
+
         var fields = Factory.AllFields;
+        if (!fields.Any(f => f.Name.EqualIgnoreCase("enable")))
+            throw new ApiException(CubeCode.ParamError.ToInt(), L.T("The entity does not support enabling or disabling."));
+
         if (ids.Length > 0 && fields.Any(f => f.Name.EqualIgnoreCase("enable")))
         {
             var log = LogProvider.Provider;
