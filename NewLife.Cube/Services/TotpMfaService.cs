@@ -25,6 +25,10 @@ public class TotpMfaService : IMfaService
 
     // MFA 挂起令牌的缓存前缀与 TTL（秒）
     private const String MfaPendingPrefix = "MfaPending:";
+
+    // 挂起令牌校验失败次数的缓存前缀
+    private const String MfaFailurePrefix = "MfaPendingFail:";
+
     private const Int32 MfaPendingTtl = 300;
 
     private readonly ICache _cache;
@@ -119,7 +123,7 @@ public class TotpMfaService : IMfaService
 
     /// <summary>从挂起令牌中解析用户 Id，解析成功后立即删除令牌（防重放）</summary>
     /// <param name="mfaToken">挂起令牌</param>
-    /// <returns>用户 Id；令牌无效或已过期返回 0</returns>
+    /// <returns>用户编号；令牌无效或已过期返回 0</returns>
     public Int32 ConsumePendingToken(String mfaToken)
     {
         if (mfaToken.IsNullOrEmpty()) return 0;
@@ -127,6 +131,38 @@ public class TotpMfaService : IMfaService
         var userId = _cache.Get<Int32>(key);
         if (userId > 0) _cache.Remove(key);
         return userId;
+    }
+
+    /// <summary>读取挂起令牌对应的用户编号，但不删除令牌</summary>
+    /// <remarks>供登录二步验证使用：验证码输错时不应立即作废令牌，否则用户打错一位就要重新登录</remarks>
+    /// <param name="mfaToken">挂起令牌</param>
+    /// <returns>用户编号；令牌无效或已过期返回 0</returns>
+    public Int32 PeekPendingToken(String mfaToken)
+    {
+        if (mfaToken.IsNullOrEmpty()) return 0;
+        return _cache.Get<Int32>($"{MfaPendingPrefix}{mfaToken}");
+    }
+
+    /// <summary>删除挂起令牌</summary>
+    /// <param name="mfaToken">挂起令牌</param>
+    public void RemovePendingToken(String mfaToken)
+    {
+        if (mfaToken.IsNullOrEmpty()) return;
+        _cache.Remove($"{MfaPendingPrefix}{mfaToken}");
+        _cache.Remove($"{MfaFailurePrefix}{mfaToken}");
+    }
+
+    /// <summary>累计挂起令牌的校验失败次数</summary>
+    /// <param name="mfaToken">挂起令牌</param>
+    /// <returns>累计后的失败次数</returns>
+    public Int32 IncreasePendingFailure(String mfaToken)
+    {
+        if (mfaToken.IsNullOrEmpty()) return 0;
+
+        var key = $"{MfaFailurePrefix}{mfaToken}";
+        var count = _cache.Get<Int32>(key) + 1;
+        _cache.Set(key, count, MfaPendingTtl);
+        return count;
     }
 
     #endregion

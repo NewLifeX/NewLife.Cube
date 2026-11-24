@@ -18,6 +18,9 @@ namespace NewLife.Cube.Controllers;
 [Route("[controller]/[action]")]
 public class MfaController : ControllerBaseX
 {
+    /// <summary>同一挂起令牌允许的最大验证码尝试次数</summary>
+    private const Int32 MaxVerifyAttempts = 5;
+
     private readonly IMfaService _mfa;
     private readonly TotpMfaService _totp;
 
@@ -121,10 +124,10 @@ public class MfaController : ControllerBaseX
         if (model.Code.IsNullOrEmpty())
             return Json(-1, L.T("Verification code is required."));
 
-        // 消费挂起令牌
+        // 挂起令牌允许输错次数，超限才作废，避免用户打错一位就要重新登录
         if (_totp == null) return Json(-1, L.T("The MFA service does not support token verification."));
 
-        var userId = _totp.ConsumePendingToken(model.MfaToken);
+        var userId = _totp.PeekPendingToken(model.MfaToken);
         if (userId <= 0) return Json(-1, L.T("Invalid or expired mfaToken; please sign in again."));
 
         var user = XCode.Membership.User.FindById(userId);
@@ -132,7 +135,18 @@ public class MfaController : ControllerBaseX
         if (!user.Enable) return Json(-1, L.T("User is disabled."));
 
         if (!_mfa.Verify(user, model.Code))
+        {
+            if (_totp.IncreasePendingFailure(model.MfaToken) >= MaxVerifyAttempts)
+            {
+                _totp.RemovePendingToken(model.MfaToken);
+                return Json(-1, L.T("Too many incorrect verification codes; please sign in again."));
+            }
+
             return Json(-1, L.T("MFA verification code is incorrect."));
+        }
+
+        // 验证通过后令牌一次性作废，防重放
+        _totp.RemovePendingToken(model.MfaToken);
 
         // MFA 通过，签发正式令牌
         var set = CubeSetting.Current;
