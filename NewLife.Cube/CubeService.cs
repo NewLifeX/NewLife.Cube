@@ -141,6 +141,14 @@ public static class CubeService
             //            options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
         });
 
+        // 实体模型由 XCode 生成，字符串属性不带可空注解（String 而非 String?）。
+        // 宿主项目启用 <Nullable>enable</Nullable> 时，MVC 会把它们隐式推断为必填，
+        // 导致“只提交变更字段”的 API 语义被破坏（新增/修改未提交的可选字段全部报 -2）。
+        services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
+        {
+            options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+        });
+
         // 配置模型绑定验证失败的响应格式，返回字段级验证错误信息
         // 自动查找实体元数据中的 DisplayName 来增强错误消息
         services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>

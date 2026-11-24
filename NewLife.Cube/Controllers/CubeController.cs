@@ -152,6 +152,10 @@ public class CubeController(PageService pageService, TokenService tokenService, 
                     }
                 }
             }
+
+            // 兜底：用户 JWT（Subject=用户名）不在 App/UserToken 表时，走统一登录流程解析，
+            // 让非浏览器客户端也能用 Bearer 访问 /Cube/* 服务接口；Tenant 校验与吊销校验统一在此完成
+            if (!logined && ManageProvider.Provider.TryLogin(HttpContext) != null) logined = true;
         }
 
         return logined;

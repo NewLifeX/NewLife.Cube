@@ -128,7 +128,17 @@ public class Pager : PageParameter, IExtend
         }
         if (parameters.TryGetValue(nameof(Desc), out str)) Desc = str.ToBoolean();
         if (parameters.TryGetValue(nameof(StartRow), out str)) StartRow = str.ToLong();
-        if (parameters.TryGetValue(nameof(Sort), out str)) Sort = str;
+        if (parameters.TryGetValue(nameof(Sort), out str))
+        {
+            // 兼容文档约定的“-字段名”倒序写法；PageParameter.Sort 只接受字段名本身
+            if (str != null && str.StartsWith('-'))
+            {
+                Sort = str[1..];
+                Desc = true;
+            }
+            else
+                Sort = str;
+        }
         // 复合排序优先级高于 Sort，故放在 Sort 之后赋值（PageParameter.Sort 的 setter 会清空 OrderBy）
         if (parameters.TryGetValue(_.OrderBy, out str) && IsValidOrderBy(str)) OrderBy = str;
 

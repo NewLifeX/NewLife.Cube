@@ -80,6 +80,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
 
             res.AccessToken = loginResult.Data.AccessToken;
             res.RefreshToken = loginResult.Data.RefreshToken;
+            res.ExpireIn = loginResult.Data.ExpireIn;
             return res.ToOkApiResponse(L.T("Login succeeded."));
         }
         catch (Exception ex)

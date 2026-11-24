@@ -64,7 +64,7 @@
 序列化约定（`ControllerBaseX.OnJsonSerialize`）：
 
 - 字段命名 camelCase；时间格式 `yyyy-MM-dd HH:mm:ss`。
-- **Int64 输出为字符串**（`Int64AsString`），主键、`totalCount` 等均按此规则，避免 JS 精度丢失。
+- **Int64 主键输出为字符串**（`Int64AsString`），避免 JS 精度丢失；分页的 `page.totalCount` 仍为数值（见 36.5），超出安全整数时请改用字符串形式的 `page.longTotalCount`。
 - 信封模型用 `[JsonIgnore(WhenWritingNull)]` 省略空的可选字段，响应体更精简。
 
 实体数据行（`ApiRow`）按**字段集合投影**：列表使用 `ListFields`，详情使用 `DetailFields ∪ EditFormFields`（详情同时是编辑回显数据源），写接口回包使用 `EditFormFields`，主键恒定下发。字段集合之外的列不下发；只写字段（`ItemType=password`）不参与投影；"不显示但要值"的列需留在字段集合并设 `Visible=false`。自定义接口返回显式 DTO，避免直接回实体带出未声明字段。
@@ -153,7 +153,7 @@ HTTP 状态码与 body.code 双轨：
 |------|------|------|
 | `pageIndex` | Int32 | 从 1 开始，默认 1 |
 | `pageSize` | Int32 | 默认 20；**非正数按默认 20 处理，上限 1000**（超出截断） |
-| `totalCount` | Int64（JSON 字符串） | 总记录数 |
+| `totalCount` | Int64（JSON 数值） | 总记录数；超出 JS 安全整数时请使用 `longTotalCount` |
 | `longTotalCount` | String | `totalCount` 的字符串形式，前端优先使用 |
 
 - 没有 `pageCount`：总页数由前端按 `Math.ceil(totalCount / pageSize)` 计算。
