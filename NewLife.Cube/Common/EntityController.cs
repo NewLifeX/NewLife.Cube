@@ -34,11 +34,18 @@ public partial class EntityController<TEntity, TModel>
         var act = L.T("Delete");
 
         // 记录不存在返回 404：XCode 的 FindByKeyForEdit 会抛 XException（被统一映射成 500），
-        // 因此先用非抛异常的 FindByKey 判存，再走带数据权限的 FindData
-        if (Factory.Unique != null && Factory.FindByKey(id) == null)
+        // 这里捕获后改返回 404。不能先用 Factory.FindByKey 判存——默认查询会过滤假删除行，
+        // 导致“第二次删除执行物理删除 / restore 恢复”的分支永远走不到
+        TEntity entity;
+        try
+        {
+            entity = FindData(id);
+        }
+        catch (XException)
+        {
             throw new ApiException(ApiCode.NotFound.ToInt(), L.T("The requested data [{0}] does not exist.", id));
+        }
 
-        var entity = FindData(id);
         if (entity == null || (entity as IEntity).IsNullKey) throw new ApiException(ApiCode.NotFound.ToInt(), L.T("The requested data [{0}] does not exist.", id));
 
         try

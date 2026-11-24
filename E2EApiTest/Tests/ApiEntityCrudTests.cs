@@ -340,6 +340,52 @@ public sealed class ApiEntityCrudTests : ApiTestBase
         }
     }
 
+    [Fact(DisplayName = "TC-API-CRUD-021 假删除可恢复，第二次删除才物理删除")]
+    [Trait("Category", "Crud")]
+    public async Task TC_API_CRUD_021_DoubleDelete()
+    {
+        const String path = "/api/Admin/OAuthConfig";
+        var name = NewName("oauthcfg");
+        var id = 0;
+        try
+        {
+            var created = await Admin.PostJsonAsync(path, Json(new { name }));
+            ApiAssert.Ok(created, "TC-API-CRUD-021");
+            id = ApiResult.GetInt32(created.Data?["id"]) ?? 0;
+            Assert.True(id > 0, "新增未返回主键");
+
+            // 首次删除：假删除，记录仍可按主键查到
+            var soft = await Admin.DeleteAsync($"{path}/{id}");
+            ApiAssert.Ok(soft, "TC-API-CRUD-021");
+            Assert.True(ApiResult.GetBoolean(soft.Data?["isDeleted"]) == true, "首次删除未标记假删除");
+
+            var detail = await Admin.GetAsync($"{path}/{id}");
+            ApiAssert.Ok(detail, "TC-API-CRUD-021");
+            Assert.True(ApiResult.GetBoolean(detail.Data?["isDeleted"]) == true);
+
+            // restore=true：恢复为未删除
+            var restore = await Admin.DeleteAsync($"{path}/{id}?restore=true");
+            ApiAssert.Ok(restore, "TC-API-CRUD-021");
+            Assert.True(ApiResult.GetBoolean(restore.Data?["isDeleted"]) == false, "恢复后仍为已删除");
+
+            // 再次删除假删除，紧接着第二次删除执行物理删除
+            ApiAssert.Ok(await Admin.DeleteAsync($"{path}/{id}"), "TC-API-CRUD-021");
+            ApiAssert.Ok(await Admin.DeleteAsync($"{path}/{id}"), "TC-API-CRUD-021");
+
+            var gone = await Admin.GetAsync($"{path}/{id}");
+            Assert.NotEqual(0, gone.Code);
+        }
+        finally
+        {
+            if (id > 0)
+            {
+                // 失败中断时兜底物理删除（已不存在时返回 404，忽略）
+                await Admin.DeleteAsync($"{path}/{id}");
+                await Admin.DeleteAsync($"{path}/{id}");
+            }
+        }
+    }
+
     [Fact(DisplayName = "TC-API-CRUD-020 附件上传后可下载，匿名上传被拒")]
     [Trait("Category", "Crud")]
     public async Task TC_API_CRUD_020_Attachment()
