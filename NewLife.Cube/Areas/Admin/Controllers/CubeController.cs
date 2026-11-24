@@ -26,6 +26,7 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
     protected override IList<DataField> OnGetFields(ViewKinds kind)
     {
         var list = base.OnGetFields(kind);
+        CubeSettingFields.Apply(list);
 
         var df = list.FirstOrDefault(e => e.Name == nameof(CubeSetting.SpaSkin));
         if (df != null)

@@ -31,6 +31,8 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
         if (!_has)
         {
             var list = GetMembers(typeof(CubeSetting));
+            CubeSettingFields.Apply(list);
+
             var df = list.FirstOrDefault(e => e.Name == "Theme");
             if (df != null) df.DataSource = e => _uIService.Themes.ToDictionary(e => e, e => e);
 
@@ -45,27 +47,7 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
                 df.DataSource = e => themes.ToDictionary(e => e, e => e);
             }
 
-            // 表格分隔样式与行高密度：下拉选择，ACE 主题经 _Layout 输出 body class 供 ace-ui.css 消费
-            df = list.FirstOrDefault(e => e.Name == "TableStyle");
-            if (df != null)
-            {
-                df.DataSource = e => new Dictionary<String, String>
-                {
-                    ["Light"] = L.T("Light - minimal thin lines"),
-                    ["Standard"] = L.T("Standard - clear row lines"),
-                    ["Grid"] = L.T("Grid - full cell borders"),
-                };
-            }
-
-            df = list.FirstOrDefault(e => e.Name == "TableDensity");
-            if (df != null)
-            {
-                df.DataSource = e => new Dictionary<String, String>
-                {
-                    ["Compact"] = L.T("Compact - dense"),
-                    ["Normal"] = L.T("Normal - relaxed"),
-                };
-            }
+            // 表格分隔样式与行高密度由 CubeSettingFields 统一下拉，ACE 主题经 _Layout 输出 body class 供 ace-ui.css 消费
 
             // AI 助手配色：主题色方案下拉联动主色/辅色，主色/辅色渲染为颜色选择器
             df = list.FirstOrDefault(e => e.Name == "AIColorScheme");

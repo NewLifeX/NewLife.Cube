@@ -121,6 +121,7 @@
     <Compile Include="..\NewLife.Cube\Common\RolePermissionHelper.cs" Link="Common\RolePermissionHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EmptyHtmlHelper.cs" Link="Common\EmptyHtmlHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\FileManagerAuthorizeAttribute.cs" Link="Common\FileManagerAuthorizeAttribute.cs" />
+    <Compile Include="..\NewLife.Cube\SettingFields.cs" Link="SettingFields.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiController.cs" Link="AI\AiController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AccessRuleModel.cs" Link="Entity\Models\AccessRuleModel.cs" />
      <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />

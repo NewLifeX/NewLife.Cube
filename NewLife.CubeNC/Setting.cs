@@ -39,12 +39,12 @@ public class CubeSetting : Config<CubeSetting>
 
     #region 通用
     /// <summary>是否启用调试。默认true</summary>
-    [Description("Debug")]
+    [Description("Debug. Shows detailed exception information on error pages; default true")]
     [Category("General")]
     public Boolean Debug { get; set; } = true;
 
     /// <summary>显示运行时间</summary>
-    [Description("Show run time")]
+    [Description("Show run time. Shows page render time in the footer; default true")]
     [Category("General")]
     public Boolean ShowRunTime { get; set; } = true;
 
@@ -154,30 +154,30 @@ public class CubeSetting : Config<CubeSetting>
     public String LearnedProxies { get; set; }
     #endregion
 
-    #region 用户登录
+    #region 登录、SSO与存储
     /// <summary>默认角色。默认普通用户</summary>
     [Description("Default role. Defaults to the Normal User role")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public String DefaultRole { get; set; } = "普通用户";
 
     /// <summary>允许密码登录。允许输入用户名密码进行登录</summary>
     [Description("Allow password sign-in. Allows signing in with a username and password")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Boolean AllowLogin { get; set; } = true;
 
     /// <summary>允许明文密码。默认true，兼容旧版客户端；设为false后强制要求前端通过 Challenge-Response 加密密码传输</summary>
     [Description("Allow plain-text passwords. Default true for legacy clients; false forces Challenge-Response encrypted passwords")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Boolean AllowPlainPassword { get; set; } = true;
 
     /// <summary>允许注册。允许输入用户名密码进行注册</summary>
     [Description("Allow registration. Allows registering with a username and password")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Boolean AllowRegister { get; set; } = true;
 
     /// <summary>自动注册。默认true，SSO登录后，如果本地未登录，自动注册新用户。全局设置和OAuth应用设置只要有一个启用则表示使用</summary>
     [Description("Auto registration. Default true; after SSO sign-in an unknown local user is registered automatically. Enabled when either the global or the OAuth app setting is on")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Boolean AutoRegister { get; set; } = true;
 
     ///// <summary>密码强度。最小密码长度，默认6</summary>
@@ -187,62 +187,62 @@ public class CubeSetting : Config<CubeSetting>
 
     /// <summary>密码强度。*表示无限制，默认8位起，数字大小写字母和符号。简易版^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$</summary>
     [Description("Password strength. * means unrestricted; by default at least 8 characters with digits, upper/lower case letters and symbols. Simple form: ^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public String PaswordStrength { get; set; } = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
 
     /// <summary>复杂密码校验。启用后在注册与修改密码时校验密码复杂度（按密码强度），登录页不校验，默认true</summary>
     [Description("Password complexity check. When enabled, registration and password change validate password strength; sign-in never does. Default true")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Boolean EnablePasswordComplexity { get; set; } = true;
 
     /// <summary>登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5</summary>
     [Description("Login failure limit. Bans sign-in after this many consecutive failures for the same user or IP, default 5")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Int32 MaxLoginError { get; set; } = 5;
 
-    /// <summary>登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5</summary>
+    /// <summary>登录封禁时间。触发风控后禁止登录的持续时间，默认300秒</summary>
     [Description("Login ban duration. Seconds a risk-control ban lasts, default 300")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Int32 LoginForbiddenTime { get; set; } = 300;
 
     /// <summary>三段IP封禁阈值。三段IP（如103.125.146.*）连续登录失败次数达到该值后封禁该IP段，默认10，0表示不启用</summary>
     [Description("Class C subnet ban threshold. Bans a /24 subnet such as 103.125.146.* after this many failures, default 10; 0 disables")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Int32 MaxLoginErrorBySubnet24 { get; set; } = 10;
 
     /// <summary>两段IP封禁阈值。两段IP（如103.125.*.*）连续登录失败次数达到该值后封禁该IP段，默认20，0表示不启用</summary>
     [Description("Class B subnet ban threshold. Bans a /16 subnet such as 103.125.*.* after this many failures, default 20; 0 disables")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Int32 MaxLoginErrorBySubnet16 { get; set; } = 20;
 
     /// <summary>强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
     [Description("Force bind by user name. Binds SSO users to local users with the same name without a provider prefix; intended for user centers")]
-    [Category("User login")]
+    [Category("SSO")]
     public Boolean ForceBindUser { get; set; } = true;
 
     /// <summary>绑定用户代码。根据SSO用户代码强制绑定本地用户</summary>
     [Description("Bind by user code. Binds SSO users to local users by user code")]
-    [Category("User login")]
+    [Category("SSO")]
     public Boolean ForceBindUserCode { get; set; } = true;
 
     /// <summary>绑定用户手机。根据SSO用户手机强制绑定本地用户</summary>
     [Description("Bind by mobile. Binds SSO users to local users by mobile number")]
-    [Category("User login")]
+    [Category("SSO")]
     public Boolean ForceBindUserMobile { get; set; } = true;
 
     /// <summary>绑定用户邮箱。根据SSO用户邮箱强制绑定本地用户</summary>
     [Description("Bind by email. Binds SSO users to local users by email")]
-    [Category("User login")]
+    [Category("SSO")]
     public Boolean ForceBindUserMail { get; set; } = true;
 
     /// <summary>绑定用户昵称。根据SSO用户昵称强制绑定本地用户，内部SSO可用，不建议用于社交网络，重名太多</summary>
     [Description("Bind by nickname. Binds SSO users to local users by nickname; suitable for internal SSO, not for social networks with many duplicate names")]
-    [Category("User login")]
+    [Category("SSO")]
     public Boolean ForceBindNickName { get; set; } = true;
 
     /// <summary>使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole</summary>
     [Description("Use SSO roles. Keeps SSO roles after sign-in, default true; otherwise DefaultRole is used")]
-    [Category("User login")]
+    [Category("SSO")]
     public Boolean UseSsoRole { get; set; } = true;
 
     ///// <summary>保留本地角色。本地角色与SSO角色合并，默认false</summary>
@@ -252,67 +252,67 @@ public class CubeSetting : Config<CubeSetting>
 
     /// <summary>使用Sso部门。SSO登录后继续使用SSO部门，默认true</summary>
     [Description("Use SSO departments. Keeps SSO departments after sign-in, default true")]
-    [Category("User login")]
+    [Category("SSO")]
     public Boolean UseSsoDepartment { get; set; } = true;
 
     /// <summary>SSO角色规则。SSO登录后按规则自动升级用户主角色，多条规则用逗号（半角或全角）分隔。格式：原角色+部门通配符=目标角色，部门通配符支持前缀(路由*)、后缀(*专员)、精确匹配。例如：游客+路由*=路由专员,普通用户+*车队=调度员</summary>
     [Description("SSO role rules. Automatically upgrades the primary role after SSO sign-in; separate rules with commas. Format: source role+department wildcard=target role, for example Guest+Route*=Route Specialist")]
-    [Category("User login")]
+    [Category("SSO")]
     public String RoleRules { get; set; }
 
     /// <summary>注销所有系统。false仅注销本系统，默认true时注销SsoServer</summary>
     [Description("Sign out everywhere. false signs out of this site only; true (default) also signs out of the SSO server")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Boolean LogoutAll { get; set; } = true;
 
     /// <summary>允许多设备登录。false时同一账号新登录会踢掉旧设备，注销时吊销该账号所有令牌；true时仅吊销当前会话令牌，默认true</summary>
     [Description("Allow multi-device sign-in. false kicks old devices on a new sign-in and revokes all tokens on sign-out; true (default) revokes only the current session")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Boolean EnableMultiDeviceLogin { get; set; } = true;
 
     /// <summary>会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s</summary>
     [Description("Session timeout. Session lifetime after SSO sign-in during which the cookie can sign in again; default 0s")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Int32 SessionTimeout { get; set; } = 0;
 
     /// <summary>令牌滑动刷新阈值。JWT剩余有效期低于该秒数时在TryLogin中自动刷新令牌并写入Cookie，0表示禁用滑动过期</summary>
     [Description("Token sliding refresh threshold. Refreshes the JWT and rewrites the cookie when its remaining lifetime falls below this many seconds; 0 disables sliding expiration")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Int32 TokenRefreshThreshold { get; set; } = 900;
 
     /// <summary>刷新用户周期。该周期内多次SSO登录只拉取一次用户信息，默认600秒</summary>
     [Description("User refresh period. Fetches user information once per period across SSO sign-ins, default 600 seconds")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Int32 RefreshUserPeriod { get; set; } = 600;
 
     /// <summary>JWT密钥。用于生成JWT令牌的算法和密钥，如HS256:ABCD1234</summary>
     [Description("JWT secret. Algorithm and key used to sign JWTs, such as HS256:ABCD1234")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public String JwtSecret { get; set; }
 
     /// <summary>令牌有效期。访问令牌AccessToken的有效期，默认7200秒</summary>
     [Description("Token lifetime. Lifetime of the access token in seconds, default 7200")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Int32 TokenExpire { get; set; } = 7200;
 
     /// <summary>在Cookie中存储令牌。读取令牌时，如果请求头没有携带令牌，则从Cookie读取，默认true</summary>
     [Description("Store token in cookie. Reads the token from the cookie when the request header does not carry one, default true")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public Boolean TokenCookie { get; set; } = true;
 
     /// <summary>验证附件访问。访问附件时，是否验证登录状态，默认true</summary>
     [Description("Validate attachment access. Requires sign-in to access attachments, default true")]
-    [Category("User login")]
+    [Category("Storage")]
     public Boolean ValidateAttachment { get; set; } = true;
 
     /// <summary>公开附件分类。无需登录即可访问的附件分类，多个用逗号分隔，如 markdown,avatar。ValidateAttachment=true时生效</summary>
     [Description("Public attachment categories. Categories accessible without sign-in, comma-separated, such as markdown,avatar. Applies when ValidateAttachment is true")]
-    [Category("User login")]
+    [Category("Storage")]
     public String PublicAttachmentCategories { get; set; }
 
     /// <summary>私有附件分类。仅上传人本人可访问的附件分类，多个用逗号分隔。ValidateAttachment=true时生效</summary>
-    [Description("Private attachment categories. Categories only the uploader can access, comma-separated. Applies when ValidateAttachment is true")]
-    [Category("User login")]
+    [Description("Owner-only attachment categories. Categories only the uploader can access, comma-separated; applies when ValidateAttachment is true")]
+    [Category("Storage")]
     public String OwnerOnlyAttachmentCategories { get; set; }
 
     /// <summary>接口浏览器。开启后系统管理员可访问 /Cube/Apis 查看路由清单，默认false，避免生产环境暴露攻击面</summary>
@@ -320,29 +320,29 @@ public class CubeSetting : Config<CubeSetting>
     [Category("Security")]
     public Boolean EnableApiExplorer { get; set; } = false;
 
-    /// <summary>上传与导入文件体积上限（MB）。附件上传与数据导入共用同一阈值，0 表示不限制，默认20</summary>
-    [Description("Upload size limit in MB; 0 means unlimited")]
+    /// <summary>上传体积上限（MB）。附件上传与数据导入共用该阈值，0 表示不限制，默认20</summary>
+    [Description("Upload size limit (MB). Applies to attachment upload and data import; 0 means unlimited, default 20")]
     [Category("Security")]
     public Int32 UploadMaxSize { get; set; } = 20;
 
-    /// <summary>协议层 HTTP 状态码。开启后业务失败仍返回 200 + code，而 401/403/404/409/422/429/500 同时写入对应 HTTP 状态码，便于网关限流与监控；默认关闭保持全 200</summary>
-    [Description("Protocol HTTP status. Set 401/403/404/409/429/500 on failures; off by default")]
+    /// <summary>HTTP 状态码。开启后业务失败仍返回 200 + code，而 401/403/404/409/422/429/500 同时写入对应 HTTP 状态码，便于网关限流与监控；默认关闭保持全 200</summary>
+    [Description("HTTP status codes. On failure, also set 401/403/404/409/422/429/500 while keeping code in the body; off by default")]
     [Category("Security")]
     public Boolean EnableHttpStatusCodes { get; set; } = false;
 
     /// <summary>接口限流。开启后登录、发码、字典与站点等接口按 IP 做固定窗口计数，超限返回 429，默认开启</summary>
-    [Description("Rate limit per IP for sign-in, code, lookup and site; default on")]
+    [Description("Rate limit. Per-IP fixed-window limits for sign-in, code, dictionary and site APIs; requests above the limit get 429, default on")]
     [Category("Security")]
     public Boolean EnableRateLimit { get; set; } = true;
 
     /// <summary>SSO跨域重定向白名单。登录后允许携带JWT Token重定向的目标域名，逗号分隔，支持通配符前缀*.company.com。留空=仅允许同站重定向，拒绝所有跨域跳转以防止凭据泄露</summary>
     [Description("SSO redirect allowlist. Domains allowed to receive the JWT after sign-in, comma-separated with wildcard prefixes such as *.company.com. Empty allows the same site only; other origins are rejected and sent back to the home page")]
-    [Category("User login")]
+    [Category("SSO")]
     public String SsoSafeDomains { get; set; }
 
     /// <summary>外部验证地址。配置后，本地验证失败时调用外部接口验证用户名密码，成功则自动创建/更新本地用户并登录。POST格式：{"username":"...","password":"..."}，响应：{"code":0,"data":{"username":"...","displayName":"...","mail":"...","mobile":"...","roleName":"...","avatar":"..."}}</summary>
     [Description("External authentication URL. When local authentication fails, credentials are verified by this endpoint; on success the local user is created or updated and signed in")]
-    [Category("User login")]
+    [Category("Sign-in")]
     public String ExternalAuthUrl { get; set; }
     #endregion
 
@@ -408,7 +408,7 @@ public class CubeSetting : Config<CubeSetting>
     public String Registration { get; set; } = "沪ICP备10000000号";
 
     /// <summary>启用新UI</summary>
-    [Description("Enable new UI")]
+    [Description("Enable new UI. Uses the new UI layout when the application supports it")]
     [Category("UI")]
     public Boolean EnableNewUI { get; set; }
 
@@ -464,8 +464,8 @@ public class CubeSetting : Config<CubeSetting>
     [Category("AI")]
     public String AIEndpoint { get; set; } = "https://ai.newlifex.com";
 
-    /// <summary>AI ApiKey。NewLife 默认 sk-CubeAI2026</summary>
-    [Description("AI ApiKey. Defaults to sk-CubeAI2026 for NewLife")]
+    /// <summary>AI API 密钥。NewLife 默认 sk-CubeAI2026</summary>
+    [Description("AI API key. Defaults to sk-CubeAI2026 for NewLife")]
     [Category("AI")]
     public String AIApiKey { get; set; } = "sk-CubeAI2026";
 
@@ -510,7 +510,7 @@ public class CubeSetting : Config<CubeSetting>
     }
     #endregion
 
-    #region 系统功能
+    #region 系统功能与存储
     /// <summary>OAuth服务。是否启用OAuth2.0服务，为其它应用提供单点登录服务</summary>
     [Description("OAuth server. Enables the OAuth 2.0 server that provides SSO for other applications")]
     [Category("System")]
@@ -588,47 +588,47 @@ public class CubeSetting : Config<CubeSetting>
 
     /// <summary>文件存储提供服务。是否响应其他节点的文件下载请求，默认true</summary>
     [Description("File storage serving. Responds to file download requests from other nodes, default true")]
-    [Category("System")]
+    [Category("Storage")]
     public Boolean FileStorageProvide { get; set; } = true;
 
-    /// <summary>文件存储拉取文件。是否主动拉取其他节点发布的新文件，默认true</summary>
-    [Description("File storage fetch. Pulls new files published by other nodes, default true")]
-    [Category("System")]
+    /// <summary>文件存储拉取。是否主动拉取其他节点发布的新文件，默认true</summary>
+    [Description("File storage fetching. Pulls new files published by other nodes, default true")]
+    [Category("Storage")]
     public Boolean FileStorageFetch { get; set; } = true;
 
     /// <summary>文件存储拉取超时。下载本地缺失文件时等待其他节点同步的最大时间（毫秒），默认5000</summary>
     [Description("File fetch timeout. Maximum milliseconds to wait for other nodes when a file is missing locally, default 5000")]
-    [Category("System")]
+    [Category("Storage")]
     public Int32 FileStorageFetchTimeout { get; set; } = 5_000;
 
     /// <summary>附件存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO易对象，默认Local</summary>
     [Description("Attachment storage. Local disk, Oss (Alibaba Cloud), Cos (Tencent Cloud), Qiniu or EasyIO; default Local")]
-    [Category("System")]
+    [Category("Storage")]
     public String AttachmentStorage { get; set; } = "Local";
 
     /// <summary>对象存储服务器。OSS/COS/七牛S3兼容端点，如 oss-cn-beijing.aliyuncs.com</summary>
     [Description("Object storage server. S3-compatible endpoint for OSS/COS/Qiniu, such as oss-cn-beijing.aliyuncs.com")]
-    [Category("System")]
+    [Category("Storage")]
     public String ObjectStorageServer { get; set; }
 
     /// <summary>对象存储桶。OSS/COS/七牛存储桶名称</summary>
     [Description("Object storage bucket. Bucket name for OSS/COS/Qiniu")]
-    [Category("System")]
+    [Category("Storage")]
     public String ObjectStorageBucket { get; set; }
 
     /// <summary>对象存储区域。用于S3签名作用域，如 cn-beijing / ap-beijing / cn-east-1</summary>
     [Description("Object storage region. S3 signing scope, such as cn-beijing / ap-beijing / cn-east-1")]
-    [Category("System")]
+    [Category("Storage")]
     public String ObjectStorageRegion { get; set; } = "cn-north-1";
 
     /// <summary>对象存储应用标识。AccessKeyId</summary>
     [Description("Object storage app ID. AccessKeyId")]
-    [Category("System")]
+    [Category("Storage")]
     public String ObjectStorageAppId { get; set; }
 
     /// <summary>对象存储应用密钥。AccessKeySecret</summary>
     [Description("Object storage app secret. AccessKeySecret")]
-    [Category("System")]
+    [Category("Storage")]
     public String ObjectStorageSecret { get; set; }
 
     /// <summary>数据保留时间。审计日志与OAuth日志，默认30天</summary>
