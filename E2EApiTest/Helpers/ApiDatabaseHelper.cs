@@ -17,6 +17,9 @@ public static class ApiDatabaseHelper
     /// <summary>Membership 数据库（用户、角色、菜单）</summary>
     private static String MembershipConnStr => ConnStr("Membership.db");
 
+    /// <summary>Cube 数据库（参数、附件、通知）</summary>
+    private static String CubeConnStr => ConnStr("Cube.db");
+
     /// <summary>School 数据库（学生、班级）</summary>
     private static String SchoolConnStr => ConnStr("School.db");
 
@@ -127,6 +130,34 @@ public static class ApiDatabaseHelper
     /// <summary>按名称删除角色（测试清理）</summary>
     public static Int32 DeleteRoleByName(String name) =>
         ExecuteWrite(ConnStr("Membership.db", false), "DELETE FROM Role WHERE Name = @name", ("@name", name));
+
+    #endregion
+
+    #region 附件（Cube.db）
+
+    /// <summary>查询附件记录的分类与上传人</summary>
+    /// <param name="id">附件编号</param>
+    public static Dictionary<String, Object?> GetAttachment(Int64 id) =>
+        ExecuteRow(CubeConnStr, "SELECT Id, Category, FileName, ContentType, Size, CreateUserId FROM Attachment WHERE Id = @id", ("@id", id));
+
+    #endregion
+
+    #region 分享令牌（Membership.db）
+
+    /// <summary>直接写入分享令牌，模拟“附件分享”生成的临时链接凭证</summary>
+    /// <param name="token">令牌值</param>
+    /// <param name="userId">所属用户</param>
+    /// <param name="url">资源地址，形如 attachment:{附件编号}</param>
+    /// <param name="expire">过期时间</param>
+    /// <param name="enable">是否启用</param>
+    public static Int32 InsertUserToken(String token, Int32 userId, String url, DateTime expire, Boolean enable = true) =>
+        ExecuteWrite(ConnStr("Membership.db", false),
+            "INSERT INTO UserToken(Token, UserId, Url, Expire, Enable, Times, CreateUserId, CreateTime, UpdateUserId, UpdateTime) VALUES(@token, @userId, @url, @expire, @enable, 0, @userId, @now, @userId, @now)",
+            ("@token", token), ("@userId", userId), ("@url", url), ("@expire", expire), ("@enable", enable), ("@now", DateTime.Now));
+
+    /// <summary>按令牌值删除分享令牌（测试清理）</summary>
+    public static Int32 DeleteUserToken(String token) =>
+        ExecuteWrite(ConnStr("Membership.db", false), "DELETE FROM UserToken WHERE Token = @token", ("@token", token));
 
     #endregion
 }
