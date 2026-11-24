@@ -46,7 +46,7 @@ public sealed class ApiServiceTests : ApiTestBase
         Assert.Contains(options, e => ApiResult.GetInt32(e?["Value"]) == 1);
     }
 
-    [Fact(DisplayName = "TC-API-SVC-003 用户选择器按角色过滤")]
+    [Fact(DisplayName = "TC-API-SVC-003 用户选择器按角色过滤且支持纯关键字搜索")]
     [Trait("Category", "Service")]
     public async Task TC_API_SVC_003_UserSearch()
     {
@@ -56,6 +56,11 @@ public sealed class ApiServiceTests : ApiTestBase
         var rows = ApiAssert.Rows(rs, "TC-API-SVC-003");
         Assert.Contains(rows, e => ApiResult.GetString(e?["name"]) == ApiAppFixture.AdminUser);
         Assert.All(rows, e => Assert.False(String.IsNullOrWhiteSpace(ApiResult.GetString(e?["name"]))));
+
+        // 不带 roleId 时不应被当成“角色编号=0”过滤，纯关键字仍能命中
+        var byKey = await Admin.GetAsync("/Cube/UserSearch?key=admin");
+        ApiAssert.Ok(byKey, "TC-API-SVC-003");
+        Assert.Contains(ApiAssert.Rows(byKey, "TC-API-SVC-003"), e => ApiResult.GetString(e?["name"]) == ApiAppFixture.AdminUser);
     }
 
     [Fact(DisplayName = "TC-API-SVC-004 低代码页面配置按 kind+page 查询")]

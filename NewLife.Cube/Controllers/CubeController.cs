@@ -333,7 +333,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         //if (page.Sort.IsNullOrEmpty()) page.Sort = _.Name;
 
         //var list = XCode.Membership.User.FindAll(exp, page);
-        var list = Search(roleId, departmentId, true, DateTime.MinValue, DateTime.MinValue, key, page);
+        // roleId/departmentId 为 0 表示不按该维度过滤；直接传 0 会被当成“角色/部门编号等于 0”导致关键字搜索永远为空
+        var list = Search(
+            roleId > 0 ? [roleId] : null,
+            departmentId > 0 ? [departmentId] : null,
+            true, DateTime.MinValue, DateTime.MinValue, key, page);
 
         return Json(0, null, list.Select(e => new
         {
