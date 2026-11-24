@@ -34,6 +34,12 @@ public static class ManagerProviderHelper
     /// <summary>租户校验失败原因标记（HttpContext.Items 键），取值：InvalidIdentifier（显式标识无效）/NotMember（非租户成员）/MissingIdentifier（缺租户标识）。403 响应据此输出差异化文案</summary>
     public const String TenantCheckFailedReasonKey = "Cube_TenantCheckFailedReason";
 
+    /// <summary>已校验租户的用户 Id 标记（HttpContext.Items 键）。每请求只校验一次，避免 TryLogin 与授权过滤器重复解析租户</summary>
+    private const String TenantCheckedKey = "Cube_TenantCheckedUserId";
+
+    /// <summary>租户校验结果标记（HttpContext.Items 键），与 <see cref="TenantCheckedKey"/> 配套</summary>
+    private const String TenantCheckPassedKey = "Cube_TenantCheckPassed";
+
     /// <summary>设置当前用户</summary>
     /// <param name="provider">提供者</param>
     /// <param name="context">Http上下文，兼容NetCore</param>
@@ -68,6 +74,17 @@ public static class ManagerProviderHelper
 
             // 判断当前登录用户
             var user = provider.GetCurrent(serviceProvider);
+            if (user != null && !context.ValidateTenant(user))
+            {
+                // 已登录会话（Cookie 认证早于本过滤器解析）同样要校验租户：
+                // 否则多租户下未携带租户标识的普通用户可绕过隔离，直接访问管理端数据
+                XTrace.WriteLine(L.TLog("Tenant check failed, access denied: user [{0}] has no valid tenant", user));
+                context.Items[TenantCheckFailedKey] = user.Name;
+                context.Items[TenantCheckFailedUserIdKey] = user.Id;
+                provider.SetCurrent(null, serviceProvider);
+                return null;
+            }
+
             if (user == null)
             {
                 span = DefaultTracer.Instance?.NewSpan(nameof(TryLogin));
@@ -295,6 +312,18 @@ public static class ManagerProviderHelper
 
         if (user == null) return false;
 
+        // 每请求只校验一次：TryLogin（Cookie 会话）与授权过滤器可能先后调用，避免重复查库解析租户
+        if (context.Items[TenantCheckedKey] is Int32 checkedUserId && checkedUserId == user.Id)
+            return context.Items[TenantCheckPassedKey] is Boolean passed && passed;
+
+        var rs = context.ValidateTenantCore(user);
+        context.Items[TenantCheckedKey] = user.Id;
+        context.Items[TenantCheckPassedKey] = rs;
+        return rs;
+    }
+
+    private static Boolean ValidateTenantCore(this HttpContext context, IManageUser user)
+    {
         // 显式标识优先校验（2026-08-16）：请求显式携带租户标识（X-Tenant/X-App-Id/Query/Cookie）时，
         // 按所带租户校验成员——管理员豁免但上下文用所带租户（可进任意租户，数据按所带租户过滤，不落管理后台看全量）；
         // 普通用户必须是所带租户成员，非成员拒绝（403）。杜绝"请求 t2 被静默换 t1"（原 ChooseTenant 回落吞掉显式标识）。
