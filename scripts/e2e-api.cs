@@ -1,6 +1,8 @@
 #!/usr/bin/env dotnet-script
 // e2e-api.cs — .NET 10 WebAPI 版 E2E 测试编排入口
-// 用法：dotnet run scripts/e2e-api.cs [--filter Category=Crud]
+// 用法：dotnet run scripts/e2e-api.cs [--filter Category=Crud] [--timeout 20]
+//
+//   --timeout  测试运行超时分钟数，默认 20；超时强制结束测试进程，避免 CI 无限挂起
 //
 // 功能：
 //   1. 创建本次运行目录 Bin/E2ETest/Api-Run-{yyyyMMdd-HHmmss}/
@@ -36,6 +38,16 @@ if (filterIdx >= 0 && filterIdx + 1 < args2.Count)
     filterValue = args2[filterIdx + 1];
     args2.RemoveAt(filterIdx + 1);
     args2.RemoveAt(filterIdx);
+}
+
+// 测试运行超时（分钟）：进程被杀或驱动卡死时强制结束，避免整条流水线无限等待
+var timeoutMinutes = 20;
+var timeoutIdx = args2.IndexOf("--timeout");
+if (timeoutIdx >= 0 && timeoutIdx + 1 < args2.Count)
+{
+    if (Int32.TryParse(args2[timeoutIdx + 1], out var minutes) && minutes > 0) timeoutMinutes = minutes;
+    args2.RemoveAt(timeoutIdx + 1);
+    args2.RemoveAt(timeoutIdx);
 }
 
 // ============================================================
@@ -157,7 +169,12 @@ Thread.Sleep(1500);
 
 Console.WriteLine($"[E2E-API] 运行测试：dotnet {testArgs}");
 
-var testResult = RunProcess("dotnet", testArgs.ToString(), env);
+var testResult = RunProcess("dotnet", testArgs.ToString(), env, timeoutMinutes * 60);
+
+// 测试进程异常退出（被杀/超时）时，宿主可能仍在运行，兜底清理端口，避免下次运行复用旧进程
+KillProcessOnPort(8082);
+
+if (testResult == -2) Console.WriteLine($"[E2E-API] 测试运行超时（{timeoutMinutes} 分钟），已强制结束测试进程。");
 
 // ============================================================
 // 生成 HTML 报告
@@ -236,7 +253,7 @@ static void KillProcessOnPort(Int32 port)
     }
 }
 
-static Int32 RunProcess(String fileName, String arguments, Dictionary<String, String>? env = null)
+static Int32 RunProcess(String fileName, String arguments, Dictionary<String, String>? env = null, Int32 timeoutSeconds = 0)
 {
     try
     {
@@ -253,6 +270,13 @@ static Int32 RunProcess(String fileName, String arguments, Dictionary<String, St
 
         using var proc = Process.Start(psi)
             ?? throw new InvalidOperationException($"无法启动进程: {fileName}");
+
+        if (timeoutSeconds > 0 && !proc.WaitForExit(timeoutSeconds * 1000))
+        {
+            Console.WriteLine($"[E2E-API] 进程超时（{timeoutSeconds}s），强制结束: {fileName}");
+            try { proc.Kill(entireProcessTree: true); } catch { }
+            return -2;
+        }
 
         proc.WaitForExit();
         return proc.ExitCode;
