@@ -103,7 +103,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
     [DisplayName("访问令牌")]
     [Description("访问令牌")]
     [DataObjectField(false, false, true, 500)]
-    [BindColumn("AccessToken", "访问令牌", "", ShowIn = "Auto,-List,-Search")]
+    [BindColumn("AccessToken", "访问令牌", "", ItemType = "password", ShowIn = "Auto,-List,-Search")]
     public String AccessToken { get => _AccessToken; set { if (OnPropertyChanging("AccessToken", value)) { _AccessToken = value; OnPropertyChanged("AccessToken"); } } }
 
     private String _RefreshToken;
@@ -111,7 +111,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
     [DisplayName("刷新令牌")]
     [Description("刷新令牌")]
     [DataObjectField(false, false, true, 500)]
-    [BindColumn("RefreshToken", "刷新令牌", "", ShowIn = "Auto,-List,-Search")]
+    [BindColumn("RefreshToken", "刷新令牌", "", ItemType = "password", ShowIn = "Auto,-List,-Search")]
     public String RefreshToken { get => _RefreshToken; set { if (OnPropertyChanging("RefreshToken", value)) { _RefreshToken = value; OnPropertyChanged("RefreshToken"); } } }
 
     private DateTime _Expire;

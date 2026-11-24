@@ -51,7 +51,7 @@ public partial class App : IEntity<AppModel>
     [DisplayName("密钥")]
     [Description("密钥。AppSecret")]
     [DataObjectField(false, false, true, 50)]
-    [BindColumn("Secret", "密钥。AppSecret", "")]
+    [BindColumn("Secret", "密钥。AppSecret", "", ItemType = "password")]
     public String Secret { get => _Secret; set { if (OnPropertyChanging("Secret", value)) { _Secret = value; OnPropertyChanged("Secret"); } } }
 
     private String _Category;

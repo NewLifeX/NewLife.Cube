@@ -99,7 +99,7 @@ public partial class AppLog : IEntity<AppLogModel>
     [DisplayName("访问令牌")]
     [Description("访问令牌")]
     [DataObjectField(false, false, true, 2000)]
-    [BindColumn("AccessToken", "访问令牌", "")]
+    [BindColumn("AccessToken", "访问令牌", "", ItemType = "password")]
     public String AccessToken { get => _AccessToken; set { if (OnPropertyChanging("AccessToken", value)) { _AccessToken = value; OnPropertyChanged("AccessToken"); } } }
 
     private String _RefreshToken;
@@ -107,7 +107,7 @@ public partial class AppLog : IEntity<AppLogModel>
     [DisplayName("刷新令牌")]
     [Description("刷新令牌")]
     [DataObjectField(false, false, true, 2000)]
-    [BindColumn("RefreshToken", "刷新令牌", "")]
+    [BindColumn("RefreshToken", "刷新令牌", "", ItemType = "password")]
     public String RefreshToken { get => _RefreshToken; set { if (OnPropertyChanging("RefreshToken", value)) { _RefreshToken = value; OnPropertyChanged("RefreshToken"); } } }
 
     private String _TraceId;

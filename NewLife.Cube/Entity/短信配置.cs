@@ -84,7 +84,7 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
     [DisplayName("应用密钥")]
     [Description("应用密钥。AccessKeySecret")]
     [DataObjectField(false, false, true, 200)]
-    [BindColumn("AppSecret", "应用密钥。AccessKeySecret", "", ShowIn = "Auto,-List")]
+    [BindColumn("AppSecret", "应用密钥。AccessKeySecret", "", ItemType = "password", ShowIn = "Auto,-List")]
     public String AppSecret { get => _AppSecret; set { if (OnPropertyChanging("AppSecret", value)) { _AppSecret = value; OnPropertyChanged("AppSecret"); } } }
 
     private String _SignName;

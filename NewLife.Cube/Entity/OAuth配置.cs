@@ -83,7 +83,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     [DisplayName("应用密钥")]
     [Description("应用密钥")]
     [DataObjectField(false, false, true, 200)]
-    [BindColumn("Secret", "应用密钥", "", ShowIn = "Auto,-List")]
+    [BindColumn("Secret", "应用密钥", "", ItemType = "password", ShowIn = "Auto,-List")]
     public String Secret { get => _Secret; set { if (OnPropertyChanging("Secret", value)) { _Secret = value; OnPropertyChanged("Secret"); } } }
 
     private String _Server;

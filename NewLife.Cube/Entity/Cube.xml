@@ -52,8 +52,8 @@
         <Column Name="NickName" DataType="String" Description="昵称" />
         <Column Name="DeviceId" DataType="String" Description="设备标识。企业微信用于唯一标识设备，重装后改变" />
         <Column Name="Avatar" DataType="String" ShowIn="Auto,-List,-Search" Length="200" Description="头像" />
-        <Column Name="AccessToken" DataType="String" ShowIn="Auto,-List,-Search" Length="500" Description="访问令牌" />
-        <Column Name="RefreshToken" DataType="String" ShowIn="Auto,-List,-Search" Length="500" Description="刷新令牌" />
+        <Column Name="AccessToken" DataType="String" ItemType="password" ShowIn="Auto,-List,-Search" Length="500" Description="访问令牌" />
+        <Column Name="RefreshToken" DataType="String" ItemType="password" ShowIn="Auto,-List,-Search" Length="500" Description="刷新令牌" />
         <Column Name="Expire" DataType="DateTime" Description="过期时间" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="CreateUserId" DataType="Int32" Description="创建用户" Category="扩展" />
@@ -85,8 +85,8 @@
         <Column Name="Scope" DataType="String" Description="授权域" />
         <Column Name="State" DataType="String" Length="500" Description="状态数据" />
         <Column Name="Source" DataType="String" Description="来源" />
-        <Column Name="AccessToken" DataType="String" Length="2000" Description="访问令牌" />
-        <Column Name="RefreshToken" DataType="String" Length="2000" Description="刷新令牌" />
+        <Column Name="AccessToken" DataType="String" ItemType="password" Length="2000" Description="访问令牌" />
+        <Column Name="RefreshToken" DataType="String" ItemType="password" Length="2000" Description="刷新令牌" />
         <Column Name="TraceId" DataType="String" Length="200" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" Category="扩展" />
         <Column Name="Remark" DataType="String" Length="2000" Description="详细信息" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
@@ -108,7 +108,7 @@
         <Column Name="NickName" DataType="String" Description="昵称" />
         <Column Name="Logo" DataType="String" Description="图标" />
         <Column Name="AppId" DataType="String" Description="应用标识" />
-        <Column Name="Secret" DataType="String" ShowIn="Auto,-List" Length="200" Description="应用密钥" />
+        <Column Name="Secret" DataType="String" ItemType="password" ShowIn="Auto,-List" Length="200" Description="应用密钥" />
         <Column Name="Server" DataType="String" Length="200" Description="服务地址" />
         <Column Name="AccessServer" DataType="String" ShowIn="Auto,-List" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
         <Column Name="GrantType" DataType="Int32" Description="授权类型" Type="GrantTypes" />
@@ -225,7 +225,7 @@
         <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
         <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。AppID" />
         <Column Name="DisplayName" DataType="String" Description="显示名" />
-        <Column Name="Secret" DataType="String" Description="密钥。AppSecret" />
+        <Column Name="Secret" DataType="String" ItemType="password" Description="密钥。AppSecret" />
         <Column Name="Category" DataType="String" Description="类别" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="HomePage" DataType="String" Length="200" Description="首页" />
@@ -263,8 +263,8 @@
         <Column Name="ResponseType" DataType="String" Description="响应类型。默认code" />
         <Column Name="Scope" DataType="String" Description="授权域" />
         <Column Name="State" DataType="String" Length="500" Description="状态数据" />
-        <Column Name="AccessToken" DataType="String" Length="2000" Description="访问令牌" />
-        <Column Name="RefreshToken" DataType="String" Length="2000" Description="刷新令牌" />
+        <Column Name="AccessToken" DataType="String" ItemType="password" Length="2000" Description="访问令牌" />
+        <Column Name="RefreshToken" DataType="String" ItemType="password" Length="2000" Description="刷新令牌" />
         <Column Name="TraceId" DataType="String" Length="200" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" />
         <Column Name="CreateUser" DataType="String" Description="创建者。可以是设备编码等唯一使用者标识" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
@@ -463,7 +463,7 @@
         <Column Name="DisplayName" DataType="String" Description="显示名" />
         <Column Name="Server" DataType="String" Length="200" Description="服务端点。短信服务地址，如dypnsapi.aliyuncs.com" />
         <Column Name="AppKey" DataType="String" Description="应用标识。AccessKeyId" />
-        <Column Name="AppSecret" DataType="String" ShowIn="Auto,-List" Length="200" Description="应用密钥。AccessKeySecret" />
+        <Column Name="AppSecret" DataType="String" ItemType="password" ShowIn="Auto,-List" Length="200" Description="应用密钥。AccessKeySecret" />
         <Column Name="SignName" DataType="String" Description="签名。短信签名名称" />
         <Column Name="SchemaName" DataType="String" Description="方案名称。短信方案名称，可选" />
         <Column Name="NotifyTemplateCode" DataType="String" Description="通知模板。普通通知使用的服务商模板编号" />
