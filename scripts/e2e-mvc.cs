@@ -1,6 +1,8 @@
 #!/usr/bin/env dotnet-script
 // e2e-mvc.cs — .NET 10 E2E 测试编排入口
-// 用法：dotnet run scripts/e2e-mvc.cs [--ci] [--headless false] [--filter Category=Auth]
+// 用法：dotnet run scripts/e2e-mvc.cs [--ci] [--headless false] [--no-external] [--filter Category=Auth]
+//
+//   --no-external  跳过依赖外部服务的用例（当前为 OAuth 授权回跳，需外网 OAuth 服务器）
 //
 // 功能：
 //   1. 创建本次运行目录 Bin/E2ETest/Run-{yyyyMMdd-HHmmss}/
@@ -50,6 +52,13 @@ if (filterIdx >= 0 && filterIdx + 1 < args2.Count)
     filterValue = args2[filterIdx + 1];
     args2.RemoveAt(filterIdx + 1);
     args2.RemoveAt(filterIdx);
+}
+
+// 跳过依赖外部服务的用例（当前为 Requires=OAuthServer 的 OAuth 回跳）
+if (args2.Remove("--no-external"))
+{
+    var externalFilter = "Requires!=OAuthServer";
+    filterValue = filterValue.IsNullOrEmpty() ? externalFilter : $"({filterValue})&{externalFilter}";
 }
 
 // ============================================================
