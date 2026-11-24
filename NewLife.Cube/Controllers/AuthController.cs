@@ -196,8 +196,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         user = XCode.Membership.User.FindByKeyForEdit(user.Id);
         if (user == null) throw new Exception(L.T("Invalid user id."));
 
-        user["Password"] = null;
-
+        // 资料 DTO 不含密码字段，避免把凭据（哪怕是空串或哈希）下发给客户端
         var userInfo = new Areas.Admin.Models.UserInfo();
         userInfo.Copy(user);
         userInfo.SetPermission(user.Roles);

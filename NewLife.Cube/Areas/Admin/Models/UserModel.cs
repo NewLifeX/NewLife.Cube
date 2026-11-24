@@ -224,9 +224,6 @@ public class UserInfo
     /// <summary>名称。登录用户名</summary>
     public String Name { get; set; }
 
-    /// <summary>密码</summary>
-    public String Password { get; set; }
-
     /// <summary>昵称</summary>
     public String DisplayName { get; set; }
 
