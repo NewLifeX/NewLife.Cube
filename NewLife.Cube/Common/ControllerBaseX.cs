@@ -191,6 +191,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             // 与实体控制器 BuildFailResponse 保持同一套映射：ApiException 用自身码，NoPermission 统一 403，其余异常统一 500
             var code = ApiCode.InternalServerError.ToInt();
             var message = NewLife.Common.SysConfig.Current.Develop ? ex.Message : L.T("The server is busy. Please try again later.");
+            FieldError fieldError = null;
             if (ex is ApiException aex)
             {
                 code = aex.Code;
@@ -202,19 +203,41 @@ public class ControllerBaseX : ControllerBase, IActionFilter
                 code = ApiCode.Forbidden.ToInt();
                 message = nex.Message;
             }
+            else if (ex is ArgumentException aex2 && !aex2.ParamName.IsNullOrEmpty())
+            {
+                // 业务参数/实体字段校验属于客户端错误：按接口规范返回 -2 与字段级错误，不再当成服务端故障
+                code = Models.CubeCode.ParamError.ToInt();
+                message = TrimParamSuffix(aex2.Message);
+                fieldError = new FieldError { Field = aex2.ParamName, Message = message };
+            }
             else if (ex is XException)
             {
                 // XException 视为已知业务异常，消息对用户可读，生产环境也保留
                 message = ex.Message;
             }
 
-            context.Result = new JsonResult(new { code, message, traceId }) { StatusCode = GetHttpStatusCode(code) };
+            Object payload;
+            if (fieldError == null)
+                payload = new { code, message, traceId };
+            else
+                payload = new { code, message, traceId, fieldErrors = new[] { fieldError } };
+
+            context.Result = new JsonResult(payload) { StatusCode = GetHttpStatusCode(code) };
 
             context.ExceptionHandled = true;
 
             // 输出异常日志
             if (XTrace.Debug) XTrace.WriteException(ex);
         }
+    }
+
+    /// <summary>去掉 ArgumentException 自动追加的 " (Parameter 'xxx')" 后缀，保留原始提示</summary>
+    private static String TrimParamSuffix(String message)
+    {
+        if (message.IsNullOrEmpty()) return message;
+
+        var idx = message.LastIndexOf(" (Parameter '", StringComparison.Ordinal);
+        return idx > 0 ? message[..idx] : message;
     }
     #endregion
 

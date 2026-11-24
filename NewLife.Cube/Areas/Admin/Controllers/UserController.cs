@@ -572,6 +572,9 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
 
         if (user.Id != cur.Id) throw new Exception(L.T("You cannot modify another user's profile."));
 
+        // 部分更新：未回传用户名时沿用当前用户名，避免实体必填校验把「只改昵称」挡成服务端错误
+        if (user.Name.IsNullOrEmpty()) user.Name = cur.Name;
+
         var entity = user as IEntity;
         // 自助更新：仅当用户名实际变更时才拦截。
         // 原逻辑「请求出现 Name 字段即拦」会与移动端回传当前用户名冲突，导致昵称无法保存。
