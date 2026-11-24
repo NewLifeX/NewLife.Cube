@@ -164,4 +164,82 @@ public sealed class ApiServiceTests : ApiTestBase
         Assert.True(rs.Headers.ContainsKey("ETag"), "站点配置缺少 ETag");
         Assert.Contains("max-age", rs.Headers["Cache-Control"]);
     }
+
+    [Fact(DisplayName = "TC-API-SVC-012 登录页配置匿名可读")]
+    [Trait("Category", "Service")]
+    public async Task TC_API_SVC_012_LoginConfig()
+    {
+        using var client = CreateAnonymous();
+        var rs = await client.GetAsync("/Auth/LoginConfig");
+
+        ApiAssert.Ok(rs, "TC-API-SVC-012");
+        Assert.NotNull(rs.Data?["login"]?["password"]);
+        Assert.NotNull(rs.Data?["register"]?["enabled"]);
+        Assert.NotNull(rs.Data?["oauth"]);
+    }
+
+    [Fact(DisplayName = "TC-API-SVC-013 图形验证码返回可展示的 data URI")]
+    [Trait("Category", "Service")]
+    public async Task TC_API_SVC_013_Captcha()
+    {
+        using var client = CreateAnonymous();
+        var rs = await client.GetAsync("/Auth/Captcha");
+
+        ApiAssert.Ok(rs, "TC-API-SVC-013");
+        Assert.False(String.IsNullOrWhiteSpace(ApiResult.GetString(rs.Data?["captchaId"])), "缺少 captchaId");
+        Assert.StartsWith("data:image/", ApiResult.GetString(rs.Data?["image"]));
+    }
+
+    [Fact(DisplayName = "TC-API-SVC-014 部门选择器返回部门列表")]
+    [Trait("Category", "Service")]
+    public async Task TC_API_SVC_014_DepartmentSearch()
+    {
+        var rs = await Admin.GetAsync("/Cube/DepartmentSearch");
+
+        ApiAssert.Ok(rs, "TC-API-SVC-014");
+        var rows = ApiAssert.Rows(rs, "TC-API-SVC-014");
+        Assert.NotEmpty(rows);
+        Assert.All(rows, e => Assert.False(String.IsNullOrWhiteSpace(ApiResult.GetString(e?["name"]))));
+    }
+
+    [Fact(DisplayName = "TC-API-SVC-015 菜单树按 module 过滤")]
+    [Trait("Category", "Service")]
+    public async Task TC_API_SVC_015_MenuTreeModule()
+    {
+        var rs = await Admin.GetAsync("/Cube/MenuTree?module=School");
+
+        ApiAssert.Ok(rs, "TC-API-SVC-015");
+        var rows = ApiAssert.Rows(rs, "TC-API-SVC-015");
+        Assert.NotEmpty(rows);
+        Assert.All(rows, e => Assert.StartsWith("/School/", ApiResult.GetString(e?["url"])));
+    }
+
+    [Fact(DisplayName = "TC-API-SVC-016 站点配置条件请求命中 304")]
+    [Trait("Category", "Service")]
+    public async Task TC_API_SVC_016_SiteNotModified()
+    {
+        using var client = CreateAnonymous();
+        var first = await client.GetAsync("/Cube/Site");
+        ApiAssert.Ok(first, "TC-API-SVC-016");
+        var etag = first.Headers["ETag"];
+
+        var second = await client.SendAsync(HttpMethod.Get, "/Cube/Site", headers: new System.Collections.Generic.Dictionary<String, String>
+        {
+            ["If-None-Match"] = etag,
+        });
+
+        ApiAssert.HttpStatus(second, 304, "TC-API-SVC-016");
+        Assert.True(String.IsNullOrEmpty(second.Content), "304 响应不应带正文");
+    }
+
+    [Fact(DisplayName = "TC-API-SVC-017 字典查询超过 20 个编码返回 -2")]
+    [Trait("Category", "Service")]
+    public async Task TC_API_SVC_017_LookupLimit()
+    {
+        var codes = String.Join(",", Enumerable.Range(1, 21).Select(i => "Code" + i));
+
+        var rs = await Admin.GetAsync("/Cube/Lookup?codes=" + codes);
+
+        ApiAssert.Fail(rs, -2, "TC-API-SVC-017");
+    }
 }

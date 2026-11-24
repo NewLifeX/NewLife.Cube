@@ -214,4 +214,30 @@ public sealed class ApiContractTests : ApiTestBase
                 ApiDatabaseHelper.DeleteStudentsByName(name);
         }
     }
+
+    [Fact(DisplayName = "TC-API-CT-012 pageSize 非正数回退默认 20")]
+    [Trait("Category", "Contract")]
+    public async Task TC_API_CT_012_PageSizeFallback()
+    {
+        foreach (var size in new[] { "0", "-1" })
+        {
+            var rs = await Admin.GetAsync($"{BasePath}?pageSize={size}");
+            ApiAssert.Ok(rs, "TC-API-CT-012");
+            Assert.Equal(20, ApiResult.GetInt32(rs.Page?["pageSize"]));
+        }
+    }
+
+    [Fact(DisplayName = "TC-API-CT-013 非法 orderBy 表达式被忽略且不影响列表")]
+    [Trait("Category", "Contract")]
+    public async Task TC_API_CT_013_InvalidOrderBy()
+    {
+        var rs = await Admin.GetAsync($"{BasePath}?orderBy={Uri.EscapeDataString("Id desc;drop table Student")}");
+
+        ApiAssert.Ok(rs, "TC-API-CT-013");
+        Assert.NotNull(rs.Page);
+
+        // 表仍可正常查询（注入片段被丢弃）
+        var again = await Admin.GetAsync($"{BasePath}?pageSize=1");
+        ApiAssert.Ok(again, "TC-API-CT-013");
+    }
 }

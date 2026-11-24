@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using E2EApiTest.Helpers;
@@ -261,6 +262,116 @@ public sealed class ApiEntityCrudTests : ApiTestBase
             Assert.Contains("json", rs.ContentType);
             Assert.True(rs.Json is System.Text.Json.Nodes.JsonArray, $"导出 JSON 不是数组。响应：{rs.Content}");
             Assert.Contains(name, rs.Content);
+        }
+        finally
+        {
+            ApiDatabaseHelper.DeleteStudentsByName(name);
+        }
+    }
+
+    [Fact(DisplayName = "TC-API-CRUD-016 修改时路径与请求体主键不一致返回 -2")]
+    [Trait("Category", "Crud")]
+    public async Task TC_API_CRUD_016_UpdateIdMismatch()
+    {
+        var name = NewName("mismatch");
+        try
+        {
+            var created = await Admin.PostJsonAsync(BasePath, Json(new { name }));
+            ApiAssert.Ok(created, "TC-API-CRUD-016");
+            var id = ApiResult.GetInt32(created.Data?["id"]);
+            Assert.True(id > 0);
+
+            var rs = await Admin.PutJsonAsync($"{BasePath}/{id}", Json(new { id = id + 1000, age = 5 }));
+
+            ApiAssert.Fail(rs, -2, "TC-API-CRUD-016");
+        }
+        finally
+        {
+            ApiDatabaseHelper.DeleteStudentsByName(name);
+        }
+    }
+
+    [Fact(DisplayName = "TC-API-CRUD-017 查看不存在的记录返回 500 且页面不崩")]
+    [Trait("Category", "Crud")]
+    public async Task TC_API_CRUD_017_DetailMissing()
+    {
+        var rs = await Admin.GetAsync($"{BasePath}/987654322");
+
+        ApiAssert.Fail(rs, 500, "TC-API-CRUD-017");
+        Assert.False(String.IsNullOrWhiteSpace(rs.Message), "缺少错误提示");
+    }
+
+    [Fact(DisplayName = "TC-API-CRUD-018 批量删除超过 100 个主键被拒绝")]
+    [Trait("Category", "Crud")]
+    public async Task TC_API_CRUD_018_BatchTooMany()
+    {
+        var ids = String.Join(",", System.Linq.Enumerable.Range(1, 101));
+
+        var rs = await Admin.DeleteAsync($"{BasePath}?ids={ids}");
+
+        ApiAssert.Fail(rs, -2, "TC-API-CRUD-018");
+    }
+
+    [Fact(DisplayName = "TC-API-CRUD-019 导入 JSON 与 CSV 均可落库")]
+    [Trait("Category", "Crud")]
+    public async Task TC_API_CRUD_019_Import()
+    {
+        var jsonNames = new[] { NewName("imporJ1"), NewName("imporJ2") };
+        var csvNames = new[] { NewName("imporC1"), NewName("imporC2") };
+        try
+        {
+            var json = System.Text.Encoding.UTF8.GetBytes(
+                Json(new[] { new { name = jsonNames[0] }, new { name = jsonNames[1] } }));
+            var rs = await Admin.PostMultipartAsync($"{BasePath}/import", "file", "e2e.json", json, "application/json");
+            ApiAssert.Ok(rs, "TC-API-CRUD-019");
+            foreach (var name in jsonNames)
+                Assert.Equal(1, ApiDatabaseHelper.CountStudentsByName(name));
+
+            var csv = System.Text.Encoding.UTF8.GetBytes("Name\n" + String.Join("\n", csvNames));
+            rs = await Admin.PostMultipartAsync($"{BasePath}/import", "file", "e2e.csv", csv, "text/csv");
+            ApiAssert.Ok(rs, "TC-API-CRUD-019");
+            foreach (var name in csvNames)
+                Assert.Equal(1, ApiDatabaseHelper.CountStudentsByName(name));
+        }
+        finally
+        {
+            foreach (var name in jsonNames.Concat(csvNames))
+                ApiDatabaseHelper.DeleteStudentsByName(name);
+        }
+    }
+
+    [Fact(DisplayName = "TC-API-CRUD-020 附件上传后可下载，匿名上传被拒")]
+    [Trait("Category", "Crud")]
+    public async Task TC_API_CRUD_020_Attachment()
+    {
+        var name = NewName("attach");
+        try
+        {
+            var created = await Admin.PostJsonAsync(BasePath, Json(new { name }));
+            ApiAssert.Ok(created, "TC-API-CRUD-020");
+            var id = ApiResult.GetInt32(created.Data?["id"]);
+            Assert.True(id > 0);
+
+            var content = System.Text.Encoding.UTF8.GetBytes("hello cube e2e");
+            var rs = await Admin.PostMultipartAsync($"{BasePath}/attachments", "file", "e2e.txt", content, "text/plain",
+                new System.Collections.Generic.Dictionary<String, String>
+                {
+                    ["id"] = id.GetValueOrDefault().ToString(),
+                    ["title"] = "E2E附件",
+                });
+
+            ApiAssert.Ok(rs, "TC-API-CRUD-020");
+            var filePath = ApiResult.GetString(rs.Data?["filePath"]);
+            Assert.False(String.IsNullOrWhiteSpace(ApiResult.GetString(rs.Data?["attId"])), "缺少附件编号");
+            Assert.False(String.IsNullOrWhiteSpace(filePath), "缺少下载地址");
+
+            var download = await Admin.GetAsync(filePath!);
+            ApiAssert.HttpStatus(download, 200, "TC-API-CRUD-020");
+            Assert.Equal("hello cube e2e", download.Content);
+
+            using var anonymous = CreateAnonymous();
+            var denied = await anonymous.PostMultipartAsync($"{BasePath}/attachments", "file", "e2e.txt", content, "text/plain");
+            ApiAssert.HttpStatus(denied, 401, "TC-API-CRUD-020");
         }
         finally
         {

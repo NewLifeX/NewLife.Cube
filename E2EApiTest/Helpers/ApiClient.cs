@@ -148,22 +148,7 @@ public sealed class ApiClient : IDisposable
         if (json != null)
             request.Content = new StringContent(json, Encoding.UTF8, contentType ?? "application/json");
 
-        if (!String.IsNullOrEmpty(Token))
-        {
-            switch (TokenMode)
-            {
-                case "XToken":
-                    request.Headers.TryAddWithoutValidation("X-Token", Token);
-                    break;
-                case "Query":
-                    var sep = path.Contains('?') ? '&' : '?';
-                    request.RequestUri = new Uri(_http.BaseAddress + path.TrimStart('/') + sep + "token=" + Uri.EscapeDataString(Token));
-                    break;
-                default:
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-                    break;
-            }
-        }
+        ApplyAuth(request, path);
 
         if (headers != null)
         {
@@ -172,6 +157,57 @@ public sealed class ApiClient : IDisposable
         }
 
         using var response = await _http.SendAsync(request);
+        return await BuildResultAsync(response);
+    }
+
+    /// <summary>提交 multipart 表单（文件上传、导入）</summary>
+    /// <param name="path">请求路径</param>
+    /// <param name="fileField">文件字段名</param>
+    /// <param name="fileName">文件名（扩展名决定导入格式）</param>
+    /// <param name="content">文件内容</param>
+    /// <param name="contentType">文件 Content-Type</param>
+    /// <param name="fields">附加表单字段</param>
+    public async Task<ApiResult> PostMultipartAsync(String path, String fileField, String fileName, Byte[] content, String contentType, IDictionary<String, String>? fields = null)
+    {
+        var form = new MultipartFormDataContent();
+        var file = new ByteArrayContent(content);
+        file.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+        form.Add(file, fileField, fileName);
+
+        if (fields != null)
+        {
+            foreach (var item in fields)
+                form.Add(new StringContent(item.Value), item.Key);
+        }
+
+        var request = new HttpRequestMessage(HttpMethod.Post, path) { Content = form };
+        ApplyAuth(request, path);
+
+        using var response = await _http.SendAsync(request);
+        return await BuildResultAsync(response);
+    }
+
+    private void ApplyAuth(HttpRequestMessage request, String path)
+    {
+        if (String.IsNullOrEmpty(Token)) return;
+
+        switch (TokenMode)
+        {
+            case "XToken":
+                request.Headers.TryAddWithoutValidation("X-Token", Token);
+                break;
+            case "Query":
+                var sep = path.Contains('?') ? '&' : '?';
+                request.RequestUri = new Uri(_http.BaseAddress + path.TrimStart('/') + sep + "token=" + Uri.EscapeDataString(Token));
+                break;
+            default:
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+                break;
+        }
+    }
+
+    private static async Task<ApiResult> BuildResultAsync(HttpResponseMessage response)
+    {
         var content = await response.Content.ReadAsStringAsync();
         var result = new ApiResult
         {
