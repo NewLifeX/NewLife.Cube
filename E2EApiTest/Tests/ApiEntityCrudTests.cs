@@ -386,6 +386,29 @@ public sealed class ApiEntityCrudTests : ApiTestBase
         }
     }
 
+    [Fact(DisplayName = "TC-API-CRUD-022 中文内容写入与回读不乱码")]
+    [Trait("Category", "Crud")]
+    public async Task TC_API_CRUD_022_Unicode()
+    {
+        var name = "E2E-中文-" + DateTime.Now.ToString("HHmmssfff");
+        try
+        {
+            var created = await Admin.PostJsonAsync(BasePath, Json(new { name, address = "上海市浦东新区" }));
+            ApiAssert.Ok(created, "TC-API-CRUD-022");
+            var id = ApiResult.GetInt32(created.Data?["id"]) ?? 0;
+            Assert.True(id > 0);
+
+            var detail = await Admin.GetAsync($"{BasePath}/{id}");
+            ApiAssert.Ok(detail, "TC-API-CRUD-022");
+            Assert.Equal(name, ApiResult.GetString(detail.Data?["name"]));
+            Assert.Equal("上海市浦东新区", ApiResult.GetString(detail.Data?["address"]));
+        }
+        finally
+        {
+            ApiDatabaseHelper.DeleteStudentsByName(name);
+        }
+    }
+
     [Fact(DisplayName = "TC-API-CRUD-020 附件上传后可下载，匿名上传被拒")]
     [Trait("Category", "Crud")]
     public async Task TC_API_CRUD_020_Attachment()

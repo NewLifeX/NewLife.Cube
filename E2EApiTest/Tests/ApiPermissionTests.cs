@@ -139,9 +139,52 @@ public sealed class ApiPermissionTests : ApiTestBase
         }
     }
 
-    private async Task<Int32> CreateRoleAsync(String name, String permission)
+    [Fact(DisplayName = "TC-API-PERM-005 仅本人数据范围：列表只看自己，越权详情返回 403")]
+    [Trait("Category", "Permission")]
+    public async Task TC_API_PERM_005_DataScopeSelfOnly()
     {
-        var rs = await Admin.PostJsonAsync("/api/Admin/Role", Json(new { name, type = 2, enable = true, permission }));
+        var roleName = NewName("dsrole");
+        var userNameA = NewName("dsa");
+        var userNameB = NewName("dsb");
+        var roleId = 0;
+        try
+        {
+            var meta = await Admin.GetAsync("/api/Admin/User/meta");
+            ApiAssert.Ok(meta, "TC-API-PERM-005");
+            var menuId = ApiResult.GetInt32(meta.Data?["setting"]?["menuId"]);
+            Assert.True(menuId > 0);
+
+            // 数据范围 3 = 仅本人
+            roleId = await CreateRoleAsync(roleName, $"{menuId}#1", 3);
+            var idA = await CreateUserAsync(userNameA, roleId);
+            var idB = await CreateUserAsync(userNameB, roleId);
+            Assert.True(idA > 0 && idB > 0);
+
+            using var client = new ApiClient();
+            await client.LoginAsync(userNameA, "Test@123");
+
+            var list = await client.GetAsync("/api/Admin/User");
+            ApiAssert.Ok(list, "TC-API-PERM-005");
+            var rows = ApiAssert.Rows(list, "TC-API-PERM-005");
+            Assert.Single(rows);
+            Assert.Equal(userNameA, ApiResult.GetString(rows[0]?["name"]));
+
+            // 越权访问他人详情：按授权失败返回 code=403
+            var peer = await client.GetAsync($"/api/Admin/User/{idB}");
+            ApiAssert.Fail(peer, 403, "TC-API-PERM-005");
+        }
+        finally
+        {
+            ApiDatabaseHelper.DeleteUserByName(userNameA);
+            ApiDatabaseHelper.DeleteUserByName(userNameB);
+            if (roleId > 0) await Admin.DeleteAsync($"/api/Admin/Role/{roleId}");
+            ApiDatabaseHelper.DeleteRoleByName(roleName);
+        }
+    }
+
+    private async Task<Int32> CreateRoleAsync(String name, String permission, Int32 dataScope = 0)
+    {
+        var rs = await Admin.PostJsonAsync("/api/Admin/Role", Json(new { name, type = 2, enable = true, permission, dataScope }));
         ApiAssert.Ok(rs, "CreateRole");
 
         var id = ApiResult.GetInt32(rs.Data?["id"]) ?? 0;
@@ -152,10 +195,12 @@ public sealed class ApiPermissionTests : ApiTestBase
         return id;
     }
 
-    private async Task CreateUserAsync(String name, Int32 roleId)
+    private async Task<Int32> CreateUserAsync(String name, Int32 roleId)
     {
         var rs = await Admin.PostJsonAsync("/api/Admin/User", Json(new { name, password = "Test@123", roleId, enable = true }));
         ApiAssert.Ok(rs, "CreateUser");
         Assert.True(ApiDatabaseHelper.CountUsersByName(name) == 1, $"用户 {name} 未落库。响应：{rs.Content}");
+
+        return ApiResult.GetInt32(rs.Data?["id"]) ?? 0;
     }
 }

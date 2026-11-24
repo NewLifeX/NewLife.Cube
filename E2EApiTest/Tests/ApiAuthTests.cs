@@ -157,4 +157,29 @@ public sealed class ApiAuthTests : ApiTestBase
         ApiAssert.Ok(rs, "TC-API-AUTH-011");
         Assert.NotEmpty(ApiAssert.Rows(rs, "TC-API-AUTH-011"));
     }
+
+    [Fact(DisplayName = "TC-API-AUTH-012 注册返回令牌与有效期，新账号可登录")]
+    [Trait("Category", "Auth")]
+    public async Task TC_API_AUTH_012_Register()
+    {
+        var userName = NewName("reg");
+        try
+        {
+            using var client = CreateAnonymous();
+            var rs = await client.PostJsonAsync("/Auth/Register", Json(new { username = userName, password = "Test@123", confirmPassword = "Test@123" }));
+
+            ApiAssert.Ok(rs, "TC-API-AUTH-012");
+            var token = ApiResult.GetString(rs.Data?["accessToken"]);
+            Assert.False(String.IsNullOrWhiteSpace(token), $"注册未返回 accessToken。响应：{rs.Content}");
+            Assert.True(ApiResult.GetInt32(rs.Data?["expireIn"]) > 0, "注册未返回 expireIn");
+
+            var login = await client.PostJsonAsync("/Auth/Login", Json(new { username = userName, password = "Test@123" }));
+            ApiAssert.Ok(login, "TC-API-AUTH-012");
+            Assert.False(String.IsNullOrWhiteSpace(ApiResult.GetString(login.Data?["access_token"])), "新账号登录未返回令牌");
+        }
+        finally
+        {
+            ApiDatabaseHelper.DeleteUserByName(userName);
+        }
+    }
 }
