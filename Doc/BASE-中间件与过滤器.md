@@ -410,7 +410,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         if (!AreaBase.Contains(ctrl))
         {
             if (!hasAtt) return;
-            create = true;  // 非魔方区域但有特性，需要创建菜单
+            // 仅显式声明权限位时才建不可见权限菜单；仅登录不建菜单
+            create = MenuHelper.NeedPermissionMenu(ctrl.ControllerTypeInfo);
         }
         
         // 解析菜单

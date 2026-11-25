@@ -69,6 +69,10 @@ AI 相关配置集中在 `CubeSetting`（`Setting.cs`）的「AI」分类，可�
 - MVC：`_AiAssistant.cshtml` + `wwwroot/js/ai-assistant.js`。服务端注入 `data-ai-url=/Ai/AiChat` + `data-ai-area` / `data-ai-controller`
 - Vue：`NewLife.Cube.Vue/web/core/components/ai/AiAssistant.vue`，由 `props.url` 解析 area/controller
 
+### 权限与菜单
+
+全局 `/Ai/AiChat` 与 `/Ai/OperationResult` 要求 `PermissionFlags.Detail`。`AiController` 位于区域外，扫描不会为它生成导航菜单，而是生成一个不可见的功能权限项（`MenuTypes.功能`）；管理员在菜单管理或角色权限中给角色授予该权限即可。实体页对话仍额外校验目标实体菜单的 `Detail` 权限。
+
 ## 系统健康诊断
 
 `IndexController.AiDiagnose`（`[HttpGet]`，`EntityAuthorize(Detail)`）以 SSE 流式输出诊断报告。首页「AI 诊断」按钮经 `ai-insight.js` 的 `CubeAI.diagnose()` 调用，弹窗打字机效果展示。
