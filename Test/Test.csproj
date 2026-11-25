@@ -23,7 +23,7 @@
   <ItemGroup>
     <PackageReference Include="NewLife.MySql" Version="1.5.2026.1122-beta0740" />
     <!-- UseLocalNewLifeSource=true 时 XCode 由 Cube 的项目引用传递进来，不能再包引用，否则版本降级 -->
-    <PackageReference Include="NewLife.XCode" Version="12.3.2026.1124-beta0604" Condition="'$(UseLocalNewLifeSource)' != 'true'" />
+    <PackageReference Include="NewLife.XCode" Version="12.3.2026.1125-beta0540" Condition="'$(UseLocalNewLifeSource)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
