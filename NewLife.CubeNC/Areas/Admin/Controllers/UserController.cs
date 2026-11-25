@@ -783,7 +783,7 @@ public class UserController : EntityController<User, UserModel>
 
         //(user as User).Update();
 
-        ViewBag.StatusMessage = "Changed successfully!";
+        ViewBag.StatusMessage = L.T("Password changed successfully.");
 
         if (IsJsonRequest) return Ok(ViewBag.StatusMessage);
 

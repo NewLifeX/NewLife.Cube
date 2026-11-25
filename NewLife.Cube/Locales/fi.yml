@@ -98,6 +98,7 @@
 "This mobile number is not registered.": "Tätä matkapuhelinnumeroa ei ole rekisteröity."
 "Password reset failed. Please try again.": "Salasanan palautus epäonnistui. Yritä uudelleen."
 "Password reset succeeded.": "Salasanan palautus onnistui."
+"Password changed successfully.": "Salasanan vaihto onnistui."
 "This email is not registered.": "Tätä sähköpostia ei ole rekisteröity."
 "Account is required.": "Tili vaaditaan."
 "Email verification is required; please provide an email address.": "Sähköpostivahvistus vaaditaan; anna sähköpostiosoite."

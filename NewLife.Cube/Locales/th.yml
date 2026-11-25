@@ -98,6 +98,7 @@
 "This mobile number is not registered.": "หมายเลขโทรศัพท์นี้ยังไม่ได้ลงทะเบียน"
 "Password reset failed. Please try again.": "การรีเซ็ตรหัสผ่านล้มเหลว โปรดลองอีกครั้ง"
 "Password reset succeeded.": "รีเซ็ตรหัสผ่านสำเร็จ"
+"Password changed successfully.": "เปลี่ยนรหัสผ่านสำเร็จ"
 "This email is not registered.": "อีเมลนี้ยังไม่ได้ลงทะเบียน"
 "Account is required.": "ต้องระบุบัญชี"
 "Email verification is required; please provide an email address.": "ต้องยืนยันอีเมล โปรดระบุที่อยู่อีเมล"

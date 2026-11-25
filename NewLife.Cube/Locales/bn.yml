@@ -98,6 +98,7 @@
 "This mobile number is not registered.": "এই মোবাইল নম্বরটি নিবন্ধিত নয়।"
 "Password reset failed. Please try again.": "পাসওয়ার্ড রিসেট ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।"
 "Password reset succeeded.": "পাসওয়ার্ড রিসেট সফল হয়েছে।"
+"Password changed successfully.": "পাসওয়ার্ড পরিবর্তন সফল হয়েছে।"
 "This email is not registered.": "এই ইমেলটি নিবন্ধিত নয়।"
 "Account is required.": "একটি অ্যাকাউন্ট প্রয়োজন।"
 "Email verification is required; please provide an email address.": "ইমেল যাচাইকরণ প্রয়োজন; অনুগ্রহ করে একটি ইমেল ঠিকানা দিন।"

@@ -98,6 +98,7 @@
 "This mobile number is not registered.": "Ez a mobilszám nincs regisztrálva."
 "Password reset failed. Please try again.": "A jelszó visszaállítása meghiúsult. Kérjük, próbálja újra."
 "Password reset succeeded.": "A jelszó visszaállítása sikeres volt."
+"Password changed successfully.": "A jelszó módosítása sikeres volt."
 "This email is not registered.": "Ez az e-mail nincs regisztrálva."
 "Account is required.": "Fiók szükséges."
 "Email verification is required; please provide an email address.": "E-mail-ellenőrzés szükséges; adjon meg egy e-mail-címet."

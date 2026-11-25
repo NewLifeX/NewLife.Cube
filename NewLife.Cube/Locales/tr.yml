@@ -98,6 +98,7 @@
 "This mobile number is not registered.": "Bu cep telefonu numarası kayıtlı değil."
 "Password reset failed. Please try again.": "Parola sıfırlama başarısız oldu. Lütfen tekrar deneyin."
 "Password reset succeeded.": "Parola sıfırlama başarılı."
+"Password changed successfully.": "Parola değiştirme başarılı."
 "This email is not registered.": "Bu e-posta kayıtlı değil."
 "Account is required.": "Bir hesap gerekli."
 "Email verification is required; please provide an email address.": "E-posta doğrulaması gerekli; lütfen bir e-posta adresi girin."

@@ -98,6 +98,7 @@
 "This mobile number is not registered.": "该手机号未注册"
 "Password reset failed. Please try again.": "密码重置失败，请重试"
 "Password reset succeeded.": "密码重置成功"
+"Password changed successfully.": "密码修改成功"
 "This email is not registered.": "该邮箱未注册"
 "Account is required.": "账号不能为空"
 "Email verification is required; please provide an email address.": "需要邮箱验证，请填写邮箱"

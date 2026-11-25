@@ -281,6 +281,8 @@ public class LocalizationTests
             Translate("en-US", "The new password must be different from the current password."));
         Assert.Equal("修改密码不能与原密码一致",
             Translate("zh-CN", "The new password must be different from the current password."));
+        Assert.Equal("密码修改成功", Translate("zh-CN", "Password changed successfully."));
+        Assert.Equal("Passwort erfolgreich geändert.", Translate("de-DE", "Password changed successfully."));
     }
     [Fact(DisplayName = "多语言 - 日志模板可本地化且英文为兜底")]
     public void LogMessagesAreLocalizable()

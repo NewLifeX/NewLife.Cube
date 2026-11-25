@@ -98,6 +98,7 @@
 "This mobile number is not registered.": "この携帯電話番号は登録されていません。"
 "Password reset failed. Please try again.": "パスワードのリセットに失敗しました。もう一度お試しください。"
 "Password reset succeeded.": "パスワードをリセットしました。"
+"Password changed successfully.": "パスワードを変更しました。"
 "This email is not registered.": "このメール アドレスは登録されていません。"
 "Account is required.": "アカウントを入力してください。"
 "Email verification is required; please provide an email address.": "メール確認が必要です。メールアドレスを入力してください。"
