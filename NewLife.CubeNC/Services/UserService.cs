@@ -772,10 +772,10 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
         var set = CubeSetting.Current;
 
-        // 减少Sql日志
-        var dal = UserOnline.Meta.Session.Dal;
-        var oldSql = dal.Session.ShowSQL;
-        dal.Session.ShowSQL = false;
+        // 减少Sql日志。DAL.Session 每次访问都会新建会话，必须切换数据库级开关，才能覆盖 FindAll 内部新建的会话
+        var db = UserOnline.Meta.Session.Dal.Db;
+        var oldSql = db.ShowSQL;
+        db.ShowSQL = false;
         try
         {
             // 10分钟不活跃将会被删除
@@ -836,7 +836,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         }
         finally
         {
-            dal.Session.ShowSQL = oldSql;
+            db.ShowSQL = oldSql;
         }
     }
 
@@ -891,10 +891,10 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         var selects = UserStat._.Id.Count();
         selects &= User.BuildStatSelects(t1, t7, t30);
 
-        // 减少Sql日志
-        var dal = UserOnline.Meta.Session.Dal;
-        var oldSql = dal.Session.ShowSQL;
-        dal.Session.ShowSQL = false;
+        // 减少Sql日志。DAL.Session 每次访问都会新建会话，必须切换数据库级开关，才能覆盖 FindAll 内部新建的会话
+        var db = User.Meta.Session.Dal.Db;
+        var oldSql = db.ShowSQL;
+        db.ShowSQL = false;
         try
         {
             var list = User.FindAll(null, null, selects, 0, 1);
@@ -921,7 +921,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         }
         finally
         {
-            dal.Session.ShowSQL = oldSql;
+            db.ShowSQL = oldSql;
         }
     }
     #endregion
