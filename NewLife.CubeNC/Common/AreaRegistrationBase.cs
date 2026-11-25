@@ -20,7 +20,12 @@ public class AreaBase : AreaAttribute
     private static readonly ConcurrentDictionary<Type, Type> _areas = new();
 
     /// <summary>实例化区域注册</summary>
-    public AreaBase(String areaName) : base(areaName) => RegisterArea(GetType());
+    public AreaBase(String areaName) : base(areaName)
+    {
+        // 直接以 [AreaBase("x")] 标注控制器时，GetType() 是 AreaBase 本身，
+        // 其命名空间不对应业务控制器，注册后会把框架全局控制器扫描成菜单
+        if (GetType() != typeof(AreaBase)) RegisterArea(GetType());
+    }
 
     /// <summary>注册区域，每个继承此区域特性的类的静态构造函数都调用此方法，以进行相关注册</summary>
     public static void RegisterArea<T>() where T : AreaBase => RegisterArea(typeof(T));
@@ -28,6 +33,8 @@ public class AreaBase : AreaAttribute
     /// <summary>注册区域，每个继承此区域特性的类的静态构造函数都调用此方法，以进行相关注册</summary>
     public static void RegisterArea(Type areaType)
     {
+        // AreaBase 本身只作为特性基类使用，注册它会把框架命名空间当成区域扫描
+        if (areaType == null || areaType == typeof(AreaBase)) return;
         if (!_areas.TryAdd(areaType, areaType)) return;
 
         var ns = areaType.Namespace + ".Controllers";

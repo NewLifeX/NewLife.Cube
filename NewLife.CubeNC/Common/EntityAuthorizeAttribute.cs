@@ -87,8 +87,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         {
             if (!hasAtt) return;
 
-            // 不属于魔方而又加了权限特性，需要创建菜单
-            create = true;
+            // 区域外控制器只有显式声明权限位时才需要菜单承载授权；仅登录不建菜单
+            create = MenuHelper.NeedPermissionMenu(ctrl.ControllerTypeInfo);
         }
 
         //using var span = DefaultTracer.Instance?.NewSpan(nameof(OnAuthorization));
@@ -229,7 +229,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         // 创建菜单
         if (create && menu == null)
         {
-            if (CreateMenu(type)) menu = mf.FindByFullName(fullName);
+            CreateMenu(type);
+            menu = mf.FindByFullName(type.FullName) ?? mf.FindByFullName(fullName);
         }
 
         if (menu == null) XTrace.WriteLine(L.TLog("Design error! Cannot find menu for [{0}/{1}] during permission check", type.FullName, act.ActionName));
@@ -240,52 +241,12 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
     private static readonly ConcurrentDictionary<String, Type> _ss = new ConcurrentDictionary<String, Type>();
     private Boolean CreateMenu(Type type)
     {
-        if (!_ss.TryAdd(type.Namespace, type)) return false;
+        if (!_ss.TryAdd(type.FullName, type)) return false;
 
         using var span = DefaultTracer.Instance?.NewSpan(nameof(CreateMenu), type.FullName);
 
-        var mf = ManageProvider.Menu;
-        //var ms = mf.ScanController(type.Namespace.TrimSuffix(".Controllers"), type.Assembly, type.Namespace);
-        var ms = MenuHelper.ScanController(mf, type.Namespace.TrimSuffix(".Controllers"), type);
-
-        var root = mf.FindByFullName(type.Namespace);
-        if (root != null)
-        {
-            root.Url = "~";
-            (root as IEntity).Update();
-        }
-
-        // 遍历菜单，设置权限项
-        foreach (var controller in ms)
-        {
-            if (controller.FullName.IsNullOrEmpty()) continue;
-
-            var ctype = type.Assembly.GetType(controller.FullName);
-            //ctype = controller.FullName.GetTypeEx(false);
-            if (ctype == null) continue;
-
-            // 添加该类型下的所有Action
-            //var dic = new Dictionary<MethodInfo, Int32>();
-            foreach (var method in ctype.GetMethods())
-            {
-                if (method.IsStatic || !method.IsPublic) continue;
-                if (!method.ReturnType.As<ActionResult>()) continue;
-                if (method.GetCustomAttribute<AllowAnonymousAttribute>() != null) continue;
-
-                var att = method.GetCustomAttribute<EntityAuthorizeAttribute>();
-                if (att != null && att.Permission > PermissionFlags.None)
-                {
-                    var dn = method.GetDisplayName();
-                    var pmName = !dn.IsNullOrEmpty() ? dn : method.Name;
-                    if (att.Permission <= PermissionFlags.Delete) pmName = att.Permission.GetDescription();
-                    controller.Permissions[(Int32)att.Permission] = pmName;
-                }
-            }
-
-            controller.Url = "~/" + ctype.Name.TrimSuffix("Controller");
-
-            (controller as IEntity).Update();
-        }
+        // 区域外控制器只登记自身，不再扫描整个命名空间，避免把同命名空间的服务控制器一起建成菜单
+        MenuHelper.EnsurePermissionMenu(type);
 
         return true;
     }

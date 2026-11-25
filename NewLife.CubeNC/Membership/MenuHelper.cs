@@ -281,6 +281,193 @@ public static partial class MenuHelper
         return list;
     }
 
+    /// <summary>判断区域外控制器是否需要权限菜单。仅当控制器或动作显式声明权限位时需要</summary>
+    /// <param name="controllerType">控制器类型</param>
+    /// <returns>需要权限菜单返回true</returns>
+    internal static Boolean NeedPermissionMenu(Type controllerType)
+    {
+        if (controllerType == null) return false;
+
+        var att = controllerType.GetCustomAttribute<EntityAuthorizeAttribute>();
+        if (att != null && att.Permissions.Any(e => e > PermissionFlags.None)) return true;
+
+        foreach (var method in controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (method.IsStatic) continue;
+            if (method.GetCustomAttribute<AllowAnonymousAttribute>() != null) continue;
+
+            var mat = method.GetCustomAttribute<EntityAuthorizeAttribute>();
+            if (mat != null && mat.Permissions.Any(e => e > PermissionFlags.None)) return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>确保区域外控制器拥有一个不可见的权限菜单，供管理员配置角色权限</summary>
+    /// <param name="controllerType">控制器类型</param>
+    /// <returns>权限菜单</returns>
+    /// <remarks>只登记控制器自身的动作权限项，不扫描同命名空间的其它控制器。</remarks>
+    public static IMenu EnsurePermissionMenu(Type controllerType)
+    {
+        if (controllerType == null) throw new ArgumentNullException(nameof(controllerType));
+
+        var name = controllerType.Name.TrimSuffix("Controller");
+        var entityType = GetEntityType(controllerType);
+        var friendly = controllerType.GetDisplayName() ?? GetEntityDisplayName(entityType) ?? name;
+        var description = controllerType.GetDescription();
+
+        var created = false;
+        var menu = Menu.FindByFullName(controllerType.FullName);
+        if (menu == null)
+        {
+            menu = new Menu
+            {
+                Name = name,
+                DisplayName = friendly,
+                FullName = controllerType.FullName,
+                ParentId = 0,
+                Url = "",
+                Visible = false,
+                Type = MenuTypes.功能,
+                Remark = description,
+            };
+            menu.Insert();
+            created = true;
+        }
+        else
+        {
+            var changed = false;
+            if (menu.DisplayName.IsNullOrEmpty() && !friendly.IsNullOrEmpty()) { menu.DisplayName = friendly; changed = true; }
+            if (menu.ParentId != 0) { menu.ParentId = 0; changed = true; }
+            if (menu.Visible) { menu.Visible = false; changed = true; }
+            if (menu.Type != MenuTypes.功能) { menu.Type = MenuTypes.功能; changed = true; }
+            if (!menu.Url.IsNullOrEmpty()) { menu.Url = ""; changed = true; }
+            if (menu.Remark.IsNullOrEmpty() && !description.IsNullOrEmpty()) { menu.Remark = description; changed = true; }
+            if (changed) menu.Update();
+        }
+
+        // 只登记该控制器的动作权限项
+        menu.Permissions.Clear();
+        foreach (var method in controllerType.GetMethods())
+        {
+            if (method.IsStatic || !method.IsPublic) continue;
+            if (method.GetCustomAttribute<AllowAnonymousAttribute>() != null) continue;
+
+            var att = method.GetCustomAttribute<EntityAuthorizeAttribute>();
+            if (att == null || att.Permissions.Length != 1 || att.Permission <= PermissionFlags.None) continue;
+
+            var dn = method.GetDisplayName();
+            var pmName = !dn.IsNullOrEmpty() ? dn : method.Name;
+            if (att.Permission <= PermissionFlags.Delete) pmName = att.Permission.GetDescription();
+            menu.Permissions[(Int32)att.Permission] = pmName;
+        }
+        menu.Save();
+
+        Menu.Meta.Session.ClearCache(nameof(EnsurePermissionMenu), true);
+
+        // 新菜单还没有被任何角色授权，交由系统角色兜底，避免首次访问因无权限被拒
+        if (created)
+        {
+            var task = Task.Factory.StartNew(Role.CheckRole, TaskCreationOptions.LongRunning);
+            task.Wait(5_000);
+        }
+
+        return menu;
+    }
+
+    /// <summary>清理历史版本把区域外控制器扫描成菜单留下的数据</summary>
+    /// <param name="namespaces">要清理的控制器命名空间</param>
+    /// <returns>处理数量</returns>
+    /// <remarks>
+    /// 没有显式权限位的控制器菜单删除；有显式权限位的控制器菜单保留并置为不可见，供管理员继续配置权限。
+    /// 动作级菜单一律删除，新规则只保留控制器级权限菜单。技术根节点没有子菜单时删除。
+    /// </remarks>
+    public static Int32 CleanupNonAreaMenus(params String[] namespaces)
+    {
+        if (namespaces == null || namespaces.Length == 0) return 0;
+
+        var nsList = namespaces.Where(e => !e.IsNullOrEmpty()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (nsList.Length == 0) return 0;
+
+        Menu.Meta.Session.ClearCache(nameof(CleanupNonAreaMenus), true);
+
+        var count = 0;
+        var all = Menu.FindAll();
+        var deleted = new HashSet<Int32>();
+        var roots = new List<Menu>();
+
+        foreach (var menu in all)
+        {
+            var fullName = menu.FullName;
+            if (fullName.IsNullOrEmpty()) continue;
+
+            var ns = MatchNamespace(fullName, nsList);
+            if (ns == null) continue;
+
+            // 技术根节点单独处理
+            if (fullName.EqualIgnoreCase(ns))
+            {
+                roots.Add(menu);
+                continue;
+            }
+
+            var type = ResolveMenuType(fullName);
+            // 动作级菜单一律删除；新规则只保留控制器级权限菜单
+            if (type == null || !fullName.EqualIgnoreCase(type.FullName))
+            {
+                menu.Delete();
+                deleted.Add(menu.Id);
+                count++;
+                continue;
+            }
+
+            if (NeedPermissionMenu(type))
+            {
+                var changed = false;
+                if (menu.ParentId != 0) { menu.ParentId = 0; changed = true; }
+                if (menu.Visible) { menu.Visible = false; changed = true; }
+                if (menu.Type != MenuTypes.功能) { menu.Type = MenuTypes.功能; changed = true; }
+                if (!menu.Url.IsNullOrEmpty()) { menu.Url = ""; changed = true; }
+                if (changed) { menu.Update(); count++; }
+            }
+            else
+            {
+                menu.Delete();
+                deleted.Add(menu.Id);
+                count++;
+            }
+        }
+
+        // 技术根节点下已没有子菜单时删除；保留手工挂载的其它菜单
+        foreach (var root in roots)
+        {
+            var hasChild = all.Any(e => e.ParentId == root.Id && !deleted.Contains(e.Id));
+            if (!hasChild)
+            {
+                root.Delete();
+                count++;
+            }
+        }
+
+        if (count > 0)
+        {
+            Menu.Meta.Session.ClearCache(nameof(CleanupNonAreaMenus), true);
+            XTrace.WriteLine("Cleaned up {0} legacy non-area controller menus.", count);
+        }
+
+        return count;
+    }
+
+    private static String MatchNamespace(String fullName, String[] namespaces)
+    {
+        foreach (var ns in namespaces)
+        {
+            if (fullName.EqualIgnoreCase(ns) || fullName.StartsWith(ns + ".", StringComparison.OrdinalIgnoreCase)) return ns;
+        }
+
+        return null;
+    }
+
     /// <summary>获取可用于生成权限菜单的Action集合</summary>
     /// <param name="controllerType">控制器类型</param>
     /// <param name="menu">该控制器所在菜单</param>

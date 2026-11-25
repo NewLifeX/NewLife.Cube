@@ -14,6 +14,7 @@ using NewLife.Common;
 using NewLife.Configuration;
 using NewLife.Cube.AI;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Membership;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
@@ -468,6 +469,16 @@ public static class CubeService
         });
 
         ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
+
+        // 清理历史版本把区域外控制器扫描成菜单留下的数据
+        try
+        {
+            MenuHelper.CleanupNonAreaMenus("NewLife.Cube.Controllers");
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+        }
 
         // 自动检查并添加菜单
         AreaBase.RegisterArea<Areas.Admin.AdminArea>();
