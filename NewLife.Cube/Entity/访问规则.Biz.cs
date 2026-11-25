@@ -54,6 +54,8 @@ public partial class AccessRule : Entity<AccessRule>
         // 实体缓存
         // var ec = Meta.Cache;
         // ec.Expire = 60;
+        // 缓存刷新属于后台例行查询，填充时关闭 SQL 日志，避免 Select * From AccessRule 刷屏
+        Meta.Cache.FillListMethod = FindAllForCache;
 
         // 单对象缓存
         var sc = Meta.SingleCache;
@@ -260,7 +262,20 @@ public partial class AccessRule : Entity<AccessRule>
 
     /// <summary>查询全部自动封禁规则。包含已过期尚未清理的记录</summary>
     /// <returns>自动封禁规则列表</returns>
-    public static IList<AccessRule> FindAllAutoBlocks() => FindAll(_.Name.StartsWith(AutoBlockPrefix), null, null, 0, 0);
+    public static IList<AccessRule> FindAllAutoBlocks()
+    {
+        // 快照刷新是后台例行查询，关闭当前线程数据库会话的 SQL 日志，退出作用域自动恢复
+        using var showSql = Meta.Session.Dal.Session.SetShowSql(false);
+        return FindAll(_.Name.StartsWith(AutoBlockPrefix), null, null, 0, 0);
+    }
+
+    /// <summary>填充实体缓存。缓存刷新在后台线程执行，关闭该次查询的 SQL 日志</summary>
+    /// <returns></returns>
+    private static IList<AccessRule> FindAllForCache()
+    {
+        using var showSql = Meta.Session.Dal.Session.SetShowSql(false);
+        return FindAll();
+    }
 
     /// <summary>写入自动封禁。同一IP已存在封禁规则时延长有效期</summary>
     /// <param name="ip">被封禁的IP地址，支持*通配</param>
