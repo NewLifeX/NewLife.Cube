@@ -10,6 +10,9 @@ import type { ApiResponse, LoginResult } from './types';
 import { ApiError } from './types';
 import qs from 'qs';
 import { resolveRequestUrl } from './service-path';
+import { createRefreshCoordinator, type RefreshRequestConfig, type TokenRefreshOptions } from './token-refresh';
+
+export type { TokenRefreshOptions };
 
 /**
  * 将后端可能返回的字段名归一化为小驼峰（accessToken）。
@@ -102,6 +105,8 @@ function buildResponseErrorInfo(error: AxiosError): ResponseErrorInfo {
 }
 
 export interface ApiClientOptions {
+  /** 不传时关闭。恢复失败仍走原来的未授权处理。 */
+  tokenRefresh?: TokenRefreshOptions;
   /**
    * API 基础地址（含协议、主机、可选端口，可选带 /api 前缀），默认 ''（同源）。
    * 请求层按 resolveRequestUrl 规则拼接最终地址：
@@ -157,6 +162,7 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
     onResponseError,
   } = options;
   const tm = tokenManager ?? new TokenManager();
+  const refresh = createRefreshCoordinator({ tokenManager: tm, tokenHeaderPrefix, policy: options.tokenRefresh });
 
   const client = axios.create({
     baseURL,
@@ -167,12 +173,17 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
 
   // 请求拦截：注入 Token + 由 resolveRequestUrl 统一拼接 host 与 /api 前缀 + 附加头 + 钩子
   client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+    const refreshConfig = config as RefreshRequestConfig;
+    refresh.prepare(refreshConfig);
     const token = tm.getToken();
     if (token) {
       config.headers.set('Authorization', `${tokenHeaderPrefix}${token}`);
     }
     // 统一解析最终地址：合并 baseURL 与 url，按 baseURL 是否含 /api 与 url 是否服务接口去重/补 /api
-    config.url = resolveRequestUrl(config.baseURL ?? '', config.url ?? '');
+    // 刷新重放沿用首次解析后的地址，避免反向代理子路径被再次加前缀。
+    if (!refreshConfig.__cubeRefreshRetry) {
+      config.url = resolveRequestUrl(config.baseURL ?? '', config.url ?? '');
+    }
     config.baseURL = '';
 
     if (withCredentials) {
@@ -194,15 +205,18 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
 
   // 响应拦截：统一错误处理 + 登录结果字段归一化 + content-type 透传 + traceId + 钩子
   client.interceptors.response.use(
-    (response) => {
+    async (response) => {
       const res = response.data as ApiResponse;
       if (res.code && res.code !== 0) {
         if (res.code === 401 || res.code === 4001) {
-          tm.clearToken();
-          if (onUnauthorized) {
-            onUnauthorized(response.config?.url);
-          } else {
-            window.dispatchEvent(new CustomEvent('cube:unauthorized'));
+          if (await refresh.recover(response.config)) return client.request({ ...response.config, __cubeRefreshRetry: true } as RefreshRequestConfig);
+          if (refresh.shouldClearToken(response.config)) {
+            tm.clearToken();
+            if (onUnauthorized) {
+              onUnauthorized(response.config?.url);
+            } else {
+              window.dispatchEvent(new CustomEvent('cube:unauthorized'));
+            }
           }
         } else {
           if (res.message && onBusinessError) {
@@ -253,7 +267,7 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
       if (unwrapResponse) return response.data;
       return response;
     },
-    (error) => {
+    async (error) => {
       // 业务错误（ApiError，code 非 0）已由成功拦截器经 onBusinessError 处理并 reject，
       // 此处直接透传，避免重复弹窗或将 ApiResponse 误当 axios 响应传入 onResponseHook
       if (error instanceof ApiError) {
@@ -264,11 +278,14 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
       // 只有 401（未登录/登录过期）才清除 Token 并触发重新登录
       const { response } = error;
       if (response?.status === 401) {
-        tm.clearToken();
-        if (onUnauthorized) {
-          onUnauthorized(error.config?.url);
-        } else {
-          window.dispatchEvent(new CustomEvent('cube:unauthorized'));
+        if (await refresh.recover(error.config)) return client.request({ ...error.config, __cubeRefreshRetry: true } as RefreshRequestConfig);
+        if (refresh.shouldClearToken(error.config)) {
+          tm.clearToken();
+          if (onUnauthorized) {
+            onUnauthorized(error.config?.url);
+          } else {
+            window.dispatchEvent(new CustomEvent('cube:unauthorized'));
+          }
         }
       } else {
         // 响应钩子（responseInterceptor）在错误路径同样触发

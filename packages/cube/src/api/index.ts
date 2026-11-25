@@ -12,7 +12,7 @@ export { createCubeApi, type CubeApi, type CubeApiOptions } from './cube';
 export { isServiceApiPath, getServiceBaseUrl, resolveRequestUrl } from './service-path';
 
 // 底层构建块（高级用法）
-export { createApiClient, createRequest, type ApiClientOptions, type ResponseErrorInfo } from './client';
+export { createApiClient, createRequest, type ApiClientOptions, type TokenRefreshOptions, type ResponseErrorInfo } from './client';
 export { TokenManager, type TokenStorage, extractTokenFromHash } from './token';
 export {
   createUserApi,
