@@ -4,6 +4,7 @@ using NewLife.Log;
 using NewLife.Security;
 using NewLife.Serialization;
 using NewLife.Web;
+using XCode;
 using XCode.Membership;
 using ILog = NewLife.Log.ILog;
 using IManageUser = NewLife.Model.IManageUser;
@@ -34,6 +35,9 @@ public class TokenService : ITokenService
 
     /// <summary>令牌定制扩展点</summary>
     public IEnumerable<ITokenCustomizer> TokenCustomizers { get; set; }
+
+    /// <summary>外部认证扩展点。由宿主经 SsoController 注入自定义实现；为空时回退静态 ExternalAuthHelper（ExternalAuthUrl）</summary>
+    public IExternalAuthService ExternalAuth { get; set; }
     #endregion
 
     #region 构造
@@ -300,21 +304,32 @@ public class TokenService : ITokenService
             }
             else
             {
-                if (Provider is ManageProvider prv)
-                    user = prv.LoginCore(username, password);
-                else
-                    user = User.Login(username, password, false);
+                // XCode LoginCore 在本地验证失败（密码错误/用户名不存在）时抛 EntityException 而非返回 null，
+                // 捕获后按 null 处理，让下方外部认证回退得以生效；外部认证也失败时仍抛"authentication failed"
+                try
+                {
+                    if (Provider is ManageProvider prv)
+                        user = prv.LoginCore(username, password);
+                    else
+                        user = User.Login(username, password, false);
+                }
+                catch (EntityException) { }
             }
             if (user == null)
             {
-                // 本地验证失败，尝试外部验证服务
-                var extAuthUrl = CubeSetting.Current.ExternalAuthUrl;
-                if (!extAuthUrl.IsNullOrEmpty())
+                // 本地验证失败，尝试外部验证服务。
+                // 优先 DI 扩展点 IExternalAuthService：有实现且验证成功时短路采用其结果；
+                // 无实现或验证失败时回退静态 ExternalAuthHelper（走 ExternalAuthUrl），原行为不变
+                var extUser = ExternalAuth?.Validate(username, password);
+                if (extUser == null)
                 {
-                    var extUser = ExternalAuthHelper.Validate(username, password, extAuthUrl);
-                    if (extUser != null)
-                        user = ExternalAuthHelper.CreateOrUpdateUser(extUser, ip, CubeSetting.Current);
+                    var extAuthUrl = CubeSetting.Current.ExternalAuthUrl;
+                    if (!extAuthUrl.IsNullOrEmpty())
+                        extUser = ExternalAuthHelper.Validate(username, password, extAuthUrl);
                 }
+                if (extUser != null)
+                    user = ExternalAuthHelper.CreateOrUpdateUser(extUser, ip, CubeSetting.Current);
+
                 if (user == null) throw new XException("User [{0}] authentication failed.", username);
             }
 

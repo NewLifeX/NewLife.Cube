@@ -83,9 +83,11 @@ public class SsoController : ControllerBaseX
     /// <param name="appService">应用验证服务</param>
     /// <param name="bindingService">用户绑定服务</param>
     /// <param name="tenantContext">租户上下文</param>
+    /// <param name="externalAuth">外部认证扩展点。未注册自定义实现时为 null，令牌服务回退静态 ExternalAuthHelper</param>
     public SsoController(CubeSetting setting, ICacheProvider cacheProvider,
         ISsoClientService clientService, ISsoServerService serverService,
-        ITokenService tokenService, IOAuthAppService appService, IUserBindingService bindingService, ITenantContext tenantContext)
+        ITokenService tokenService, IOAuthAppService appService, IUserBindingService bindingService, ITenantContext tenantContext,
+        IExternalAuthService externalAuth = null)
     {
         _cache = cacheProvider.Cache;
         _setting = setting;
@@ -108,6 +110,7 @@ public class SsoController : ControllerBaseX
 
         // 设置令牌服务的依赖属性
         ((Services.Sso.TokenService)_tokenService).AppService = appService;
+        ((Services.Sso.TokenService)_tokenService).ExternalAuth = externalAuth;
     }
 
     #region 单点登录客户端

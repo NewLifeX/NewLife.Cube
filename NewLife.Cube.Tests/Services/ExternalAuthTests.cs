@@ -3,9 +3,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NewLife.Cube;
+using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.Tests.Membership;
+using NewLife.Model;
 using XCode.Membership;
 using Xunit;
 
@@ -194,5 +197,148 @@ public class ExternalAuthTests
         user.Update();
     }
     #endregion
+
+    #region IExternalAuthService DI 扩展点
+    [Fact(DisplayName = "DI扩展点_默认实现委托静态助手并遵循ExternalAuthUrl语义")]
+    public void DefaultExternalAuthService_DelegatesToStaticHelper()
+    {
+        var svc = new DefaultExternalAuthService();
+
+        // 未配置地址：与静态助手一致返回 null
+        var url = CubeSetting.Current.ExternalAuthUrl;
+        CubeSetting.Current.ExternalAuthUrl = null;
+        try
+        {
+            Assert.Null(svc.Validate("u", "p"));
+        }
+        finally { CubeSetting.Current.ExternalAuthUrl = url; }
+
+        // 配置地址：与静态助手同协议解析
+        var json = """{"code":0,"data":{"username":"zhangsan","displayName":"张三"}}""";
+        var (server, serve, listener) = StartServer(json);
+        CubeSetting.Current.ExternalAuthUrl = server;
+        try
+        {
+            var model = svc.Validate("input_user", "pwd");
+            Assert.NotNull(model);
+            Assert.Equal("zhangsan", model.UserName);
+            Assert.Equal("张三", model.DisplayName);
+        }
+        finally
+        {
+            CubeSetting.Current.ExternalAuthUrl = url;
+            listener.Stop();
+            try { serve.GetAwaiter().GetResult(); } catch { }
+        }
+    }
+
+    [Fact(DisplayName = "DI扩展点_容器无实现解析为空_有实现可解析")]
+    public void DI_Resolution_ReturnsRegisteredImplementationOnly()
+    {
+        var sc = new ServiceCollection();
+        var empty = sc.BuildServiceProvider();
+        Assert.Null(ModelExtension.GetService<IExternalAuthService>(empty));
+
+        var fake = new FakeExternalAuthService { OnValidate = (u, p) => new ExternalAuthModel { UserName = u } };
+        sc.AddSingleton<IExternalAuthService>(fake);
+        using var sp = sc.BuildServiceProvider();
+        Assert.Same(fake, ModelExtension.GetService<IExternalAuthService>(sp));
+    }
+
+    [Fact(DisplayName = "DI扩展点_自定义实现验证成功时短路，不回退静态ExternalAuthUrl")]
+    public void LoginByPassword_CustomExternalAuthService_ShortCircuits()
+    {
+        // 静态回退指向一个必失败的外部接口：若 DI 实现未短路而走了静态路径，登录必然失败
+        var (server, serve, listener) = StartServer("""{"code":1,"message":"静态路径不应被调用"}""");
+
+        var oldUrl = CubeSetting.Current.ExternalAuthUrl;
+        var oldTenant = CubeSetting.Current.EnableTenant;
+        CubeSetting.Current.ExternalAuthUrl = server;
+        CubeSetting.Current.EnableTenant = false;
+        try
+        {
+            var name = UniqueName();
+            String capturedUser = null, capturedPass = null;
+            var fake = new FakeExternalAuthService
+            {
+                OnValidate = (u, p) => { capturedUser = u; capturedPass = p; return new ExternalAuthModel { UserName = name, DisplayName = "外部用户", Code = "E001" }; },
+            };
+
+            var sc = new ServiceCollection();
+            sc.AddSingleton<IExternalAuthService>(fake);
+            using var sp = sc.BuildServiceProvider();
+
+            // 与 TenantAuthFixture 相同的依赖装配，仅 serviceProvider 换成携带自定义实现的容器
+            var userService = new UserService(new PasswordService(), new TestCacheProvider(), null!, null!, null!, new TenantContextService(), sp);
+
+            var loginCtx = _fx.CreateContext();
+            var model = new LoginModel { Username = name, Password = "plain_pwd" };
+            var result = userService.Login(model, loginCtx);
+
+            // DI 实现成功 → 短路，登录成功且本地按 Name=工号 建档
+            Assert.True(result.IsSuccess);
+            Assert.Equal(name, capturedUser);
+            Assert.Equal("plain_pwd", capturedPass);
+            var user = User.FindByName(name);
+            Assert.NotNull(user);
+            Assert.Equal("外部用户", user.DisplayName);
+            Assert.Equal("E001", user.Code);
+        }
+        finally
+        {
+            CubeSetting.Current.ExternalAuthUrl = oldUrl;
+            CubeSetting.Current.EnableTenant = oldTenant;
+            listener.Stop();
+            try { serve.GetAwaiter().GetResult(); } catch { }
+        }
+    }
+
+    [Fact(DisplayName = "DI扩展点_无实现时回退静态ExternalAuthUrl原逻辑")]
+    public void LoginByPassword_NoImplementation_FallsBackToStaticHelper()
+    {
+        // 不注册 IExternalAuthService：外部验证走静态 ExternalAuthUrl（本用例指向成功响应）
+        var json = """{"code":0,"data":{"username":"fallback_user","displayName":"静态用户"}}""";
+        var (server, serve, listener) = StartServer(json);
+
+        var oldUrl = CubeSetting.Current.ExternalAuthUrl;
+        var oldTenant = CubeSetting.Current.EnableTenant;
+        CubeSetting.Current.ExternalAuthUrl = server;
+        CubeSetting.Current.EnableTenant = false;
+        try
+        {
+            var sc = new ServiceCollection();
+            using var sp = sc.BuildServiceProvider();
+
+            var userService = new UserService(new PasswordService(), new TestCacheProvider(), null!, null!, null!, new TenantContextService(), sp);
+
+            var loginCtx = _fx.CreateContext();
+            var model = new LoginModel { Username = "fallback_user", Password = "plain_pwd" };
+            var result = userService.Login(model, loginCtx);
+
+            // 静态路径成功 → 登录成功且建档（原行为保持）
+            Assert.True(result.IsSuccess);
+            var user = User.FindByName("fallback_user");
+            Assert.NotNull(user);
+            Assert.Equal("静态用户", user.DisplayName);
+        }
+        finally
+        {
+            CubeSetting.Current.ExternalAuthUrl = oldUrl;
+            CubeSetting.Current.EnableTenant = oldTenant;
+            listener.Stop();
+            try { serve.GetAwaiter().GetResult(); } catch { }
+        }
+    }
+    #endregion
+}
+
+/// <summary>测试用外部认证服务桩。记录收到的一次验证请求，行为由 OnValidate 决定</summary>
+internal sealed class FakeExternalAuthService : IExternalAuthService
+{
+    /// <summary>验证行为。返回非 null 模拟验证成功</summary>
+    public Func<String, String, ExternalAuthModel> OnValidate { get; set; }
+
+    /// <summary>验证用户名密码</summary>
+    public ExternalAuthModel Validate(String username, String password) => OnValidate?.Invoke(username, password);
 }
 
