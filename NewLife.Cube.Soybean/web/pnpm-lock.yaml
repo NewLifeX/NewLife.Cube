@@ -315,8 +315,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       colord:
-        specifier: 2.9.3
-        version: 2.9.3
+        specifier: 2.9.4
+        version: 2.9.4
 
   packages/field-mapping:
     dependencies:
@@ -427,8 +427,8 @@ importers:
   packages/utils:
     dependencies:
       colord:
-        specifier: 2.9.3
-        version: 2.9.3
+        specifier: 2.9.4
+        version: 2.9.4
       crypto-js:
         specifier: 4.2.0
         version: 4.2.0
@@ -1811,6 +1811,9 @@ packages:
   '@types/estree@1.0.10':
     resolution: {integrity: sha512-lTyOMnOcmRBzdCv6/4zUZCrEhV0xrqQiUZBZtVcbmLHBXKLnN8q89v/wKRF/Q0HbwVsqbIG3o5HDoFl9sduM+g==}
 
+  '@types/estree@1.0.11':
+    resolution: {integrity: sha512-YBdNe5JcjYR0sPhJW1QIeRCmI11YhYvaRuGCs9+WCeTTb+Yhb2BE2XMe5/wAqF10FK5g3+q1PDhQABfT7aX0gg==}
+
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
@@ -2483,6 +2486,7 @@ packages:
 
   axios-retry@4.5.0:
     resolution: {integrity: sha512-aR99oXhpEDGo0UuAlYcn2iGRds30k366Zfa05XWScR9QaQD4JYiP3/1Qt1u7YlefUOK+cn0CcwoL1oefavQUlQ==}
+    deprecated: axios-retry is no longer maintained. See https://github.com/softonic/axios-retry for alternatives.
     peerDependencies:
       axios: 0.x || 1.x
 
@@ -2692,8 +2696,8 @@ packages:
   color-string@1.9.1:
     resolution: {integrity: sha512-shrVawQFojnZv6xM40anx4CkoDP+fZsw/ZerEMsW/pyzsRbElpsL/DBVW7q3ExxwusdNXI3lXpuhEZkzs8p5Eg==}
 
-  colord@2.9.3:
-    resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
+  colord@2.9.4:
+    resolution: {integrity: sha512-z0nTt5300AIviCn9FTEL4G2DzPkfEDfghx6Do0ZfM3u0rOINBtfw2H8lD4VXyZF/o8HTzzyiCztaG2X/+IMeZA==}
 
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
@@ -5154,6 +5158,10 @@ packages:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
 
+  source-map-js@1.2.4:
+    resolution: {integrity: sha512-J7ZjMvHd9O1fcT/5V09QWaaSl2BbWx3F6O08spde82Namf9UB0GxRVIPiNbVsdKkoizHiSpTodo3vp2bAy91MA==}
+    engines: {node: '>=6.0.0'}
+
   source-map-resolve@0.5.3:
     resolution: {integrity: sha512-Htz+RnsXWk5+P2slx5Jh3Q66vhQj1Cllm0zvnaY98+NFx+Dv2CF/f5O/t8x+KaNdrdIAsruNzoh/KpialbqAnw==}
     deprecated: See https://github.com/lydell/source-map-resolve#deprecated
@@ -7258,11 +7266,14 @@ snapshots:
 
   '@types/eslint@9.6.1':
     dependencies:
-      '@types/estree': 1.0.10
+      '@types/estree': 1.0.11
       '@types/json-schema': 7.0.15
     optional: true
 
   '@types/estree@1.0.10': {}
+
+  '@types/estree@1.0.11':
+    optional: true
 
   '@types/estree@1.0.8': {}
 
@@ -8409,7 +8420,7 @@ snapshots:
       color-name: 1.1.4
       simple-swizzle: 0.2.2
 
-  colord@2.9.3: {}
+  colord@2.9.4: {}
 
   colorette@2.0.20: {}
 
@@ -10477,7 +10488,7 @@ snapshots:
     dependencies:
       nanoid: 3.3.20
       picocolors: 1.1.1
-      source-map-js: 1.2.2
+      source-map-js: 1.2.4
 
   postcss@8.5.6:
     dependencies:
@@ -10959,6 +10970,8 @@ snapshots:
   source-map-js@1.2.1: {}
 
   source-map-js@1.2.2: {}
+
+  source-map-js@1.2.4: {}
 
   source-map-resolve@0.5.3:
     dependencies:
