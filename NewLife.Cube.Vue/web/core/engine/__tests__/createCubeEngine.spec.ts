@@ -249,6 +249,26 @@ describe('createCubeEngine 分页与查询', () => {
     expect(lastCall(http, 'get')?.params).toMatchObject({ q: '泵', pageIndex: 1 });
   });
 
+  it.each([false, true])('显式字段页面只有声明关键字元数据才发送 q（声明=%s）', async (declareKeyword) => {
+    const { deps, http } = makeDeps();
+    const ctx = createCubeEngine({
+      apiPrefix: '/Demo/Entity/Mine',
+      keyword: true,
+      fields: { listFields: META.list, searchFields: [{ name: 'status', typeName: 'Int32' }] },
+      preset: declareKeyword ? { search: { append: [{ name: 'q', kind: 'keyword', typeName: 'String' }] } } : undefined,
+    }, deps);
+    await ctx.init();
+    expect(ctx.hasKeyword.value).toBe(declareKeyword);
+    ctx.searchModel.status = 10;
+    await ctx.searchByKeyword('REC20991231000001');
+    const query = lastCall(http, 'get')?.params;
+    expect(query).toMatchObject({ status: 10 });
+    if (declareKeyword) expect(query).toMatchObject({ q: 'REC20991231000001' });
+    else expect(query).not.toHaveProperty('q');
+    await ctx.resetSearch();
+    expect(lastCall(http, 'get')?.params).not.toHaveProperty('q');
+  });
+
   it('应该不带 q 当关闭 keyword 选项时', async () => {
     const { deps, http } = makeDeps();
     const ctx = createCubeEngine({ routePath: ROUTE, keyword: false }, deps);
