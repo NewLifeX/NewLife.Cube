@@ -31,6 +31,34 @@ public class ExternalAuthModel
     public String Code { get; set; }
 }
 
+/// <summary>外部认证服务扩展点。供业务方注册自定义实现对接内部认证体系（如员工平台），本地验证失败时优先调用</summary>
+/// <remarks>
+/// 登录管线（<c>UserService.LoginByPassword</c> 与 SSO 密码式授权 <c>TokenService</c>）在本地验证失败后：
+/// 先从 DI 解析本接口，有实现且返回非 null 时短路采用其结果；无实现或返回 null 时回退静态 <see cref="ExternalAuthHelper"/>（走 <c>CubeSetting.ExternalAuthUrl</c>），原行为不变。
+/// 实现返回 null 表示"未处理或验证失败"，不建议抛异常（异常会被登录管线按登录失败处理）。
+/// 自定义实现直接 <c>AddSingleton&lt;IExternalAuthService, T&gt;()</c> 注册即可（在 AddCube 前后均可生效）。
+/// </remarks>
+public interface IExternalAuthService
+{
+    /// <summary>验证用户名密码。成功返回外部用户信息；失败或未处理返回 null</summary>
+    /// <param name="username">用户名</param>
+    /// <param name="password">密码（已解密明文）</param>
+    /// <returns>外部用户信息；null 表示验证失败</returns>
+    ExternalAuthModel Validate(String username, String password);
+}
+
+/// <summary>默认外部认证服务。复用静态 <see cref="ExternalAuthHelper"/> 实现，验证地址取 <c>CubeSetting.ExternalAuthUrl</c></summary>
+/// <remarks>框架不自动注册本类，宿主需要以 DI 方式启用 ExternalAuthUrl 语义时自行注册；自定义实现可直接继承本类</remarks>
+public class DefaultExternalAuthService : IExternalAuthService
+{
+    /// <summary>验证用户名密码。委托静态 <see cref="ExternalAuthHelper.Validate"/>（地址取 <c>CubeSetting.ExternalAuthUrl</c>）</summary>
+    /// <param name="username">用户名</param>
+    /// <param name="password">密码</param>
+    /// <returns>外部用户信息；未配置地址或验证失败时返回 null</returns>
+    public virtual ExternalAuthModel Validate(String username, String password) =>
+        ExternalAuthHelper.Validate(username, password, CubeSetting.Current.ExternalAuthUrl);
+}
+
 /// <summary>外部验证助手。调用外部接口验证用户名密码，支持与第三方认证体系集成</summary>
 /// <remarks>
 /// 外部验证接口协议：

@@ -161,17 +161,36 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             }
 
             var provider = ManageProvider.Provider;
-            if (provider.Login(username, password, remember) == null)
+
+            // XCode LoginCore 在本地验证失败（密码错误/用户名不存在）时抛 EntityException 而非返回 null，
+            // 此处捕获并按"本地验证未通过"处理，让下方外部认证回退得以生效；
+            // 若外部认证同样失败则重抛原异常，交由外层 catch 统一处理（错误计数、日志、响应语义均保持原逻辑）
+            IManageUser localUser = null;
+            EntityException localFailure = null;
+            try
+            {
+                localUser = provider.Login(username, password, remember);
+            }
+            catch (EntityException ex) { localFailure = ex; }
+
+            if (localUser == null)
             {
                 // 未激活账号（需邮箱/手机验证注册）：明确提示而非"密码错误"，前端据此提供重发激活入口
                 var u = User.FindByName(username) ?? User.FindByMail(username) ?? User.FindByMobile(username);
                 if (u != null && !u.Enable)
                     return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("The account is not activated. Please activate it via email or mobile before signing in.") };
 
-                // 本地验证失败，尝试外部验证服务
-                var extUser = ExternalAuthHelper.Validate(username, password, set.ExternalAuthUrl);
+                // 本地验证失败，尝试外部验证服务。
+                // 优先 DI 扩展点 IExternalAuthService：有实现且验证成功时短路采用其结果；
+                // 无实现或验证失败时回退静态 ExternalAuthHelper（走 ExternalAuthUrl），原行为不变
+                var extUser = ModelExtension.GetService<IExternalAuthService>(serviceProvider)?.Validate(username, password)
+                    ?? ExternalAuthHelper.Validate(username, password, set.ExternalAuthUrl);
                 if (extUser == null)
+                {
+                    // 本地登录失败的原异常重抛，保持错误计数与响应语义不变
+                    if (localFailure != null) throw localFailure;
                     return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Incorrect username or password!") };
+                }
 
                 // 外部验证成功，创建或更新本地用户
                 var extLocalUser = ExternalAuthHelper.CreateOrUpdateUser(extUser, ip, set);
