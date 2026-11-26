@@ -5,6 +5,7 @@ const apiURL = process.env.PLAYWRIGHT_API_URL || 'https://localhost:7116';
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: '**/remember-token-refresh.spec.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

@@ -93,6 +93,8 @@ export interface RequestConfig {
 
 // 认证相关配置
 export interface AuthConfig {
+  /** 默认关闭；仅记住我登录启用过期刷新。 */
+  tokenRefresh?: { enabled?: boolean; };
   tokenKey?: string;
   refreshTokenKey?: string;
   oauthUrl?: string;

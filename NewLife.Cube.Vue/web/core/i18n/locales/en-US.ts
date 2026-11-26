@@ -832,6 +832,7 @@ export default {
   'theme.industrialLightDesc': 'Industrial light theme',
 
   // Login page
+  'login.rememberMe': 'Remember me',
   'login.tabLogin': 'Sign in',
   'login.tabRegister': 'Sign up',
   'login.defaultSystemName': 'Cube system',

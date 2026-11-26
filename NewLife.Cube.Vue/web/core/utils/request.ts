@@ -29,6 +29,7 @@ import { getAccessToken, removeAccessToken } from './token';
 import { getConfig } from '../configure';
 import { gotoPage } from './router';
 import { appRelativePath, normalizeAuthRedirect } from './authRedirect';
+import { createTokenRefreshPolicy } from './tokenRefresh';
 import notification from '../components/Notification';
 import { intl } from '../i18n';
 
@@ -208,6 +209,7 @@ const cubeConfig = getConfig();
 // unwrapResponse:false：createRequest 封装(page/user/menu/config)返回统一业务体 ApiResponse，调用方只需访问 res.data。
 // cube-vue 仅以回调接线 UI 行为（弹窗 / 401 跳转）与配置（附加头 / 请求钩子 / 响应钩子），其余下沉至 api-core。
 const api = createCubeApi({
+  tokenRefresh: createTokenRefreshPolicy(),
   baseURL: API_HOST,
   tokenStorage: cubeTokenStorage,
   tokenHeaderPrefix: 'bearer ',

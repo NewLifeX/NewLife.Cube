@@ -117,6 +117,7 @@
             v-if="showPasswordForm"
             :login-config="loginConfig ?? undefined"
             :submitting="submitting"
+            :remember-enabled="config.auth.tokenRefresh?.enabled === true"
             @submit="handleLogin"
           />
 
@@ -194,7 +195,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { getConfig } from '../configure';
-import { setAccessToken, setRefreshToken } from '../utils/token';
+import { setAccessToken, setRefreshToken, removeRefreshToken } from '../utils/token';
+import { rememberLoginSession } from '../utils/tokenRefresh';
 import {
   fetchLoginConfig,
   loginByPassword,
@@ -345,16 +347,23 @@ function handleOAuth(name: string): void {
  * 处理密码登录提交（容器层：仅负责与服务端交互）。
  * 客户端校验已前置到 LoginForm，校验通过才会 emit('submit')。
  */
-async function handleLogin(payload: { username: string; password: string }): Promise<void> {
+async function handleLogin(payload: { username: string; password: string; remember?: boolean }): Promise<void> {
   submitting.value = true;
   try {
-    const res = await loginByPassword(payload.username, payload.password);
+    const res = config.auth.tokenRefresh?.enabled
+      ? await loginByPassword(payload.username, payload.password, undefined, undefined, payload.remember === true)
+      : await loginByPassword(payload.username, payload.password);
 
     if (res.code === 0 && res.data?.accessToken) {
       // 登录成功：写入 token
       setAccessToken(res.data.accessToken);
       if (res.data.refreshToken) {
         setRefreshToken(res.data.refreshToken);
+      } else if (config.auth.tokenRefresh?.enabled) {
+        removeRefreshToken();
+      }
+      if (config.auth.tokenRefresh?.enabled) {
+        rememberLoginSession(payload.remember === true, payload.username);
       }
       ElMessage.success(t('login.loginSuccess'));
       const redirect = (route.query.redirect as string) || '/';

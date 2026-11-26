@@ -815,6 +815,7 @@ export default {
   'theme.industrialLightDesc': '工業科技淺色主題',
 
   // 登入頁
+  'login.rememberMe': '記住我',
   'login.tabLogin': '登 入',
   'login.tabRegister': '註 冊',
   'login.defaultSystemName': '魔方系統',
