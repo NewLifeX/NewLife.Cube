@@ -75,6 +75,7 @@ pnpm run ct:server          # 仅启动 gallery（手动浏览器预览）
 # Playwright E2E
 pnpm run test:e2e           # Playwright
 pnpm run test:e2e:ui        # Playwright UI 模式
+pnpm run test:e2e:remember  # 记住我 / 令牌刷新独立浏览器验证（playwright.remember.config.ts）
 
 # 静态检查
 pnpm run type-check         # vue-tsc

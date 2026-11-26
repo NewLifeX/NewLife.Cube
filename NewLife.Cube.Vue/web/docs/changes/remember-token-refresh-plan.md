@@ -82,7 +82,7 @@ auth: {
 - 浏览器接口桩补验通过 1/1，覆盖勾选、重载恢复、密码框为空和关闭配置后隐藏控件。当前运行状态见 `.temp/remember-browser/results/.last-run.json`，截图见 `.temp/remember-browser/`。
 - 浏览器首轮失败记录保留：宽泛URL桩误拦源码；修正后断言原生隐藏input不可见，改点可见标签并断言checked；稳定截图禁用有限动画后可见勾。未改产品CSS。
 
-在 Cube 根目录运行 `pnpm --dir NewLife.Cube.Vue/web exec playwright test --config playwright.remember.config.ts` 可复跑浏览器测试。测试在本地 5198 端口启动独立前端，认证接口由测试桩提供。
+在 Cube 根目录运行 `pnpm --dir NewLife.Cube.Vue/web run test:e2e:remember` 可复跑浏览器测试。测试在本地 5198 端口启动独立前端，认证接口由测试桩提供。
 
 已收到成果｜browser-refresh｜接口桩补验1/1通过；复核实跑、打开截图核对；真实后端未验，整体验收仍保持未关闭。
 
