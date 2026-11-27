@@ -1096,29 +1096,18 @@ test('failed refresh keeps a token another tab already wrote', async () => {
     setToken: (value) => { token = value; },
     clearToken: () => { token = null; },
   };
-  const loserInside = deferred();
-  const winnerDone = deferred();
-  const loser = createApiClient({
+  const inside = deferred();
+  const fail = deferred();
+  const client = createApiClient({
     tokenManager: new TokenManager(storage),
     onUnauthorized: () => { unauthorized++; },
     tokenRefresh: {
       isEnabled: () => true,
       refresh: async () => {
-        loserInside.resolve();
-        await winnerDone.promise;
+        inside.resolve();
+        // 刷新进行中另一页签写入了新令牌；这里不能让第二个客户端也去抢跨页锁，否则两边互等
+        await fail.promise;
         throw new Error('lost');
-      },
-    },
-  });
-  const winner = createApiClient({
-    tokenManager: new TokenManager(storage),
-    onUnauthorized: () => { unauthorized++; },
-    tokenRefresh: {
-      isEnabled: () => true,
-      refresh: async () => {
-        await loserInside.promise;
-        token = 'new';
-        winnerDone.resolve();
       },
     },
   });
@@ -1128,10 +1117,11 @@ test('failed refresh keeps a token another tab already wrote', async () => {
     headers: {},
     data: { code: config.headers?.Authorization === 'new' ? 0 : 401 },
   });
-  loser.defaults.adapter = adapter;
-  winner.defaults.adapter = adapter;
-  const lost = assert.rejects(loser.get('/lost'));
-  await winner.get('/won');
+  client.defaults.adapter = adapter;
+  const lost = assert.rejects(client.get('/lost'));
+  await inside.promise;
+  token = 'new';
+  fail.resolve();
   await lost;
   assert.equal(token, 'new');
   assert.equal(unauthorized, 0);
