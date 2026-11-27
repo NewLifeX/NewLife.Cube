@@ -152,10 +152,10 @@ test.describe('动态页（/meta 驱动）', () => {
 
   test('接口型控制器显示说明而不是空表格', async ({ page }) => {
     // vTest1 下是框架的纯 API 控制器（无实体元数据），不应渲染出点了就报错的工具栏。
-    // 两条路径都要覆盖：菜单路由命中（AutoPage）与 catch-all 兜底（DefaultEntity → 引擎 metaMissing）
+    // 登记进菜单的路由走列表页给说明（.ct-unsupported）；未登记的由 catch-all 落到 404 页。
     for (const path of ['/vTest1/Mfa', '/vTest1/Cube']) {
       await page.goto(path);
-      await expect(page.locator('.ct-unsupported, .autopage-unsupported')).toBeVisible({ timeout: 20000 });
+      await expect(page.locator('.ct-unsupported, .autopage-unsupported, .page-not-found')).toBeVisible({ timeout: 20000 });
       expect(await page.locator('.cube-table .el-table').count()).toBe(0);
     }
   });
