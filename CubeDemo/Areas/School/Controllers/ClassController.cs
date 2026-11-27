@@ -16,7 +16,7 @@ namespace CubeDemo.Areas.School.Controllers;
 [Menu(0, true, Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class ClassController : EntityController<Class, ClassModel>
 {
-    private readonly ITracer _tracer;
+    private readonly ITracer? _tracer;
 
     static ClassController()
     {
@@ -48,7 +48,7 @@ public class ClassController : EntityController<Class, ClassModel>
     {
         PageSetting.EnableTableDoubleClick = true;
 
-        _tracer = provider?.GetService<ITracer>();
+        _tracer = provider.GetService<ITracer>();
     }
 
     public IActionResult Hello()

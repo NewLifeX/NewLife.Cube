@@ -26,12 +26,12 @@ public class IoTSetting : Config<IoTSetting>
     /// <summary>MQTT证书地址。设置了才启用安全连接，默认为空</summary>
     [Description("MQTT证书地址。设置了才启用安全连接，默认为空")]
     [Category("默认")]
-    public String MqttCertPath { get; set; }
+    public String MqttCertPath { get; set; } = "";
 
     /// <summary>MMQTT证书密码</summary>
     [Description("MQTT证书密码")]
     [Category("默认")]
-    public String MqttCertPassword { get; set; }
+    public String MqttCertPassword { get; set; } = "";
 
     /// <summary>LoRaWAN服务端口。默认1680</summary>
     [Description("RPC服务端口。默认1680")]
@@ -48,7 +48,7 @@ public class IoTSetting : Config<IoTSetting>
     /// <summary>令牌密钥。用于生成JWT令牌的算法和密钥，如HS256:ABCD1234</summary>
     [Description("令牌密钥。用于生成JWT令牌的算法和密钥，如HS256:ABCD1234")]
     [Category("设备管理")]
-    public String TokenSecret { get; set; }
+    public String TokenSecret { get; set; } = "";
 
     /// <summary>令牌有效期。默认2*3600秒</summary>
     [Description("令牌有效期。默认2*3600秒")]

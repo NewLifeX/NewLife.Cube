@@ -38,12 +38,12 @@ public class StudentController : EntityController<Student, StudentModel>
         //return Student.Search(null,p);
 
         var tips = p["tips"];
-        XTrace.WriteLine("tips: {0}", tips);
+        XTrace.WriteLine("tips: {0}", tips + "");
 
         if (Request.Method == "POST")
         {
             var tips2 = Request.Form["tips"];
-            XTrace.WriteLine("tips2: {0}", tips2);
+            XTrace.WriteLine("tips2: {0}", tips2.ToString());
         }
 
         //PageSetting.EnableToolbar = false;
@@ -59,7 +59,7 @@ public class StudentController : EntityController<Student, StudentModel>
             foreach (var id in ids)
             {
                 var student = Student.FindById(id);
-                XTrace.WriteLine("{0} 呼叫 {1}", student.Name, teacher);
+                XTrace.WriteLine("{0} 呼叫 {1}", student?.Name, teacher);
             }
         }
 

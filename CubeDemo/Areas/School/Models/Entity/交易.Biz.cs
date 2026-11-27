@@ -105,7 +105,7 @@ public partial class Trade : Entity<Trade>, ITenantScope
     /// <summary>根据订单编号查找</summary>
     /// <param name="id">订单编号</param>
     /// <returns>实体对象</returns>
-    public static Trade FindById(Int64 id)
+    public static Trade? FindById(Int64 id)
     {
         if (id <= 0) return null;
 

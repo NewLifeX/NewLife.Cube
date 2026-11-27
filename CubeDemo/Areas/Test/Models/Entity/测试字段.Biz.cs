@@ -39,7 +39,7 @@ public partial class 测试字段 : Entity<测试字段>
     /// <summary>根据编号查找</summary>
     /// <param name="id">编号</param>
     /// <returns>实体对象</returns>
-    public static 测试字段 FindById(Int32 id)
+    public static 测试字段? FindById(Int32 id)
     {
         if (id <= 0) return null;
 
@@ -56,7 +56,7 @@ public partial class 测试字段 : Entity<测试字段>
     /// <param name="key">关键字</param>
     /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
     /// <returns>实体列表</returns>
-    public static IList<测试字段> Search(String key, PageParameter page)
+    public static new IList<测试字段> Search(String key, PageParameter page)
     {
         var exp = new WhereExpression();
 
