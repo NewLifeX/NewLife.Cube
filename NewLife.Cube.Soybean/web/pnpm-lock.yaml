@@ -93,8 +93,8 @@ importers:
         specifier: 3.4.17
         version: 3.4.17
       echarts:
-        specifier: 6.0.0
-        version: 6.0.0
+        specifier: 6.1.0
+        version: 6.1.0
       element-plus:
         specifier: ^2.13.6
         version: 2.13.6(typescript@5.9.3)(vue@3.5.31(typescript@5.9.3))
@@ -3132,8 +3132,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  echarts@6.0.0:
-    resolution: {integrity: sha512-Tte/grDQRiETQP4xz3iZWSvoHrkCQtwqd6hs+mifXcjrCuo2iKWbajFObuLJVBlDIJlOzgQPd1hsaKt/3+OMkQ==}
+  echarts@6.1.0:
+    resolution: {integrity: sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA==}
 
   electron-to-chromium@1.5.267:
     resolution: {integrity: sha512-0Drusm6MVRXSOJpGbaSVgcQsuB4hEkMpHXaVstcPmhu5LIedxs1xNK/nIxmQIU/RPC0+1/o0AVZfBTkTNJOdUw==}
@@ -5400,6 +5400,9 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
+
   tsup@8.5.1:
     resolution: {integrity: sha512-xtgkqwdhpKWr3tKPmCkvYmS9xnQK3m3XgxZHwSUjvfTjp7YfXe5tT3GgWi0F2N+ZSMsOeWeZFh7ZZFg5iPhing==}
     engines: {node: '>=18'}
@@ -5813,8 +5816,8 @@ packages:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==}
     engines: {node: '>=18'}
 
-  zrender@6.0.0:
-    resolution: {integrity: sha512-41dFXEEXuJpNecuUQq6JlbybmnHaqqpGlbH1yxnA5V9MMP4SbohSVZsJIwz+zdjQXSSlR1Vc34EgH1zxyTDvhg==}
+  zrender@6.1.0:
+    resolution: {integrity: sha512-oEGMDB6pOP2S6OwRR4PdVv610zrjnA3Bh+JnSG12fYJlBKjtNAoEb5fSUoCOOINlH96I2fU38/A2UpRKs67xYQ==}
 
   zustand@5.1.0:
     resolution: {integrity: sha512-ciJZlP48M1PTQbVQq81CGVFxHTLpZNrFjKqwjtCU34AWuXTZT/jrF3p9+fI84Cf1eSCMLapxqBy/SNTfwOBuqA==}
@@ -5855,7 +5858,7 @@ snapshots:
   '@antv/algorithm@0.1.26':
     dependencies:
       '@antv/util': 2.0.17
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/component@2.1.11':
     dependencies:
@@ -5899,7 +5902,7 @@ snapshots:
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
       gl-matrix: 3.4.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-canvas@2.0.48':
     dependencies:
@@ -5912,7 +5915,7 @@ snapshots:
       '@antv/g-plugin-image-loader': 2.1.26
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-dom-mutation-observer-api@2.0.38':
     dependencies:
@@ -5928,14 +5931,14 @@ snapshots:
       eventemitter3: 5.0.1
       gl-matrix: 3.4.4
       rbush: 3.0.1
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-math@3.0.1':
     dependencies:
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
       gl-matrix: 3.4.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-plugin-canvas-path-generator@2.1.22':
     dependencies:
@@ -5943,7 +5946,7 @@ snapshots:
       '@antv/g-math': 3.0.1
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-plugin-canvas-picker@2.1.27':
     dependencies:
@@ -5954,7 +5957,7 @@ snapshots:
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
       gl-matrix: 3.4.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-plugin-canvas-renderer@2.3.3':
     dependencies:
@@ -5965,20 +5968,20 @@ snapshots:
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
       gl-matrix: 3.4.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-plugin-dom-interaction@2.1.27':
     dependencies:
       '@antv/g-lite': 2.3.2
       '@babel/runtime': 7.28.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-plugin-dragndrop@2.0.38':
     dependencies:
       '@antv/g-lite': 2.3.2
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-plugin-html-renderer@2.1.27':
     dependencies:
@@ -5986,7 +5989,7 @@ snapshots:
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
       gl-matrix: 3.4.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-plugin-image-loader@2.1.26':
     dependencies:
@@ -5994,14 +5997,14 @@ snapshots:
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
       gl-matrix: 3.4.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g-web-animations-api@2.1.28':
     dependencies:
       '@antv/g-lite': 2.3.2
       '@antv/util': 3.3.11
       '@babel/runtime': 7.28.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/g2@5.4.8':
     dependencies:
@@ -6061,7 +6064,7 @@ snapshots:
       d3-quadtree: 3.0.1
       dagre: 0.8.5
       ml-matrix: 6.12.1
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/scale@0.4.16':
     dependencies:
@@ -6078,13 +6081,13 @@ snapshots:
   '@antv/util@2.0.17':
     dependencies:
       csstype: 3.1.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/util@3.3.11':
     dependencies:
       fast-deep-equal: 3.1.3
       gl-matrix: 3.4.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@antv/vendor@1.0.11':
     dependencies:
@@ -6509,17 +6512,17 @@ snapshots:
   '@emnapi/core@1.7.1':
     dependencies:
       '@emnapi/wasi-threads': 1.1.0
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/runtime@1.7.1':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/wasi-threads@1.1.0':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@esbuild/aix-ppc64@0.27.2':
@@ -7173,7 +7176,7 @@ snapshots:
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@types/bmapgl@0.0.7': {}
@@ -8102,7 +8105,7 @@ snapshots:
 
   ast-types@0.16.1:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   ast-walker-scope@0.8.3:
     dependencies:
@@ -8789,10 +8792,10 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  echarts@6.0.0:
+  echarts@6.1.0:
     dependencies:
       tslib: 2.3.0
-      zrender: 6.0.0
+      zrender: 6.1.0
 
   electron-to-chromium@1.5.267: {}
 
@@ -10564,7 +10567,7 @@ snapshots:
       esprima: 4.0.1
       source-map: 0.6.1
       tiny-invariant: 1.3.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   reflect.getprototypeof@1.0.10:
     dependencies:
@@ -11182,6 +11185,8 @@ snapshots:
 
   tslib@2.8.1: {}
 
+  tslib@2.9.1: {}
+
   tsup@8.5.1(jiti@2.6.1)(postcss@8.5.33)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.3):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.27.2)
@@ -11735,7 +11740,7 @@ snapshots:
 
   yoctocolors@2.1.2: {}
 
-  zrender@6.0.0:
+  zrender@6.1.0:
     dependencies:
       tslib: 2.3.0
 
