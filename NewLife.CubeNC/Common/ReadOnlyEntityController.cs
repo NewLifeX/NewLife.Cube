@@ -1049,8 +1049,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             Height = 400,
         };
 
-        // X轴
-        if (xAxis != null)
+        // X轴。饼图不走直角坐标系，不能生成坐标轴，否则单独存在的坐标轴会让 ECharts 5.6 渲染报错
+        if (xAxis != null && seriesType != SeriesTypes.Pie)
         {
             chart.SetX(data, xAxis);
 
@@ -1058,7 +1058,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         }
 
         // Y轴
-        if (!yAxis.IsNullOrEmpty()) chart.SetY(yAxis);
+        if (!yAxis.IsNullOrEmpty() && seriesType != SeriesTypes.Pie) chart.SetY(yAxis);
 
         // 数据图例
         if (yFields != null && yFields.Length > 0)
@@ -1086,8 +1086,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                 }
             }
 
-            // 如果没有Y轴，自动补上
-            if (yFields.Length > 0 && (chart.YAxis == null || chart.YAxis.Count == 0))
+            // 如果没有Y轴，自动补上。饼图不需要坐标轴
+            if (seriesType != SeriesTypes.Pie && (chart.YAxis == null || chart.YAxis.Count == 0))
                 chart.SetY(L.T(yFields[0].DisplayName.IsNullOrEmpty() ? yFields[0].Name : yFields[0].DisplayName), "value");
         }
 

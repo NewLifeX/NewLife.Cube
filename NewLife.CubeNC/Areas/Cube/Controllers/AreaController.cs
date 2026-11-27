@@ -126,7 +126,6 @@ public class AreaController : EntityController<Area, AreaModel>
             if (list2.Count >= 0)
             {
                 var chart = AddChart(list2, kindField, null, [idField], SeriesTypes.Pie, "bottom");
-                chart.XAxis = null;
                 var pie = chart.Series[0];
 
                 //var chart = new ECharts
