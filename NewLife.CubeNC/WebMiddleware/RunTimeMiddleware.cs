@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Http.Features;
 using NewLife.Common;
@@ -187,15 +188,121 @@ public class RunTimeMiddleware
                                 rtinf.Watch.ElapsedMilliseconds);
 
         // 设计时收集执行的SQL语句
-        if (SysConfig.Current.Develop)
+        var sqls = SysConfig.Current.Develop ? rtinf.Sqls : null;
+        if (sqls == null || sqls.Count == 0) return $"{RunInfoStyle}<div class=\"cube-runinfo cube-runinfo-static\"><span class=\"cube-runinfo-stats\">{inf}</span></div>";
+
+        var copy = HttpUtility.HtmlEncode(L.T("Copy"));
+        var copied = HttpUtility.HtmlEncode(L.T("✓ Copied"));
+        var sb = new StringBuilder(RunInfoStyle.Length + 512 + sqls.Count * 128);
+        sb.Append(RunInfoStyle);
+        sb.Append("<details class=\"cube-runinfo\"><summary class=\"cube-runinfo-bar\">");
+        sb.Append("<span class=\"cube-runinfo-stats\">").Append(inf).Append("</span>");
+        sb.Append("<span class=\"cube-runinfo-toggle\">");
+        sb.Append("<span class=\"cube-runinfo-count\">SQL ").Append(sqls.Count).Append("</span>");
+        sb.Append("<span class=\"cube-runinfo-chevron\" aria-hidden=\"true\"></span>");
+        sb.Append("</span></summary>");
+        sb.Append("<div class=\"cube-runinfo-panel\"><div class=\"cube-runinfo-toolbar\">");
+        sb.Append("<button type=\"button\" class=\"cube-runinfo-copy\" data-cube-runinfo-copy");
+        sb.Append(" data-copy=\"").Append(copy).Append("\" data-copied=\"").Append(copied).Append("\">");
+        sb.Append(copy).Append("</button></div><div class=\"cube-runinfo-list\">");
+        foreach (var item in sqls)
         {
-            var list = rtinf.Sqls?.ToArray();
-            if (list != null && list.Length > 0)
-                inf += "<br />" + list.Select(e => HttpUtility.HtmlEncode(e)).Join("<br />" + Environment.NewLine);
+            var (source, sql) = SplitSql(item);
+            sb.Append("<div class=\"cube-runinfo-item\">");
+            if (!source.IsNullOrEmpty()) sb.Append("<span class=\"cube-runinfo-source\">").Append(HttpUtility.HtmlEncode(source)).Append("</span>");
+            sb.Append("<code class=\"cube-runinfo-sql\">").Append(HttpUtility.HtmlEncode(sql)).Append("</code>");
+            sb.Append("</div>");
+        }
+        sb.Append("</div></div></details>");
+        sb.Append(RunInfoScript);
+
+        return sb.ToString();
+    }
+
+    /// <summary>拆分SQL日志中的连接名与语句。日志格式为“[连接名] SQL”</summary>
+    /// <param name="value">SQL日志</param>
+    /// <returns></returns>
+    private static (String? Source, String Sql) SplitSql(String value)
+    {
+        if (!value.IsNullOrEmpty() && value[0] == '[')
+        {
+            var p = value.IndexOf(']');
+            if (p > 1 && p + 1 < value.Length && value[p + 1] == ' ')
+            {
+                // 排除 [dbo].[User] 这类以方括号开头的SQL
+                var source = value[1..p];
+                if (source.IndexOf('.') < 0 && source.IndexOf(' ') < 0) return (source, value[(p + 1)..].TrimStart());
+            }
         }
 
-        return inf;
+        return (null, value);
     }
+
+    /// <summary>运行信息条的样式。随片段输出，保证各皮肤一致，且仅在显示运行时间时加载</summary>
+    private const String RunInfoStyle = """
+        <style>
+        .cube-runinfo{--cr-primary:var(--cube-primary,#2b7dbc);--cr-primary-light:var(--cube-primary-light,#e8f1f9);--cr-border:var(--cube-border,#e4e6e9);--cr-border-light:var(--cube-border-light,#eef1f4);--cr-text:var(--cube-text,#3a3f44);--cr-muted:var(--cube-text-muted,#8a9199);box-sizing:border-box;width:100%;text-align:left;background:var(--cube-card,#fff);border:1px solid var(--cr-border);border-radius:6px;color:var(--cr-muted);font-size:12px;line-height:1.6;overflow:hidden}
+        .cube-runinfo *{box-sizing:border-box}
+        .cube-runinfo-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 12px;cursor:pointer;list-style:none;user-select:none;transition:background-color .15s ease}
+        .cube-runinfo-bar::-webkit-details-marker{display:none}
+        .cube-runinfo-bar:hover{background:#f7fafd}
+        .cube-runinfo-bar:focus-visible{outline:2px solid rgba(43,125,188,.35);outline-offset:-2px}
+        .cube-runinfo[open]>.cube-runinfo-bar{background:#fafbfc;border-bottom:1px solid var(--cr-border-light)}
+        .cube-runinfo-stats{min-width:0}
+        .cube-runinfo-toggle{display:inline-flex;align-items:center;gap:6px;flex:none;color:var(--cr-primary);font-weight:600}
+        .cube-runinfo-count{padding:0 8px;border-radius:999px;background:var(--cr-primary-light);color:var(--cr-primary);font-size:11px;font-weight:600;line-height:18px;white-space:nowrap;letter-spacing:.2px}
+        .cube-runinfo-chevron{width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .18s ease;margin-right:2px}
+        .cube-runinfo[open] .cube-runinfo-chevron{transform:rotate(45deg)}
+        .cube-runinfo-panel{padding:0 12px 8px;background:#fbfcfd}
+        .cube-runinfo-toolbar{display:flex;justify-content:flex-end;padding:6px 0 2px}
+        .cube-runinfo-copy{padding:0;border:0;border-radius:0;background:none;color:var(--cr-primary);font:inherit;font-size:12px;line-height:1.4;cursor:pointer;opacity:.85}
+        .cube-runinfo-copy:hover{opacity:1;text-decoration:underline}
+        .cube-runinfo-list{max-height:320px;overflow:auto;scrollbar-width:thin}
+        .cube-runinfo-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-top:1px dashed var(--cr-border-light)}
+        .cube-runinfo-item:first-child{border-top:0}
+        .cube-runinfo-source{flex:none;margin-top:1px;padding:0 6px;border-radius:999px;background:var(--cr-primary-light);color:var(--cr-primary);font-size:11px;line-height:18px;white-space:nowrap}
+        .cube-runinfo-sql{flex:1;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:none;color:var(--cr-text);font-family:Consolas,Monaco,"Courier New",monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+        .cube-runinfo-static{padding:7px 12px}
+        @media (max-width:767px){.cube-runinfo-bar{flex-wrap:wrap;gap:2px 12px}.cube-runinfo-list{max-height:240px}}
+        </style>
+        """;
+
+    /// <summary>复制SQL的脚本。随片段输出，保证各皮肤一致</summary>
+    private const String RunInfoScript = """
+        <script>
+        (function () {
+            if (window.cubeRunInfoCopy) return;
+            window.cubeRunInfoCopy = true;
+            document.addEventListener('click', function (e) {
+                var btn = e.target && e.target.closest ? e.target.closest('[data-cube-runinfo-copy]') : null;
+                if (!btn) return;
+                var panel = btn.closest('.cube-runinfo-panel');
+                if (!panel) return;
+                var text = Array.prototype.map.call(panel.querySelectorAll('.cube-runinfo-sql'), function (x) { return x.textContent; }).join('\n');
+                var done = function () {
+                    btn.textContent = btn.getAttribute('data-copied');
+                    setTimeout(function () { btn.textContent = btn.getAttribute('data-copy'); }, 1600);
+                };
+                var fallback = function () {
+                    var box = document.createElement('textarea');
+                    box.value = text;
+                    box.style.position = 'fixed';
+                    box.style.opacity = '0';
+                    document.body.appendChild(box);
+                    box.select();
+                    try { document.execCommand('copy'); } catch (ex) { }
+                    box.remove();
+                    done();
+                };
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(done, fallback);
+                } else {
+                    fallback();
+                }
+            });
+        })();
+        </script>
+        """;
 
     private static IDictionary<String, Object> CreateSession(HttpContext ctx)
     {
