@@ -39,7 +39,7 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
     public String ShortText { get => _ShortText; set { if (OnPropertyChanging("ShortText", value)) { _ShortText = value; OnPropertyChanged("ShortText"); } } }
 
     private String _LongText;
-    /// <summary>长文本。大文本（Length>=300）渲染为多行文本域</summary>
+    /// <summary>长文本。大文本（Length&gt;=300）渲染为多行文本域</summary>
     [Category("基本信息")]
     [DisplayName("长文本")]
     [Description("长文本。大文本（Length>=300）渲染为多行文本域")]
@@ -411,7 +411,7 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
         /// <summary>短文本。必填的短文本示例</summary>
         public static readonly Field ShortText = FindByName("ShortText");
 
-        /// <summary>长文本。大文本（Length>=300）渲染为多行文本域</summary>
+        /// <summary>长文本。大文本（Length&gt;=300）渲染为多行文本域</summary>
         public static readonly Field LongText = FindByName("LongText");
 
         /// <summary>整数。Int32 数值</summary>
@@ -498,7 +498,7 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
         /// <summary>短文本。必填的短文本示例</summary>
         public const String ShortText = "ShortText";
 
-        /// <summary>长文本。大文本（Length>=300）渲染为多行文本域</summary>
+        /// <summary>长文本。大文本（Length&gt;=300）渲染为多行文本域</summary>
         public const String LongText = "LongText";
 
         /// <summary>整数。Int32 数值</summary>

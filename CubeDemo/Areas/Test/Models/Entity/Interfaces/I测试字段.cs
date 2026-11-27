@@ -17,7 +17,7 @@ public partial interface I测试字段
     /// <summary>短文本。必填的短文本示例</summary>
     String ShortText { get; set; }
 
-    /// <summary>长文本。大文本（Length>=300）渲染为多行文本域</summary>
+    /// <summary>长文本。大文本（Length&gt;=300）渲染为多行文本域</summary>
     String LongText { get; set; }
 
     /// <summary>整数。Int32 数值</summary>

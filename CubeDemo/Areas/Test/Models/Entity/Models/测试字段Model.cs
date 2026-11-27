@@ -20,7 +20,7 @@ public partial class 测试字段Model : IModel
     /// <summary>短文本。必填的短文本示例</summary>
     public String ShortText { get; set; }
 
-    /// <summary>长文本。大文本（Length>=300）渲染为多行文本域</summary>
+    /// <summary>长文本。大文本（Length&gt;=300）渲染为多行文本域</summary>
     public String LongText { get; set; }
 
     /// <summary>整数。Int32 数值</summary>
