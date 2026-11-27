@@ -75,7 +75,7 @@
     "dayjs": "1.11.20",
     "defu": "^6.1.4",
     "dhtmlx-gantt": "9.1.3",
-    "dompurify": "3.3.3",
+    "dompurify": "3.4.17",
     "echarts": "6.0.0",
     "element-plus": "^2.13.6",
     "jsbarcode": "3.12.3",
