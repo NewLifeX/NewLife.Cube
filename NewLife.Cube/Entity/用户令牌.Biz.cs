@@ -19,10 +19,10 @@ namespace NewLife.Cube.Entity
             // 累加字段
             Meta.Factory.AdditionalFields.Add(__.Times);
 
-            // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
-            Meta.Interceptors.Add<UserInterceptor>();
-            Meta.Interceptors.Add<TimeInterceptor>();
-            Meta.Interceptors.Add<IPInterceptor>();
+            // 过滤器 UserFilter、TimeFilter、IPFilter
+            Meta.Filters.Add<UserFilter>();
+            Meta.Filters.Add<TimeFilter>();
+            Meta.Filters.Add<IPFilter>();
 
 
             var sc = Meta.SingleCache;

@@ -793,7 +793,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
     /// <summary>创建空白实体并清空自增主键</summary>
     /// <remarks>
-    /// XCode 的 DataScopeInterceptor 会把 IUserScope.UserId 映射到 User.Id，
+    /// XCode 的 DataScopeFilter 会把 IUserScope.UserId 映射到 User.Id，
     /// 使新建 User 实体带出当前登录用户的主键，进而被误判为编辑并可能覆盖现有数据。
     /// </remarks>
     /// <returns>新的实体实例</returns>

@@ -19,9 +19,9 @@ public partial class OAuthLog : Entity<OAuthLog>
         //var df = Meta.Factory.AdditionalFields;
         //df.Add(nameof(ConnectId));
 
-        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
-        Meta.Interceptors.Add<TimeInterceptor>();
-        Meta.Interceptors.Add<IPInterceptor>();
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add<TimeFilter>();
+        Meta.Filters.Add<IPFilter>();
     }
 
     /// <summary>验证并修补数据，通过抛出异常的方式提示验证失败。</summary>

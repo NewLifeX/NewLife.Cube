@@ -19,8 +19,8 @@ public partial class UserStat : Entity<UserStat>
         df.Add(nameof(Logins));
         df.Add(nameof(OAuths));
 
-        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
-        Meta.Interceptors.Add<TimeInterceptor>();
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add<TimeFilter>();
 
         var sc = Meta.SingleCache;
         if (sc.Expire < 20 * 60) sc.Expire = 20 * 60;

@@ -17,10 +17,10 @@ public partial class App : Entity<App>
         var df = Meta.Factory.AdditionalFields;
         df.Add(__.Auths);
 
-        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
-        Meta.Interceptors.Add<UserInterceptor>();
-        Meta.Interceptors.Add<TimeInterceptor>();
-        Meta.Interceptors.Add<IPInterceptor>();
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add<UserFilter>();
+        Meta.Filters.Add<TimeFilter>();
+        Meta.Filters.Add<IPFilter>();
 
         // 单对象缓存
         var sc = Meta.SingleCache;

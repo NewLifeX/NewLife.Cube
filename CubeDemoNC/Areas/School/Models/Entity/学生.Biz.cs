@@ -26,7 +26,7 @@ using XCode.Shards;
 
 namespace NewLife.School.Entity;
 
-public partial class Student : Entity<Student>, ITenantSource
+public partial class Student : Entity<Student>, ITenantScope
 {
     #region 对象操作
     static Student()
@@ -35,10 +35,10 @@ public partial class Student : Entity<Student>, ITenantSource
         //var df = Meta.Factory.AdditionalFields;
         //df.Add(nameof(TenantId));
 
-        // 过滤器 UserModule、TimeModule、IPModule
-        Meta.Modules.Add<UserModule>();
-        Meta.Modules.Add<TimeModule>();
-        Meta.Modules.Add<IPModule>();
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add<UserFilter>();
+        Meta.Filters.Add<TimeFilter>();
+        Meta.Filters.Add<IPFilter>();
     }
 
     /// <summary>验证并修补数据，通过抛出异常的方式提示验证失败。</summary>
@@ -52,7 +52,7 @@ public partial class Student : Entity<Student>, ITenantSource
         base.Valid(isNew);
 
         // 在新插入数据或者修改了指定字段时进行修正
-        // 处理当前已登录用户信息，可以由UserModule过滤器代劳
+        // 处理当前已登录用户信息，可以由UserFilter过滤器代劳
         /*var user = ManageProvider.User;
         if (user != null)
         {

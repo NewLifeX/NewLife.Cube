@@ -24,9 +24,9 @@ public partial class UserOnline : Entity<UserOnline>
         sc.FindSlaveKeyMethod = k => Find(__.SessionId, k);
         sc.GetSlaveKeyMethod = e => e.SessionId;
 
-        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
-        Meta.Interceptors.Add<TimeInterceptor>();
-        Meta.Interceptors.Add<IPInterceptor>();
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add<TimeFilter>();
+        Meta.Filters.Add<IPFilter>();
     }
 
     /// <summary>验证并修补数据，通过抛出异常的方式提示验证失败。</summary>

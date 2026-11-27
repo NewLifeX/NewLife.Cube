@@ -17,10 +17,10 @@ public partial class AppLog : Entity<AppLog>
         // 累加字段
         //Meta.Factory.AdditionalFields.Add(__.Logins);
 
-        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
-        Meta.Interceptors.Add<UserInterceptor>();
-        Meta.Interceptors.Add<TimeInterceptor>();
-        Meta.Interceptors.Add<IPInterceptor>();
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add<UserFilter>();
+        Meta.Filters.Add<TimeFilter>();
+        Meta.Filters.Add<IPFilter>();
 
         //Meta.Table.DataTable.InsertOnly = true;
     }

@@ -14,7 +14,7 @@ namespace XUnitTest;
 /// <remarks>
 /// 架构约定：
 /// 1. 页面行级数据权限 = 控制器 [DataPermission] 特性，经 SearchData/FindData 管道显式执行；
-/// 2. 实体不注册 DataScopeInterceptor，魔方宿主注入系统态上下文使拦截器休眠；
+/// 2. 实体不注册 DataScopeFilter，魔方宿主注入系统态上下文使过滤器休眠；
 /// 3. 跨用户业务查询（SSO openid 查重）在任意数据权限上下文下均命中，实体层不得过滤。
 /// </remarks>
 [Collection("SqliteDb")]
@@ -42,10 +42,10 @@ public class DataScopeDecouplingTests
         Assert.Equal(expression, att!.Expression);
     }
 
-    [Fact(DisplayName = "实体层_不注册数据权限拦截器_实体保持纯数据访问")]
-    public void Entities_DoNotRegisterDataScopeInterceptor()
+    [Fact(DisplayName = "实体层_不注册数据权限过滤器_实体保持纯数据访问")]
+    public void Entities_DoNotRegisterDataScopeFilter()
     {
-        // 触发实体静态构造与拦截器异步注册（注册内部走 Task.Run + 短等待），留出静默期后统一断言不存在
+        // 触发实体静态构造与过滤器异步注册（注册内部走 Task.Run + 短等待），留出静默期后统一断言不存在
         _ = new UserConnect();
         _ = new UserToken();
         _ = new OAuthLog();
@@ -53,10 +53,10 @@ public class DataScopeDecouplingTests
 
         System.Threading.Thread.Sleep(300);
 
-        Assert.DoesNotContain(Entity<UserConnect>.Meta.Interceptors.Interceptors, e => e is DataScopeInterceptor);
-        Assert.DoesNotContain(Entity<UserToken>.Meta.Interceptors.Interceptors, e => e is DataScopeInterceptor);
-        Assert.DoesNotContain(Entity<OAuthLog>.Meta.Interceptors.Interceptors, e => e is DataScopeInterceptor);
-        Assert.DoesNotContain(Entity<NotificationRecord>.Meta.Interceptors.Interceptors, e => e is DataScopeInterceptor);
+        Assert.DoesNotContain(Entity<UserConnect>.Meta.Filters.Items, e => e is DataScopeFilter);
+        Assert.DoesNotContain(Entity<UserToken>.Meta.Filters.Items, e => e is DataScopeFilter);
+        Assert.DoesNotContain(Entity<OAuthLog>.Meta.Filters.Items, e => e is DataScopeFilter);
+        Assert.DoesNotContain(Entity<NotificationRecord>.Meta.Filters.Items, e => e is DataScopeFilter);
     }
 
     [Fact(DisplayName = "跨用户查询_任意数据权限上下文_实体层均不过滤")]

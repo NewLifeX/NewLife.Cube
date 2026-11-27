@@ -46,10 +46,10 @@ public partial class AccessRule : Entity<AccessRule>
         //var df = Meta.Factory.AdditionalFields;
         //df.Add(nameof(Priority));
 
-        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
-        Meta.Interceptors.Add(new UserInterceptor { AllowEmpty = false });
-        Meta.Interceptors.Add<TimeInterceptor>();
-        Meta.Interceptors.Add(new IPInterceptor { AllowEmpty = false });
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add(new UserFilter { AllowEmpty = false });
+        Meta.Filters.Add<TimeFilter>();
+        Meta.Filters.Add(new IPFilter { AllowEmpty = false });
 
         // 实体缓存
         // var ec = Meta.Cache;
@@ -80,7 +80,7 @@ public partial class AccessRule : Entity<AccessRule>
 
         // 在新插入数据或者修改了指定字段时进行修正
 
-        // 处理当前已登录用户信息，可以由UserModule过滤器代劳
+        // 处理当前已登录用户信息，可以由UserFilter过滤器代劳
         /*var user = ManageProvider.User;
         if (user != null)
         {

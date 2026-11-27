@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -26,7 +26,7 @@ using XCode.Shards;
 
 namespace NewLife.School.Entity;
 
-public partial class Trade : Entity<Trade>, ITenantSource
+public partial class Trade : Entity<Trade>, ITenantScope
 {
     #region 对象操作
     static Trade()
@@ -35,7 +35,7 @@ public partial class Trade : Entity<Trade>, ITenantSource
         //var df = Meta.Factory.AdditionalFields;
         //df.Add(nameof(TenantId));
 
-        // 过滤器 UserModule、TimeModule、IPModule
+        // 过滤器 UserFilter、TimeFilter、IPFilter
     }
 
     /// <summary>验证并修补数据，通过抛出异常的方式提示验证失败。</summary>

@@ -17,10 +17,10 @@ public partial class 测试字段 : Entity<测试字段>
     #region 对象操作
     static 测试字段()
     {
-        // 过滤器 UserModule、TimeModule、IPModule
-        Meta.Modules.Add<UserModule>();
-        Meta.Modules.Add<TimeModule>();
-        Meta.Modules.Add<IPModule>();
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add<UserFilter>();
+        Meta.Filters.Add<TimeFilter>();
+        Meta.Filters.Add<IPFilter>();
     }
 
     /// <summary>验证并修补数据，通过抛出异常的方式提示验证失败。</summary>

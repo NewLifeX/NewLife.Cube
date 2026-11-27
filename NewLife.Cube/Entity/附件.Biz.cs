@@ -21,11 +21,11 @@ public partial class Attachment : Entity<Attachment>
         var df = Meta.Factory.AdditionalFields;
         df.Add(nameof(Downloads));
 
-        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
-        Meta.Interceptors.Add<UserInterceptor>();
-        Meta.Interceptors.Add<TimeInterceptor>();
-        Meta.Interceptors.Add<IPInterceptor>();
-        Meta.Interceptors.Add<TraceInterceptor>();
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add<UserFilter>();
+        Meta.Filters.Add<TimeFilter>();
+        Meta.Filters.Add<IPFilter>();
+        Meta.Filters.Add<TraceFilter>();
     }
 
     /// <summary>验证数据，通过抛出异常的方式提示验证失败。</summary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -35,11 +35,11 @@ public partial class VerifyCodeRecord : Entity<VerifyCodeRecord>
         //var df = Meta.Factory.AdditionalFields;
         //df.Add(nameof(TenantId));
 
-        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
-        Meta.Interceptors.Add<TimeInterceptor>();
-        Meta.Interceptors.Add(new IPInterceptor { AllowEmpty = false });
-        Meta.Interceptors.Add<TraceInterceptor>();
-        Meta.Interceptors.Add<TenantInterceptor>();
+        // 过滤器 UserFilter、TimeFilter、IPFilter
+        Meta.Filters.Add<TimeFilter>();
+        Meta.Filters.Add(new IPFilter { AllowEmpty = false });
+        Meta.Filters.Add<TraceFilter>();
+        Meta.Filters.Add<TenantFilter>();
     }
 
     /// <summary>验证并修补数据，返回验证结果，或者通过抛出异常的方式提示验证失败。</summary>
