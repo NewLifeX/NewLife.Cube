@@ -1532,3 +1532,14 @@
 "Warn": "Figyelmeztetés"
 "Fatal": "Végzetes"
 "Off": "Ki"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "A(z) [{0}] bérlőnek még {1} tagja van; a törlés előtt távolítsa el őket."
+"Failed to import file [{0}]: {1}": "A(z) [{0}] fájl importálása sikertelen: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Az importfájl feldolgozása sikertelen. Ellenőrizze a fájlformátumot és az oszloptípusokat."
+"No data specified for operation.": "Nincs megadva adat a művelethez."
+"The entity does not support enabling or disabling.": "Ez az entitás nem támogatja az engedélyezést vagy letiltást."
+"Too many incorrect verification codes; please sign in again.": "Túl sok hibás ellenőrző kód; jelentkezzen be újra."
+"Team shared": "Csapattal megosztva"
+"Online sessions": "Online munkamenetek"
+"Tenant members": "Bérlő tagjai"

@@ -1532,3 +1532,14 @@
 "Warn": "אזהרה"
 "Fatal": "קיטלני"
 "Off": "כבוי"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "לדייר [{0}] יש עדיין {1} חברים; הסר אותם לפני המחיקה."
+"Failed to import file [{0}]: {1}": "ייבוא הקובץ [{0}] נכשל: {1}"
+"Failed to parse the import file. Check the file format and column types.": "לא ניתן לנתח את קובץ הייבוא. בדוק את פורמט הקובץ ואת סוגי העמודות."
+"No data specified for operation.": "לא צוינו נתונים לפעולה."
+"The entity does not support enabling or disabling.": "הישות אינה תומכת בהפעלה או בהשבתה."
+"Too many incorrect verification codes; please sign in again.": "יותר מדי קודי אימות שגויים; יש להתחבר מחדש."
+"Team shared": "משותף עם הצוות"
+"Online sessions": "הפעלות מקוונות"
+"Tenant members": "חברי הדייר"

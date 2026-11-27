@@ -1532,3 +1532,14 @@
 "Warn": "คำเตือน"
 "Fatal": "ร้ายแรง"
 "Off": "ปิด"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "ผู้เช่า [{0}] ยังมีสมาชิก {1} ราย; โปรดนำออกก่อนลบ"
+"Failed to import file [{0}]: {1}": "นำเข้าไฟล์ [{0}] ไม่สำเร็จ: {1}"
+"Failed to parse the import file. Check the file format and column types.": "ไม่สามารถแยกวิเคราะห์ไฟล์นำเข้าได้ โปรดตรวจสอบรูปแบบไฟล์และชนิดคอลัมน์"
+"No data specified for operation.": "ไม่ได้ระบุข้อมูลสำหรับการดำเนินการ"
+"The entity does not support enabling or disabling.": "เอนทิตีนี้ไม่รองรับการเปิดหรือปิดใช้งาน"
+"Too many incorrect verification codes; please sign in again.": "รหัสยืนยันไม่ถูกต้องหลายครั้งเกินไป โปรดลงชื่อเข้าใช้อีกครั้ง"
+"Team shared": "แชร์กับทีม"
+"Online sessions": "เซสชันออนไลน์"
+"Tenant members": "สมาชิกผู้เช่า"

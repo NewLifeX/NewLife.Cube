@@ -1532,3 +1532,14 @@
 "Warn": "تحذير"
 "Fatal": "فادح"
 "Off": "إيقاف"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "لا يزال المستأجر [{0}] يحتوي على {1} عضو؛ أزلهم قبل الحذف."
+"Failed to import file [{0}]: {1}": "فشل استيراد الملف [{0}]: {1}"
+"Failed to parse the import file. Check the file format and column types.": "فشل تحليل ملف الاستيراد. تحقق من تنسيق الملف وأنواع الأعمدة."
+"No data specified for operation.": "لم يتم تحديد بيانات للعملية."
+"The entity does not support enabling or disabling.": "هذا الكيان لا يدعم التمكين أو التعطيل."
+"Too many incorrect verification codes; please sign in again.": "عدد كبير جدًا من رموز التحقق الخاطئة؛ يرجى تسجيل الدخول مرة أخرى."
+"Team shared": "مشترك مع الفريق"
+"Online sessions": "الجلسات المتصلة"
+"Tenant members": "أعضاء المستأجر"

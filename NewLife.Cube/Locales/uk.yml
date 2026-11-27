@@ -1532,3 +1532,14 @@
 "Warn": "Попередження"
 "Fatal": "Критичний"
 "Off": "Вимк."
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "У клієнта [{0}] ще {1} учасник(ів); видаліть їх перед видаленням."
+"Failed to import file [{0}]: {1}": "Не вдалося імпортувати файл [{0}]: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Не вдалося розібрати файл імпорту. Перевірте формат файлу та типи стовпців."
+"No data specified for operation.": "Дані для операції не вказано."
+"The entity does not support enabling or disabling.": "Сутність не підтримує ввімкнення або вимкнення."
+"Too many incorrect verification codes; please sign in again.": "Забагато неправильних кодів підтвердження; увійдіть знову."
+"Team shared": "Спільний доступ команди"
+"Online sessions": "Сеанси онлайн"
+"Tenant members": "Учасники клієнта"

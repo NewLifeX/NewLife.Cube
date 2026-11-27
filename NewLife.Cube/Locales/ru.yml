@@ -1532,3 +1532,14 @@
 "Warn": "Предупреждение"
 "Fatal": "Критический"
 "Off": "Выкл."
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "У арендатора [{0}] ещё {1} участник(ов); удалите их перед удалением."
+"Failed to import file [{0}]: {1}": "Не удалось импортировать файл [{0}]: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Не удалось разобрать файл импорта. Проверьте формат файла и типы столбцов."
+"No data specified for operation.": "Данные для операции не указаны."
+"The entity does not support enabling or disabling.": "Сущность не поддерживает включение или отключение."
+"Too many incorrect verification codes; please sign in again.": "Слишком много неверных кодов подтверждения; войдите снова."
+"Team shared": "Общий доступ команды"
+"Online sessions": "Сеансы онлайн"
+"Tenant members": "Участники арендатора"

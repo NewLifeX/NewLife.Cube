@@ -1532,3 +1532,14 @@
 "Warn": "Advarsel"
 "Fatal": "Fatal"
 "Off": "Av"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Leietakeren [{0}] har fortsatt {1} medlem(mer); fjern dem før sletting."
+"Failed to import file [{0}]: {1}": "Import av filen [{0}] mislyktes: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Kunne ikke tolke importfilen. Kontroller filformat og kolonnetyper."
+"No data specified for operation.": "Ingen data er angitt for handlingen."
+"The entity does not support enabling or disabling.": "Enheten støtter ikke aktivering eller deaktivering."
+"Too many incorrect verification codes; please sign in again.": "For mange feil bekreftelseskoder; logg inn på nytt."
+"Team shared": "Delt med teamet"
+"Online sessions": "Økter på nett"
+"Tenant members": "Leietakermedlemmer"

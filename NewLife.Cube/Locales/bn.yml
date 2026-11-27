@@ -1532,3 +1532,14 @@
 "Warn": "সতর্কতা"
 "Fatal": "মারাত্মক"
 "Off": "বন্ধ"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "টেন্যান্ট [{0}]-এ এখনও {1} জন সদস্য আছে; মুছে ফেলার আগে তাদের সরান।"
+"Failed to import file [{0}]: {1}": "ফাইল [{0}] আমদানি করা যায়নি: {1}"
+"Failed to parse the import file. Check the file format and column types.": "আমদানি ফাইল বিশ্লেষণ করা যায়নি। ফাইলের ধরন ও কলামের ধরন পরীক্ষা করুন।"
+"No data specified for operation.": "কর্মের জন্য কোনো ডেটা নির্দিষ্ট করা হয়নি।"
+"The entity does not support enabling or disabling.": "এই সত্তা সক্রিয় বা নিষ্ক্রিয় করা সমর্থন করে না।"
+"Too many incorrect verification codes; please sign in again.": "অনেক বেশি ভুল যাচাইকরণ কোড; আবার সাইন ইন করুন।"
+"Team shared": "দল দ্বারা শেয়ার করা"
+"Online sessions": "অনলাইন সেশন"
+"Tenant members": "টেন্যান্ট সদস্য"

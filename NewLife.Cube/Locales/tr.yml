@@ -1532,3 +1532,14 @@
 "Warn": "Uyarı"
 "Fatal": "Önemli"
 "Off": "Kapalı"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Kiracı [{0}] hâlâ {1} üyeye sahip; silmeden önce bunları kaldırın."
+"Failed to import file [{0}]: {1}": "[{0}] dosyası içe aktarılamadı: {1}"
+"Failed to parse the import file. Check the file format and column types.": "İçe aktarma dosyası ayrıştırılamadı. Dosya biçimini ve sütun türlerini kontrol edin."
+"No data specified for operation.": "İşlem için veri belirtilmedi."
+"The entity does not support enabling or disabling.": "Bu varlık etkinleştirme veya devre dışı bırakmayı desteklemiyor."
+"Too many incorrect verification codes; please sign in again.": "Çok fazla hatalı doğrulama kodu; lütfen tekrar oturum açın."
+"Team shared": "Ekiple paylaşıldı"
+"Online sessions": "Çevrimiçi oturumlar"
+"Tenant members": "Kiracı üyeleri"

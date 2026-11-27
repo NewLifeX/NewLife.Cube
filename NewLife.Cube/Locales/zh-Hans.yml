@@ -1552,3 +1552,12 @@
 "All scenarios": "全部场景"
 "Deny with empty result": "返回空集"
 "Throw an error": "抛出异常"
+
+# 导入/租户/验证码补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "租户[{0}]还有{1}个成员，请先移除后再删除。"
+"Failed to import file [{0}]: {1}": "导入文件[{0}]失败：{1}"
+"Failed to parse the import file. Check the file format and column types.": "导入文件解析失败，请检查文件格式与列类型。"
+"No data specified for operation.": "未指定要操作的数据！"
+"The entity does not support enabling or disabling.": "该实体不支持启用或禁用。"
+"Too many incorrect verification codes; please sign in again.": "验证码错误次数过多，请重新登录。"
+"Team shared": "团队共享"

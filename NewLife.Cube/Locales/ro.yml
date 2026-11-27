@@ -1532,3 +1532,14 @@
 "Warn": "Avertisment"
 "Fatal": "Fatală"
 "Off": "Oprit"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Chiriașul [{0}] mai are {1} membri; eliminați-i înainte de ștergere."
+"Failed to import file [{0}]: {1}": "Importul fișierului [{0}] a eșuat: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Fișierul de import nu a putut fi analizat. Verificați formatul fișierului și tipurile de coloane."
+"No data specified for operation.": "Nu au fost specificate date pentru operațiune."
+"The entity does not support enabling or disabling.": "Entitatea nu acceptă activarea sau dezactivarea."
+"Too many incorrect verification codes; please sign in again.": "Prea multe coduri de verificare incorecte; vă rugăm să vă autentificați din nou."
+"Team shared": "Partajat cu echipa"
+"Online sessions": "Sesiuni online"
+"Tenant members": "Membri ai chiriașului"

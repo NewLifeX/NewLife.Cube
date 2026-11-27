@@ -1532,3 +1532,14 @@
 "Warn": "चेतावनी"
 "Fatal": "घातक"
 "Off": "बंद"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "टेनेंट [{0}] में अभी भी {1} सदस्य हैं; हटाने से पहले उन्हें निकालें।"
+"Failed to import file [{0}]: {1}": "फ़ाइल [{0}] आयात करने में विफल: {1}"
+"Failed to parse the import file. Check the file format and column types.": "आयात फ़ाइल का विश्लेषण नहीं हो सका। फ़ाइल स्वरूप और कॉलम प्रकार जाँचें।"
+"No data specified for operation.": "कार्रवाई के लिए कोई डेटा निर्दिष्ट नहीं है।"
+"The entity does not support enabling or disabling.": "यह इकाई सक्षम या अक्षम करने का समर्थन नहीं करती।"
+"Too many incorrect verification codes; please sign in again.": "बहुत अधिक गलत सत्यापन कोड; कृपया फिर से साइन इन करें।"
+"Team shared": "टीम के साथ साझा"
+"Online sessions": "ऑनलाइन सत्र"
+"Tenant members": "टेनेंट सदस्य"

@@ -1532,3 +1532,14 @@
 "Warn": "Varoitus"
 "Fatal": "Vakava"
 "Off": "Pois"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Vuokralaisella [{0}] on edelleen {1} jäsentä; poista ne ennen poistamista."
+"Failed to import file [{0}]: {1}": "Tiedoston [{0}] tuonti epäonnistui: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Tuontitiedoston jäsennys epäonnistui. Tarkista tiedostomuoto ja saraketyypit."
+"No data specified for operation.": "Toiminnolle ei määritetty tietoja."
+"The entity does not support enabling or disabling.": "Kohde ei tue käyttöönottoa tai poistamista käytöstä."
+"Too many incorrect verification codes; please sign in again.": "Liian monta virheellistä vahvistuskoodia; kirjaudu uudelleen."
+"Team shared": "Jaettu tiimille"
+"Online sessions": "Verkkoistunnot"
+"Tenant members": "Vuokralaisen jäsenet"

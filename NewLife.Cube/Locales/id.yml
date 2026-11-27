@@ -1532,3 +1532,14 @@
 "Warn": "Peringatan"
 "Fatal": "Fatal"
 "Off": "Nonaktif"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Penyewa [{0}] masih memiliki {1} anggota; hapus mereka sebelum menghapus."
+"Failed to import file [{0}]: {1}": "Gagal mengimpor file [{0}]: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Gagal mengurai file impor. Periksa format file dan tipe kolom."
+"No data specified for operation.": "Tidak ada data yang ditentukan untuk operasi."
+"The entity does not support enabling or disabling.": "Entitas ini tidak mendukung pengaktifan atau penonaktifan."
+"Too many incorrect verification codes; please sign in again.": "Terlalu banyak kode verifikasi yang salah; silakan masuk lagi."
+"Team shared": "Dibagikan ke tim"
+"Online sessions": "Sesi online"
+"Tenant members": "Anggota penyewa"

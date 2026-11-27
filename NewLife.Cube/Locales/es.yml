@@ -1532,3 +1532,14 @@
 "Warn": "Advertencia"
 "Fatal": "Fatal"
 "Off": "Desactivado"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "El inquilino [{0}] todavía tiene {1} miembro(s); quítelos antes de eliminar."
+"Failed to import file [{0}]: {1}": "Error al importar el archivo [{0}]: {1}"
+"Failed to parse the import file. Check the file format and column types.": "No se pudo analizar el archivo de importación. Compruebe el formato del archivo y los tipos de columna."
+"No data specified for operation.": "No se especificaron datos para la operación."
+"The entity does not support enabling or disabling.": "La entidad no admite habilitar ni deshabilitar."
+"Too many incorrect verification codes; please sign in again.": "Demasiados códigos de verificación incorrectos; vuelva a iniciar sesión."
+"Team shared": "Compartido con el equipo"
+"Online sessions": "Sesiones en línea"
+"Tenant members": "Miembros del inquilino"

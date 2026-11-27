@@ -1532,3 +1532,14 @@
 "Warn": "Cảnh báo"
 "Fatal": "Nghiêm trọng"
 "Off": "Tắt"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Đối tượng thuê [{0}] vẫn còn {1} thành viên; hãy xóa họ trước khi xóa."
+"Failed to import file [{0}]: {1}": "Nhập tệp [{0}] thất bại: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Không thể phân tích tệp nhập. Vui lòng kiểm tra định dạng tệp và kiểu cột."
+"No data specified for operation.": "Chưa chỉ định dữ liệu cho thao tác."
+"The entity does not support enabling or disabling.": "Thực thể này không hỗ trợ bật hoặc tắt."
+"Too many incorrect verification codes; please sign in again.": "Quá nhiều mã xác minh không đúng; vui lòng đăng nhập lại."
+"Team shared": "Chia sẻ với nhóm"
+"Online sessions": "Phiên trực tuyến"
+"Tenant members": "Thành viên đối tượng thuê"

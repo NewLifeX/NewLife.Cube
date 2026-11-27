@@ -1532,3 +1532,14 @@
 "Warn": "경고"
 "Fatal": "치명적"
 "Off": "끄기"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "테넌트 [{0}]에 아직 {1}명의 구성원이 있습니다. 삭제하기 전에 먼저 제거하세요."
+"Failed to import file [{0}]: {1}": "파일 [{0}] 가져오기에 실패했습니다: {1}"
+"Failed to parse the import file. Check the file format and column types.": "가져오기 파일을 분석하지 못했습니다. 파일 형식과 열 유형을 확인하세요."
+"No data specified for operation.": "작업할 데이터가 지정되지 않았습니다."
+"The entity does not support enabling or disabling.": "이 엔터티는 사용/사용 안 함을 지원하지 않습니다."
+"Too many incorrect verification codes; please sign in again.": "잘못된 인증 코드가 너무 많습니다. 다시 로그인하세요."
+"Team shared": "팀 공유"
+"Online sessions": "온라인 세션"
+"Tenant members": "테넌트 구성원"

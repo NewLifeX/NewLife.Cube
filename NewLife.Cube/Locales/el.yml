@@ -1532,3 +1532,14 @@
 "Warn": "Προειδοποίηση"
 "Fatal": "Μοιραίο"
 "Off": "Ανενεργό"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Ο ενοικιαστής [{0}] έχει ακόμη {1} μέλη; αφαιρέστε τα πριν από τη διαγραφή."
+"Failed to import file [{0}]: {1}": "Αποτυχία εισαγωγής αρχείου [{0}]: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Αποτυχία ανάλυσης του αρχείου εισαγωγής. Ελέγξτε τη μορφή αρχείου και τους τύπους στηλών."
+"No data specified for operation.": "Δεν καθορίστηκαν δεδομένα για την ενέργεια."
+"The entity does not support enabling or disabling.": "Η οντότητα δεν υποστηρίζει ενεργοποίηση ή απενεργοποίηση."
+"Too many incorrect verification codes; please sign in again.": "Πάρα πολλοί λανθασμένοι κωδικοί επαλήθευσης. Συνδεθείτε ξανά."
+"Team shared": "Κοινή χρήση ομάδας"
+"Online sessions": "Συνδεδεμένες συνεδρίες"
+"Tenant members": "Μέλη ενοικιαστή"

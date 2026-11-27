@@ -1532,3 +1532,14 @@
 "Warn": "Waarschuwing"
 "Fatal": "Fataal"
 "Off": "Uit"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Tenant [{0}] heeft nog {1} lid/leden; verwijder deze vóór het verwijderen."
+"Failed to import file [{0}]: {1}": "Importeren van bestand [{0}] is mislukt: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Kan het importbestand niet verwerken. Controleer de bestandsindeling en kolomtypen."
+"No data specified for operation.": "Er zijn geen gegevens opgegeven voor de bewerking."
+"The entity does not support enabling or disabling.": "Deze entiteit ondersteunt in- of uitschakelen niet."
+"Too many incorrect verification codes; please sign in again.": "Te veel onjuiste verificatiecodes; meld u opnieuw aan."
+"Team shared": "Gedeeld met team"
+"Online sessions": "Online sessies"
+"Tenant members": "Leden van huurder"

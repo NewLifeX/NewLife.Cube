@@ -1532,3 +1532,14 @@
 "Warn": "هشدار"
 "Fatal": "مهلک"
 "Off": "خاموش"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "مستأجر [{0}] هنوز {1} عضو دارد؛ پیش از حذف آن‌ها را حذف کنید."
+"Failed to import file [{0}]: {1}": "ورود فایل [{0}] ناموفق بود: {1}"
+"Failed to parse the import file. Check the file format and column types.": "تجزیه فایل ورودی ناموفق بود. قالب فایل و انواع ستون‌ها را بررسی کنید."
+"No data specified for operation.": "داده‌ای برای عملیات مشخص نشده است."
+"The entity does not support enabling or disabling.": "این موجودیت از فعال یا غیرفعال کردن پشتیبانی نمی‌کند."
+"Too many incorrect verification codes; please sign in again.": "تعداد کدهای تأیید نادرست بسیار زیاد است؛ لطفاً دوباره وارد شوید."
+"Team shared": "اشتراک‌گذاری تیمی"
+"Online sessions": "نشست‌های آنلاین"
+"Tenant members": "اعضای مستأجر"

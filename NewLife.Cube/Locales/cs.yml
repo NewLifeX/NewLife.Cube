@@ -1532,3 +1532,14 @@
 "Warn": "Upozornění"
 "Fatal": "Fatální"
 "Off": "Vypnuto"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Tenant [{0}] má stále {1} členů; před smazáním je odeberte."
+"Failed to import file [{0}]: {1}": "Import souboru [{0}] selhal: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Importovaný soubor se nepodařilo analyzovat. Zkontrolujte formát souboru a typy sloupců."
+"No data specified for operation.": "Nejsou určena data pro operaci."
+"The entity does not support enabling or disabling.": "Tato entita nepodporuje povolení ani zakázání."
+"Too many incorrect verification codes; please sign in again.": "Příliš mnoho nesprávných ověřovacích kódů; přihlaste se znovu."
+"Team shared": "Sdíleno týmem"
+"Online sessions": "Online relace"
+"Tenant members": "Členové tenanta"

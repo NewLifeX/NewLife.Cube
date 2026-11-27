@@ -1532,3 +1532,14 @@
 "Warn": "警告"
 "Fatal": "致命的"
 "Off": "オフ"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "テナント [{0}] にはまだ {1} 名のメンバーがいます。削除する前にメンバーを外してください。"
+"Failed to import file [{0}]: {1}": "ファイル [{0}] のインポートに失敗しました: {1}"
+"Failed to parse the import file. Check the file format and column types.": "インポートファイルを解析できませんでした。ファイル形式と列の種類を確認してください。"
+"No data specified for operation.": "操作対象のデータが指定されていません。"
+"The entity does not support enabling or disabling.": "このエンティティは有効化/無効化に対応していません。"
+"Too many incorrect verification codes; please sign in again.": "確認コードの誤入力が多すぎます。もう一度サインインしてください。"
+"Team shared": "チーム共有"
+"Online sessions": "オンライン セッション"
+"Tenant members": "テナント メンバー"

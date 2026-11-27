@@ -1532,3 +1532,14 @@
 "Warn": "Varning"
 "Fatal": "Allvarlig"
 "Off": "Av"
+
+# 导入/租户/在线会话补充文案
+"Tenant [{0}] still has {1} member(s); remove them before deleting.": "Klienten [{0}] har fortfarande {1} medlem(mar); ta bort dem före borttagningen."
+"Failed to import file [{0}]: {1}": "Import av filen [{0}] misslyckades: {1}"
+"Failed to parse the import file. Check the file format and column types.": "Det gick inte att tolka importfilen. Kontrollera filformat och kolumntyper."
+"No data specified for operation.": "Inga data angavs för åtgärden."
+"The entity does not support enabling or disabling.": "Entiteten stöder inte aktivering eller inaktivering."
+"Too many incorrect verification codes; please sign in again.": "För många felaktiga verifieringskoder; logga in igen."
+"Team shared": "Delat med teamet"
+"Online sessions": "Onlinesessioner"
+"Tenant members": "Klientmedlemmar"
