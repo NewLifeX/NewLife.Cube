@@ -246,6 +246,40 @@ public sealed class AceUiTests : IAsyncLifetime
         Assert.Equal("rgb(149, 133, 191)", searchBg);
     }
 
+    [Fact(DisplayName = "TC-ACE-013 底部运行信息默认折叠，SQL 可展开与收起")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_013_RunInfoCollapse()
+    {
+        const String testId = "TC-ACE-013";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 运行信息条始终存在，摘要包含查询/耗时
+        Assert.True(await _page.IsVisibleAsync(".cube-runinfo"), $"[{testId}] 运行信息条 .cube-runinfo 不存在");
+        var stats = await _page.Locator(".cube-runinfo-stats").First.TextContentAsync();
+        Assert.False(String.IsNullOrWhiteSpace(stats), $"[{testId}] 运行信息摘要为空");
+
+        // 开发模式才收集SQL；非开发模式仅显示摘要，不影响折叠断言
+        var details = _page.Locator("details.cube-runinfo");
+        if (await details.CountAsync() == 0) return;
+
+        // 默认折叠，且显示SQL数量角标
+        Assert.False(await details.First.EvaluateAsync<Boolean>("el => el.open"), $"[{testId}] SQL 列表默认应折叠");
+        var count = await _page.Locator(".cube-runinfo-count").First.TextContentAsync();
+        Assert.StartsWith("SQL ", count, StringComparison.OrdinalIgnoreCase);
+
+        // 点击摘要展开，显示SQL明细与复制按钮
+        await _page.Locator(".cube-runinfo-bar").First.ClickAsync();
+        Assert.True(await details.First.EvaluateAsync<Boolean>("el => el.open"), $"[{testId}] 点击摘要后 SQL 列表未展开");
+        Assert.True(await _page.Locator(".cube-runinfo-item").CountAsync() > 0, $"[{testId}] 展开后无 SQL 明细");
+        Assert.True(await _page.IsVisibleAsync(".cube-runinfo-copy"), $"[{testId}] 缺少复制按钮");
+
+        // 再次点击收起
+        await _page.Locator(".cube-runinfo-bar").First.ClickAsync();
+        Assert.False(await details.First.EvaluateAsync<Boolean>("el => el.open"), $"[{testId}] 再次点击摘要后 SQL 列表未收起");
+    }
+
     #endregion
 
     #region D.3 表单页
