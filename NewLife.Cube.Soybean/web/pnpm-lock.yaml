@@ -315,8 +315,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       colord:
-        specifier: 2.9.3
-        version: 2.9.3
+        specifier: 2.9.4
+        version: 2.9.4
 
   packages/field-mapping:
     dependencies:
@@ -427,8 +427,8 @@ importers:
   packages/utils:
     dependencies:
       colord:
-        specifier: 2.9.3
-        version: 2.9.3
+        specifier: 2.9.4
+        version: 2.9.4
       crypto-js:
         specifier: 4.2.0
         version: 4.2.0
@@ -2696,8 +2696,8 @@ packages:
   color-string@1.9.1:
     resolution: {integrity: sha512-shrVawQFojnZv6xM40anx4CkoDP+fZsw/ZerEMsW/pyzsRbElpsL/DBVW7q3ExxwusdNXI3lXpuhEZkzs8p5Eg==}
 
-  colord@2.9.3:
-    resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
+  colord@2.9.4:
+    resolution: {integrity: sha512-z0nTt5300AIviCn9FTEL4G2DzPkfEDfghx6Do0ZfM3u0rOINBtfw2H8lD4VXyZF/o8HTzzyiCztaG2X/+IMeZA==}
 
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
@@ -8420,7 +8420,7 @@ snapshots:
       color-name: 1.1.4
       simple-swizzle: 0.2.2
 
-  colord@2.9.3: {}
+  colord@2.9.4: {}
 
   colorette@2.0.20: {}
 

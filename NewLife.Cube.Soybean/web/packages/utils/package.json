@@ -10,7 +10,7 @@
     }
   },
   "dependencies": {
-    "colord": "2.9.3",
+    "colord": "2.9.4",
     "crypto-js": "4.2.0",
     "klona": "2.0.6",
     "localforage": "1.10.0",
