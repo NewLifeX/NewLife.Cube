@@ -11,6 +11,10 @@ public class QuickLinkWidget : IWidget
     /// <summary>最近访问缓存。进程内缓存按用户隔离，600 秒无访问自动清理</summary>
     private static readonly ICache _cache = MemoryCache.Instance;
 
+    /// <summary>落库间隔（秒）。同一用户最多该间隔写一次 Parameter，期间只更新内存</summary>
+    /// <remarks>最近访问数据不重要，允许丢失间隔内的最新变更，换取更低的数据库写入频率</remarks>
+    private const Int32 PersistInterval = 600;
+
     /// <summary>获取组件数据。最近访问优先，新上菜单补足至 12 个，全部按当前用户权限过滤</summary>
     /// <returns>快捷链接列表匿名对象</returns>
     public Object GetData()
@@ -53,9 +57,12 @@ public class QuickLinkWidget : IWidget
     {
         /// <summary>最近访问列表</summary>
         public List<RecentVisit> List { get; set; } = [];
+
+        /// <summary>下次允许落库的时间</summary>
+        public DateTime NextPersist { get; set; }
     }
 
-    /// <summary>记录页面访问。菜单需存在、可见且可用；新增页面立即落库，重复访问延迟 600 秒保存；失败不影响主流程</summary>
+    /// <summary>记录页面访问。菜单需存在、可见且可用；变更先写内存，同一用户每 600 秒最多落库一次；失败不影响主流程</summary>
     /// <param name="userId">用户编号。小于等于0忽略</param>
     /// <param name="menu">页面菜单</param>
     public static void RecordVisit(Int32 userId, IMenu menu)
@@ -68,8 +75,9 @@ public class QuickLinkWidget : IWidget
             var name = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu);
             var icon = menu.Icon;
 
+            var now = DateTime.Now;
             var item = GetOrLoad(userId);
-            Boolean changed = false, added = false;
+            Boolean persist = false;
             String json = null;
             lock (item)
             {
@@ -84,7 +92,7 @@ public class QuickLinkWidget : IWidget
                         p.Icon = icon;
                         list.Remove(p);
                         list.Insert(0, p);
-                        changed = true;
+                        persist = true;
                     }
                 }
                 else
@@ -92,30 +100,60 @@ public class QuickLinkWidget : IWidget
                     // 新增页面
                     list.Insert(0, new RecentVisit { Name = name, Url = url, Icon = icon });
                     if (list.Count > 10) list.RemoveRange(10, list.Count - 10);
-                    changed = true;
-                    added = true;
+                    persist = true;
                 }
 
-                if (changed) json = item.List.ToJson();
+                // 同一用户在该间隔内最多落库一次。不能依赖 Entity.SaveAsync 的延迟去重：
+                // 延迟队列按实体实例去重，而 Parameter 实体缓存默认 10 秒刷新一次，每次刷新都会得到新实例，
+                // 导致几乎每次页面访问都会排队一条延迟保存。
+                if (persist)
+                {
+                    if (item.NextPersist > now)
+                        persist = false;
+                    else
+                    {
+                        item.NextPersist = now.AddSeconds(PersistInterval);
+                        json = list.ToJson();
+                    }
+                }
             }
 
             // 无论是否变化都刷新缓存过期时间，保持活跃
             _cache.Set("QuickLink:Visit:" + userId, item, 600);
 
-            if (!changed || json == null) return;
+            if (!persist) return;
 
             var para = Parameter.GetOrAdd(userId, "Visit", "Recent_Pages");
             para.LongValue = json;
-            // 新增页面立即落库；重复访问延迟 600 秒批量保存，降低写压力
-            if (added)
-                para.Save();
-            else
-                para.SaveAsync(600_000);
+            para.Save();
         }
         catch
         {
             // 最近访问数据不重要，记录失败忽略，不影响主流程
         }
+    }
+
+    /// <summary>立即保存指定用户的最近访问。供停机前或测试手动落库</summary>
+    /// <param name="userId">用户编号</param>
+    internal static void Flush(Int32 userId)
+    {
+        if (userId <= 0) return;
+
+        var item = _cache.Get<VisitCache>("QuickLink:Visit:" + userId);
+        if (item == null) return;
+
+        String json;
+        lock (item)
+        {
+            if (item.List.Count == 0) return;
+
+            item.NextPersist = DateTime.Now.AddSeconds(PersistInterval);
+            json = item.List.ToJson();
+        }
+
+        var para = Parameter.GetOrAdd(userId, "Visit", "Recent_Pages");
+        para.LongValue = json;
+        para.Save();
     }
 
     /// <summary>获取最近访问列表。列表顺序即最近访问顺序（最新在前），优先内存缓存，无数据返回空列表</summary>

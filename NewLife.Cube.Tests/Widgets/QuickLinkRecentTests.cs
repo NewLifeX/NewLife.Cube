@@ -89,7 +89,7 @@ public class QuickLinkRecentTests : IDisposable
     private static IMenu M(String name, String url, Boolean visible = true, String icon = null)
         => new Menu { Name = name, Url = url, Visible = visible, Icon = icon };
 
-    [Fact(DisplayName = "RecordVisit_首次访问_置顶且立即落库")]
+    [Fact(DisplayName = "RecordVisit_首次访问_置顶且落库")]
     public void RecordVisit_FirstVisit_InsertTop()
     {
         const Int32 userId = 301;
@@ -103,7 +103,9 @@ public class QuickLinkRecentTests : IDisposable
         Assert.Equal("/Admin/Log", list[0].Url);
         Assert.Equal("/Admin/User", list[1].Url);
 
-        // 新增页面立即落库（新命名 Visit/Recent_Pages）
+        // 间隔内的第二次访问只在内存，手动落库后检查数据库记录（新命名 Visit/Recent_Pages）
+        QuickLinkWidget.Flush(userId);
+
         var p = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages");
         Assert.NotNull(p);
         Assert.Equal("Visit", p!.Category);
@@ -123,7 +125,7 @@ public class QuickLinkRecentTests : IDisposable
         QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User"));
         QuickLinkWidget.RecordVisit(userId, M("审计日志", "/Admin/Log"));
 
-        // 重复访问"用户"置顶（异步保存，不阻塞请求）
+        // 重复访问"用户"置顶（间隔内只更新内存）
         QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User"));
 
         var list = QuickLinkWidget.GetRecent(userId);
@@ -131,7 +133,9 @@ public class QuickLinkRecentTests : IDisposable
         Assert.Equal("/Admin/User", list[0].Url);
         Assert.Equal("/Admin/Log", list[1].Url);
 
-        // 数据已落库（新增即时保存，重复访问异步保存）
+        // 手动落库后检查数据库记录
+        QuickLinkWidget.Flush(userId);
+
         var p = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages");
         Assert.NotNull(p);
         var json = p!.Value ?? p.LongValue;
@@ -155,6 +159,29 @@ public class QuickLinkRecentTests : IDisposable
         var p2 = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages");
         var json2 = p2!.Value ?? p2.LongValue;
         Assert.Equal(json1, json2);
+    }
+
+    [Fact(DisplayName = "RecordVisit_间隔内重复访问_不立即落库")]
+    public void RecordVisit_RapidVisit_NotPersistedUntilFlush()
+    {
+        const Int32 userId = 307;
+
+        QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User"));
+
+        var json1 = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages")!.LongValue;
+        Assert.Contains("用户", json1);
+
+        // 间隔内再次访问只更新内存，不产生数据库写入
+        QuickLinkWidget.RecordVisit(userId, M("审计日志", "/Admin/Log"));
+
+        var json2 = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages")!.LongValue;
+        Assert.DoesNotContain("审计日志", json2);
+
+        // 手动落库后包含最新记录
+        QuickLinkWidget.Flush(userId);
+
+        var json3 = Parameter.FindByUserIdAndCategoryAndName(userId, "Visit", "Recent_Pages")!.LongValue;
+        Assert.Contains("审计日志", json3);
     }
 
     [Fact(DisplayName = "RecordVisit_超过上限_截断最旧")]
