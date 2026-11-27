@@ -269,7 +269,9 @@ public class ImportControllerTests
         using var ms = ToStream("Name\r\n张三\r\n");
         var file = ToFormFile(ms, "data.txt");
 
-        Assert.Throws<NotSupportedException>(() => ctrl.Import(file));
+        // 不支持的扩展名与解析失败统一归为客户端参数错误，不把内部异常细节暴露给前端
+        var ex = Assert.Throws<NewLife.Remoting.ApiException>(() => ctrl.Import(file));
+        Assert.Equal(CubeCode.ParamError.ToInt(), ex.Code);
         Assert.Empty(ctrl.Captured);
     }
 
