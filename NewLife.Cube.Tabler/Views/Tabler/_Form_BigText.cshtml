@@ -10,7 +10,7 @@
     var err = 0;
     if (ViewData.ModelState.TryGetValue(field.Name, out var st) && st != null) { err = st.Errors.Count; }
 
-    var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
+    var des = field.Description.TrimPrefix(field.DisplayName).TrimPrefix(",", ".", "，", "。");
 }
 <label class="form-label col-sm-3 col-md-2 col-lg-1">@field.DisplayName</label>
 @if (err > 0)

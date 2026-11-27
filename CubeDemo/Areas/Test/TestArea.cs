@@ -9,5 +9,5 @@ namespace CubeDemo.Areas.Test;
 [Menu(200)]
 public class TestArea : AreaBase
 {
-    public TestArea() : base(nameof(TestArea).TrimEnd("Area")) { }
+    public TestArea() : base(nameof(TestArea).TrimSuffix("Area")) { }
 }

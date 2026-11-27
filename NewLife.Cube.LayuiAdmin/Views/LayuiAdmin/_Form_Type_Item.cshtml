@@ -15,7 +15,7 @@
     var err = 0;
     if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
 
-    var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
+    var des = item.Description.TrimPrefix(item.DisplayName).TrimPrefix(",", ".", "，", "。");
     var display = dataField?.DisplayName ?? item.DisplayName;
     var className = !item.Nullable&&!item.Name.EqualIgnoreCase("CreateUserId", "CreateUser", "CreateTime", "CreateIP",
                 "UpdateUserId", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs") ? "layui-form-required" : "";

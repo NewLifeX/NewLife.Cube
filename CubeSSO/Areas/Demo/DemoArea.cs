@@ -10,5 +10,5 @@ namespace CubeSSO.Areas.Demo;
 public class DemoArea : AreaBase
 {
     /// <summary>实例化</summary>
-    public DemoArea() : base(nameof(DemoArea).TrimEnd("Area")) { }
+    public DemoArea() : base(nameof(DemoArea).TrimSuffix("Area")) { }
 }

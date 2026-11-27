@@ -9,5 +9,5 @@ namespace CubeDemo.Areas.School;
 [Menu(123)]
 public class SchoolArea : AreaBase
 {
-    public SchoolArea() : base(nameof(SchoolArea).TrimEnd("Area")) { }
+    public SchoolArea() : base(nameof(SchoolArea).TrimSuffix("Area")) { }
 }

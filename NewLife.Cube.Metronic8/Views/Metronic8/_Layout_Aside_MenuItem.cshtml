@@ -18,7 +18,7 @@
         var indx = item.Id % 30;
         icon = icons[indx];
     }
-    icon = icon.Contains("fa-") ? icon : "fa-" + icon.TrimStart("fa-");
+    icon = icon.Contains("fa-") ? icon : "fa-" + icon.TrimPrefix("fa-");
     icon = item.Name.EqualIgnoreCase("cube") ? "fa-cube" : icon;
     icon = item.Name.EndsWithIgnoreCase("admin") ? "fa-gear" : icon;
 }

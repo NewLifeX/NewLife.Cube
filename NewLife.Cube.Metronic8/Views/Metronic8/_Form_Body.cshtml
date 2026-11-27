@@ -31,7 +31,7 @@
                     <div class="row">
                         @foreach (var item in group.Value)
                         {
-                            var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
+                            var des = item.Description.TrimPrefix(item.DisplayName).TrimPrefix(",", ".", "，", "。");
                             var dataField = fields.GetField(item.Name) as ListField;
                             var display = dataField?.DisplayName ?? item.DisplayName;
 
@@ -95,7 +95,7 @@
         <div class="row">
             @foreach (var item in fields)
             {
-                var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
+                var des = item.Description.TrimPrefix(item.DisplayName).TrimPrefix(",", ".", "，", "。");
                 var dataField = fields.GetField(item.Name) as ListField;
                 var display = dataField?.DisplayName ?? item.DisplayName;
 

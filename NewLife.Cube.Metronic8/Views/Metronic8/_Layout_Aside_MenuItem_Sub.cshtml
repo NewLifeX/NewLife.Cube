@@ -8,7 +8,7 @@
     var rs_active = item.Id == menu.Id;
     var rs_new = (DateTime.Now - item.CreateTime).Days <= 7 ? true : false;
 
-    var icon = item.Icon.IsNullOrEmpty() ? "sitemap" : "fa-" + item.Icon.TrimStart("fa-");
+    var icon = item.Icon.IsNullOrEmpty() ? "sitemap" : "fa-" + item.Icon.TrimPrefix("fa-");
 
     //特殊处理
     var list_cube = new List<string>() { "/Admin/Cube", "/Admin/Sys", "/Admin/XCode", "/Admin/Core", "/Admin/OAuthConfig" };

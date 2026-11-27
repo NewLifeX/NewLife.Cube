@@ -13,7 +13,7 @@
     var err = 0;
     if (ViewData.ModelState.TryGetValue(field.Name, out var st) && st != null) { err = st.Errors.Count; }
 
-    var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
+    var des = field.Description.TrimPrefix(field.DisplayName).TrimPrefix(",", ".", "，", "。");
     var display = dataField?.DisplayName ?? field.DisplayName;
     var className = !field.Nullable ? "layui-form-required" : "";
 }

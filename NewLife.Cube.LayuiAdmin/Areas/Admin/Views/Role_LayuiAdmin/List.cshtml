@@ -1,4 +1,4 @@
-@using NewLife.Cube
+﻿@using NewLife.Cube
 @using NewLife.Cube.Entity
 @using NewLife.Cube.Extensions
 @using NewLife.Cube.ViewModels
@@ -423,7 +423,7 @@
                                             foreach (var item1 in list)
                                             {
                                                 var displayName = $"{item1["Name"]}[{item1[factory.Master.Name].ToString()}]";
-                                                if (item1[factory.Master.Name] != null && item1[factory.Master.Name].ToString() == item1["Name"])
+                                                if (item1[factory.Master.Name] != null && item1[factory.Master.Name].ToString() == item1["Name"]?.ToString())
                                                     displayName = item1[factory.Master.Name].ToString();
 
                                                 result.Add(item1[factory.Unique.Name].ToString(), displayName);
