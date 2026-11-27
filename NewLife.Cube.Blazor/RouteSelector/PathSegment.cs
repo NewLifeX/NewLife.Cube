@@ -14,7 +14,7 @@ namespace BigCookieKit.AspCore.RouteSelector
             Length = length;
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             return obj is PathSegment segment ? Equals(segment) : false;
         }

@@ -12,7 +12,7 @@ namespace BigCookieKit.AspCore.RouteSelector
             Values = null;
         }
 
-        internal CandidateState(Endpoint endpoint, RouteValueDictionary? values, int score)
+        internal CandidateState(Endpoint endpoint, RouteValueDictionary values, int score)
         {
             Endpoint = endpoint;
             Values = values;
@@ -23,6 +23,6 @@ namespace BigCookieKit.AspCore.RouteSelector
 
         public int Score { get; }
 
-        public RouteValueDictionary? Values { get; internal set; }
+        public RouteValueDictionary Values { get; internal set; }
     }
 }

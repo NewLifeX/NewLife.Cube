@@ -73,7 +73,7 @@ namespace BigCookieKit.AspCore.RouteSelector
                 if ((flags & Candidate.CandidateFlags.HasSlots) != 0)
                 {
                     var prototype = candidate.Slots;
-                    var slots = new KeyValuePair<string, object?>[prototype.Length];
+                    var slots = new KeyValuePair<string, object>[prototype.Length];
 
                     if ((flags & Candidate.CandidateFlags.HasDefaults) != 0)
                     {
@@ -93,14 +93,12 @@ namespace BigCookieKit.AspCore.RouteSelector
                     state.Values = RouteValueDictionary.FromArray(slots);
                 }
 
-                var isMatch = true;
                 if ((flags & Candidate.CandidateFlags.HasComplexSegments) != 0)
                 {
                     state.Values ??= new RouteValueDictionary();
                     if (!ProcessComplexSegments(candidate.Endpoint, candidate.ComplexSegments, path, segments, state.Values))
                     {
                         CandidateSet.SetValidity(ref state, false);
-                        isMatch = false;
                     }
                 }
 
@@ -110,7 +108,6 @@ namespace BigCookieKit.AspCore.RouteSelector
                     if (!ProcessConstraints(candidate.Endpoint, candidate.Constraints, httpContext, state.Values))
                     {
                         CandidateSet.SetValidity(ref state, false);
-                        isMatch = false;
                     }
                 }
             }
@@ -166,7 +163,7 @@ namespace BigCookieKit.AspCore.RouteSelector
                 if ((flags & Candidate.CandidateFlags.HasSlots) != 0)
                 {
                     var prototype = candidate.Slots;
-                    var slots = new KeyValuePair<string, object?>[prototype.Length];
+                    var slots = new KeyValuePair<string, object>[prototype.Length];
 
                     if ((flags & Candidate.CandidateFlags.HasDefaults) != 0)
                     {
@@ -186,14 +183,12 @@ namespace BigCookieKit.AspCore.RouteSelector
                     state.Values = RouteValueDictionary.FromArray(slots);
                 }
 
-                var isMatch = true;
                 if ((flags & Candidate.CandidateFlags.HasComplexSegments) != 0)
                 {
                     state.Values ??= new RouteValueDictionary();
                     if (!ProcessComplexSegments(candidate.Endpoint, candidate.ComplexSegments, path, segments, state.Values))
                     {
                         CandidateSet.SetValidity(ref state, false);
-                        isMatch = false;
                     }
                 }
             }
@@ -251,7 +246,7 @@ namespace BigCookieKit.AspCore.RouteSelector
         }
 
         private static void ProcessCaptures(
-            KeyValuePair<string, object?>[] slots,
+            KeyValuePair<string, object>[] slots,
             (string parameterName, int segmentIndex, int slotIndex)[] captures,
             string path,
             ReadOnlySpan<PathSegment> segments)
@@ -265,7 +260,7 @@ namespace BigCookieKit.AspCore.RouteSelector
                     var segment = segments[segmentIndex];
                     if (parameterName != null && segment.Length > 0)
                     {
-                        slots[slotIndex] = new KeyValuePair<string, object?>(
+                        slots[slotIndex] = new KeyValuePair<string, object>(
                             parameterName,
                             path.Substring(segment.Start, segment.Length));
                     }
@@ -274,7 +269,7 @@ namespace BigCookieKit.AspCore.RouteSelector
         }
 
         private static void ProcessCatchAll(
-            KeyValuePair<string, object?>[] slots,
+            KeyValuePair<string, object>[] slots,
             in (string parameterName, int segmentIndex, int slotIndex) catchAll,
             string path,
             ReadOnlySpan<PathSegment> segments)
@@ -283,7 +278,7 @@ namespace BigCookieKit.AspCore.RouteSelector
             if ((uint)segmentIndex < (uint)segments.Length)
             {
                 var segment = segments[segmentIndex];
-                slots[catchAll.slotIndex] = new KeyValuePair<string, object?>(
+                slots[catchAll.slotIndex] = new KeyValuePair<string, object>(
                     catchAll.parameterName,
                     path.Substring(segment.Start));
             }

@@ -12,6 +12,7 @@ using XCode.Membership;
 
 namespace NewLife.Cube.Blazor.Views.Blazor
 {
+    /// <summary>Blazor 主布局，提供菜单、页签与主框架操作区</summary>
     public partial class MainLayout
     {
         [Inject] private IManageProvider _provider { get; set; }
@@ -36,11 +37,13 @@ namespace NewLife.Cube.Blazor.Views.Blazor
 
 
 
+        /// <summary>组件初始化</summary>
         protected override void OnInitialized()
         {
             base.OnInitialized();
         }
 
+        /// <summary>组件异步初始化，构建菜单数据</summary>
         protected override async Task OnInitializedAsync()
         {
             #region 菜单转换
@@ -85,26 +88,31 @@ namespace NewLife.Cube.Blazor.Views.Blazor
             await base.OnInitializedAsync();
         }
 
+        /// <summary>设置组件参数</summary>
         public override async Task SetParametersAsync(ParameterView parameters)
         {
             await base.SetParametersAsync(parameters);
         }
 
+        /// <summary>参数设置完成</summary>
         protected override void OnParametersSet()
         {
             base.OnParametersSet();
         }
 
+        /// <summary>参数设置完成（异步）</summary>
         protected override async Task OnParametersSetAsync()
         {
             await base.OnParametersSetAsync();
         }
 
+        /// <summary>组件渲染完成</summary>
         protected override void OnAfterRender(bool firstRender)
         {
             base.OnAfterRender(firstRender);
         }
 
+        /// <summary>组件渲染完成（异步）</summary>
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             await base.OnAfterRenderAsync(firstRender);
@@ -115,7 +123,7 @@ namespace NewLife.Cube.Blazor.Views.Blazor
             if (item.Url.Contains("/")
                 && SideTabItems.Items.FirstOrDefault(x => x.Text == item.Text) == null)
             {
-                SideTabItems.AddTab(new Dictionary<string, object?>
+                SideTabItems.AddTab(new Dictionary<string, object>
                 {
                     [nameof(TabItem.Text)] = item.Text,
                     [nameof(TabItem.IsActive)] = true,
@@ -123,12 +131,11 @@ namespace NewLife.Cube.Blazor.Views.Blazor
                     [nameof(TabItem.Url)] = item.Url,
                     [nameof(TabItem.ChildContent)] = new RenderFragment(builder =>
                     {
-                        var index = 0;
-                        builder.OpenElement(index++, "div");
-                        builder.OpenElement(index++, "iframe");
-                        builder.AddAttribute(index++, "src", "Blazor" + item.Url);
-                        builder.AddAttribute(index++, "width", "100%");
-                        builder.AddAttribute(index++, "height", "100%");
+                        builder.OpenElement(0, "div");
+                        builder.OpenElement(1, "iframe");
+                        builder.AddAttribute(2, "src", "Blazor" + item.Url);
+                        builder.AddAttribute(3, "width", "100%");
+                        builder.AddAttribute(4, "height", "100%");
                         builder.CloseElement();
                         builder.CloseElement();
                     })

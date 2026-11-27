@@ -108,7 +108,7 @@ namespace BigCookieKit.AspCore.RouteSelector
             candidate = new CandidateState(candidate.Endpoint, candidate.Values, score);
         }
 
-        public void ReplaceEndpoint(int index, Endpoint? endpoint, RouteValueDictionary? values)
+        public void ReplaceEndpoint(int index, Endpoint endpoint, RouteValueDictionary values)
         {
             // Friendliness for inlining
             if ((uint)index >= Count)

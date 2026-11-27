@@ -61,7 +61,7 @@ namespace BigCookieKit.AspCore.RouteSelector
         public Matcher CreateMatcher()
         {
             var endpoints = _endpointDataSource.Endpoints;
-            var seenEndpointNames = new Dictionary<string, string?>();
+            var seenEndpointNames = new Dictionary<string, string>();
             for (var i = 0; i < endpoints.Count; i++)
             {
                 if (endpoints[i] is RouteEndpoint endpoint)

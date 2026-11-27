@@ -12,7 +12,7 @@ namespace BigCookieKit.AspCore.RouteSelector
         {
         }
 
-        public VirtualPathData? GetVirtualPath(VirtualPathContext context)
+        public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
             return null;
         }

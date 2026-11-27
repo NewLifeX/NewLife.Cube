@@ -64,8 +64,8 @@ namespace BigCookieKit.AspCore.RouteSelector
 
         public static Endpoint ProcessFinalCandidates(CandidateState[] candidateState)
         {
-            Endpoint? endpoint = null;
-            RouteValueDictionary? values = null;
+            Endpoint endpoint = null;
+            RouteValueDictionary values = null;
             int? foundScore = null;
             for (var i = 0; i < candidateState.Length; i++)
             {
@@ -111,8 +111,8 @@ namespace BigCookieKit.AspCore.RouteSelector
             HttpContext httpContext,
             CandidateState[] candidateState)
         {
-            Endpoint? endpoint = null;
-            RouteValueDictionary? values = null;
+            Endpoint endpoint = null;
+            RouteValueDictionary values = null;
             int? foundScore = null;
             for (var i = 0; i < candidateState.Length; i++)
             {

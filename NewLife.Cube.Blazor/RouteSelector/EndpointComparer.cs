@@ -23,7 +23,7 @@ namespace BigCookieKit.AspCore.RouteSelector
             }
         }
 
-        public int Compare(Endpoint? x, Endpoint? y)
+        public int Compare(Endpoint x, Endpoint y)
         {
             Debug.Assert(x != null);
             Debug.Assert(y != null);
@@ -55,7 +55,7 @@ namespace BigCookieKit.AspCore.RouteSelector
             return 0;
         }
 
-        public bool Equals(Endpoint? x, Endpoint? y)
+        public bool Equals(Endpoint x, Endpoint y)
         {
             Debug.Assert(x != null);
             Debug.Assert(y != null);
@@ -86,7 +86,7 @@ namespace BigCookieKit.AspCore.RouteSelector
         {
             public static readonly IComparer<Endpoint> Instance = new OrderComparer();
 
-            public int Compare(Endpoint? x, Endpoint? y)
+            public int Compare(Endpoint x, Endpoint y)
             {
                 var routeEndpointX = x as RouteEndpoint;
                 var routeEndpointY = y as RouteEndpoint;
@@ -113,7 +113,7 @@ namespace BigCookieKit.AspCore.RouteSelector
         {
             public static readonly IComparer<Endpoint> Instance = new PrecedenceComparer();
 
-            public int Compare(Endpoint? x, Endpoint? y)
+            public int Compare(Endpoint x, Endpoint y)
             {
                 var routeEndpointX = x as RouteEndpoint;
                 var routeEndpointY = y as RouteEndpoint;

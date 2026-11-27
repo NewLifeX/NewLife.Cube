@@ -20,7 +20,7 @@ namespace BigCookieKit.AspCore.RouteSelector
             _serviceProvider = serviceProvider;
         }
 
-        public override IParameterPolicy Create(RoutePatternParameterPart? parameter, IParameterPolicy parameterPolicy)
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, IParameterPolicy parameterPolicy)
         {
             if (parameterPolicy == null)
             {
@@ -35,7 +35,7 @@ namespace BigCookieKit.AspCore.RouteSelector
             return parameterPolicy;
         }
 
-        public override IParameterPolicy Create(RoutePatternParameterPart? parameter, string inlineText)
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText)
         {
             if (inlineText == null)
             {
