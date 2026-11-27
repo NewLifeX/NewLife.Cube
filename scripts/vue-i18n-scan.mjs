@@ -28,7 +28,8 @@ const isAllowed = (file, text) =>
   baseline.some((rule) => file.endsWith(rule.file) && (rule.text instanceof RegExp ? rule.text.test(text) : rule.text === text));
 
 const roots = ['NewLife.Cube.Vue/web/core', 'NewLife.Cube.Vue/web/apps', 'NewLife.Cube.Vue/web/ct'];
-const skip = /node_modules|__tests__|__mocks__|\.spec\.|\.test\.|\.story\.|locales|\/i18n\/|\.d\.ts$/;
+// CT（组件测试）桩数据模拟后端返回的业务数据，不是页面文案，按测试资产排除
+const skip = /node_modules|__tests__|__mocks__|\.spec\.|\.test\.|\.story\.|locales|\/i18n\/|\.d\.ts$|[\\/]ct[\\/]mocks[\\/]/;
 const cjk = /[\u4e00-\u9fa5]/;
 
 function walk(dir, out = []) {
