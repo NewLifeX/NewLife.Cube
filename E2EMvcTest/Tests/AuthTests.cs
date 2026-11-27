@@ -249,9 +249,8 @@ public sealed class AuthTests : IAsyncLifetime
 
             // 登录按钮先异步获取 RSA 公钥再提交，必须等登录导航完全结束再进入下一轮，
             // 否则下一次 GotoAsync 会中断仍在进行的登录导航（navigation interrupted）
-            await _page.RunAndWaitForNavigationAsync(
-                async () => await _page.ClickAsync("#login-btn"),
-                new PageRunAndWaitForNavigationOptions { Timeout = 15_000 });
+            await _page.ClickAsync("#login-btn");
+            await _page.WaitForURLAsync("**/User/Login**", new PageWaitForURLOptions { Timeout = 15_000, WaitUntil = WaitUntilState.NetworkIdle });
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             await PageHelpers.AssertUrlContainsAsync(_page, "/User/Login", $"{testId}[{i}]");

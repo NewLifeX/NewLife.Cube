@@ -121,7 +121,10 @@ public class NotificationRecipientResolver
         if (ids.Length > MaxRecipients)
             throw new InvalidOperationException($"Recipients exceed the limit of {MaxRecipients}.");
 
+        // XCode 会员实体未提供按编号集合查询的 Biz 方法，这里只用主键 In 条件，不接受外部字符串
+#pragma warning disable XC0001
         return User.FindAll(User._.Id.In(ids));
+#pragma warning restore XC0001
     }
 
     private static Boolean MatchRole(TenantUser tenant, Int32[] roleIds)

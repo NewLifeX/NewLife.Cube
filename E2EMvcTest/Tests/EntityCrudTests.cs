@@ -81,7 +81,6 @@ public sealed class EntityCrudTests : IAsyncLifetime
     [Trait("Priority", "P0")]
     public async Task TC_CRUD_002_ListRows()
     {
-        const String testId = "TC-CRUD-002";
         var name = NewName("list");
         try
         {

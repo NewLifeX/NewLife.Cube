@@ -373,7 +373,7 @@ public class FieldCollection : List<DataField>
     /// <param name="beforeName"></param>
     /// <param name="afterName"></param>
     /// <returns></returns>
-    public DataField AddDataField(String name, String beforeName = null, String afterName = null)
+    public DataField AddDataField(String name, String? beforeName = null, String? afterName = null)
     {
         if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name));
 
@@ -413,7 +413,7 @@ public class FieldCollection : List<DataField>
     /// <param name="beforeName"></param>
     /// <param name="afterName"></param>
     /// <returns></returns>
-    public ListField AddListField(String name, String beforeName = null, String afterName = null) => AddDataField(name, beforeName, afterName) as ListField;
+    public ListField AddListField(String name, String? beforeName = null, String? afterName = null) => AddDataField(name, beforeName, afterName) as ListField;
 
     /// <summary>获取指定名称的定制字段</summary>
     /// <param name="name"></param>

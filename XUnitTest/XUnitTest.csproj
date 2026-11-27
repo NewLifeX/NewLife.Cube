@@ -9,6 +9,8 @@
     <Copyright>©2002-2026 NewLife</Copyright>
     <OutputPath>..\Bin\UnitTest</OutputPath>
     <IsPackable>false</IsPackable>
+    <!-- 测试直接用实体字段句柄构造查询，XC0001 面向应用层代码，不适用于测试 -->
+    <NoWarn>$(NoWarn);XC0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

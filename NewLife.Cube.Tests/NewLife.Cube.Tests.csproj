@@ -6,6 +6,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <LangVersion>latest</LangVersion>
+    <!-- 测试直接用实体字段句柄构造查询，XC0001 面向应用层代码，不适用于测试 -->
+    <NoWarn>$(NoWarn);XC0001</NoWarn>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>

@@ -167,7 +167,7 @@ public class ControllerBaseX : Controller
     /// <param name="extend">扩展数据</param>
     /// <returns></returns>
     [NonAction]
-    public virtual ActionResult Json(Int32 code, String message, Object data = null, Object extend = null)
+    public virtual ActionResult Json(Int32 code, String? message, Object? data = null, Object? extend = null)
     {
         if (data is Exception ex)
         {

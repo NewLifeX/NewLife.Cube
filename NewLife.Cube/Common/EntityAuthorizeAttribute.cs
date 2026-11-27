@@ -154,7 +154,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
             {
                 var failedUser = filterContext.HttpContext.Items[ManagerProviderHelper.TenantCheckFailedKey] as String ?? "";
                 // 按失败原因输出差异化文案（F4）：显式标识无效 / 缺租户标识 / 非租户成员
-                var msg = filterContext.HttpContext.Items[ManagerProviderHelper.TenantCheckFailedReasonKey] as String switch
+                var msg = (filterContext.HttpContext.Items[ManagerProviderHelper.TenantCheckFailedReasonKey] as String) switch
                 {
                     "InvalidIdentifier" => L.T("The tenant identifier carried by user [{0}] is invalid or unavailable. Check the tenant settings and try again.", failedUser),
                     "MissingIdentifier" => L.T("User [{0}] did not carry a tenant identifier, so the tenant cannot be determined. Include the tenant information and try again.", failedUser),

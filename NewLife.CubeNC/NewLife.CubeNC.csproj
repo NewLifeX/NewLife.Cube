@@ -25,7 +25,8 @@
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
     <DefineConstants>$(DefineConstants);MVC</DefineConstants>
-    <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035</NoWarn>
+    <!-- CS0618：Core 源生成器会为兼容类 Setting 生成成员注册，生成代码无法注释消除；其余过时用法仍应在代码中修复 -->
+    <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035;CS0618</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
