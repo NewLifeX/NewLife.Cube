@@ -21,7 +21,7 @@ public sealed class NotificationBellTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _context = await _fixture.Browser.NewContextAsync();
+        _context = await _fixture.NewContextAsync();
         _page = await _context.NewPageAsync();
         await PageHelpers.LoginAsAdminAsync(_page);
 

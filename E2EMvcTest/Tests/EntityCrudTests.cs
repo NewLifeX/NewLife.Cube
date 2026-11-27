@@ -28,7 +28,7 @@ public sealed class EntityCrudTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _context = await _fixture.Browser.NewContextAsync();
+        _context = await _fixture.NewContextAsync();
         _page = await _context.NewPageAsync();
         await PageHelpers.LoginAsAdminAsync(_page);
     }
@@ -270,7 +270,7 @@ public sealed class EntityCrudTests : IAsyncLifetime
     public async Task TC_CRUD_010_Unauthorized()
     {
         const String testId = "TC-CRUD-010";
-        var anonymous = await _fixture.Browser.NewContextAsync();
+        var anonymous = await _fixture.NewContextAsync();
         try
         {
             var page = await anonymous.NewPageAsync();

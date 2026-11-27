@@ -26,7 +26,7 @@ public sealed class UserProfileTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _context = await _fixture.Browser.NewContextAsync();
+        _context = await _fixture.NewContextAsync();
         _page = await _context.NewPageAsync();
 
         // 本类含修改 admin 密码的用例，后续用例可能以前序状态登录；失败时依次尝试新密码并兜底复位

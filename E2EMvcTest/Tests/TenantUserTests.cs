@@ -29,7 +29,7 @@ public sealed class TenantUserTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _context = await _fixture.Browser.NewContextAsync();
+        _context = await _fixture.NewContextAsync();
         _page = await _context.NewPageAsync();
         await PageHelpers.LoginAsAdminAsync(_page);
     }
@@ -82,7 +82,7 @@ public sealed class TenantUserTests : IAsyncLifetime
         _userName = $"e2etu{DateTime.Now:HHmmss}";
 
         // 独立上下文注册（注册成功会登录为新用户，不影响当前 admin 上下文）
-        await using var ctx = await _fixture.Browser.NewContextAsync();
+        await using var ctx = await _fixture.NewContextAsync();
         var page = await ctx.NewPageAsync();
         await PageHelpers.GotoAndWaitAsync(page, "/Admin/User/Login");
         await page.ClickAsync(".login-tabs a[data-tab=Register]");

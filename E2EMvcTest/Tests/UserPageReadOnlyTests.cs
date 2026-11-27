@@ -35,7 +35,7 @@ public sealed class UserPageReadOnlyTests : IAsyncLifetime
         _userName = $"e2upr{ts}";
 
         // 管理员上下文：注册测试用户、授予"查看+修改"权限
-        _adminContext = await _fixture.Browser.NewContextAsync();
+        _adminContext = await _fixture.NewContextAsync();
         _adminPage = await _adminContext.NewPageAsync();
         await PageHelpers.LoginAsAdminAsync(_adminPage);
 
@@ -53,7 +53,7 @@ public sealed class UserPageReadOnlyTests : IAsyncLifetime
         await SetRolePermissionAsync(roleId, true);
 
         // 普通用户上下文
-        _context = await _fixture.Browser.NewContextAsync();
+        _context = await _fixture.NewContextAsync();
         _page = await _context.NewPageAsync();
         await PageHelpers.LoginAsync(_page, _userName, Password);
     }
@@ -120,7 +120,7 @@ public sealed class UserPageReadOnlyTests : IAsyncLifetime
     /// <param name="username">用户名</param>
     private async Task RegisterAsync(String username)
     {
-        await using var ctx = await _fixture.Browser.NewContextAsync();
+        await using var ctx = await _fixture.NewContextAsync();
         var page = await ctx.NewPageAsync();
 
         await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login");

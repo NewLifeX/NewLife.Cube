@@ -23,7 +23,7 @@ public sealed class MenuSearchTests : IAsyncLifetime
     /// <summary>建立浏览器上下文并以管理员身份登录</summary>
     public async Task InitializeAsync()
     {
-        _context = await _fixture.Browser.NewContextAsync();
+        _context = await _fixture.NewContextAsync();
         _page = await _context.NewPageAsync();
         await PageHelpers.LoginAsAdminAsync(_page);
     }

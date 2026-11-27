@@ -23,7 +23,7 @@ public sealed class PaginationSimpleModeTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _context = await _fixture.Browser.NewContextAsync();
+        _context = await _fixture.NewContextAsync();
         _page = await _context.NewPageAsync();
         await PageHelpers.LoginAsAdminAsync(_page);
     }
@@ -114,7 +114,7 @@ public sealed class PaginationSimpleModeTests : IAsyncLifetime
         if (existing >= count) return;
 
         // 注册是公开功能，使用未登录的独立上下文注册，避免登录态干扰
-        var ctx = await _fixture.Browser.NewContextAsync();
+        var ctx = await _fixture.NewContextAsync();
         try
         {
             var page = await ctx.NewPageAsync();

@@ -278,4 +278,19 @@ public sealed class AppFixture : IAsyncLifetime
     }
 
     #endregion
+
+    #region 浏览器上下文
+
+    /// <summary>创建浏览器上下文。默认使用简体中文，用例中的界面文案断言不随 CI 机器语言漂移</summary>
+    /// <param name="options">上下文选项；调用方显式指定的语言优先</param>
+    /// <returns>浏览器上下文</returns>
+    public Task<IBrowserContext> NewContextAsync(BrowserNewContextOptions? options = null)
+    {
+        options ??= new BrowserNewContextOptions();
+        options.Locale ??= "zh-CN";
+
+        return Browser.NewContextAsync(options);
+    }
+
+    #endregion
 }
