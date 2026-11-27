@@ -1,3 +1,4 @@
+#nullable enable
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -38,7 +39,7 @@ public class SwaggerConfigureOptions(IApiDescriptionGroupCollectionProvider prov
                     {
                         Title = type.GetDisplayName(),
                         Description = type.GetDescription()?.Replace("\n", "<br/>"),
-                        Version = asm.FileVersion,
+                        Version = asm?.FileVersion,
                     };
                     break;
                 }

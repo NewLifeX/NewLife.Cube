@@ -1,3 +1,4 @@
+#nullable enable
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -43,7 +44,7 @@ public static class SwaggerService
             // 未配置时回退框架原名，零侵入兼容既有宿主；项目入口只需设置 DisplayName 一处
             var sysName = SysConfig.Current.DisplayName;
             if (sysName.IsNullOrEmpty()) sysName = "第三代魔方";
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = sysName, Description = $"{sysName}WebApi接口，用于前后端分离。", Version = asm.FileVersion });
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = sysName, Description = $"{sysName}WebApi接口，用于前后端分离。", Version = asm?.FileVersion });
             //options.SwaggerDoc("Basic", new OpenApiInfo { Version = "basic", Title = "基础模块" });
             //options.SwaggerDoc("Admin", new OpenApiInfo { Version = "admin", Title = "系统管理" });
             //options.SwaggerDoc("Cube", new OpenApiInfo { Version = "cube", Title = "魔方管理" });
@@ -138,7 +139,8 @@ public static class SwaggerService
             var asm = AssemblyX.Entry;
             // 页面标题同样优先系统展示名，回退入口程序集标题
             var sysName = SysConfig.Current.DisplayName;
-            options.DocumentTitle = !sysName.IsNullOrEmpty() ? sysName : (!asm.Title.IsNullOrEmpty() ? asm.Title : "魔方Web开发平台");
+            var asmTitle = asm?.Title;
+            options.DocumentTitle = !sysName.IsNullOrEmpty() ? sysName : (!asmTitle.IsNullOrEmpty() ? asmTitle : "魔方Web开发平台");
 
             //options.SwaggerEndpoint("/swagger/Basic/swagger.json", "Basic");
             //options.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin");

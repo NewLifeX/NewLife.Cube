@@ -14,6 +14,7 @@ namespace NewLife.Cube.Swagger;
 /// </summary>
 public static class CubeOpenApiExtensions
 {
+    /// <param name="services">服务集合</param>
     /// <param name="hostAssembly">指定扫描源；为空时扫描 AppDomain 已加载的所有程序集
     /// （ApiDescription.Server 构建期生成 host 里 Assembly.GetEntryAssembly 不可靠，故不依赖它）。</param>
     public static IServiceCollection AddCubeOpenApiByAreas(this IServiceCollection services, Assembly? hostAssembly = null)
