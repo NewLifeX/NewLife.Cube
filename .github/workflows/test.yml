@@ -102,7 +102,10 @@ jobs:
     - name: Setup dotNET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.x
+        # 工程同时目标 net11.0：只装 10.x 时 macOS 还原会报 NETSDK1045（Windows/Linux 镜像自带 11 预览版）
+        dotnet-version: |
+          10.x
+          11.x
         cache: true
         cache-dependency-path: '**/*.csproj'
     - name: Test (XUnitTest)
@@ -485,7 +488,8 @@ jobs:
     - name: Start CubeDemo (fresh SQLite)
       run: |
         cd Bin/CubeDemo
-        ASPNETCORE_URLS=http://localhost:7116 ASPNETCORE_ENVIRONMENT=Development nohup dotnet CubeDemo.dll > cube-demo.log 2>&1 &
+        # SPA 跑在 :5187、API 在 :7116，属跨域调用；CORS 来源取自魔方设置，这里用命令行参数开启
+        ASPNETCORE_URLS=http://localhost:7116 ASPNETCORE_ENVIRONMENT=Development nohup dotnet CubeDemo.dll --CorsOrigins='*' > cube-demo.log 2>&1 &
         for i in $(seq 1 60); do
           if curl -sf -X POST http://localhost:7116/Auth/Login -H 'Content-Type: application/json' -d '{"username":"admin","password":"admin"}' > /tmp/login.json; then
             echo "CubeDemo is up"; exit 0
