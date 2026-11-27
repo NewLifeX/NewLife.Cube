@@ -484,12 +484,13 @@ jobs:
     - name: Build shared packages
       run: pnpm build
     - name: Build CubeDemo
-      run: dotnet build CubeDemo/CubeDemo.csproj -c Release --nologo
+      # Debug 构建：跨域来源 CorsOrigins 的默认值 "*" 只在 #if DEBUG 下生效，
+      # 而 Playwright 驱动的 SPA 跑在 :5187、API 在 :7116，Release 构建缺少 CORS 头会让浏览器请求全部被拦
+      run: dotnet build CubeDemo/CubeDemo.csproj -c Debug --nologo
     - name: Start CubeDemo (fresh SQLite)
       run: |
         cd Bin/CubeDemo
-        # SPA 跑在 :5187、API 在 :7116，属跨域调用；CORS 来源取自魔方设置，这里用命令行参数开启
-        ASPNETCORE_URLS=http://localhost:7116 ASPNETCORE_ENVIRONMENT=Development nohup dotnet CubeDemo.dll --CorsOrigins='*' > cube-demo.log 2>&1 &
+        ASPNETCORE_URLS=http://localhost:7116 ASPNETCORE_ENVIRONMENT=Development nohup dotnet CubeDemo.dll > cube-demo.log 2>&1 &
         for i in $(seq 1 60); do
           if curl -sf -X POST http://localhost:7116/Auth/Login -H 'Content-Type: application/json' -d '{"username":"admin","password":"admin"}' > /tmp/login.json; then
             echo "CubeDemo is up"; exit 0
