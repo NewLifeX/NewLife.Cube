@@ -34,7 +34,7 @@
  * ```
  */
 import { type App as App2 } from 'vue';
-import { createApp } from 'vue';
+import { createApp, defineAsyncComponent } from 'vue';
 import { createPinia } from 'pinia';
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
@@ -53,12 +53,19 @@ import {
   LayoutKey,
   getProvidedKeys,
 } from './composables/useProvideInject';
+import {
+  DefaultListPageKey,
+  DefaultObjectPageKey,
+} from './composables/useSections';
 import { currentComponent } from './composables/useLayout';
 import { registerPageSections } from './utils/pageSections';
 import { applyExternalRoutes } from './router/routeOverride';
 import type { ConfigRoute } from './typings';
 import autoSectionModules from 'virtual:@newlifex/cube-vue-sections';
 import CyberLayout from './layouts/CyberLayout/index.vue';
+
+const DefaultListPage = defineAsyncComponent(() => import('./views/index.vue'));
+const DefaultObjectPage = defineAsyncComponent(() => import('./views/object.vue'));
 
 /**
  * 应用配置选项接口
@@ -251,6 +258,14 @@ export const initApp = async (optionsOrConfigure?: InitAppOptions | ConfigureFun
   if (!hasProvided(LayoutKey)) {
     const layoutComponent = currentComponent.value || CyberLayout;
     appProvide(app, LayoutKey, layoutComponent, { track: true });
+  }
+
+  if (!hasProvided(DefaultListPageKey)) {
+    appProvide(app, DefaultListPageKey, DefaultListPage, { track: true });
+  }
+
+  if (!hasProvided(DefaultObjectPageKey)) {
+    appProvide(app, DefaultObjectPageKey, DefaultObjectPage, { track: true });
   }
 
   app.mount('#app');

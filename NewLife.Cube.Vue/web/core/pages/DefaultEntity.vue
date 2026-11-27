@@ -21,7 +21,6 @@ import {
   hasMatchingCustomView,
 } from '@newlifex/cube-vue/core/utils/menuRoutes';
 import { probeEntityPage } from '@newlifex/cube-vue/core/utils/entityPage';
-import FrameworkDefaultListPage from '@newlifex/cube-vue/core/views/index.vue';
 import FrameworkAutoPage from '@newlifex/cube-vue/core/views/AutoPage.vue';
 import FrameworkPageNotFound from './PageNotFound.vue';
 
@@ -31,7 +30,7 @@ const route = useRoute();
 const router = useRouter();
 const menuStore = useMenuStore();
 
-const injectedDefaultListPageComponent = inject(DefaultListPageKey, FrameworkDefaultListPage);
+const injectedDefaultListPageComponent = inject(DefaultListPageKey);
 const injectedPageNotFoundComponent = inject(PageNotFoundKey, FrameworkPageNotFound);
 const sectionRegistry = inject(PageSectionRegistryKey, {} as SectionRegistry);
 
@@ -39,7 +38,7 @@ const matchedMenu = computed<FlatMenuItem | undefined>(() =>
   menuStore.flatMenus?.find((item) => item.path === route.path),
 );
 
-const resolvedDefaultListPageComponent = computed<Component>(() => {
+const resolvedDefaultListPageComponent = computed(() => {
   const loader = sectionRegistry[route.path]?.DefaultListPage;
   return loader
     ? defineAsyncComponent(loader as () => Promise<{ default: Component }>)

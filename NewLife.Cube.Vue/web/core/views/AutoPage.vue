@@ -7,11 +7,15 @@
  * - 列表控制器 Index 返回 { data:[...], page:{...} }（无 code 字段）
  * - 对象控制器 Index 返回 { code:0, data:{...} }（带 code 且无 page）
  */
-import { ref, onMounted, computed, defineAsyncComponent } from 'vue';
+import { ref, onMounted, computed, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import request from '@newlifex/cube-vue/core/utils/request';
 import { routeToApiPrefix } from '@newlifex/cube-vue/core/utils/url';
+import {
+  DefaultListPageKey,
+  DefaultObjectPageKey,
+} from '@newlifex/cube-vue/core/composables/useSections';
 
 interface Props {
   /** 页头标题（无菜单匹配时由后端实体显示名给出） */
@@ -25,8 +29,8 @@ const { t } = useI18n();
 const apiPrefix = computed(() => routeToApiPrefix(String(route.path)));
 const mode = ref<'pending' | 'list' | 'object'>('pending');
 
-const IndexView = defineAsyncComponent(() => import('./index.vue'));
-const ObjectView = defineAsyncComponent(() => import('./object.vue'));
+const IndexView = inject(DefaultListPageKey);
+const ObjectView = inject(DefaultObjectPageKey);
 
 onMounted(async () => {
   try {

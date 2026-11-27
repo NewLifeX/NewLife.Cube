@@ -828,6 +828,7 @@ export default {
   'theme.industrialLightDesc': '工业科技浅色主题',
 
   // 登录页
+  'login.rememberMe': '记住我',
   'login.tabLogin': '登 录',
   'login.tabRegister': '注 册',
   'login.defaultSystemName': '魔方系统',

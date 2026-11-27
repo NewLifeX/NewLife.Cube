@@ -13,6 +13,7 @@
     "test:e2e:headed": "playwright test --headed --project=chromium",
     "test:e2e:debug": "playwright test --debug --project=chromium",
     "test:e2e:report": "playwright show-report",
+    "test:e2e:remember": "playwright test --config playwright.remember.config.ts",
     "ct:server": "vite --config ct/vite.config.ts --port 5190",
     "test:ct": "playwright test --config playwright-ct.config.ts",
     "test:ct:update": "playwright test --config playwright-ct.config.ts --update-snapshots",

@@ -1,4 +1,5 @@
 import { getConfig } from '../configure';
+import { rememberLoginSession, revokeRefreshSession } from './tokenRefreshState';
 
 export const NEW_ACCESS_TOKEN = 'token';
 export const NEW_REFRESH_TOKEN = 'refresh_token';
@@ -65,6 +66,12 @@ export function extractRefreshTokenFromHash(hash: string) {
  * @param token 需要存储的访问令牌字符串
  */
 export function setAccessToken(token: string) {
+  revokeRefreshSession();
+  updateAccessToken(token);
+}
+
+/** 在当前刷新会话内更新访问令牌。调用前须校验会话仍有效。 */
+export function updateAccessToken(token: string) {
   localStorage.setItem(getTokenName(), token);
 }
 
@@ -75,43 +82,35 @@ export function setAccessToken(token: string) {
  * 令牌名称从环境配置中获取，如果配置中未指定则使用默认值 NEW_ACCESS_TOKEN
  */
 export function removeAccessToken() {
+  revokeRefreshSession();
   localStorage.removeItem(getTokenName());
 }
 
+/** 移除旧刷新令牌，避免新登录继承上一账号的刷新凭据。 */
+export function removeRefreshToken() {
+  localStorage.removeItem(NEW_REFRESH_TOKEN);
+}
+
 /**
- * 从 URL hash 中获取 token 参数
- *
- * 遍历 URL hash 中的所有参数，查找包含 'token' 的键
- * 如果找到 token，将其存储到 localStorage 中，并清空 URL hash
- *
- * @returns {string|null} 返回找到的 token，如果未找到则返回 null
- */
-/**
- * 从 URL hash 中获取 token 参数
- *
- * 处理形如 #token=xxx 或 #/path#token=xxx 的哈希值
- * 如果找到 token，将其存储到 localStorage 中，并清空 URL hash
- *
- * @returns {string|null} 返回找到的 token，如果未找到则返回 null
+ * 从 URL 片段读取登录凭据，支持直接参数和路由后的认证片段。
+ * @returns 访问令牌，未找到时返回 null
  */
 export function getUrlHashToken() {
-  const tokenName = getTokenName();
+  const hash = window.location.hash;
+  const fragment = hash.slice(hash.lastIndexOf('#') + 1);
+  const query = fragment.includes('?') ? fragment.slice(fragment.indexOf('?') + 1) : fragment;
+  const params = new URLSearchParams(query);
+  const token = params.get(getTokenName());
+  if (!token) return null;
 
-  // 获取哈希值（不含#符号）
-  let hash = window.location.hash;
-  if (hash.startsWith('#')) {
-    hash = hash.substring(1);
+  setAccessToken(token);
+  const refreshToken = params.get(REFRESH_TOKEN);
+  const userName = params.get('u');
+  if (getConfig().auth.tokenRefresh?.enabled === true && refreshToken && userName) {
+    setRefreshToken(refreshToken);
+    rememberLoginSession(true, userName);
+  } else {
+    removeRefreshToken();
   }
-
-  // 处理直接在哈希中的token（如 #token=xxx）
-  const tokenRegex = new RegExp(`${tokenName}=([^&]+)`);
-  const match = hash.match(tokenRegex);
-
-  if (match && match[1]) {
-    const token = match[1];
-    localStorage.setItem(tokenName, token);
-    return token;
-  }
-
-  return null;
+  return token;
 }

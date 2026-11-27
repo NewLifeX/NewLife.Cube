@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue';
 import type { LoginConfig } from '@newlifex/cube';
+import { getRememberLogin, setRememberLogin } from '../utils/tokenRefresh';
 
 const { t } = useI18n();
 
@@ -12,16 +13,24 @@ const props = defineProps<{
   loginConfig?: LoginConfig;
   /** 是否正在提交（由父组件控制，展示 loading 并禁用按钮） */
   submitting?: boolean;
+  /** 是否启用记住我与自动刷新联动 */
+  rememberEnabled?: boolean;
 }>();
 
 const emit = defineEmits<{
   /** 客户端校验通过后，把凭据交给容器处理登录 */
-  (e: 'submit', payload: { username: string; password: string }): void;
+  (e: 'submit', payload: { username: string; password: string; remember?: boolean }): void;
 }>();
 
 // 表单状态（展示组件内部维护，不向上依赖）
 const form = ref<{ username: string; password: string }>({ username: '', password: '' });
 const errors = ref<{ username?: string; password?: string }>({});
+const remember = ref(getRememberLogin());
+
+function updateRemember(value: unknown): void {
+  remember.value = value === true;
+  setRememberLogin(remember.value);
+}
 
 function clearError(field: 'username' | 'password'): void {
   errors.value[field] = undefined;
@@ -57,7 +66,11 @@ function handleSubmit(): void {
   }
 
   // 校验通过，把凭据交给容器处理登录
-  emit('submit', { username: form.value.username, password: form.value.password });
+  emit('submit', {
+    username: form.value.username,
+    password: form.value.password,
+    ...(props.rememberEnabled ? { remember: remember.value } : {}),
+  });
 }
 
 /** 是否有密码输入（用于控制回车触发的表单提交） */
@@ -104,6 +117,10 @@ function onFormKeydown(e: KeyboardEvent): void {
       />
       <span v-if="errors.password" class="input-error">{{ errors.password }}</span>
     </div>
+
+    <el-checkbox v-if="rememberEnabled" :model-value="remember" @update:model-value="updateRemember">
+      {{ t('login.rememberMe', '记住我') }}
+    </el-checkbox>
 
     <!-- 登录按钮 -->
     <button

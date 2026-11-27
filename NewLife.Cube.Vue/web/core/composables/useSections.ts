@@ -2,6 +2,7 @@ import type { InjectionKey, Component } from 'vue';
 
 // ─── 页面级默认组件 Keys ───────────────────────────────────────
 export const DefaultListPageKey: InjectionKey<Component> = Symbol('DefaultListPage');
+export const DefaultObjectPageKey: InjectionKey<Component> = Symbol('DefaultObjectPage');
 export const PageNotFoundKey: InjectionKey<Component> = Symbol('PageNotFound');
 
 // ─── 列表页 Section Keys ──────────────────────────────────────────
