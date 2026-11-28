@@ -75,19 +75,28 @@ NewLife منظومة متعدّدة الطبقات من مشاريع مفتوح�
 | [NewLife.MQTT](https://github.com/NewLifeX/NewLife.MQTT) | عميل وخادم MQTT، بما في ذلك الاتصال بـ Alibaba Cloud IoT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.MQTT?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.MQTT) |
 | [NewLife.NovaDb](https://github.com/NewLifeX/NewLife.NovaDb) | قاعدة بيانات هجينة بلغة C#: مدمجة أو شبكية، وعلائقية، وسلاسل زمنية، وقائمة رسائل، وKV في واحد. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.NovaDb?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.NovaDb) |
 | [NewLife.MySql](https://github.com/NewLifeX/NewLife.MySql) | برنامج تشغيل MySql وطبقة مساعدة مبنية على مكدّس بيانات NewLife. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.MySql?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.MySql) |
-| **Web والذكاء الاصطناعي والأنظمة الموزّعة** | | |
+| [NewLife.TDengine](https://github.com/NewLifeX/NewLife.TDengine) | برنامج تشغيل TDengine ADO.NET مُدار بالكامل، يدعم نقل REST وWebSocket وRPC الأصلي دون أي اعتماديات أصلية. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.TDengine?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.TDengine) |
+| [NewLife.Presto](https://github.com/NewLifeX/NewLife.Presto) | برنامج تشغيل Presto/Trino ADO.NET مكتوب بلغة C# خالصة، بلا اعتماديات خارجية ومع تكامل XCode ORM. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Presto?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Presto) |
+| **Web والأنظمة الموزّعة** | | |
 | [NewLife.Cube](https://github.com/NewLifeX/NewLife.Cube) | إطار منصة إدارة سريعة: الصلاحيات، والدخول الموحّد SSO، وخادم OAuth، وتوليد واجهات CRUD. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Cube?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Cube) |
+| [NewLife.Cube.React](https://github.com/NewLifeX/NewLife.Cube.React) | نموذج واجهة أمامية منفصلة لـ Cube: خلفية WebAPI مع Swagger وعملاء React وVue وBlazor. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Cube.React?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Cube.React) |
 | [Stardust](https://github.com/NewLifeX/Stardust) | منصة خدمات موزّعة: إدارة العقد، وAPM، ومركز الإعدادات، ومركز التسجيل، ومركز النشر. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Stardust?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Stardust) |
 | [AntJob](https://github.com/NewLifeX/AntJob) | منصة موزّعة للمهام وجدولة البيانات الفورية، مع التقسيم وإعادة المحاولة وإعادة التعبئة. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.AntJob?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.AntJob) |
+| **الذكاء الاصطناعي والرؤية** | | |
 | [NewLife.AI](https://github.com/NewLifeX/NewLife.AI) | عميل موحّد لـ 46 مزوّد LLM بالإضافة إلى ChatAI، تطبيق ويب جاهز للمحادثة. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.AI?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.AI) |
+| [NewLife.Imaging](https://github.com/NewLifeX/NewLife.Imaging) | أساس معالجة صور مُدار بالكامل: نموذج البكسل وعقود الترميز والرسم والبيانات الوصفية دون اعتماديات أصلية. | — |
+| [NewLife.Vision](https://github.com/NewLifeX/NewLife.Vision) | خوارزميات الرؤية: OCR والباركود وكشف الأجسام والتعرّف على الوجوه فوق NewLife.Imaging. | — |
+| [NewLife.ML](https://github.com/NewLifeX/NewLife.ML) | تعلّم آلي جدولي لـ .NET: حوّل جداول قواعد البيانات وأوراق Excel إلى نماذج تنبؤ وتصنيف جاهزة للنشر. | — |
 | **الصناعة وإنترنت الأشياء** | | |
 | [NewLife.IoT](https://github.com/NewLifeX/NewLife.IoT) | مكتبة معايير إنترنت الأشياء التي تعرّف عقود البروتوكولات وتجريدات الأجهزة. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.IoT?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.IoT) |
 | [NewLife.Modbus](https://github.com/NewLifeX/NewLife.Modbus) | تنفيذ Modbus TCP/RTU/ASCII فوق NewLife.IoT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Modbus?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Modbus) |
 | [NewLife.Siemens](https://github.com/NewLifeX/NewLife.Siemens) | بروتوكول Siemens PLC فوق NewLife.IoT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Siemens?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Siemens) |
 | [NewLife.Omron](https://github.com/NewLifeX/NewLife.Omron) | بروتوكول Omron PLC فوق NewLife.IoT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Omron?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Omron) |
 | [NewLife.Melsec](https://github.com/NewLifeX/NewLife.Melsec) | بروتوكول Mitsubishi Melsec PLC فوق NewLife.IoT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Melsec?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Melsec) |
+| [NewLife.Schneider](https://github.com/NewLifeX/NewLife.Schneider) | برنامج تشغيل اتصال PLC من شنايدر مبني على Modbus TCP. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Schneider?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Schneider) |
 | [NewLife.OPC](https://github.com/NewLifeX/NewLife.OPC) | عميل OPC للوصول إلى البيانات الصناعية. | — |
 | [NewLife.BACnet](https://github.com/NewLifeX/NewLife.BACnet) | مكدّس بروتوكول BACnet لأتمتة المباني. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.BACnet?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.BACnet) |
+| [NewLife.LoRa](https://github.com/NewLifeX/NewLife.LoRa) | بروتوكول LoRaWAN منخفض الطاقة للغاية لاتصالات إنترنت الأشياء بعيدة المدى. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.LoRa?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.LoRa) |
 | [ZeroIoT](https://github.com/NewLifeX/ZeroIoT) | منصة إنترنت أشياء مفتوحة المصدر وخفيفة، مع إدارة البوابات والأجهزة. | — |
 | **تليماتيكا المركبات** | | |
 | [NewLife.JT808](https://github.com/NewLifeX/NewLife.JT808) | بروتوكول تحديد مواقع المركبات JT/T 808: أكثر من 70 جسم رسالة، 2011/2013/2019. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.JT808?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.JT808) |
@@ -99,18 +108,20 @@ NewLife منظومة متعدّدة الطبقات من مشاريع مفتوح�
 | [NewLife.Video](https://github.com/NewLifeX/NewLife.Video) | مرمّزات الفيديو وصيغ الحاويات ومعالجة الإطارات والبث. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Video?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Video) |
 | [NewLife.Map](https://github.com/NewLifeX/NewLife.Map) | واجهة موحّدة فوق Baidu وAMap وTencent وTianditu مع الترميز الجغرافي وتحويل الإحداثيات. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Map?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Map) |
 | [NewLife.IP](https://github.com/NewLifeX/NewLife.IP) | تحديد الموقع الجغرافي لعناوين IPv4 بقاعدة بيانات غير متصلة مُعيّنة في الذاكرة، وواجهة API عبر الإنترنت كبديل. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.IP?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.IP) |
+| [NewLife.Holiday](https://github.com/NewLifeX/NewLife.Holiday) | مكتبة للتعرف على الأعياد الصينية وأيام العمل المعدّلة، مع بيانات سنوية مدمجة ودعم للأعياد القمرية، وتعمل دون اتصال بالكامل. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Holiday?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Holiday) |
 | **الأدوات والمنتجات** | | |
 | [CrazyCoder](https://github.com/NewLifeX/XCoder) | صندوق أدوات المطوّر: الشبكات والمنفذ التسلسلي والتشفير والتعبيرات النمطية وModbus وMQTT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.XCoder?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.XCoder) |
+| [NewLife.UnitTest](https://github.com/NewLifeX/NewLife.UnitTest) | امتدادات لاختبارات الوحدة: فئات أساسية واختبارات معتمدة على البيانات ومساعدة في حقن التبعيات. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.UnitTest?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.UnitTest) |
 | [GitCandy](https://github.com/NewLifeX/GitCandy) | نظام استضافة ذاتية لإدارة الشيفرة المصدرية Git. | — |
 | [LuckyClover](https://github.com/NewLifeX/LuckyClover) | يثبّت بيئة تشغيل .NET المطابقة تلقائيًا عند التشغيل من مضيف أقدم. | — |
 
-> تعرض الشارات الحزمة الرئيسية لكل مشروع؛ أما حزم السمات والإضافات والحزم التابعة فمذكورة في صفحاتها على NuGet.الحزم التي تتجاوز 30 حزمة وغير المذكورة هنا (FTP وLoRa وإضافات Office وبرامج تشغيل البروتوكولات وغيرها) متاحة في [منظمة NewLifeX](https://github.com/NewLifeX) وعلى [newlifex.com](https://newlifex.com). يُصان هذا الجدول في README الخاص بـ NewLife.Core.
+> تعرض الشارات الحزمة الرئيسية لكل مشروع؛ أما حزم السمات والإضافات والحزم التابعة فمذكورة في صفحاتها على NuGet. الحزم التي تتجاوز 30 حزمة وغير المذكورة هنا (FTP وإضافات Office وبرامج تشغيل البروتوكولات وغيرها) متاحة في [منظمة NewLifeX](https://github.com/NewLifeX) وعلى [newlifex.com](https://newlifex.com).
 
 ## الفريق
 
 <img src="https://newlifex.com/logo.png" width="48" align="right" alt="NewLife" />
 
-تأسّست NewLife في عام 2002، وأمضت أكثر من عقدين في منظومة .NET وإنترنت الأشياء، وتدير ما يقارب 100 مشروع مفتوح المصدر (34 منها مشاريع رئيسية)، وتقدّم حلولًا متكاملة للبرمجيات والأجهزة لقطاعات الكهرباء والخدمات اللوجستية والرعاية الصحية والتحكّم الصناعي والإنترنت. ونلتزم بمبدأ "لا أسبقية في التعلّم — الإتقان يكسب الاحترام".
+تأسّست NewLife في عام 2002، وأمضت أكثر من عقدين في منظومة .NET وإنترنت الأشياء، وتدير ما يقارب 100 مشروع مفتوح المصدر (44 منها مشاريع رئيسية)، وتقدّم حلولًا متكاملة للبرمجيات والأجهزة لقطاعات الكهرباء والخدمات اللوجستية والرعاية الصحية والتحكّم الصناعي والإنترنت. ونلتزم بمبدأ "لا أسبقية في التعلّم — الإتقان يكسب الاحترام".
 
 نُزّلت المكوّنات مفتوحة المصدر <!--nuget-total:start-->6.48M<!--nuget-total:end--> مرة من NuGet (على مستوى المنظومة بأكملها، حتى 2026-10).
 

@@ -75,19 +75,28 @@ NewLife는 독립적으로 버전이 관리되는 오픈소스 프로젝트의 �
 | [NewLife.MQTT](https://github.com/NewLifeX/NewLife.MQTT) | MQTT 클라이언트와 서버, 알리바바 클라우드 IoT 연결 포함. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.MQTT?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.MQTT) |
 | [NewLife.NovaDb](https://github.com/NewLifeX/NewLife.NovaDb) | C# 하이브리드 데이터베이스: 임베디드/네트워크 두 모드, 관계형, 시계열, 메시지 큐, KV를 하나로. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.NovaDb?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.NovaDb) |
 | [NewLife.MySql](https://github.com/NewLifeX/NewLife.MySql) | NewLife 데이터 스택 위에 구축한 MySql 드라이버와 도우미 계층. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.MySql?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.MySql) |
-| **Web, AI 및 분산** | | |
+| [NewLife.TDengine](https://github.com/NewLifeX/NewLife.TDengine) | REST, WebSocket, 네이티브 RPC를 지원하는 순수 관리형 TDengine ADO.NET 드라이버입니다. 네이티브 의존성이 없습니다. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.TDengine?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.TDengine) |
+| [NewLife.Presto](https://github.com/NewLifeX/NewLife.Presto) | 서드파티 의존성 없이 XCode ORM과 연동되는 순수 C# Presto/Trino ADO.NET 드라이버입니다. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Presto?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Presto) |
+| **Web 및 분산** | | |
 | [NewLife.Cube](https://github.com/NewLifeX/NewLife.Cube) | 빠른 관리 플랫폼 프레임워크: 권한, SSO, OAuth 서버, CRUD 스캐폴딩. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Cube?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Cube) |
+| [NewLife.Cube.React](https://github.com/NewLifeX/NewLife.Cube.React) | Cube 프런트엔드 분리 예제입니다. WebAPI 백엔드 + Swagger와 React/Vue/Blazor 클라이언트를 제공합니다. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Cube.React?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Cube.React) |
 | [Stardust](https://github.com/NewLifeX/Stardust) | 분산 서비스 플랫폼: 노드 관리, APM, 구성 센터, 등록 센터, 배포 센터. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Stardust?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Stardust) |
 | [AntJob](https://github.com/NewLifeX/AntJob) | 샤딩, 재시도, 백필을 지원하는 분산 작업 및 실시간 데이터 스케줄링 플랫폼. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.AntJob?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.AntJob) |
+| **AI 및 비전** | | |
 | [NewLife.AI](https://github.com/NewLifeX/NewLife.AI) | 46개 LLM 공급자를 통합 연결하는 클라이언트와 바로 사용할 수 있는 ChatAI 웹 채팅 애플리케이션. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.AI?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.AI) |
+| [NewLife.Imaging](https://github.com/NewLifeX/NewLife.Imaging) | 순수 관리형 이미징 기반 라이브러리입니다. 픽셀 모델, 코덱 계약, 그리기, 메타데이터를 제공하며 네이티브 의존성이 없습니다. | — |
+| [NewLife.Vision](https://github.com/NewLifeX/NewLife.Vision) | OCR, 바코드, 객체 감지, 얼굴 인식을 NewLife.Imaging 위에 구축하는 비전 알고리즘 라이브러리입니다. | — |
+| [NewLife.ML](https://github.com/NewLifeX/NewLife.ML) | .NET용 표 형식 머신러닝입니다. 데이터베이스 테이블과 Excel 시트를 배포 가능한 예측·분류 모델로 바꿉니다. | — |
 | **산업 및 IoT** | | |
 | [NewLife.IoT](https://github.com/NewLifeX/NewLife.IoT) | 프로토콜 계약과 장치 추상을 정의하는 IoT 표준 라이브러리. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.IoT?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.IoT) |
 | [NewLife.Modbus](https://github.com/NewLifeX/NewLife.Modbus) | NewLife.IoT 기반으로 구현한 Modbus TCP/RTU/ASCII. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Modbus?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Modbus) |
 | [NewLife.Siemens](https://github.com/NewLifeX/NewLife.Siemens) | NewLife.IoT 기반으로 구현한 지멘스 PLC 프로토콜. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Siemens?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Siemens) |
 | [NewLife.Omron](https://github.com/NewLifeX/NewLife.Omron) | NewLife.IoT 기반으로 구현한 오므론 PLC 프로토콜. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Omron?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Omron) |
 | [NewLife.Melsec](https://github.com/NewLifeX/NewLife.Melsec) | NewLife.IoT 기반으로 구현한 미쓰비시 Melsec PLC 프로토콜. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Melsec?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Melsec) |
+| [NewLife.Schneider](https://github.com/NewLifeX/NewLife.Schneider) | Modbus TCP 기반 슈나이더 PLC 통신 드라이버입니다. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Schneider?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Schneider) |
 | [NewLife.OPC](https://github.com/NewLifeX/NewLife.OPC) | 산업 데이터 수집용 OPC 클라이언트. | — |
 | [NewLife.BACnet](https://github.com/NewLifeX/NewLife.BACnet) | BACnet 빌딩 자동화 프로토콜 스택. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.BACnet?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.BACnet) |
+| [NewLife.LoRa](https://github.com/NewLifeX/NewLife.LoRa) | 초저전력 장거리 IoT 통신 프로토콜 LoRaWAN입니다. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.LoRa?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.LoRa) |
 | [ZeroIoT](https://github.com/NewLifeX/ZeroIoT) | 게이트웨이와 장치 관리를 갖춘 경량 오픈소스 IoT 플랫폼. | — |
 | **차량 텔레매틱스** | | |
 | [NewLife.JT808](https://github.com/NewLifeX/NewLife.JT808) | JT/T 808 차량 위치 프로토콜: 70개 이상 메시지 본문, 2011/2013/2019 지원. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.JT808?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.JT808) |
@@ -99,18 +108,20 @@ NewLife는 독립적으로 버전이 관리되는 오픈소스 프로젝트의 �
 | [NewLife.Video](https://github.com/NewLifeX/NewLife.Video) | 비디오 코덱, 컨테이너 형식, 프레임 처리, 스트리밍. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Video?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Video) |
 | [NewLife.Map](https://github.com/NewLifeX/NewLife.Map) | 바이두/고덕/텐센트/톈디투 지도 통합 인터페이스, 지오코딩과 좌표 변환 지원. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Map?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Map) |
 | [NewLife.IP](https://github.com/NewLifeX/NewLife.IP) | IPv4 위치 정보: 오프라인 메모리 매핑 데이터베이스와 온라인 API 이중 소스. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.IP?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.IP) |
+| [NewLife.Holiday](https://github.com/NewLifeX/NewLife.Holiday) | 중국 공휴일과 대체 근무일을 판별하는 라이브러리입니다. 연도별 공휴일 데이터와 음력 명절을 지원하며 완전히 오프라인으로 동작합니다. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Holiday?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Holiday) |
 | **도구 및 제품** | | |
 | [CrazyCoder](https://github.com/NewLifeX/XCoder) | 개발자 도구 모음: 네트워크, 시리얼 포트, 암호화, 정규식, Modbus, MQTT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.XCoder?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.XCoder) |
+| [NewLife.UnitTest](https://github.com/NewLifeX/NewLife.UnitTest) | 단위 테스트 확장 라이브러리입니다. 테스트 기본 클래스, 데이터 기반 테스트, 의존성 주입 도우미를 제공합니다. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.UnitTest?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.UnitTest) |
 | [GitCandy](https://github.com/NewLifeX/GitCandy) | 셀프 호스팅 Git 소스 코드 관리 시스템. | — |
 | [LuckyClover](https://github.com/NewLifeX/LuckyClover) | 구버전 호스트에서 시작할 때 일치하는 .NET 런타임을 자동으로 설치합니다. | — |
 
-> 배지는 각 프로젝트의 기본 패키지를 나타냅니다. 테마, 확장, 위성 패키지는 해당 NuGet 페이지에서 확인하세요.여기에 나열하지 않은 30여 개 패키지(FTP, LoRa, Office 확장, 각종 프로토콜 드라이버 등)는 [NewLifeX 조직](https://github.com/NewLifeX)과 [newlifex.com](https://newlifex.com)에서 확인할 수 있습니다. 이 표는 NewLife.Core README에서 관리됩니다.
+> 배지는 각 프로젝트의 기본 패키지를 나타냅니다. 테마, 확장, 위성 패키지는 해당 NuGet 페이지에서 확인하세요. 여기에 나열하지 않은 30여 개 패키지(FTP, Office 확장, 각종 프로토콜 드라이버 등)는 [NewLifeX 조직](https://github.com/NewLifeX)과 [newlifex.com](https://newlifex.com)에서 확인할 수 있습니다.
 
 ## 뉴라이프 개발팀
 
 <img src="https://newlifex.com/logo.png" width="48" align="right" alt="NewLife" />
 
-뉴라이프 팀(NewLife)은 2002년에 설립되어 20여 년간 .NET과 IoT 기술 생태계에 집중하며 100여 개의 오픈소스 프로젝트를 주도하고(이 중 34개가 핵심 프로젝트), 전력, 물류, 의료, 산업 제어, 인터넷 등 산업에 소프트웨어와 하드웨어를 아우르는 통합 솔루션을 제공해 왔습니다. "학문에는 선후가 없으며, 이룬 사람이 스승이다"라는 신조를 따릅니다.
+뉴라이프 팀(NewLife)은 2002년에 설립되어 20여 년간 .NET과 IoT 기술 생태계에 집중하며 100여 개의 오픈소스 프로젝트를 주도하고(이 중 44개가 핵심 프로젝트), 전력, 물류, 의료, 산업 제어, 인터넷 등 산업에 소프트웨어와 하드웨어를 아우르는 통합 솔루션을 제공해 왔습니다. "학문에는 선후가 없으며, 이룬 사람이 스승이다"라는 신조를 따릅니다.
 
 오픈소스 컴포넌트는 NuGet에서 누적 <!--nuget-total:start-->6.48M<!--nuget-total:end-->회 다운로드되었습니다(생태계 전체 기준, 2026-10).
 

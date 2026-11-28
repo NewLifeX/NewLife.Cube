@@ -412,19 +412,28 @@ NewLife is a layered ecosystem of independently versioned open-source projects. 
 | [NewLife.MQTT](https://github.com/NewLifeX/NewLife.MQTT) | MQTT client and server, including Alibaba Cloud IoT connectivity. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.MQTT?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.MQTT) |
 | [NewLife.NovaDb](https://github.com/NewLifeX/NewLife.NovaDb) | Hybrid database in C#: embedded or networked, relational, time-series, message queue and KV in one. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.NovaDb?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.NovaDb) |
 | [NewLife.MySql](https://github.com/NewLifeX/NewLife.MySql) | MySql driver and helper layer built on the NewLife data stack. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.MySql?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.MySql) |
-| **Web, AI & Distributed** | | |
+| [NewLife.TDengine](https://github.com/NewLifeX/NewLife.TDengine) | Pure managed TDengine ADO.NET driver with REST, WebSocket and native RPC transports, no native dependency. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.TDengine?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.TDengine) |
+| [NewLife.Presto](https://github.com/NewLifeX/NewLife.Presto) | Pure C# Presto/Trino ADO.NET driver with zero third-party dependencies and XCode ORM integration. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Presto?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Presto) |
+| **Web & Distributed** | | |
 | [NewLife.Cube](https://github.com/NewLifeX/NewLife.Cube) | Rapid admin-platform framework: permissions, SSO, OAuth server and CRUD scaffolding. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Cube?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Cube) |
+| [NewLife.Cube.React](https://github.com/NewLifeX/NewLife.Cube.React) | Decoupled front-end sample for Cube: WebAPI backend with Swagger plus React, Vue and Blazor clients. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Cube.React?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Cube.React) |
 | [Stardust](https://github.com/NewLifeX/Stardust) | Distributed service platform: node management, APM, configuration center, registry and release center. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Stardust?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Stardust) |
 | [AntJob](https://github.com/NewLifeX/AntJob) | Distributed task and real-time data scheduling platform with sharding, retries and backfill. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.AntJob?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.AntJob) |
+| **AI & Vision** | | |
 | [NewLife.AI](https://github.com/NewLifeX/NewLife.AI) | Unified client for 46 LLM providers plus ChatAI, a ready-to-run web chat application. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.AI?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.AI) |
+| [NewLife.Imaging](https://github.com/NewLifeX/NewLife.Imaging) | Pure managed imaging foundation: pixel model, codec contracts, drawing and metadata with zero native dependencies. | — |
+| [NewLife.Vision](https://github.com/NewLifeX/NewLife.Vision) | Vision algorithms: OCR, barcodes, object detection and face recognition on top of NewLife.Imaging. | — |
+| [NewLife.ML](https://github.com/NewLifeX/NewLife.ML) | Tabular machine learning for .NET: turn database tables and Excel sheets into deployable prediction and classification models. | — |
 | **Industrial & IoT** | | |
 | [NewLife.IoT](https://github.com/NewLifeX/NewLife.IoT) | IoT standard library defining protocol contracts and device abstractions. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.IoT?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.IoT) |
 | [NewLife.Modbus](https://github.com/NewLifeX/NewLife.Modbus) | Modbus TCP/RTU/ASCII implementation on top of NewLife.IoT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Modbus?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Modbus) |
 | [NewLife.Siemens](https://github.com/NewLifeX/NewLife.Siemens) | Siemens PLC protocol on top of NewLife.IoT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Siemens?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Siemens) |
 | [NewLife.Omron](https://github.com/NewLifeX/NewLife.Omron) | Omron PLC protocol on top of NewLife.IoT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Omron?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Omron) |
 | [NewLife.Melsec](https://github.com/NewLifeX/NewLife.Melsec) | Mitsubishi Melsec PLC protocol on top of NewLife.IoT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Melsec?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Melsec) |
+| [NewLife.Schneider](https://github.com/NewLifeX/NewLife.Schneider) | Schneider PLC communication driver built on Modbus TCP. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Schneider?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Schneider) |
 | [NewLife.OPC](https://github.com/NewLifeX/NewLife.OPC) | OPC client for industrial data access. | — |
 | [NewLife.BACnet](https://github.com/NewLifeX/NewLife.BACnet) | BACnet building-automation protocol stack. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.BACnet?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.BACnet) |
+| [NewLife.LoRa](https://github.com/NewLifeX/NewLife.LoRa) | LoRaWAN low-power wide-area protocol for long-range IoT connectivity. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.LoRa?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.LoRa) |
 | [ZeroIoT](https://github.com/NewLifeX/ZeroIoT) | Lightweight open-source IoT platform with gateway and device management. | — |
 | **Vehicle Telematics** | | |
 | [NewLife.JT808](https://github.com/NewLifeX/NewLife.JT808) | JT/T 808 vehicle positioning protocol: 70+ message bodies, 2011/2013/2019. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.JT808?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.JT808) |
@@ -436,12 +445,14 @@ NewLife is a layered ecosystem of independently versioned open-source projects. 
 | [NewLife.Video](https://github.com/NewLifeX/NewLife.Video) | Video codecs, container formats, frame processing and streaming. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Video?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Video) |
 | [NewLife.Map](https://github.com/NewLifeX/NewLife.Map) | Unified interface over Baidu, AMap, Tencent and Tianditu with geocoding and coordinate conversion. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Map?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Map) |
 | [NewLife.IP](https://github.com/NewLifeX/NewLife.IP) | IPv4 geolocation with an offline memory-mapped database and an online API fallback. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.IP?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.IP) |
+| [NewLife.Holiday](https://github.com/NewLifeX/NewLife.Holiday) | Chinese holiday and adjusted-workday identification library with built-in annual data and lunar festival support, fully offline. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Holiday?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Holiday) |
 | **Tools & Products** | | |
 | [CrazyCoder](https://github.com/NewLifeX/XCoder) | Developer toolbox: network, serial port, crypto, regex, Modbus and MQTT. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.XCoder?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.XCoder) |
+| [NewLife.UnitTest](https://github.com/NewLifeX/NewLife.UnitTest) | Unit test extensions: test base classes, data-driven tests and dependency-injection helpers. | [![NuGet](https://img.shields.io/nuget/dt/NewLife.UnitTest?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.UnitTest) |
 | [GitCandy](https://github.com/NewLifeX/GitCandy) | Self-hosted Git source code management system. | — |
 | [LuckyClover](https://github.com/NewLifeX/LuckyClover) | Installs the matching .NET runtime automatically when launched from an older host. | — |
 
-> Badges show the primary package of each project; theme, extension and satellite packages are listed on their NuGet pages.The 30+ packages not listed here (FTP, LoRa, Office extensions, protocol drivers and more) are available under the [NewLifeX organization](https://github.com/NewLifeX) and on [newlifex.com](https://newlifex.com). This table is maintained in the NewLife.Core README.
+> Badges show the primary package of each project; theme, extension and satellite packages are listed on their NuGet pages. The 30+ packages not listed here (FTP, Office extensions, protocol drivers and more) are available under the [NewLifeX organization](https://github.com/NewLifeX) and on [newlifex.com](https://newlifex.com).
 
 ## Documentation
 
@@ -514,7 +525,7 @@ Push a `v`-prefixed tag to trigger `.github/workflows/publish.yml`; the workflow
 
 <img src="https://newlifex.com/logo.png" width="48" align="right" alt="NewLife" />
 
-Founded in 2002, the NewLife team has spent more than two decades on the .NET and IoT ecosystem, maintains nearly 100 open-source projects (34 of them core to this map), and delivers integrated software and hardware solutions for power, logistics, healthcare, industrial control and internet industries. We live by the motto "learning has no seniority — mastery earns respect".
+Founded in 2002, the NewLife team has spent more than two decades on the .NET and IoT ecosystem, maintains nearly 100 open-source projects (44 of them core to this map), and delivers integrated software and hardware solutions for power, logistics, healthcare, industrial control and internet industries. We live by the motto "learning has no seniority — mastery earns respect".
 
 Open-source components have been downloaded <!--nuget-total:start-->6.48M<!--nuget-total:end--> times from NuGet (ecosystem-wide, as of 2026-10).
 
