@@ -65,7 +65,7 @@
 
   <ItemGroup>
     <PackageReference Include="NewLife.AI" Version="1.7.2026.1026-beta0221" />
-    <PackageReference Include="NewLife.Core" Version="12.0.2026.1125-beta0539" />
+    <PackageReference Include="NewLife.Core" Version="12.0.2026.1128-beta0257" />
     <PackageReference Include="NewLife.IP" Version="2.6.2026.1024" />
     <PackageReference Include="NewLife.Office" Version="1.5.2026.1120-beta0617" />
     <!-- Stardust 传递依赖 NewLife.Remoting，最小版本 3.9.2026.901 面向 Core 11 构建，与 Core 12 不兼容；显式提升到 Core 12 版本 -->
@@ -78,7 +78,7 @@
     <ProjectReference Include="$(NewLifeSourceRoot)\NewLife.XCode\XCode\XCode.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseLocalNewLifeSource)' != 'true'">
-    <PackageReference Include="NewLife.XCode" Version="12.3.2026.1127-beta0723" />
+    <PackageReference Include="NewLife.XCode" Version="12.3.2026.1128-beta0445" />
   </ItemGroup>
 
   <ItemGroup>
